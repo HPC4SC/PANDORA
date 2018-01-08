@@ -502,7 +502,10 @@ void Serializer::executeAgentSerialization( const std::string & type, int step)
 	StringMap * attributesS = itS->second;	
 	for(StringMap::iterator itM=attributesS->begin(); itM!=attributesS->end(); itM++)
 	{
-		std::vector<std::string> * data = itM->second;
+//		std::vector<std::string> * data = itM->second;
+        std::vector<const char*> * data = new std::vector<const char*>;
+        for ( unsigned ii = 0; ii < itM->second->size(); ++ii )
+            data->push_back( itM->second->at(ii).c_str() );
 		hsize_t	block[1];
 		block[0] = data->size();
 		
@@ -523,11 +526,13 @@ void Serializer::executeAgentSerialization( const std::string & type, int step)
 		H5Tset_size (idType, H5T_VARIABLE);
   		hid_t memorySpace = H5Screate_simple(1, &simpleDimension, 0);
 		H5Dwrite(datasetId, idType, memorySpace, fileSpace, H5P_DEFAULT, &(data->at(0)));
-		data->clear();
 
 		H5Sclose(memorySpace);
 		H5Sclose(fileSpace);
 		H5Dclose(datasetId);
+
+        delete data;
+        itM->second->clear();
 	}
 }
 
