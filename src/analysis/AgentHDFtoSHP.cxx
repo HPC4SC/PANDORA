@@ -7,6 +7,7 @@
 #include <sstream>
 #include <boost/filesystem.hpp>
 #include <iomanip>
+#include <iostream>
 
 namespace PostProcess 
 {
@@ -33,9 +34,13 @@ void AgentHDFtoSHP::preProcess(const Engine::SimulationRecord & , const std::str
 	boost::filesystem::remove(outputFile);
 
 	std::string driverName("ESRI Shapefile");
-	OGRRegisterAll();	
-	
+#ifdef GDAL_VERSION_1
+	OGRRegisterAll();
 	OGRSFDriver * driver = OGRSFDriverRegistrar::GetRegistrar()->GetDriverByName(driverName.c_str());
+#else
+    // GDALAllRegister( );
+    GDALDriver * driver = GetGDALDriverManager()->GetDriverByName( driverName.c_str() );
+#endif
 	if(!driver)
 	{
 		std::stringstream oss;
@@ -43,8 +48,12 @@ void AgentHDFtoSHP::preProcess(const Engine::SimulationRecord & , const std::str
 		throw Engine::Exception(oss.str());
 		return;
 	}
-	_dataSource = driver->CreateDataSource(outputFile.c_str(), 0);
-	if(!_dataSource)
+#ifdef GDAL_VERSION_1
+	_gdalData = driver->CreateDataSource(outputFile.c_str(), 0);
+#else
+	_gdalData = driver->Create( outputFile.c_str(), 0 );
+#endif
+	if(!_gdalData)
 	{	
 		std::stringstream oss;
 		oss << "AgentHDFtoSHP::preProcess - unable to create new data source for file: " << outputFile;
@@ -56,7 +65,7 @@ void AgentHDFtoSHP::preProcess(const Engine::SimulationRecord & , const std::str
 	{
 		projection = new OGRSpatialReference(_srs.c_str());
 	}
-	_layer = _dataSource->CreateLayer("base", projection, wkbPoint, 0);
+	_layer = _gdalData->CreateLayer("base", projection, wkbPoint, 0);
 	if(!_layer)
 	{
 		std::stringstream oss;
@@ -221,7 +230,11 @@ void AgentHDFtoSHP::computeAgent( const Engine::AgentRecord & agentRecord )
 
 void AgentHDFtoSHP::postProcess(const Engine::SimulationRecord & , const std::string & )
 {
-	OGRDataSource::DestroyDataSource(_dataSource);
+#ifdef GDAL_VERSION_1
+	OGRDataSource::DestroyDataSource(_gdalData);
+#else
+    delete _gdalData;
+#endif
 }
 
 std::string AgentHDFtoSHP::getName() const

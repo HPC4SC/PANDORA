@@ -1,0 +1,17 @@
+# Process examples
+add_subdirectory( anasazi )
+add_subdirectory( cultureDissemination )
+add_subdirectory( epidemy )
+add_subdirectory( frontier )
+add_subdirectory( gujarat )
+add_subdirectory( gujaratCellphones )
+add_subdirectory( gunpowderSim )
+add_subdirectory( musicalChairs )
+add_subdirectory( neolithic )
+add_subdirectory( panic )
+add_subdirectory( python )
+add_subdirectory( quantumForaging )
+add_subdirectory( randomWalkers )
+add_subdirectory( research )
+add_subdirectory( segregation )
+

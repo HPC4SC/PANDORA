@@ -1,0 +1,12 @@
+file /home/rogeli/pandora.rgt/examples/gunpowderSim/survey/SConstruct,line 57:
+	Configure(confdir = .sconf_temp)
+scons: Configure: Checking for C++ header file hdf5.h... 
+.sconf_temp/conftest_0.cpp <-
+  |
+  |#include "hdf5.h"
+  |
+  |
+mpicxx -o .sconf_temp/conftest_0.o -c -std=c++0x -DTIXML_USE_STL -Ofast -I. -I/opt/pandora/include -I/usr/include/hdf5/openmpi .sconf_temp/conftest_0.cpp
+scons: Configure: yes
+
+

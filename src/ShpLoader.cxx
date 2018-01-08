@@ -7,23 +7,31 @@
 namespace Engine
 {
 
-ShpLoader::ShpLoader() : _dataSource(0), _activeLayer(0)
+ShpLoader::ShpLoader() : _gdalData(0), _activeLayer(0)
 {
 }
 
 ShpLoader::~ShpLoader()
 {
-	if(_dataSource)
-	{
-		OGRDataSource::DestroyDataSource( _dataSource );
-	}
+	if(_gdalData)
+    {
+#ifdef GDAL_VERSION_1
+        OGRDataSource::DestroyDataSource( _gdalData );
+#else
+        delete _gdalData;
+#endif
+    }
 }
 
 void ShpLoader::open( const std::string & file )
 {
 	OGRRegisterAll();
-	_dataSource  = OGRSFDriverRegistrar::Open(file.c_str(), false);
-	if(!_dataSource)
+#ifdef GDAL_VERSION_1
+	_gdalData  = OGRSFDriverRegistrar::Open( file.c_str(), false );
+#else
+    _gdalData = (GDALDataset *) GDALOpen( file.c_str(), GA_ReadOnly );
+#endif
+	if(!_gdalData)
 	{
 		std::stringstream oss;
 		oss << "ShpLoader::open - error loading shapefile: " << file;
@@ -42,29 +50,25 @@ void ShpLoader::open( const std::string & file )
 
 int ShpLoader::getNumLayers()
 {
-	if(!_dataSource)
-	{
-		return 0;
-	}
-	return _dataSource->GetLayerCount();
+    return (_gdalData) ? _gdalData->GetLayerCount() : 0;
 }
 	
 void ShpLoader::setActiveLayer( int activeLayerIndex )
 {
-	if(!_dataSource)
+	if (!_gdalData)
 	{	
 		std::stringstream oss;
 		oss << "ShpLoader::setActiveLayer - trying to open layer: " << activeLayerIndex << " while data source not initialized";
 		throw Exception(oss.str());
 		return;
 	}
-	_activeLayer = _dataSource->GetLayer(activeLayerIndex);
+	_activeLayer = _gdalData->GetLayer(activeLayerIndex);
 	_activeLayer->ResetReading();
 }
 
 int ShpLoader::getNumFeatures()
 {
-	if(!_dataSource || !_activeLayer)
+	if ( ! _gdalData || ! _activeLayer )
 	{
 		std::stringstream oss;
 		oss << "ShpLoader::getNumFeatures - no data source / layer correctly initialized";

@@ -217,7 +217,7 @@ class Frontier(World):
         distToAttackingCentre = 0
         distToDefendingCentre = 0
 
-        WTF???
+        #WTF???
         # attacker not empire
         if self.getValue("id", attacker)!=0:
             attackingEmpire = self.getAgent("Empire_"+str(self.getValue("id", attacker)))

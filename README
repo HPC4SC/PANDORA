@@ -1,0 +1,10 @@
+This is a test to use cmake to build PANDORA
+
+
+INSTALLATION:
+1) Export 
+
+2) Create a build directory and call cmake with the installation directory
+    mkdir build
+    cd build
+    cmake -DCMAKE_INSTALL_PREFIX=/opt/pandora ../ && make && sudo make install
