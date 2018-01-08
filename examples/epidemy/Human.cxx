@@ -85,6 +85,9 @@ void Human::selectActions()
 
 void Human::updateState()
 {
+	std::stringstream logName;
+	logName << "state_" << _world->getId();
+
     if(_infected)
     {
 	    _remainingTime--;

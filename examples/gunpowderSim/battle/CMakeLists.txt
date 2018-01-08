@@ -1,7 +1,7 @@
 set( EX_NAME battle )
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR} )
 
-set( NAMESPCACE BattleSim )
+set( NAMESPACE BattleSim )
 set( FILE_NAME  Bullet )
 set( FILE_NAME2 Soldier )
 add_custom_command(
@@ -10,7 +10,7 @@ add_custom_command(
     COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/${FILE_NAME}.* .
     COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/${FILE_NAME2}.* .
     COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/Battlefield.hxx .
-    COMMAND PYTHONPATH=${CMAKE_SOURCE_DIR}/bin ${CMAKE_SOURCE_DIR}/bin/mpiCode.py ${NAMESPCACE} ${FILE_NAME} ${FILE_NAME2}
+    COMMAND PYTHONPATH=${CMAKE_SOURCE_DIR}/bin ${CMAKE_SOURCE_DIR}/bin/mpiCode.py ${NAMESPACE} ${FILE_NAME} ${FILE_NAME2}
     DEPENDS main.cxx ${FILE_NAME}.cxx ${FILE_NAME}.hxx ${FILE_NAME2}.cxx ${FILE_NAME2}.hxx 
 )
 

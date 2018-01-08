@@ -35,14 +35,15 @@ set( PANDORA_FILES
 add_library( pandora-shared SHARED ${PANDORA_FILES} )
 add_library( pandora-static STATIC ${PANDORA_FILES} )
 
-set_target_properties( pandora-shared PROPERTIES CLEAN_DIRECT_OUTPUT 1 OUTPUT_NAME "pandora")
-set_target_properties( pandora-static PROPERTIES CLEAN_DIRECT_OUTPUT 1 OUTPUT_NAME "pandora")
+set_target_properties( pandora-shared PROPERTIES CLEAN_DIRECT_OUTPUT 1 OUTPUT_NAME "pandora" )
+set_target_properties( pandora-static PROPERTIES CLEAN_DIRECT_OUTPUT 1 OUTPUT_NAME "pandora" )
 
 target_link_libraries( pandora-shared
                        ${HDF5_LIBRARIES}
                        ${Boost_LIBRARIES}
                        ${GDAL_LIBRARY}
                        ${MPI_CXX_LIBRARIES}
+                       ${PYTHON_LIBRARIES}
                        tinyxml-shared
                      )
 

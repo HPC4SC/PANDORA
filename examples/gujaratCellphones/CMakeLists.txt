@@ -1,7 +1,7 @@
 set( EX_NAME gujaratCellphones )
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR} libmdp )
 
-set( NAMESPCACE GujaratCellphones )
+set( NAMESPACE GujaratCellphones )
 set( FILE_NAME  Herder )
 set( FILE_NAME2 Village )
 add_custom_command(
@@ -9,7 +9,7 @@ add_custom_command(
     COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/main.cxx .
     COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/${FILE_NAME}.* .
     COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/${FILE_NAME2}.* .
-    COMMAND PYTHONPATH=${CMAKE_SOURCE_DIR}/bin ${CMAKE_SOURCE_DIR}/bin/mpiCode.py ${NAMESPCACE} ${FILE_NAME} ${FILE_NAME2}
+    COMMAND PYTHONPATH=${CMAKE_SOURCE_DIR}/bin ${CMAKE_SOURCE_DIR}/bin/mpiCode.py ${NAMESPACE} ${FILE_NAME} ${FILE_NAME2}
     DEPENDS main.cxx ${FILE_NAME}.cxx ${FILE_NAME}.hxx ${FILE_NAME2}.cxx ${FILE_NAME2}.hxx 
 )
 
