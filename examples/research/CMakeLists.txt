@@ -1,7 +1,7 @@
 set( EX_NAME research )
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR} )
 
-set( NAMESPCACE Examples )
+set( NAMESPACE Examples )
 set( FILE_NAME  Author )
 set( FILE_NAME2 Paper )
 add_custom_command(
@@ -9,7 +9,7 @@ add_custom_command(
     COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/main.cxx .
     COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/${FILE_NAME}.* .
     COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/${FILE_NAME2}.* .
-    COMMAND PYTHONPATH=${CMAKE_SOURCE_DIR}/bin ${CMAKE_SOURCE_DIR}/bin/mpiCode.py ${NAMESPCACE} ${FILE_NAME} ${FILE_NAME2}
+    COMMAND PYTHONPATH=${CMAKE_SOURCE_DIR}/bin ${CMAKE_SOURCE_DIR}/bin/mpiCode.py ${NAMESPACE} ${FILE_NAME} ${FILE_NAME2}
     DEPENDS main.cxx ${FILE_NAME}.cxx ${FILE_NAME}.hxx ${FILE_NAME2}.cxx ${FILE_NAME2}.hxx 
 )
 

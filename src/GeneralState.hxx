@@ -1,4 +1,3 @@
-
 #ifndef __GeneralState_hxx__
 #define __GeneralState_hxx__
 
@@ -9,46 +8,41 @@
 
 namespace Engine
 {
+    class GeneralState
+    {
+        static GeneralState   * _instance;
+        Logger                  _logger;
+        Statistics              _statistics;
+        RasterLoader            _rasterLoader;
+        ShpLoader               _shpLoader;
 
-class GeneralState
-{
-	static GeneralState * _instance;
+    protected:
+        GeneralState( );
 
-	Logger _logger;
-	//! random number generator
-	Statistics _statistics;
-	RasterLoader _rasterLoader;
-	ShpLoader _shpLoader;
+    public:
+        static GeneralState & instance( );
+        virtual ~GeneralState( );
 
-protected:
-	GeneralState();
+        static Logger & logger( )
+        {
+            return instance( )._logger;
+        }
 
-public:
-	static GeneralState & instance();
-	virtual ~GeneralState();
+        static Statistics & statistics( )
+        {
+            return instance( )._statistics;
+        }
 
-	static Logger & logger()
-	{
-		return instance()._logger;
-	}
+        static RasterLoader & rasterLoader( )
+        {
+            return instance( )._rasterLoader;
+        }
 
-	static Statistics & statistics()
-	{
-		return instance()._statistics;
-	}
-
-	static RasterLoader & rasterLoader()
-	{
-		return instance()._rasterLoader;
-	}
-
-	static ShpLoader & shpLoader()
-	{
-		return instance()._shpLoader;
-	}
-};
-
+        static ShpLoader & shpLoader( )
+        {
+            return instance( )._shpLoader;
+        }
+    };
 } // namespace Engine
-
 #endif // __GeneralState_hxx__
 
