@@ -1,0 +1,407 @@
+    1  wget http://download.osgeo.org/gdal/1.10.1/gdal-1.10.1.tar.gz
+    2  tar xvfz gdal-1.10.1.tar.gz
+    3  cd gdal-1.10.1/
+    4  CXXFLAGS="-fpermissive" ./configure --prefix=/opt/gdal-1.10.1 --with-pcraster=internal --with-png=internal --with-libtiff=internal --with-geotiff=internal --with-jpeg=internal --with-gif=internal --with-netcdf=no --enable-debug
+    5  make
+    6  sudo make install
+    7  export GDAL_ROOT=/opt/gdal-1.10.1
+    8  export LD_LIBRARY_PATH=${GDAL_ROOT}/lib/:${LD_LIBRARY_PATH}
+    9  echo "" >> ~/.bashrc
+   10  echo "export GDAL_ROOT=/opt/gdal-1.10.1" >> ~/.bashrc
+   11  echo "export LD_LIBRARY_PATH=\${GDAL_ROOT}/lib/:\${LD_LIBRARY_PATH}" >> ~/.bashrc
+   12  wget https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8/hdf5-1.8.19/src/hdf5-1.8.19.tar.gz
+   13  tar xvfz hdf5-1.8.19.tar.gz
+   14  cd hdf5-1.8.19/
+   15  ./configure --prefix=/opt/hdf5-1.8.19 --enable-fortran --enable-parallel --enable-debug=all
+   16  gedit config.log
+   17  sudo spt-get install update
+   18  sudo apt-get install update
+   19  sudo install update
+   20  sudo apt-get update
+   21  sudo apt-get gcc
+   22  sudo apt-get install gcc
+   23  sudo apt-get install g++
+   24  sudo spt-get install update
+   25  gedit config.log
+   26  sudo apt-get install mpi-dev
+   27  gedit config.log
+   28  ls
+   29  make
+   30  sudo make install
+   31  export HDF5_ROOT=/opt/hdf5-1.8.19/
+   32  export LD_LIBRARY_PATH=${HDF5_ROOT}/lib/:${LD_LIBRARY_PATH}
+   33  echo "" >> ~/.bashrc
+   34  echo "export HDF5_ROOT=/opt/hdf5-1.8.19/" >> ~/.bashrc
+   35  echo "export LD_LIBRARY_PATH=\${HDF5_ROOT}/lib/:\${LD_LIBRARY_PATH}" >> ~/.bashrc
+   36  export GDAL_ROOT=/opt/gdal-1.10.1
+   37  export LD_LIBRARY_PATH=${GDAL_ROOT}/lib/:${LD_LIBRARY_PATH}
+   38  export HDF5_ROOT=/opt/hdf5-1.8.19/
+   39  export LD_LIBRARY_PATH=${HDF5_ROOT}/lib/:${LD_LIBRARY_PATH}
+   40  mkdir build
+   41  cd build
+   42  sudo apt-get install cmake
+   43  make
+   44  cd 
+   45  mkdir desarollo
+   46  cd desarollo/
+   47  git clone https://github.com/QuimLaz/PANDORA.git
+   48  sudo apt-get install git
+   49  git clone https://github.com/QuimLaz/PANDORA.git
+   50  cd PANDORA/
+   51  ls
+   52  git branch -a
+   53  git checkout cmakedocu 
+   54  vim README_cmake.md
+   55  vi README_cmake.md
+   56  git status
+   57  git add README_cmake.md 
+   58  git -v
+   59  git remote -v
+   60  history
+   61  ssh simon@elisya.org
+   62  ssh-keygen 
+   63  cd 
+   64  cd .ssh/
+   65  ls
+   66  cat id_rsa.pub 
+   67  cd
+   68  cd desarollo/PANDORA/
+   69  ls
+   70  git remote -v
+   71  git remote set-url origin git@github.com:QuimLaz/PANDORA.git
+   72  git remote -v
+   73  git status
+   74  git commit -m "commit test"
+   75  git config -global user.name "Quim"
+   76  git config --global user.name "Quim"
+   77  git commit -m "commit test"
+   78  git push
+   79  ls
+   80  vi README
+   81  cat README
+   82  sudo apt-get install python3 python3-dev libboost-python-dev
+   83  cat README
+   84  ls
+   85  cd ..
+   86  ls
+   87  cat README
+   88  cmake -DCMAKE_INSTALL_PREFIX=/opt/pandora ../
+   89  export GDAL_ROOT=/opt/gdal-1.10.1
+   90  export LD_LIBRARY_PATH=${GDAL_ROOT}/lib/:${LD_LIBRARY_PATH}
+   91  export HDF5_ROOT=/opt/hdf5-1.8.19/
+   92  export LD_LIBRARY_PATH=${HDF5_ROOT}/lib/:${LD_LIBRARY_PATH}
+   93  cmake -DCMAKE_INSTALL_PREFIX=/opt/pandora ../
+   94  ls
+   95  cd build/
+   96  ls
+   97  cmake -DCMAKE_INSTALL_PREFIX=/opt/pandora ../
+   98  sudo apt-get install libboost-filesystem-dev libboost-system-dev libboost-timer-dev
+   99  cmake -DCMAKE_INSTALL_PREFIX=/opt/pandora ../
+  100  export HDF5_ROOT=/opt/hdf5-1.8.19/
+  101  export LD_LIBRARY_PATH=${HDF5_ROOT}/lib/:${LD_LIBRARY_PATH}
+  102  echo ""  >> ~/.bashrc
+  103  echo "export HDF5_ROOT=/opt/hdf5-1.8.19/"  >> ~/.bashrc
+  104  echo "export LD_LIBRARY_PATH=\${HDF5_ROOT}/lib/:\${LD_LIBRARY_PATH}" >> ~/.bashrc
+  105  cmake -DCMAKE_INSTALL_PREFIX=/opt/pandora ../
+  106  ls
+  107  cd ..
+  108  ls
+  109  cd ..
+  110  ls
+  111  cd ..
+  112  ls
+  113  cd desarollo/
+  114  la
+  115  ls
+  116  cd PANDORA/
+  117  ls
+  118  cd b
+  119  cd build
+  120  ls
+  121  export GDAL_ROOT=/opt/gdal-1.10.1
+  122  export LD_LIBRARY_PATH=${GDAL_ROOT}/lib/:${LD_LIBRARY_PATH}
+  123  export HDF5_ROOT=/opt/hdf5-1.8.19/
+  124  export LD_LIBRARY_PATH=${HDF5_ROOT}/lib/:${LD_LIBRARY_PATH}
+  125  cmake -DCMAKE_INSTALL_PREFIX=/opt/pandora ../
+  126  ls
+  127  cd ..
+  128  ls
+  129  history > 02_05_2018
+  130  ls
+  131  rm 02_05_2018 
+  132  history > 02_05_2018.txt
+  133  ls
+  134  cd build/
+  135  ls
+  136  make
+  137  cmake -DCMAKE_INSTALL_PREFIX=/opt/pandora ../
+  138  cd ..l
+  139  cd ..
+  140  ls
+  141  cd ..
+  142  ls
+  143  cd ..
+  144  ls
+  145  cd gdal-1.10.1/
+  146  cd hdf5-1.8.19/
+  147  ls
+  148  rm build/
+  149  ls
+  150  rmdir build/
+  151  ls
+  152  export HDF5_ROOT=/opt/hdf5-1.8.19/
+  153  export LD_LIBRARY_PATH=${HDF5_ROOT}/lib/:${LD_LIBRARY_PATH}
+  154  echo "" >> ~/.bashrc
+  155  echo "export HDF5_ROOT=/opt/hdf5-1.8.19/" >> ~/.bashrc
+  156  echo "export LD_LIBRARY_PATH=\${HDF5_ROOT}/lib/:\${LD_LIBRARY_PATH}" >> ~/.bashrc
+  157  ld
+  158  cd PANDORA
+  159  ls
+  160  cd ..
+  161  ls
+  162  cd ..
+  163  ls
+  164  cd desarollo/
+  165  cd PANDORA
+  166  LS
+  167  ls
+  168  cd build
+  169  ls
+  170  cd /opt/hdf5-1.8.19/
+  171  cd /opt/
+  172  ls
+  173  cd 
+  174  ls
+  175  cd gdal-1.10.1/
+  176  ls
+  177  cd ..
+  178  ls
+  179  cd /opt
+  180  ls
+  181  cd gdal-1.10.1/
+  182  ñs
+  183  ls
+  184  cd ..
+  185  ls
+  186  cd ..
+  187  ls
+  188  cd ~/
+  189  ls
+  190  cd gdal-1.10.1/
+  191  ls
+  192  cd hdf5-1.8.19/
+  193  ls
+  194  ./configure --prefix=/opt/hdf5-1.8.19 --enable-fortran --enable-parallel --enable-debug=all
+  195  make
+  196  sudo make install
+  197  ls
+  198  cd /opt
+  199  ls
+  200  sudo ./configure --prefix=/opt/hdf5-1.8.19 --enable-fortran --enable-parallel --enable-debug=all
+  201  ls
+  202  cd ~/
+  203  ls
+  204  cd gdal-1.10.1/
+  205  ls
+  206  cd hdf5-1.8.19/
+  207  ls
+  208  sudo ./configure --prefix=/opt/hdf5-1.8.19 --enable-fortran --enable-parallel --enable-debug=all
+  209  ls
+  210  cd ..
+  211  ls
+  212  mv hdf5-1.8.19 ~/
+  213  ls
+  214  cd ..
+  215  ls
+  216  cd hdf5-1.8.19/
+  217  ls
+  218  ./configure --prefix=/opt/hdf5-1.8.19 --enable-fortran --enable-parallel --enable-debug=all
+  219  gedit config-lod
+  220  ls
+  221  gedit config-log
+  222  gedit config.log
+  223  ls
+  224  cd ..
+  225  ls
+  226  cd gdal-1.10.1/
+  227  ls
+  228  mv hdf5-1.8.19.tar.gz ~/
+  229  ls
+  230  cd .
+  231  cd ..
+  232  ls
+  233  cd hdf5-1.8.19/
+  234  ls
+  235  cd ..
+  236  ls
+  237  cd desarollo/
+  238  ls+
+  239  ls
+  240  cd PANDORA/
+  241  ls
+  242  cat 02_05_2018.txt 
+  243  sudo apt-get install libtinyxml-dev
+  244  ls
+  245  cd build/
+  246  ls
+  247  cmake -DCMAKE_INSTALL_PREFIX=/opt/pandora ../
+  248  cd ..
+  249  ls
+  250  cd ..
+  251  ls
+  252  cd hdf5-1.8.19/5
+  253  ls
+  254  cd hdf5-1.8.19/
+  255  ls
+  256  make
+  257  ls
+  258  cd ~/
+  259  ls
+  260  gedit .bashrc
+  261  ls
+  262  cd desarollo/
+  263  ls
+  264  cd PANDORA/
+  265  ls
+  266  gedit passos_compilar.txt &
+  267  history > 02_05_2018.txt 
+  268  cat 02_05_2018.txt 
+  269  ls
+  270  cd ..
+  271  ls
+  272  cd ..
+  273  ls
+  274  cd hd5
+  275  cd hdf5-1.8.19/
+  276  ls
+  277  gedit config.log
+  278  sudo apt-get install mpicc
+  279  sudo apt-get install mpich
+  280  ls
+  281  ./configure --prefix=/opt/hdf5-1.8.19 --enable-fortran --enable-parallel --enable-debug=all
+  282  make
+  283  sudo make install
+  284  sudo apt-get install python3 python3-dev
+  285  sudo apt-get install libboost-python-dev libboost-filesystem-dev libboost-system-dev libboost-timer-dev
+  286  cd ~/
+  287  ls
+  288  cd desarollo/
+  289  ls
+  290  cd PANDORA/
+  291  ls
+  292  cd build
+  293  make
+  294  sudo make install
+  295  export PANDORAPATH=/opt/pandora/
+  296  export PATH=${PANDORAPATH}/bin:${PATH}
+  297  export PYTHONPATH=${PANDORAPATH}/bin:${PYTHONPATH}
+  298  export LD_LIBRARY_PATH=${PANDORAPATH}/lib:${LD_LIBRARY_PATH}
+  299  cd exemples/randomWalkers
+  300  ls
+  301  cd examples/
+  302  ls
+  303  cd randomWalkers/
+  304  ls
+  305  ./randomWalkers 
+  306  make
+  307  ./randomWalkers 
+  308  sudo apt-get install libtinyxml-dev
+  309  ls
+  310  cd ..
+  311  ls
+  312  cd ..
+  313  ks
+  314  ls
+  315  cd src
+  316  ls
+  317  cd ..
+  318  sudo make install
+  319  ls
+  320  cd examples/
+  321  ls
+  322  ranlib 
+  323  ls
+  324  cd randomWalkers/
+  325  ls
+  326  cmake
+  327  make
+  328  ls
+  329  ./randomWalkers 
+  330  make
+  331  ls
+  332  cd ..
+  333  ls
+  334  make
+  335  ls
+  336  cd cultureDissemination/
+  337  ls
+  338  ./cultureDissemination 
+  339  pandora cultureDissemination 
+  340  cd..
+  341  cd ..
+  342  la
+  343  cd neolithic/
+  344  l
+  345  ls
+  346  ./neolithic 
+  347  ls
+  348  cd ..
+  349  ls
+  350  cd ..
+  351  ls
+  352  cd ..
+  353  la
+  354  ls
+  355  cd ..
+  356  ls
+  357  cd PANDORA
+  358  ls
+  359  cd examples
+  360  ls
+  361  cd randomWalkers/
+  362  ls
+  363  cd ..
+  364  ls
+  365  cd ..
+  366  ls
+  367  cd build/
+  368  ls
+  369  cd examples/
+  370  ls
+  371  cd randomWalkers/
+  372  ls
+  373  ./randomWalkers 
+  374  ls
+  375  cd ../../../examples/randomWalkers
+  376  ls
+  377  cd ..
+  378  ls
+  379  cd neolithic/
+  380  s
+  381  ls
+  382  cp config.xml ../../build/examples/neolithic
+  383  ls
+  384  cd ..
+  385  ls
+  386  cd ..
+  387  ls
+  388  cd build/
+  389  ls
+  390  cd examples/
+  391  ls
+  392  cd neolithic/
+  393  ls
+  394  ./neolithic 
+  395  cd ..
+  396  ls
+  397  cd randomWalkers/
+  398  ls
+  399  ./randomWalkers
+  400  ls
+  401  cd ..
+  402  ls
+  403  cd ..
+  404  ls
+  405  cd ..
+  406  ls
+  407  history > 02_05_2018.txt 
