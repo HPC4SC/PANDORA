@@ -117,6 +117,7 @@ Before compiling Pandora we need to install some more libraries
 - Compile Pandora
 
 Now that we have all the dependencies installed let's go and compile Pandora herself.
+
 	1. The first thing that we need to do is make the directory for her in our home directory:
 	```bash
 	$ mkdir Pandora
