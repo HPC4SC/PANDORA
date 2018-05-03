@@ -17,7 +17,7 @@ Tutorial:
 00. [Introduction](docs/tutorials/00_introduction.md) 
 01. [Compile and Install ](docs/tutorials/00_installing.md) 
 02. [Compile and Install (OSx)](docs/tutorials/00_installing_osx.md) 
-03. [Compiles and Install using cmake](docs/tutorials/00_installing_cmake.md)
+03. [Compile and Install (using CMAKE)](docs/tutorials/00_installing_cmake.md)
 04. [Getting Started with pyPandora (python)](docs/tutorials/01_getting_started_pyPandora.md) 
 05. [Getting Started with Pandora (C++)](docs/tutorials/02_getting_started_pandora.md) 
 06. [Pandora's loggin system](docs/tutorials/03_logging_system.md) 

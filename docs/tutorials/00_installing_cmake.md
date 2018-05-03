@@ -10,7 +10,7 @@ To compile and install Pandora we need some libraries and programs to do so, thi
 	* GDAL
 	* HDF5
 	* CMAKE
-	* Git and and accout of it
+	* Git and an accout of it
 	* Libreries:
 	```bash
 	mpich
@@ -115,6 +115,7 @@ Before compiling Pandora we need to install some more libraries
 	```
 
 - Compile Pandora
+
 Now that we have all the dependencies installed let's go and compile Pandora herself.
 	1. The first thing that we need to do is make the directory for her in our home directory:
 	```bash
@@ -135,13 +136,13 @@ Now that we have all the dependencies installed let's go and compile Pandora her
 	4. Then we have to make a build folder to build the makefiles:
 	```bash
 	$ mkdir build
-    	$ cd build
+	$ cd build
 	```
 	
 	5. After that we need to configure, compile and install Pandora:
 	```bash
 	$ cmake -DCMAKE_INSTALL_PREFIX=/opt/pandora ../
-    	$ make
+	$ make
 	$ sudo make install
 	```
 	
