@@ -2,8 +2,7 @@
 	$ wget http://download.osgeo.org/gdal/1.10.1/gdal-1.10.1.tar.gz
 	$ tar xvfz gdal-1.10.1.tar.gz
 	$ cd gdal-1.10.1/
-	$ CXXFLAGS="-fpermissive" ./configure --prefix=/opt/gdal-1.10.1 --with-pcraster=internal--with-png=internal --with-libtiff=internal --with-geotiff=internal --with-jpeg=internal 
-        --with-gif=internal --with-netcdf=no --enable-debug
+	$ CXXFLAGS="-fpermissive" ./configure --prefix=/opt/gdal-1.10.1 --with-pcraster=internal --with-png=internal --with-libtiff=internal --with-geotiff=internal --with-jpeg=internal --with-gif=internal --with-netcdf=no --enable-debug
 	$ make
 	$ sudo make install
 	------Crear directori llibreries i canviar el path al .baschrc
@@ -12,14 +11,13 @@
 	$ echo ""  >> ~/.bashrc
 	$ echo "export GDAL_ROOT=/opt/gdal-1.10.1" >> ~/.bashrc	
 	$ echo "export LD_LIBRARY_PATH=\${GDAL_ROOT}/lib/:\${LD_LIBRARY_PATH}" >> ~/.bashrc
+	$ cd ~/
 
 2- Instal·lar HDF5
-	$ cd ~/
-	$ wget https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8/hdf5-1.8.19src/			
-	$ hdf5-1.8.19.tar.gz
+	$ sudo apt-get install mpich
+	$ wget https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8/hdf5-1.8.19/src/hdf5-1.8.19.tar.gz	
 	$ tar xvfz hdf5-1.8.19.tar.gz
 	$ cd hdf5-1.8.19/
-	$ sudo apt-get install mpich
 	$ ./configure --prefix=/opt/hdf5-1.8.19 --enable-fortran --enable-parallel --enable-debug=all	
 	$ make
 	$ sudo make install
@@ -29,6 +27,7 @@
 	$ echo ""  >> ~/.bashrc
 	$ echo "export HDF5_ROOT=/opt/hdf5-1.8.19/"  >> ~/.bashrc
 	$ echo "export LD_LIBRARY_PATH=\${HDF5_ROOT}/lib/:\${LD_LIBRARY_PATH}" >> ~/.bashrc
+	$ cd ~/
 
 3- Instal·lar llibreries Python (at least, comprovar amb la segona instal·lacio des de 0)
 	$ sudo apt-get install python3 python3-dev
@@ -39,12 +38,11 @@
 	$ sudo apt-get install libboost-python-dev libboost-filesystem-dev libboost-system-dev libboost-timer-dev
 
 5- Crear una copia de Pandora amb git i compilar-la amb cmake
-	$ cd ~/
 	$ mkdir Pandora
 	$ cd Pandora
 	$ sudo apt-get install git
      	$ git clone https://github.com/QuimLaz/PANDORA.git (canviar per la master quan fem el merge)
-	$ sudo qpt-get install cmake
+	$ sudo apt-get install cmake
 	$ cd PANDORA/
 	$ mkdir build
     	$ cd build
@@ -59,9 +57,9 @@
 	$ export PYTHONPATH=${PANDORAPATH}/bin:${PYTHONPATH}
 	$ export LD_LIBRARY_PATH=${PANDORAPATH}/lib:${LD_LIBRARY_PATH}
 
-7- Executar randomWalkres
-	$ cd ..
-	$ cd /exemples/randomWalkers
-	$ cp config.xml ../build/exemples/randomWalkers
+7- Executar randomWalkers
+	$ cd ../examples/randomWalkers
+	$ cp config.xml ../../build/examples/randomWalkers
+	$ cd ../../build/examples/randomWalkers
 	$ ./randomWalkers
 
