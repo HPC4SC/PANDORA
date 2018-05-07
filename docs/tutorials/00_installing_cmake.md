@@ -8,11 +8,11 @@ You will need a PC with GNU/Linux installed. The tutorial will explain how to in
 
 To compile and install Pandora we need some libraries and programs to do so, this is a summary of what we need. How to install everything step by setp and will be explained afer this part
 
-	 GDAL
-	 HDF5
-	 CMAKE
-	 Git and an accout of it
-	 Libreries
+* GDAL
+* HDF5
+* CMAKE
+* Git and an accout of it
+* Libreries
 	
 	```
 	mpich
@@ -20,7 +20,7 @@ To compile and install Pandora we need some libraries and programs to do so, thi
 	python3-dev
 	```
 	
-	 Boost packages
+* Boost packages
 	
 	```
 	libboost-python-dev 
