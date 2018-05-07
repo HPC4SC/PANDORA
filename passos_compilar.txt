@@ -62,4 +62,5 @@
 	$ cp config.xml ../../build/examples/randomWalkers
 	$ cd ../../build/examples/randomWalkers
 	$ ./randomWalkers
+	
 
