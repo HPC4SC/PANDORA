@@ -176,6 +176,24 @@ Now that we have all the dependencies installed let's go and compile Pandora her
 	$ export LD_LIBRARY_PATH=${PANDORAPATH}/lib:${LD_LIBRARY_PATH}
 	```
 
+- Try an example
+Now that we have Pandora compiled we can try it's execution using one of the examples
+
+* RandomWalkers
+
+	We have to copy the config.htlm in order to  execute the code, you can do it with this commands:
+	
+	```bash
+	$ cd ../examples/randomWalkers
+	$ cp config.xml ../../build/examples/randomWalkers
+	$ cd ../../build/examples/randomWalkers
+	```
+	
+	When u have got this you just hav eto execute it:
+	
+	```bash
+	$ ./randomWalkers
+	```
         
 [Next - Get Started with pyPandora](01_getting_started_pyPandora.md)
 Or [Next - Get Started with C++](02_getting_started_pandora.md)
