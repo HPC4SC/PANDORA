@@ -12,7 +12,7 @@ To compile and install Pandora we need some libraries and programs to do so, thi
 * HDF5
 * CMAKE
 * Git and an accout of it
-* Libreries
+* Libreries:
 	
 	```
 	mpich
@@ -20,7 +20,7 @@ To compile and install Pandora we need some libraries and programs to do so, thi
 	python3-dev
 	```
 	
-* Boost packages
+* Boost packages:
 	
 	```
 	libboost-python-dev 
@@ -38,7 +38,7 @@ To compile and install Pandora we need some libraries and programs to do so, thi
 ```
 
 - Compiling and installing GDAL
-	1. To do so download and decompress it using the following commands
+	1. To do so download and decompress it using the following commands:
 
 	```bash
 	$ wget http://download.osgeo.org/gdal/1.10.1/gdal-1.10.1.tar.gz
@@ -70,7 +70,7 @@ To compile and install Pandora we need some libraries and programs to do so, thi
 	```
 	
 - Then we have to return to the home directory to install HDF5
-You can do that using the following command
+You can do that using the following command:
 
 ```bash
 cd ~/
@@ -82,7 +82,7 @@ cd ~/
 	```bash
 	$ sudo apt-get install mpich
 	```
-	2. Then download and decompress it using the following commands
+	2. Then download and decompress it using the following commands:
 
 	```bash
 	$ wget https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8/hdf5-1.8.19/src/hdf5-1.8.19.tar.gz	
@@ -118,14 +118,14 @@ Return to the home directory using the same command we used before
 Before compiling Pandora we need to install some more libraries
 
 - Python
-	* We use Python 3, the libraries we need are the following ones
+	* We use Python 3, the libraries we need are the following ones:
 
 	```bash
 	$ sudo apt-get install python3 python3-dev
 	```
 
 - Boost Packages
-	* You can install the boost packages that we need using the following command
+	* You can install the boost packages that we need using the following command:
 
 	```bash
 	$ sudo apt-get install libboost-python-dev libboost-filesystem-dev libboost-system-dev libboost-timer-dev
