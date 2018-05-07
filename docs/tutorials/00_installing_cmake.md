@@ -12,7 +12,7 @@ To compile and install Pandora we need some libraries and programs to do so, thi
 	* HDF5
 	* CMAKE
 	* Git and an accout of it
-	* Libreries:
+	* Libreries
 	
 	```
 	mpich
