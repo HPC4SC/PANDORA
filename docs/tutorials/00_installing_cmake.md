@@ -5,19 +5,22 @@ This tutorial will explain how to install Pandora framework, using CMAKE.
 You will need a PC with GNU/Linux installed. The tutorial will explain how to install Pandora on Ubunt, but any other distribution would work (probably with additional effort related to looking for the correct packages and versions).
 
 ### Dependences
-To compile and install Pandora we need some libraries and programs to do so, this is a summary of what we need. How to install everything step by setp and will be explained afer this part.
+To compile and install Pandora we need some libraries and programs to do so, this is a summary of what we need. How to install everything step by setp and will be explained afer this part:
 	
 	* GDAL
 	* HDF5
 	* CMAKE
 	* Git and an accout of it
 	* Libreries:
+	
 	```bash
 	mpich
 	python3 
 	python3-dev
 	```
+	
 	* Boost packages:
+	
 	```bash
 	libboost-python-dev 
 	libboost-filesystem-dev 
@@ -27,6 +30,7 @@ To compile and install Pandora we need some libraries and programs to do so, thi
 
 
 - First of all, open a console terminal (like Konsole or xterm) and upgrade your system to the last updates:
+
 ```bash
  $ sudo apt-get update
  $ sudo apt-get upgrate
