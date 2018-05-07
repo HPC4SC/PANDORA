@@ -1,10 +1,10 @@
 
-This tutorial will explain how to install Pandora framework.
+This tutorial will explain how to install Pandora framework, using CMAKE.
 
-- Requirements
+### Requirements
 You will need a PC with GNU/Linux installed. The tutorial will explain how to install Pandora on Ubunt, but any other distribution would work (probably with additional effort related to looking for the correct packages and versions).
 
-- Dependences
+### Dependences
 To compile and install Pandora we need some libraries and programs to do so, this is a summary of what we need. How to install everything step by setp and will be explained afer this part.
 	
 	* GDAL
