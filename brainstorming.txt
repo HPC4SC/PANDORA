@@ -1,0 +1,6 @@
+1- Fer un installer usant Gradle
+2- Aconseguir instal·lar també Cassandra
+3- Podem fer una altre GUI? És necessàri que pandora tingui interface?
+4- Renovar el tutorial
+5- Fer un recull de tèquinques d'analisi de dades difreents pel tutorial
+7- Tuto ha de ser guia d'ús i tuto de creacio de simulacions (millor per separat)
