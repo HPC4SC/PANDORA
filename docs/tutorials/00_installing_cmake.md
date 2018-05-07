@@ -133,18 +133,17 @@ Before compiling Pandora we need to install some more libraries
 
 - Compile Pandora
 Now that we have all the dependencies installed let's go and compile Pandora herself
-
-	1. The first thing that we need to do is make the directory for her in our home directory
-
-	```bash
-	$ mkdir Pandora
-	$ cd Pandora
-	```
 	
-	2. Then we have to download the project using git
+	1. We have to download the project using git
 
 	```bash
 	$ git clone https://github.com/QuimLaz/PANDORA.git (canviar per la master quan fem el merge)
+	```
+	
+	2. Then change to the following directory:
+	
+	```bash
+	$ cd PANDORA
 	```
 
 	3. Now we have to get cmake to be able to generate the makefiles
