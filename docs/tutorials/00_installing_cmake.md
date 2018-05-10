@@ -2,7 +2,7 @@
 This tutorial will explain how to install Pandora framework, using CMAKE
 
 ### Requirements
-You will need a PC with GNU/Linux installed. The tutorial will explain how to install Pandora on Ubunt, but any other distribution would work (probably with additional effort related to looking for the correct packages and versions)
+You will need a PC with GNU/Linux installed(16.04 or older). The tutorial will explain how to install Pandora on Ubunt, but any other distribution would work (probably with additional effort related to looking for the correct packages and versions)
 
 ### Dependences
 
@@ -194,6 +194,9 @@ Now that we have Pandora compiled we can try it's execution using one of the exa
 	```bash
 	$ ./randomWalkers
 	```
+	
+- Compile and Install Cssandra (GUI)
+
         
 [Next - Get Started with pyPandora](01_getting_started_pyPandora.md)
 Or [Next - Get Started with C++](02_getting_started_pandora.md)
