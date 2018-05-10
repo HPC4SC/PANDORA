@@ -1,9 +1,0 @@
-1- Fer un installer usant Gradle
-2- Aconseguir instal·lar també Cassandra
-3- Podem fer una altre GUI? És necessàri que pandora tingui interface?
-	Parlar amb Rogeli i Simon per veure com ho veuen ells.
-4- Renovar el tutorial d'exemples
-5- Fer un recull de tèquinques d'anàlisi de dades difrents pel tutorial (de moment working on R)
-7- Tuto ha de ser guia d'ús i tuto de creacio de simulacions (millor per separat)
-8- Fer versions de la docu en altres llengües?
-9- Web de Pandora
