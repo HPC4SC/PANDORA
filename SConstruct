@@ -11,7 +11,7 @@ vars.Add(BoolVariable('python2', 'use Python2.7 instead of Python3', 'no'))
 vars.Add('installDir', 'directory where to install Pandora', '/usr/local/pandora')
 
 if platform.system()=='Linux':
-    vars.Add(PathVariable('hdf5', 'Path where HDF5 library was installed', '/usr/local/hdf5', PathVariable.PathIsDir))
+    vars.Add(PathVariable('hdf5', 'Path where HDF5 library was installed', '/opt/hdf5-1.8.19/lib', PathVariable.PathIsDir))
 
 env = Environment(variables=vars, ENV=os.environ, CXX='mpicxx')
 if env['debug'] == False:
@@ -38,7 +38,7 @@ if env['debug'] == True:
 else:
     env.Append(CCFLAGS = '-Ofast')
     libraryName = 'pandora.so'
-    pythonLibraryName = 'pyPandora.so'
+    pythonLibraryName = 'libpyPandora.so'
 
 coreFiles = [str(f) for f in Glob('src/*.cxx')]
 analysisFiles = [str(f) for f in Glob('src/analysis/*.cxx')]
