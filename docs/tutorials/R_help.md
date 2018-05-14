@@ -32,7 +32,7 @@ to analize Pandora's output.
 * First of all we have to go to the data folder and execute R:
 
 	```bash
-	$ cd /data
+	$ cd data
 	$ R
 	```
 
