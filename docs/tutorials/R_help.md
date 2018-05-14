@@ -3,7 +3,7 @@ resuls of the executions of the models with R.
 
 * Installing R
 	
-		```bash
+		```
 		$ sudo apt-get install r-base
 		$ sudo apt-get install r-base-dev
 		```
@@ -51,13 +51,10 @@ to analize Pandora's output.
 	```bash
 	agents=h5file("agents-0.abm")
 	raster=h5file("RandomWalkers.h5")
+	agents
 	```
 	
 agents contains all of randomWalkers agents, you can check a variable just typing the name of it, like this:
-	
-		```bash
-		agents
-		```
 	
 	c. Now we copy all of the steps of the execution into a vector (using paste0):
 	
