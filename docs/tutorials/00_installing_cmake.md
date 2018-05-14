@@ -34,7 +34,6 @@ To compile and install Pandora we need some libraries and programs to do so, thi
 
 ```bash
  $ sudo apt-get update
- $ sudo apt-get upgrate
 ```
 
 - Compiling and installing GDAL
