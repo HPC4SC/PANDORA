@@ -2,6 +2,7 @@ This tutorial intends to be a brief introduction to help you analize the
 resuls of the executions of the models with R.
 
 * Installing R
+
 If you din't have R installed in your computer you can install it using
 the following command:
 	
@@ -11,6 +12,7 @@ the following command:
 		```
 		
 * randomWalkers
+
 We'll use this example allready in Pandora to introduce you how to plot 
 the simulation's execution in a grid
 
@@ -30,14 +32,14 @@ to analize Pandora's output.
 
 3. Analize output
 
-First of all we have to go to the data folder and execute R:
+* First of all we have to go to the data folder and execute R:
 
 	```bash
 	$ cd /data
 	$ R
 	```
 	
-Then R will execute in our terminal.
+* Then R will execute in our terminal.
 
 * Analize output (h5 file)
 	a. We have to install the h5 library and load it into R:
@@ -54,8 +56,7 @@ Then R will execute in our terminal.
 	raster=h5file("RandomWalkers.h5")
 	```
 	
-		- agents contains all of randomWalkers agents, you can check a variable 
-		just typing the name of it, like this:
+- agents contains all of randomWalkers agents, you can check a variable just typing the name of it, like this:
 	
 		```bash
 		agents
