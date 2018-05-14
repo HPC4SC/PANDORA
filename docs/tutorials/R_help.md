@@ -39,6 +39,7 @@ to analize Pandora's output.
 * Then R will execute in our terminal.
 
 * Analize output (h5 file)
+
 	a. We have to install the h5 library and load it into R:
 	
 	```bash
@@ -53,8 +54,6 @@ to analize Pandora's output.
 	raster=h5file("RandomWalkers.h5")
 	agents
 	```
-	
-agents contains all of randomWalkers agents, you can check a variable just typing the name of it, like this:
 	
 	c. Now we copy all of the steps of the execution into a vector (using paste0):
 	
