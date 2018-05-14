@@ -6,8 +6,7 @@ resuls of the executions of the models with R.
 	```bash
 	$ sudo apt-get install r-base
 	$ sudo apt-get install r-base-dev
-	``
-	
+	```
 	
 * randomWalkers
 
@@ -36,8 +35,6 @@ to analize Pandora's output.
 	$ cd /data
 	$ R
 	```
-	
-* Then R will execute in our terminal (Just type "R").
 
 * Analize output (.h5 file)
 
