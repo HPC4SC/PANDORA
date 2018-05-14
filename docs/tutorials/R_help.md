@@ -2,9 +2,6 @@ This tutorial intends to be a brief introduction to help you analize the
 resuls of the executions of the models with R.
 
 * Installing R
-
-* If you din't have R installed in your computer you can install it using
-the following command:
 	
 		```bash
 		$ sudo apt-get install r-base
@@ -56,7 +53,7 @@ to analize Pandora's output.
 	raster=h5file("RandomWalkers.h5")
 	```
 	
-* agents contains all of randomWalkers agents, you can check a variable just typing the name of it, like this:
+# agents contains all of randomWalkers agents, you can check a variable just typing the name of it, like this:
 	
 		```bash
 		agents
