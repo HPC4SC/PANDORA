@@ -2,12 +2,13 @@ This tutorial intends to be a brief introduction to help you analize the
 resuls of the executions of the models with R.
 
 * Installing R
+
+	```bash
+	$ sudo apt-get install r-base
+	$ sudo apt-get install r-base-dev
+	``
 	
-		```
-		$ sudo apt-get install r-base
-		$ sudo apt-get install r-base-dev
-		```
-		
+	
 * randomWalkers
 
 We'll use this example allready in Pandora to introduce you how to plot 
@@ -36,9 +37,9 @@ to analize Pandora's output.
 	$ R
 	```
 	
-* Then R will execute in our terminal.
+* Then R will execute in our terminal (Just type "R").
 
-* Analize output (h5 file)
+* Analize output (.h5 file)
 
 	a. We have to install the h5 library and load it into R:
 	
@@ -50,15 +51,15 @@ to analize Pandora's output.
 	b. Then we load the files into R variables:
 	
 	```bash
-	agents=h5file("agents-0.abm")
-	raster=h5file("RandomWalkers.h5")
-	agents
+	$ agents=h5file("agents-0.abm")
+	$ raster=h5file("RandomWalkers.h5")
+	$ agents
 	```
 	
 	c. Now we copy all of the steps of the execution into a vector (using paste0):
 	
 	```bash
-	allstep=paste0("step",1:10)
+	$ allstep=paste0("step",1:10)
 	```
 	
 	d. Finally we plot all the steps using this for loop:
