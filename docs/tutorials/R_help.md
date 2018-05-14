@@ -53,7 +53,7 @@ to analize Pandora's output.
 	raster=h5file("RandomWalkers.h5")
 	```
 	
-# agents contains all of randomWalkers agents, you can check a variable just typing the name of it, like this:
+agents contains all of randomWalkers agents, you can check a variable just typing the name of it, like this:
 	
 		```bash
 		agents
