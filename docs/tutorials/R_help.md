@@ -49,7 +49,7 @@ to analize Pandora's output.
 	
 	```bash
 	$ agents=h5file("agents-0.abm")
-	$ raster=h5file("RandomWalkers.h5")
+	$ raster=h5file("randomWalkers.h5")
 	$ agents
 	```
 	
