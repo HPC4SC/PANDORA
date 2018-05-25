@@ -4,6 +4,7 @@
 
 #include <Agent.hxx>
 #include <Action.hxx>
+#include <GeneralState.hxx>
 
 #include <string>
 #include <vector>
@@ -16,6 +17,7 @@ class Bird : public Engine::Agent
 	int _velocity;
 	int _sigth;
 	int _mindist;
+	
 	float _heading;
 	float _max_A_turn;
 	float _max_C_turn;
@@ -38,17 +40,14 @@ public:
 	void setMindist(int d);
 	int getMindist();
 	
-	Bird getBird();
 	void setHeading(float h);
 	float getHeading();
-	void setmaxATurn(float maxTurn);
-	float getmaxATurn() const;
-	void setmaxCTurn(float maxTurn);
-	float getmaxCTurn() const;
-	void setmaxSTurn(float maxTurn);
-	float getmaxSTurn();
-	
-	int distNearestNeigthbour();
+	void setMaxATurn(float maxTurn);
+	float getMaxATurn() const;
+	void setMaxCTurn(float maxTurn);
+	float getMaxCTurn() const;
+	void setMaxSTurn(float maxTurn);
+	float getMaxSTurn();
 
 	////////////////////////////////////////////////
 	// This code has been automatically generated //

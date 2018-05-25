@@ -3,6 +3,7 @@
 #define __MoveHomeAction_hxx__
 
 #include <Action.hxx>
+#include <Bird.hxx>
 #include <string>
 
 namespace Engine
@@ -20,13 +21,21 @@ public:
 	virtual ~MoveAction();
 	void execute( Engine::Agent & agent );
 	
-	void calcInc(int &incX, int &incY);
-	
-	void separate(int &incX, int &incY);
-	void align(int &incX, int &incY);
-	void cohere(int &incX, int &incY);
-	
+
 	std::string describe() const;
+	
+	//aux methods-------------------------------------------------------
+		
+	void correctHeading(Bird & birdAgent, const Engine::AgentsVector & flockmates);
+	void separate(Bird & birdAgent, const float &nearestHeading);
+	void align(Bird & birdAgent, const float &meanHeading);
+	void cohere(Bird & birdAgent, const float &meanHeading);
+	int distNearestFlockmate(const Engine::Agent &birdAgent, const Engine::AgentsVector &flockmates, float &nearestHeading);
+	void advanceForward(Engine::Point2D<int> &newPosition,const int &agentVelocity, Bird & birdAgent);
+	int translateHeading(const float &heading);
+	float calcMeanHeading(Bird & birdAgent, const Engine::AgentsVector &flockmates);
+	float calcMeanTowardsHeading(Bird & birdAgent, const Engine::AgentsVector &flockmates);
+	
 };
 
 } // namespace Examples
