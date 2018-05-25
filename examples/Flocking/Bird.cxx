@@ -9,6 +9,7 @@ namespace Examples
 
 Bird::Bird (const std::string & id , const int & velocity, const int &sigth, const int &mindist, const float &max_A_turn, const float &max_C_turn, const float &max_S_turn) : Agent(id), _velocity(velocity), _sigth(sigth), _mindist(mindist), _max_A_turn(max_A_turn), _max_C_turn(max_C_turn), _max_S_turn(max_S_turn)
 {
+	_heading = Engine::GeneralState::statistics().getUniformDistValue(0,365);
 }
 
 Bird::~Bird()
@@ -24,8 +25,8 @@ void Bird::updateState()
 {
 	if (_velocity < 1) _velocity = 1;
 	else if (_sigth < 1) _sigth = 1;
-	else if (_heading > 359.9) _heading = 0.0;
-	else if (_heading < 0.0) _heading = 359.9;
+	else if (_heading > 359.99) _heading = 0.0;
+	else if (_heading < 0.0) _heading = 359.99;
 }
 
 void Bird::registerAttributes(){}
@@ -64,34 +65,28 @@ float Bird::getHeading() {
 	return _heading;
 }
 
-void Bird::setmaxATurn(float maxTurn) {
+void Bird::setMaxATurn(float maxTurn) {
 	_max_A_turn = maxTurn;	
 }
 
-float Bird::getmaxATurn() const{
+float Bird::getMaxATurn() const{
 	 return _max_A_turn;
 }
 
-
-void Bird::setmaxCTurn(float maxTurn) {
+void Bird::setMaxCTurn(float maxTurn) {
 	_max_C_turn = maxTurn;	
 }
 
-float Bird::getmaxCTurn() const{
+float Bird::getMaxCTurn() const{
 	 return _max_C_turn;
 }
 
-
-void Bird::setmaxSTurn(float maxTurn) {
+void Bird::setMaxSTurn(float maxTurn) {
 	_max_S_turn = maxTurn;	
 }
 
-float Bird::getmaxSTurn() {
+float Bird::getMaxSTurn() {
 	 return _max_S_turn;
-}
-
-int distNearestNeigthbour(){
-	
 }
 
 } // namespace Examples

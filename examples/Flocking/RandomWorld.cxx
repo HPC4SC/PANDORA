@@ -39,23 +39,18 @@ void RandomWorld::createAgents()
 	logName << "agents_" << getId();
 
     const RandomWorldConfig & randomConfig = (const RandomWorldConfig&)getConfig();
-    std::cout << "-----------------------------------------------------------------------" << std::endl;
 	for(int i=0; i<randomConfig._numBirds; i++)
 	{
 		if((i%getNumTasks())==getId())
 		{
 			std::ostringstream oss;
 			oss << "Bird_" << i;
-			std::cout << "agent: " << oss.str() << " amb atributs: " << "velocity: " << randomConfig._agentVelocity << " sigth: " << randomConfig._agentSigth << " mindist: " << randomConfig._agentMindist << std::endl;
-			std::cout << "max align turn: " << randomConfig._agentMaxATrun << " max cohere turn " << randomConfig._agentMaxCTrun << " max separate turn: " << randomConfig._agentMaxSTrun  << std::endl;
-			std::cout << std::endl;
 			Bird * agent = new Bird(oss.str(),randomConfig._agentVelocity,randomConfig._agentSigth,randomConfig._agentMindist,randomConfig._agentMaxATrun,randomConfig._agentMaxCTrun,randomConfig._agentMaxSTrun);
 			addAgent(agent);
 			agent->setRandomPosition();
 	        log_INFO(logName.str(), getWallTime() << " new agent: " << agent);
 		}
 	}
-	std::cout << "-----------------------------------------------------------------------" << std::endl;
 }
 
 } // namespace Examples
