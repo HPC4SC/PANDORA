@@ -30,6 +30,7 @@ void MoveAction::execute( Engine::Agent & agent )
 	Engine::AgentsVector flockmates = agent.getWorld()->getNeighbours(p_agent,birdAgent.getSigth(),"Bird");
 	
 	//corregir heading
+	std::cout << "el heading abans de canviar-lo es: " << birdAgent.getHeading() << std::endl;
 	if (! flockmates.empty()) correctHeading(birdAgent,flockmates);
 	
 	//avançar velocity
@@ -61,25 +62,19 @@ void MoveAction::correctHeading(Bird & birdAgent, const Engine::AgentsVector & f
 	}
 }
 
-void MoveAction::separate(Bird & birdAgent, const float &nearestHeading) { // sumar o restar depenent del heading del nearest flockmate
-    float newHeading = birdAgent.getHeading();
-	newHeading += birdAgent.getMaxSTurn();
-	birdAgent.setHeading(newHeading);
+void MoveAction::separate(Bird & birdAgent, const float &nearestHeading) { 
+	turnAway(nearestHeading,birdAgent.getMaxSTurn(),birdAgent);
 }
 
-void MoveAction::align(Bird & birdAgent, const float &meanHeading) {// sumar o restar depenent del heading mitja
-	float newHeading = birdAgent.getHeading();
-	newHeading += birdAgent.getMaxATurn();
-	birdAgent.setHeading(newHeading);
+void MoveAction::align(Bird & birdAgent, const float &meanHeading) {
+	turnTowards(meanHeading,birdAgent.getMaxATurn(),birdAgent);
 }
 
-void MoveAction::cohere(Bird & birdAgent, const float &meanTowardsHeading) { // sumar o restar depenent del heading mitja
-	float newHeading = birdAgent.getHeading();
-	newHeading += birdAgent.getMaxCTurn();
-	birdAgent.setHeading(newHeading);
+void MoveAction::cohere(Bird & birdAgent, const float &meanTowardsHeading) { 	
+	turnTowards(meanTowardsHeading,birdAgent.getMaxCTurn(),birdAgent);
 }
 
-int MoveAction::distNearestFlockmate(const Engine::Agent &birdAgent, const Engine::AgentsVector &flockmates, float &nearestHeading) {
+int MoveAction::distNearestFlockmate(Bird & birdAgent, const Engine::AgentsVector &flockmates, float &nearestHeading) {
 	Bird & nearestAgent = (Bird&)flockmates[0];
 	int index_nearest = 0;
 	for (int i = 1; i < flockmates.size(); ++i) {
@@ -149,19 +144,50 @@ int MoveAction::translateHeading(const float &heading) {
 float MoveAction::calcMeanHeading(Bird & birdAgent, const Engine::AgentsVector &flockmates) {
 	int x_comp = 0;
 	int y_comp = 0;
-	
-	if (x_comp == 0 && y_comp) return birdAgent.getHeading();
+	for (int i = 0; i < flockmates.size(); ++i) {
+		Bird & flockmate = (Bird&)flockmates[i];
+		x_comp += sin(flockmate.getHeading());
+		y_comp += cos(flockmate.getHeading());
+	}
+	if (x_comp == 0 && y_comp == 0) return birdAgent.getHeading();
 	else return (float)atan2(x_comp,y_comp);
 }
 
 float MoveAction::calcMeanTowardsHeading(Bird & birdAgent, const Engine::AgentsVector &flockmates) {
 	int x_comp = 0;
 	int y_comp = 0;
-	
-	if (x_comp == 0 && y_comp) return birdAgent.getHeading();
+	for (int i = 0; i < flockmates.size(); ++i) {
+		Bird & flockmate = (Bird&)flockmates[i];
+		x_comp += sin(flockmate.getHeading() + 180);
+		y_comp += cos(flockmate.getHeading() + 180); 
+	}
+	x_comp /= flockmates.size();
+	y_comp /= flockmates.size();	
+	if (x_comp == 0 && y_comp == 0) return birdAgent.getHeading();
 	else return (float)atan2(x_comp,y_comp);
 }
 
+void MoveAction::turnAway(const float &meanHeading,const float &max_turn, Bird & birdAgent) {
+	turnAtMost(birdAgent.getHeading() - meanHeading,max_turn,birdAgent);
+}
+
+void MoveAction::turnTowards(const float &meanHeading,const float &max_turn, Bird & birdAgent) {
+	turnAtMost(meanHeading - birdAgent.getHeading(),max_turn,birdAgent);
+}
+
+void MoveAction::turnAtMost(const float &turn, const float &max_turn, Bird & birdAgent) {
+	if (abs(turn) > abs(max_turn)) {
+		if (turn > 0) {
+			birdAgent.setHeading(birdAgent.getHeading() + max_turn);
+		}
+		else {
+			birdAgent.setHeading(birdAgent.getHeading() - max_turn);
+		}
+	}
+	else {
+		birdAgent.setHeading(birdAgent.getHeading() + turn);
+	}
+}
 
 } // namespace Examples
 

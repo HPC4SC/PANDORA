@@ -30,12 +30,14 @@ public:
 	void separate(Bird & birdAgent, const float &nearestHeading);
 	void align(Bird & birdAgent, const float &meanHeading);
 	void cohere(Bird & birdAgent, const float &meanHeading);
-	int distNearestFlockmate(const Engine::Agent &birdAgent, const Engine::AgentsVector &flockmates, float &nearestHeading);
+	int distNearestFlockmate(Bird &birdAgent, const Engine::AgentsVector &flockmates, float &nearestHeading);
 	void advanceForward(Engine::Point2D<int> &newPosition,const int &agentVelocity, Bird & birdAgent);
 	int translateHeading(const float &heading);
-	float calcMeanHeading(Bird & birdAgent, const Engine::AgentsVector &flockmates);
+	float calcMeanHeading (Bird &birdAgent, const Engine::AgentsVector &flockmates);
 	float calcMeanTowardsHeading(Bird & birdAgent, const Engine::AgentsVector &flockmates);
-	
+	void turnAway(const float &meanHeading,const float &max_a_turn, Bird & birdAgent);
+	void turnTowards(const float &meanHeading,const float &max_a_turn, Bird & birdAgent);
+	void turnAtMost(const float &turn, const float &max_turn, Bird & birdAgent);
 };
 
 } // namespace Examples
