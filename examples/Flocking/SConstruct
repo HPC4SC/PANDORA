@@ -5,7 +5,7 @@
 ##### please fill with information about your model ##
 ######################################################
 
-nameProgram = 'Flocking'
+nameProgram = 'flocking'
 
 agents = ['Bird']
 world = 'RandomWorld'
