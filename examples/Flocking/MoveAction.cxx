@@ -90,39 +90,39 @@ void MoveAction::advanceForward(Engine::Point2D<int> &newPosition,const int &age
 	float heading = birdAgent.getHeading();
 	switch (translateHeading(heading)){
 		case 1: //E
-			newPosition._x += agentVelocity;
+			newPosition._y += agentVelocity;
 			break;
 			
 		case 2: //NE
-			newPosition._x += agentVelocity;
+			newPosition._x -= agentVelocity;
 			newPosition._y += agentVelocity;
 			break;
 			
 		case 3: //N
-			newPosition._y += agentVelocity;
+			newPosition._x -= agentVelocity;
 			break;
 			
 		case 4: //NW
 			newPosition._x -= agentVelocity;
-			newPosition._y += agentVelocity;
+			newPosition._y -= agentVelocity;
 			break;
 			
 		case 5: //W
-			newPosition._x -= agentVelocity;
+			newPosition._y -= agentVelocity;
 			break;
 			
 		case 6: //SW
-			newPosition._x -= agentVelocity;
+			newPosition._x += agentVelocity;
 			newPosition._y -= agentVelocity;
 			break;
 			
 		case 7: //S
-			newPosition._y -= agentVelocity;
+			newPosition._x += agentVelocity;
 			break;
 			
 		case 8: //SE
 			newPosition._x += agentVelocity;
-			newPosition._y -= agentVelocity;
+			newPosition._y += agentVelocity;
 			break;
 			
 		default:
