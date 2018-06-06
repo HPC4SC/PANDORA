@@ -4,7 +4,8 @@
 #include <string>
 #include <Point2D.hxx>
 
-namespace Examples {
+namespace Examples 
+{
 	
 	KillAction::KillAction() {}
 	KillAction::~KillAction() {}
@@ -27,6 +28,7 @@ namespace Examples {
 				bugAgent.kill();
 			}
 		}
+		std::cout << "----------------------------------------------------------" << std::endl;
 	}
 	
 	std::string KillAction::describe() const{

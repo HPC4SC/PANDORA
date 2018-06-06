@@ -9,7 +9,8 @@
 #include <Scheduler.hxx>
 #include <Logger.hxx>
 
-namespace Examples  {
+namespace Examples  
+{
 
 RandomWorld::RandomWorld(Engine::Config * config, Engine::Scheduler * scheduler ) : World(config, scheduler, false) {}
 

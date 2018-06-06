@@ -20,6 +20,7 @@ void EatAction::execute( Engine::Agent & agent ) {
 		int foodAvaliable = world->getValue("food", agent.getPosition());
 		int foodConsumed = std::min(bugAgent.getMaxConsumptionRate(),foodAvaliable);
 		bugAgent.setSize(bugAgent.getSize() + foodConsumed);
+		std::cout << "I'm " << agent.getId() << " and I ate: " << foodConsumed << " and my size now is: " << bugAgent.getSize() << std::endl;
 		world->setValue("food", agent.getPosition(), foodAvaliable - foodConsumed);
 	}
 }

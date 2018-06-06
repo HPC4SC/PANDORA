@@ -5,11 +5,13 @@
 #include <Action.hxx>
 #include <string>
 
-namespace Engine {
+namespace Engine 
+{
 	class Agent;
 }
 
-namespace Examples {
+namespace Examples 
+{
 
 class KillAction : public Engine::Action {
 	

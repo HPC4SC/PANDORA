@@ -9,11 +9,13 @@
 #include <World.hxx>
 
 
-namespace Engine {
+namespace Engine 
+{
 	class Agent;
 }
 
-namespace Examples {
+namespace Examples 
+{
 
 class MoveAction : public Engine::Action {
 
