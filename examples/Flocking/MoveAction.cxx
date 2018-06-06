@@ -8,19 +8,13 @@
 #include <cmath>
 #include <string>
 
-namespace Examples
-{
+namespace Examples {
 
-MoveAction::MoveAction()
-{
-}
+MoveAction::MoveAction() {}
 
-MoveAction::~MoveAction()
-{
-}
+MoveAction::~MoveAction() {}
 
-void MoveAction::execute( Engine::Agent & agent )
-{	
+void MoveAction::execute( Engine::Agent & agent ) {	
 	Engine::World * world = agent.getWorld();
 	Bird & birdAgent = (Bird&)agent;
 	
@@ -30,6 +24,7 @@ void MoveAction::execute( Engine::Agent & agent )
 	Engine::AgentsVector flockmates = agent.getWorld()->getNeighbours(p_agent,birdAgent.getSigth(),"Bird");
 	
 	//corregir heading
+	std::cout << "el heading abans de canviar-lo es: " << birdAgent.getHeading() << std::endl;
 	if (! flockmates.empty()) correctHeading(birdAgent,flockmates);
 	
 	//avançar velocity
@@ -37,14 +32,12 @@ void MoveAction::execute( Engine::Agent & agent )
 	int agentVelocity = birdAgent.getVelocity();
 	advanceForward(newPosition,agentVelocity,birdAgent);
 
-	if(world->checkPosition(newPosition))
-	{
+	if(world->checkPosition(newPosition) {
 		agent.setPosition(newPosition);
 	}
 }
 
-std::string MoveAction::describe() const
-{
+std::string MoveAction::describe() const {
 	return "MoveAction";
 }
 
