@@ -4,31 +4,28 @@
 #include <Statistics.hxx>
 #include <World.hxx>
 
-namespace Examples
-{
+namespace Examples {
 
-Bird::Bird (const std::string & id , const int & velocity, const int &sigth, const int &mindist, const float &max_A_turn, const float &max_C_turn, const float &max_S_turn) : Agent(id), _velocity(velocity), _sigth(sigth), _mindist(mindist), _max_A_turn(max_A_turn), _max_C_turn(max_C_turn), _max_S_turn(max_S_turn)
-{
-	//utilitzem getUniformDistValue(min,max) ja que canvia la seed
+Bird::Bird (const std::string & id , const int & velocity, const int &sigth, const int &mindist, const float &max_A_turn, const float &max_C_turn, const float &max_S_turn) : Agent(id), _velocity(velocity), _sigth(sigth), _mindist(mindist), _max_A_turn(max_A_turn), _max_C_turn(max_C_turn), _max_S_turn(max_S_turn) {
 	_heading = Engine::GeneralState::statistics().getUniformDistValue(0,360);
 }
 
-Bird::~Bird()
-{
-}
+Bird::~Bird() {}
 
-void Bird::selectActions()
-{
+void Bird::selectActions() {
 	_actions.push_back(new MoveAction());
 }
 
-void Bird::updateState()
-{
+void Bird::updateState() {
 	if (_velocity < 1) _velocity = 1;
 	else if (_sigth < 1) _sigth = 1;
 	else if (_heading > 359.99) _heading = 0.0;
 	else if (_heading < 0.0) _heading = 359.99;
 }
+
+void Bird::registerAttributes(){}
+
+void Bird::serialize(){}
 
 int Bird::getVelocity() const {
 	return _velocity;
