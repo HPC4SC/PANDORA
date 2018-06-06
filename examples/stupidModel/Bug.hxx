@@ -7,18 +7,17 @@
 
 #include <string>
 
-namespace Examples
-{
+namespace Examples {
 
-class Bug : public Engine::Agent
-{
+class Bug : public Engine::Agent {
 	int _size;
 	int _maxConsumptionRate;
 	std::string _color;
+	int _survivalProbability = 95;
 
 public:
 	// todo remove environment from here
-	Bug( const std::string & id , const int &maxConsumptionRate);
+	Bug( const std::string & id , const int &maxConsumptionRate, const int &size);
 	virtual ~Bug();
 	
 	void selectActions();
@@ -31,6 +30,9 @@ public:
 	void setColor(const int &code);
 	std::string getColor() const;
 	int getMaxConsumptionRate() const;
+	int getSurvivalProbability() const;
+	void kill();
+	void reproduce(const std::string &childId);
 
 	////////////////////////////////////////////////
 	// This code has been automatically generated //

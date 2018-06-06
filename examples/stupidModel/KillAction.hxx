@@ -1,6 +1,6 @@
 
-#ifndef __GrowAction_hxx__
-#define __GrowAction_hxx__
+#ifndef _KillAction_hxx_
+#define _KillAction_hxx_
 
 #include <Action.hxx>
 #include <string>
@@ -11,16 +11,15 @@ namespace Engine {
 
 namespace Examples {
 
-class GrowAction : public Engine::Action {
+class KillAction : public Engine::Action {
 	
 public:
-	GrowAction();
-	virtual ~GrowAction();
+	KillAction();
+	virtual ~KillAction();
 	void execute( Engine::Agent & agent );
 	std::string describe() const;
 };
 
 } // namespace Examples
 
-#endif // __MoveHomeAction_hxx__
-
+#endif 

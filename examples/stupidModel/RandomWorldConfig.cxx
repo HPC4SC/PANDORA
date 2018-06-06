@@ -1,21 +1,15 @@
 
 #include <RandomWorldConfig.hxx>
 
-namespace Examples
-{
+namespace Examples {
 
-RandomWorldConfig::RandomWorldConfig( const std::string & xmlFile ) : Config(xmlFile), _numBugs(0)
-{
-}
+RandomWorldConfig::RandomWorldConfig( const std::string & xmlFile ) : Config(xmlFile), _numBugs(0) {}
 
-RandomWorldConfig::~RandomWorldConfig()
-{
-}
+RandomWorldConfig::~RandomWorldConfig() {}
 
-void RandomWorldConfig::loadParams()
-{
+void RandomWorldConfig::loadParams() {
 	_numBugs = getParamInt( "Bugs", "numBugs");
-	_bugMaxConsumptionRate = getParamInt("Bugs", "maxFoodConsumption");
+	_bugMaxConsumptionRate = getParamFloat("Bugs", "maxFoodConsumption");
 	_maxFoodProduction = getParamInt("Raster", "maxFoodProduction");
 }
 	

@@ -4,14 +4,14 @@
 
 #include <Config.hxx>
 
-namespace Examples
-{
+namespace Examples {
 
-class RandomWorldConfig : public Engine::Config
-{	
+class RandomWorldConfig : public Engine::Config {
+		
 	int _numBugs;
 	int _bugMaxConsumptionRate;
 	int _maxFoodProduction;
+	
 public:
 	RandomWorldConfig( const std::string & xmlFile );
 	virtual ~RandomWorldConfig();

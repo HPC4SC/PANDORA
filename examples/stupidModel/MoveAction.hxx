@@ -5,20 +5,24 @@
 #include <Action.hxx>
 #include <string>
 
-namespace Engine
-{
+#include <Point2D.hxx>
+#include <World.hxx>
+
+
+namespace Engine {
 	class Agent;
 }
 
-namespace Examples
-{
+namespace Examples {
 
-class MoveAction : public Engine::Action
-{
+class MoveAction : public Engine::Action {
+
 public:
 	MoveAction();
 	virtual ~MoveAction();
 	void execute( Engine::Agent & agent );
+	void MoveBestPos(int &new_x, int &new_y, Engine::World * world);
+	bool inside(int i, int j, Engine::World * world);
 	std::string describe() const;
 };
 
