@@ -4,14 +4,14 @@
 
 #include <World.hxx>
 
-namespace Examples 
-{
+namespace Examples  {
 
 class RandomWorldConfig;
 
-class RandomWorld : public Engine::World
-{
+class RandomWorld : public Engine::World {
+	
 	int _maxProductionRate;
+	int _end;
 	
 	void createRasters();
 	void createAgents();

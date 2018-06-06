@@ -9,38 +9,29 @@
 #include <Scheduler.hxx>
 #include <Logger.hxx>
 
-namespace Examples 
-{
+namespace Examples  {
 
-RandomWorld::RandomWorld(Engine::Config * config, Engine::Scheduler * scheduler ) : World(config, scheduler, false)
-{
-}
+RandomWorld::RandomWorld(Engine::Config * config, Engine::Scheduler * scheduler ) : World(config, scheduler, false) {}
 
-RandomWorld::~RandomWorld()
-{
-}
+RandomWorld::~RandomWorld() {}
 
-void RandomWorld::createRasters()
-{
+void RandomWorld::createRasters() {
 	const RandomWorldConfig & randomConfig = (const RandomWorldConfig&)getConfig();
 	registerDynamicRaster("food", true);
 	getDynamicRaster("food").setInitValues(0,100,0);
 	setMaxProductionRate(randomConfig._maxFoodProduction);
 }
 
-void RandomWorld::createAgents()
-{
+void RandomWorld::createAgents() {
     std::stringstream logName;
 	logName << "agents_" << getId();
 
     const RandomWorldConfig & randomConfig = (const RandomWorldConfig&)getConfig();
-	for(int i=0; i<randomConfig._numBugs; i++)
-	{
-		if((i%getNumTasks())==getId())
-		{
+	for(int i=0; i<randomConfig._numBugs; i++) {
+		if((i%getNumTasks())==getId()) {
 			std::ostringstream oss;
 			oss << "Bug_" << i;
-			Bug * agent = new Bug(oss.str(),randomConfig._bugMaxConsumptionRate);
+			Bug * agent = new Bug(oss.str(),randomConfig._bugMaxConsumptionRate,1);
 			addAgent(agent);
 			agent->setRandomPosition();
 	        log_INFO(logName.str(), getWallTime() << " new agent: " << agent);
@@ -58,7 +49,6 @@ void RandomWorld::step() {
 		_scheduler->serializeAgents(_step);
 		log_DEBUG(logName.str(), getWallTime() << " step: " << step_ << " serialization done");
 	}
-	
 	stepEnvironment();
 	log_DEBUG(logName.str(), getWallTime() << " step: " << _step << " has executed step enviroment");
 	
@@ -69,8 +59,8 @@ void RandomWorld::step() {
 
 void RandomWorld::stepEnvironment() {
 	for(auto index : getBoundaries()) {
-		int oldFood = getValue("food",index);
-		int foodProduced = Engine::GeneralState::statistics().getUniformDistValue(0,_maxProductionRate);
+		float oldFood = getValue("food",index);
+		float foodProduced = Engine::GeneralState::statistics().getUniformDistValue(0,_maxProductionRate);
 		setValue("food",index,oldFood + foodProduced);
 	}
 }

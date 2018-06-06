@@ -5,21 +5,20 @@
 #include <Action.hxx>
 #include <string>
 
-namespace Engine
-{
+namespace Engine {
 	class Agent;
 }
 
-namespace Examples
-{
+namespace Examples {
 
-class EatAction : public Engine::Action
-{
+class EatAction : public Engine::Action {
+	
 public:
 	EatAction();
 	virtual ~EatAction();
 	void execute( Engine::Agent & agent );
 	std::string describe() const;
+	
 };
 
 } // namespace Examples

@@ -11,7 +11,7 @@ agents = ['Bug']
 world = 'RandomWorld'
 namespaceAgents = ['Examples']
 
-srcFiles = Split('main.cxx Bug.cxx RandomWorld.cxx RandomWorldConfig.cxx MoveAction.cxx EatAction.cxx GrowAction.cxx')
+srcFiles = Split('main.cxx Bug.cxx RandomWorld.cxx RandomWorldConfig.cxx MoveAction.cxx EatAction.cxx GrowAction.cxx KillAction.cxx')
 
 ###################################################
 ########## END OF CUSTOM INFORMATION  #############
