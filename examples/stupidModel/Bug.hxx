@@ -7,9 +7,12 @@
 
 #include <string>
 
-namespace Examples {
+namespace Examples 
+{
 
-class Bug : public Engine::Agent {
+class Bug : public Engine::Agent 
+{
+	
 	int _size;
 	int _maxConsumptionRate;
 	std::string _color;
@@ -50,5 +53,5 @@ public:
 
 } // namespace Examples
 
-#endif // __RandomAgent_hxx__
+#endif // __GubAgent_hxx__
 

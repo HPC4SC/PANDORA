@@ -1,7 +1,8 @@
 
 #include <RandomWorldConfig.hxx>
 
-namespace Examples {
+namespace Examples 
+{
 
 RandomWorldConfig::RandomWorldConfig( const std::string & xmlFile ) : Config(xmlFile), _numBugs(0) {}
 

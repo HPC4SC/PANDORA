@@ -11,7 +11,9 @@
 
 namespace Examples {
 
-class Bird : public Engine::Agent {
+class Bird : public Engine::Agent 
+{
+	
 	int _velocity;
 	int _sigth;
 	int _mindist;

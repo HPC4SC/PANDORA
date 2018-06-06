@@ -4,7 +4,8 @@
 
 #include <Config.hxx>
 
-namespace Examples {
+namespace Examples 
+{
 
 class RandomWorldConfig : public Engine::Config {
 		

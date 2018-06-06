@@ -8,9 +8,11 @@
 #include <World.hxx>
 #include <GeneralState.hxx>
 
-namespace Examples {
+namespace Examples 
+{
 
-Bug::Bug( const std::string & id, const int &maxConsumptionRate, const int &size) : Agent(id),  _maxConsumptionRate(maxConsumptionRate), _size(size) {
+Bug::Bug( const std::string & id, const int &maxConsumptionRate, const int &size) : Agent(id),  _maxConsumptionRate(maxConsumptionRate), _size(size) 
+{
 	this->_exists = true;
 	setColor(this->_size);
 }

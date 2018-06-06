@@ -4,7 +4,8 @@
 
 #include <World.hxx>
 
-namespace Examples  {
+namespace Examples 
+{
 
 class RandomWorldConfig;
 
