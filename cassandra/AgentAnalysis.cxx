@@ -694,4 +694,3 @@ void AgentAnalysis::lastStepChanged( int checked )
 }
 
 } // namespace GUI
-
