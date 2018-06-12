@@ -41,7 +41,6 @@ AgentConfiguration::AgentConfiguration() : _color(rand()%256,rand()%256,rand()%2
     oss << "/home/quimlaz/PANDORA-cmakedocu/share/cassandra/3dmodels/cube.3ds";
     //oss <<getenv("PANDORAPATH") << "/share/cassandra/3dmodels/cube.3ds";
     std::string currentDirectory = GetCurrentWorkingDir();
-    cout << "I'm in: " << currentDirectory << std::endl;
     setFileName3D(currentDirectory + "../share/cassandra/3dmodels/cube.3ds");
 	//setFileName3D( oss.str() );
 }
