@@ -38,10 +38,12 @@ AgentConfiguration::AgentConfiguration() : _color(rand()%256,rand()%256,rand()%2
     _color = QColor::fromHsv(rand() % 256, 255, 190);
 
     std::stringstream oss;
-    oss << "/home/quimlaz/PANDORA-cmakedocu/share/cassandra/3dmodels/cube.3ds";
     //oss <<getenv("PANDORAPATH") << "/share/cassandra/3dmodels/cube.3ds";
-    std::string currentDirectory = GetCurrentWorkingDir();
-    setFileName3D(currentDirectory + "../share/cassandra/3dmodels/cube.3ds");
+    char *currentDirectory=NULL;
+	size_t size;
+	currentDirectory=getcwd(currentDirectory,size);
+	oss << currentDirectory << "/../share/cassandra/3dmodels/cube.3ds";
+    setFileName3D(oss.str());
 	//setFileName3D( oss.str() );
 }
 
