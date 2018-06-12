@@ -175,6 +175,13 @@ Now that we have all the dependencies installed let's go and compile Pandora her
 	$ export LD_LIBRARY_PATH=${PANDORAPATH}/lib:${LD_LIBRARY_PATH}
 	```
 
+- Compile and Install Cssandra (GUI)
+
+install scons: sudo apt-get install scons
+
+instalar llibreries: 
+sudo apt-get install libtinyxml-dev libdevil-dev freeglut3-dev libqwt-dev libqwt6 libqt4-dev libqt4-opengl-dev libgdal1-dev build-essential libboost-random-dev libboost-test-dev libboost-timer-dev libboost-chrono-dev
+
 - Try an example
 Now that we have Pandora compiled we can try it's execution using one of the examples
 
@@ -194,7 +201,7 @@ Now that we have Pandora compiled we can try it's execution using one of the exa
 	$ ./randomWalkers
 	```
 	
-- Compile and Install Cssandra (GUI)
+
 
         
 [Next - Get Started with pyPandora](01_getting_started_pyPandora.md)
