@@ -14,16 +14,13 @@ MoveAction::~MoveAction() {}
 
 void MoveAction::execute( Engine::Agent & agent ) {	
 	if(agent.exists()) {
-		std::cout << "----------------------------------------------------------" << std::endl;
 		Engine::World * world = agent.getWorld();
 		Engine::Point2D<int> newPosition = agent.getPosition();
 		int new_x = newPosition._x;
 		int new_y = newPosition._y;
-		std::cout << "I'm " << agent.getId() << " and my position before moving is: (" << new_x << ',' << new_y << ')' << std::endl;
 		MoveBestPos(new_x,new_y,world);
 		newPosition._x = new_x;
 		newPosition._y = new_y;
-		std::cout << "I'm " << agent.getId() << " and my position after moving is: (" << new_x << ',' << new_y << ')' << std::endl;
 		if(world->checkPosition(newPosition)) {
 			agent.setPosition(newPosition);
 		}
