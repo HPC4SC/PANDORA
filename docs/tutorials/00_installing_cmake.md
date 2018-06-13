@@ -205,13 +205,13 @@ Now that we have all the dependencies installed let's go and compile Pandora her
 Now you could use Pandora just fine. But we offer you a GUI to make the 
 interpretation of your models in a easier way.
 
-	1. The first you need to do is install scons. We'll use it to compile the models:
+1. The first you need to do is install scons. We'll use it to compile the models:
 		
 	```bash
 	$ sudo apt-get install scons
 	```
 	
-	2. To compile Cassandra some more libraries are needed. You can install them all using the following command:
+2. To compile Cassandra some more libraries are needed. You can install them all using the following command:
 	
 	```bash
 	$ sudo apt-get install libtinyxml-dev libdevil-dev freeglut3-dev libqwt-dev libqt4-dev libqt4-opengl-dev libgdal1-dev build-essential libboost-random-dev libboost-test-dev libboost-timer-dev libboost-chrono-dev
