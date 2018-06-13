@@ -58,7 +58,7 @@ This are the dependences of Cassandra, the GUI that we'll use to interpretate Pa
 	libboost-chrono-dev
 	```
 	
-## Compile and install Pandora
+## Compile and Install Pandora
 
 - First of all, open a console terminal (like Konsole or xterm) and upgrade your system to the last updates
 
@@ -259,13 +259,6 @@ Now you could use Pandora just fine. But we offer you a GUI to make the interpre
 	$ cd ../bin/
 	$ ./cassandra
 	```
-
-- Try an example
-Now that we have Pandora compiled we can try it's execution using one of the examples
-
-
-	
-
 
         
 [Next - Get Started with pyPandora](01_getting_started_pyPandora.md)
