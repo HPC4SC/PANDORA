@@ -188,7 +188,10 @@ Now that we have all the dependencies installed let's go and compile Pandora her
 	
 	If the output isn't the following one, execute the commands in point 7. Skip 7 otherwise.
 	
-	Expected output: /opt/pandora//lib:/opt/hdf5-1.8.19//lib:/opt/gdal-1.10.1/lib/:
+	Expected output: 
+	```bash
+	$ /opt/pandora//lib:/opt/hdf5-1.8.19//lib:/opt/gdal-1.10.1/lib/:
+	```
 	
 	7. If the LD_LIBRARY_PATH isn't correctly updated you can do it manually using this:
 	
@@ -198,6 +201,7 @@ Now that we have all the dependencies installed let's go and compile Pandora her
 	```
 
 - Compile and Install Cssandra (GUI)
+
 Now you could use Pandora just fine. But we offer you a GUI to make the 
 interpretation of your models in a easier way.
 
@@ -209,30 +213,14 @@ interpretation of your models in a easier way.
 		
 	2. To compile Cassandra some more libraries are needed. You can install them all using the following command:
 	
-	```bash
-	sudo apt-get install libtinyxml-dev libdevil-dev freeglut3-dev libqwt-dev libqt4-dev libqt4-opengl-dev libgdal1-dev build-essential libboost-random-dev libboost-test-dev libboost-timer-dev libboost-chrono-dev
-	```
-
-
+		```bash
+		$ sudo apt-get install libtinyxml-dev libdevil-dev freeglut3-dev libqwt-dev libqt4-dev libqt4-opengl-dev libgdal1-dev build-essential libboost-random-dev libboost-test-dev libboost-timer-dev libboost-chrono-dev
+		```
 
 - Try an example
 Now that we have Pandora compiled we can try it's execution using one of the examples
 
-* RandomWalkers
 
-	We have to copy the config.htlm in order to  execute the code, you can do it with this commands:
-	
-	```bash
-	$ cd ../examples/randomWalkers
-	$ cp config.xml ../../build/examples/randomWalkers
-	$ cd ../../build/examples/randomWalkers
-	```
-	
-	When u have got this you just hav eto execute it:
-	
-	```bash
-	$ ./randomWalkers
-	```
 	
 
 
