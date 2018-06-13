@@ -10,7 +10,6 @@ class RandomWorldConfig;
 
 class RandomWorld : public Engine::World {
 	
-	void createRasters();
 	void createAgents();
 	
 public:
