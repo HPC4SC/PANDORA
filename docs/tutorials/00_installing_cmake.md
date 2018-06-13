@@ -210,7 +210,7 @@ interpretation of your models in a easier way.
 	```bash
 	$ sudo apt-get install scons
 	```
-		
+	
 	2. To compile Cassandra some more libraries are needed. You can install them all using the following command:
 	
 	```bash
