@@ -173,14 +173,47 @@ Now that we have all the dependencies installed let's go and compile Pandora her
 	$ export PATH=${PANDORAPATH}/bin:${PATH}
 	$ export PYTHONPATH=${PANDORAPATH}/bin:${PYTHONPATH}
 	$ export LD_LIBRARY_PATH=${PANDORAPATH}/lib:${LD_LIBRARY_PATH}
+	$ echo ""  >> ~/.bashrc
+	$ echo "export PANDORAPATH=/opt/pandora/"  >> ~/.bashrc
+	$ echo "export PATH=${PANDORAPATH}/bin:${PATH}" >> ~/.bashrc
+	$ echo "export PYTHONPATH=${PANDORAPATH}/bin:${PYTHONPATH}" >> ~/.bashrc
+	$ echo "LD_LIBRARY_PATH=${PANDORAPATH}/lib:${LD_LIBRARY_PATH}" >> ~/.bashrc
+	```
+	
+	* You migth want to check if LD_LIBRARY_PATH is updated correctly using this:
+	
+	```bash
+	$ echo $LD_LIBRARY_PATH
+	```
+	
+	If the output isn't the following one, execute the commands in point 7. Skip 7 otherwise.
+	
+	Expected output: /opt/pandora//lib:/opt/hdf5-1.8.19//lib:/opt/gdal-1.10.1/lib/:
+	
+	7. If the LD_LIBRARY_PATH isn't correctly updated you can do it manually using this:
+	
+	```bash
+	$ echo LD_LIBRARY_PATH -= :/opt/pandora/path
+	$ echo LD_LIBRARY_PATH += :/opt/pandora/lib/
 	```
 
 - Compile and Install Cssandra (GUI)
+Now you could use Pandora just fine. But we offer you a GUI to make the 
+interpretation of your models in a easier way.
 
-install scons: sudo apt-get install scons
+	1. The first you need to do is install scons. We'll use it to compile the models:
+		
+		```bash
+		$ sudo apt-get install scons
+		```
+		
+	2. To compile Cassandra some more libraries are needed. You can install them all using the following command:
+	
+	```bash
+	sudo apt-get install libtinyxml-dev libdevil-dev freeglut3-dev libqwt-dev libqt4-dev libqt4-opengl-dev libgdal1-dev build-essential libboost-random-dev libboost-test-dev libboost-timer-dev libboost-chrono-dev
+	```
 
-instalar llibreries: 
-sudo apt-get install libtinyxml-dev libdevil-dev freeglut3-dev libqwt-dev libqwt6 libqt4-dev libqt4-opengl-dev libgdal1-dev build-essential libboost-random-dev libboost-test-dev libboost-timer-dev libboost-chrono-dev
+
 
 - Try an example
 Now that we have Pandora compiled we can try it's execution using one of the examples
