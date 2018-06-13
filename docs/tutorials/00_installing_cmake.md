@@ -57,6 +57,8 @@ This are the dependences of Cassandra, the GUI that we'll use to interpretate Pa
 	libboost-timer-dev 
 	libboost-chrono-dev
 	```
+	
+## Compile and install Pandora
 
 - First of all, open a console terminal (like Konsole or xterm) and upgrade your system to the last updates
 
@@ -228,10 +230,9 @@ Now that we have all the dependencies installed let's go and compile Pandora her
 	$ echo LD_LIBRARY_PATH += :/opt/pandora/lib/
 	```
 
-- Compile and Install Cssandra (GUI)
+## Compile and Install Cssandra (GUI)
 
-Now you could use Pandora just fine. But we offer you a GUI to make the 
-interpretation of your models in a easier way. To do so go to Pandora's main directory
+Now you could use Pandora just fine. But we offer you a GUI to make the interpretation of your models in a easier way. To do so go to Pandora's main directory
 
 1. The first you need to do is install scons. We'll use it to compile the models:
 		
