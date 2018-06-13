@@ -2,9 +2,10 @@
 This tutorial will explain how to install Pandora framework, using CMAKE
 
 ### Requirements
+
 You will need a PC with GNU/Linux installed(16.04 or older). The tutorial will explain how to install Pandora on Ubunt, but any other distribution would work (probably with additional effort related to looking for the correct packages and versions)
 
-### Dependences
+### Dependences of Pandora
 
 To compile and install Pandora we need some libraries and programs to do so, this is a summary of what we need. How to install everything step by setp and will be explained afer this part
 
@@ -12,6 +13,7 @@ To compile and install Pandora we need some libraries and programs to do so, thi
 * HDF5
 * CMAKE
 * Git and an accout of it
+* SCONS
 * Libreries:
 	
 	```
@@ -29,6 +31,32 @@ To compile and install Pandora we need some libraries and programs to do so, thi
 	libboost-timer-dev
 	```
 
+### Dependences of Cassandra
+
+This are the dependences of Cassandra, the GUI that we'll use to interpretate Pandora's outputs
+
+* SCONS
+* Libraries:
+	
+	```
+	libtinyxml-dev 
+	libdevil-dev 
+	freeglut3-dev 
+	libqwt-dev 
+	libqt4-dev 
+	libqt4-opengl-dev 
+	libgdal1-dev 
+	build-essential 
+	```
+
+* Boost packages
+
+	```
+	libboost-random-dev 
+	libboost-test-dev 
+	libboost-timer-dev 
+	libboost-chrono-dev
+	```
 
 - First of all, open a console terminal (like Konsole or xterm) and upgrade your system to the last updates
 
@@ -186,7 +214,7 @@ Now that we have all the dependencies installed let's go and compile Pandora her
 	$ echo $LD_LIBRARY_PATH
 	```
 	
-	If the output isn't the following one, execute the commands in point 7. Skip 7 otherwise.
+	If the output isn't the following one, execute the commands in point 7. Skip 7 otherwise
 	
 	Expected output: 
 	```bash
@@ -203,7 +231,7 @@ Now that we have all the dependencies installed let's go and compile Pandora her
 - Compile and Install Cssandra (GUI)
 
 Now you could use Pandora just fine. But we offer you a GUI to make the 
-interpretation of your models in a easier way.
+interpretation of your models in a easier way. To do so go to Pandora's main directory
 
 1. The first you need to do is install scons. We'll use it to compile the models:
 		
@@ -215,6 +243,20 @@ interpretation of your models in a easier way.
 	
 	```bash
 	$ sudo apt-get install libtinyxml-dev libdevil-dev freeglut3-dev libqwt-dev libqt4-dev libqt4-opengl-dev libgdal1-dev build-essential libboost-random-dev libboost-test-dev libboost-timer-dev libboost-chrono-dev
+	```
+	
+3. Then you just need to go to the cassandra directory and compile her using the Makefile there
+
+	```bash
+	$ cd /PANDORA/cassandra/
+	$ make
+	```
+	
+4. Finally an executable file will be generated in the /bin directory. To execute Cassandra do as follows
+
+	```bash
+	$ cd ../bin/
+	$ ./cassandra
 	```
 
 - Try an example
