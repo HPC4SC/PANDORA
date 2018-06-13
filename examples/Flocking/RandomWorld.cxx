@@ -15,17 +15,6 @@ RandomWorld::RandomWorld(Engine::Config * config, Engine::Scheduler * scheduler 
 
 RandomWorld::~RandomWorld() {}
 
-void RandomWorld::createRasters() {
-	registerDynamicRaster("resources", true);
-	getDynamicRaster("resources").setInitValues(0, 5, 0);
-
-	for(auto index:getBoundaries()){
-		int value = Engine::GeneralState::statistics().getUniformDistValue(0,5);
-        setMaxValue("resources", index, value);
-	}
-	updateRasterToMaxValues("resources");
-}
-
 void RandomWorld::createAgents() {
     std::stringstream logName;
 	logName << "agents_" << getId();

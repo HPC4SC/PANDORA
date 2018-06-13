@@ -24,7 +24,6 @@ void MoveAction::execute( Engine::Agent & agent ) {
 	Engine::AgentsVector flockmates = agent.getWorld()->getNeighbours(p_agent,birdAgent.getSigth(),"Bird");
 	
 	//corregir heading
-	std::cout << "el heading abans de canviar-lo es: " << birdAgent.getHeading() << std::endl;
 	if (! flockmates.empty()) correctHeading(birdAgent,flockmates);
 	
 	//avançar velocity
@@ -32,7 +31,7 @@ void MoveAction::execute( Engine::Agent & agent ) {
 	int agentVelocity = birdAgent.getVelocity();
 	advanceForward(newPosition,agentVelocity,birdAgent);
 
-	if(world->checkPosition(newPosition) {
+	if(world->checkPosition(newPosition)) {
 		agent.setPosition(newPosition);
 	}
 }
