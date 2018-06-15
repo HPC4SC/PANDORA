@@ -10,7 +10,9 @@ RandomWorldConfig::~RandomWorldConfig() {}
 
 void RandomWorldConfig::loadParams() {
 	_numBugs = getParamInt( "Bugs", "numBugs");
-	_bugMaxConsumptionRate = getParamFloat("Bugs", "maxFoodConsumption");
+	_bugMaxConsumptionRate = getParamInt("Bugs", "maxFoodConsumption");
+	_initialBugSizeMean = getParamInt("Bugs", "initialBugSizeMean");
+	_initialBugSizeSD = getParamFloat("Bugs", "initialBugSizeSD");
 	_maxFoodProduction = getParamInt("Raster", "maxFoodProduction");
 }
 	

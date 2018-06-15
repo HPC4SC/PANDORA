@@ -7,11 +7,11 @@
 
 nameProgram = 'stupidModel'
 
-agents = ['Bug']
+agents = ['Bug','Predator']
+namespaceAgents = ['Examples','Examples']
 world = 'RandomWorld'
-namespaceAgents = ['Examples']
 
-srcFiles = Split('main.cxx Bug.cxx RandomWorld.cxx RandomWorldConfig.cxx MoveAction.cxx EatAction.cxx GrowAction.cxx KillAction.cxx')
+srcFiles = Split('main.cxx Bug.cxx Predator.cxx RandomWorld.cxx RandomWorldConfig.cxx MoveAction.cxx EatAction.cxx GrowAction.cxx KillAction.cxx HuntAction.cxx')
 
 ###################################################
 ########## END OF CUSTOM INFORMATION  #############

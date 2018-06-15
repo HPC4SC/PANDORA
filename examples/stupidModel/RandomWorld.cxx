@@ -3,6 +3,7 @@
 
 #include <RandomWorldConfig.hxx>
 #include <Bug.hxx>
+#include <Predator.hxx>
 #include <DynamicRaster.hxx>
 #include <Point2D.hxx>
 #include <GeneralState.hxx>
@@ -26,17 +27,29 @@ void RandomWorld::createRasters() {
 void RandomWorld::createAgents() {
     std::stringstream logName;
 	logName << "agents_" << getId();
-
     const RandomWorldConfig & randomConfig = (const RandomWorldConfig&)getConfig();
-	for(int i=0; i<randomConfig._numBugs; i++) {
-		if((i%getNumTasks())==getId()) {
+	for (int i = 0; i < randomConfig._numBugs; i++) {
+		if ((i%getNumTasks()) == getId()) {
 			std::ostringstream oss;
 			oss << "Bug_" << i;
-			Bug * agent = new Bug(oss.str(),randomConfig._bugMaxConsumptionRate,1);
-			addAgent(agent);
-			agent->setRandomPosition();
-	        log_INFO(logName.str(), getWallTime() << " new agent: " << agent);
+			float size = Engine::GeneralState::statistics().getNormalDistValue((float)randomConfig._initialBugSizeMean,randomConfig._initialBugSizeSD);
+			if (size < 0.0) size = 0.0;
+			Bug * bug = new Bug(oss.str(),randomConfig._bugMaxConsumptionRate,(int)size);
+			addAgent(bug);
+			bug->setRandomPosition();
+	        log_INFO(logName.str(), getWallTime() << " new bug: " << bug);
 		}
+	}
+	for (int i = 0; i < 200; i++) {
+		if ((i%getNumTasks()) == getId()) {
+			std::ostringstream oss;
+			oss << "Predator_" << i;
+			Predator * predator = new Predator(oss.str());
+			addAgent(predator);
+			predator->setRandomPosition();
+			log_INFO(logName.str(), getWallTime() << " new predator: " << predator);
+		}
+		
 	}
 }
 
@@ -73,6 +86,7 @@ int RandomWorld::getMaxProductionRate() const {
 void RandomWorld::setMaxProductionRate(const int& maxProductionRate) {
 	_maxProductionRate = maxProductionRate;
 }
+
 
 } // namespace Examples
 
