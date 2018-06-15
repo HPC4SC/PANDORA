@@ -12,6 +12,8 @@ class RandomWorldConfig : public Engine::Config {
 	int _numBugs;
 	int _bugMaxConsumptionRate;
 	int _maxFoodProduction;
+	int _initialBugSizeMean;
+	float _initialBugSizeSD;
 	
 public:
 	RandomWorldConfig( const std::string & xmlFile );
