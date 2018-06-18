@@ -19,6 +19,7 @@ void HuntAction::execute( Engine::Agent & agent ) {
 	Engine::AgentsVector neighbours = agent.getWorld()->getNeighbours(p_agent,1,"all");
 	Engine::Point2D<int> newPosition;
 	if (not neighbours.empty()) {
+		random_shuffle(neighbours.begin(),neighbours.end());
 		Engine::AgentsVector::iterator neighbour = neighbours.begin();
 		bool menjat = false;
 		while (neighbour != neighbours.end() and not menjat) {

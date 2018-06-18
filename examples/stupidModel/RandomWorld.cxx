@@ -49,7 +49,6 @@ void RandomWorld::createAgents() {
 			predator->setRandomPosition();
 			log_INFO(logName.str(), getWallTime() << " new predator: " << predator);
 		}
-		
 	}
 }
 
