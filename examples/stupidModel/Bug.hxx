@@ -15,7 +15,6 @@ class Bug : public Engine::Agent
 	
 	int _size;
 	int _maxConsumptionRate;
-	std::string _color;
 	int _survivalProbability = 95;
 
 public:
@@ -30,8 +29,6 @@ public:
 
 	void setSize(const int &size);
 	int getSize() const;
-	void setColor(const int &code);
-	std::string getColor() const;
 	int getMaxConsumptionRate() const;
 	int getSurvivalProbability() const;
 	void kill();
