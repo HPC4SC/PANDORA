@@ -10,7 +10,7 @@
 namespace Examples 
 {
 
-Bug::Bug( const std::string & id, const int &maxConsumptionRate, const int &size) : Agent(id),  _maxConsumptionRate(maxConsumptionRate), _size(size) 
+Bug::Bug( const std::string & id, const int &maxConsumptionRate, const int &size) : ConcreteAgent(id),  _maxConsumptionRate(maxConsumptionRate), _size(size) 
 {
 	this->_exists = true;
 }
@@ -22,8 +22,6 @@ void Bug::selectActions() {
 	_actions.push_back(new EatAction());
 	_actions.push_back(new DieAction());
 }
-
-void Bug::updateState() {}
 
 void Bug::registerAttributes() {
 	registerIntAttribute("size");
@@ -49,10 +47,6 @@ int Bug::getSurvivalProbability() const {
 	return _survivalProbability;
 }
 
-void Bug::kill() {
-	this->_exists = false;
-}
-
 void Bug::reproduce(const std::string &childId) {
 	std::ostringstream oss;
 	oss <<  childId;
@@ -62,13 +56,13 @@ void Bug::reproduce(const std::string &childId) {
 	Engine::Point2D<int>newPosition = this->getPosition();
 	for (int i = 0; i < 5 and not colocat; ++i) {
 		//trobar una pos no ocupada
-		int modX = Engine::GeneralState::statistics().getUniformDistValue(-3,3); //velocidad
+		int modX = Engine::GeneralState::statistics().getUniformDistValue(-3,3);
 		newPosition._x += modX;
 		int modY = Engine::GeneralState::statistics().getUniformDistValue(-3,3);
 		newPosition._y += modY;
 		if (_world->checkPosition(newPosition)) colocat = true;
 	}
-	if (not colocat) child->kill();
+	if (not colocat) child->remove();
 	else child->setPosition(newPosition);
 }
 

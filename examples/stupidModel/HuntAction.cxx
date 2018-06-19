@@ -26,7 +26,7 @@ void HuntAction::execute( Engine::Agent & agent ) {
 			Engine::Agent* candidate = (neighbour->get());
 			if (Bug * victim = dynamic_cast<Bug*>(candidate)) {
 				newPosition = candidate->getPosition();
-				victim->kill();
+				victim->remove();
 				menjat = true;
 			}
 			neighbour++;
