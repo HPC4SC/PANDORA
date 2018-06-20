@@ -2,7 +2,7 @@
 #ifndef __Predator_hxx__
 #define __Predator_hxx__
 
-#include <ConcreteAgent.hxx>
+#include <Agent.hxx>
 #include <Action.hxx>
 
 #include <string>
@@ -10,18 +10,29 @@
 namespace Examples
 {
 
-class Predator : public Examples::ConcreteAgent
+class Predator : public Engine::Agent
 {
 
 public:
-	// crea un agent del tipus Predator
+	// creates a Predator agent
 	Predator( const std::string & id );
-	// destrueix un agent del tipus Predator
+	// destroys a Predator agent
 	virtual ~Predator();
 	
-	// selecciona quines accions i en quin ordre executa cada Agent de tipus Predator
+	// selects wich actions and in wich order each Predator agent
 	void selectActions();
 	
+	////////////////////////////////////////////////
+	// This code has been automatically generated //
+	/////// Please do not modify it ////////////////
+	////////////////////////////////////////////////
+	Predator( void * );
+	void * fillPackage();
+	void sendVectorAttributes(int);
+	void receiveVectorAttributes(int);
+	////////////////////////////////////////////////
+	//////// End of generated code /////////////////
+	////////////////////////////////////////////////
 
 };
 

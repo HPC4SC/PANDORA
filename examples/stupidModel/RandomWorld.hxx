@@ -11,20 +11,29 @@ class RandomWorldConfig;
 
 class RandomWorld : public Engine::World {
 	
-	int _maxProductionRate;
-	int _end;
+	int _maxProductionRate; // attributhe that represents the maximum amount of food that each position can generate in one step
 	
-	void createRasters();
-	void createAgents();
 	
-	int getMaxProductionRate() const;
-	void setMaxProductionRate(const int& maxProductionRate);
-	void step();
-	void stepEnvironment();
 	
 public:
+	// creates a RandomWorld instance
 	RandomWorld(Engine::Config * config, Engine::Scheduler * scheduler = 0);
+	// destroys a RandomWorld instance
 	virtual ~RandomWorld();
+	
+	// method that creates and initializes the rasters of the simulation
+	void createRasters();
+	// method that creates and initializes the agents of the simulation
+	void createAgents();
+	
+	// getter of the _maxProductionRate attribute
+	int getMaxProductionRate() const;
+	// setter of the _maxProductionRate attribute
+	void setMaxProductionRate(const int& maxProductionRate);
+	// method that describes what happens in the World in one step
+	void step();
+	// method that advances the world one step in time
+	void stepEnvironment();
 };
 
 } // namespace Examples 

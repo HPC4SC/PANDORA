@@ -10,7 +10,7 @@
 namespace Examples 
 {
 
-Bug::Bug( const std::string & id, const int &maxConsumptionRate, const int &size) : ConcreteAgent(id),  _maxConsumptionRate(maxConsumptionRate), _size(size) 
+Bug::Bug( const std::string & id, const int &maxConsumptionRate, const int &size) : Agent(id),  _maxConsumptionRate(maxConsumptionRate), _size(size) 
 {
 	this->_exists = true;
 }
@@ -18,9 +18,14 @@ Bug::Bug( const std::string & id, const int &maxConsumptionRate, const int &size
 Bug::~Bug() {}
 
 void Bug::selectActions() {
-	_actions.push_back(new MoveAction());
-	_actions.push_back(new EatAction());
-	_actions.push_back(new DieAction());
+	Engine::World * world = this->getWorld();
+	int step = world->getCurrentStep();
+	if (step%2 == 0) {
+		//std::cout << "I'm " << this->getId() << "and now I execute my actions" << std::endl;
+		_actions.push_back(new MoveAction());
+		_actions.push_back(new EatAction());
+		_actions.push_back(new DieAction());
+	}
 }
 
 void Bug::registerAttributes() {
