@@ -16,13 +16,13 @@ namespace Examples
 class EatAction : public Engine::Action {
 	
 public:
-	// construeix una instancia d'EatAction
+	// constructs a EatAction instance
 	EatAction();
-	// destrueix una instancia d'EatAction
+	// destroys a EatAction instance
 	virtual ~EatAction();
-	// accions que ha de seguir l'agent quan executa una EatAction
+	// code that de agent executes in a EatAction
 	void execute( Engine::Agent & agent );
-	// funcio auxiliar no se pq serveix, Scheduler maybe?
+	// auxiliar method
 	std::string describe() const;
 	
 };

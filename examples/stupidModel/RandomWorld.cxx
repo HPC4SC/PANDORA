@@ -74,7 +74,8 @@ void RandomWorld::stepEnvironment() {
 	for(auto index : getBoundaries()) {
 		float oldFood = getValue("food",index);
 		float foodProduced = Engine::GeneralState::statistics().getUniformDistValue(0,_maxProductionRate);
-		setValue("food",index,oldFood + foodProduced);
+		if ((oldFood + foodProduced) > 100) setValue("food",index,100);
+		else setValue("food",index,oldFood + foodProduced);
 	}
 }
 

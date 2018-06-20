@@ -16,9 +16,9 @@ HuntAction::~HuntAction() {}
 void HuntAction::execute( Engine::Agent & agent ) {	
 	//mirar
 	Engine::Agent * p_agent = agent.getWorld()-> getAgent(agent.getId());
-	Engine::AgentsVector neighbours = agent.getWorld()->getNeighbours(p_agent,1,"all");
+	Engine::AgentsVector neighbours = agent.getWorld()->getNeighbours(p_agent,1);
 	Engine::Point2D<int> newPosition;
-	if (not neighbours.empty()) {
+	if (neighbours.size() > 0) {
 		random_shuffle(neighbours.begin(),neighbours.end());
 		Engine::AgentsVector::iterator neighbour = neighbours.begin();
 		bool menjat = false;

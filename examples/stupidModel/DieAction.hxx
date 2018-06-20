@@ -16,13 +16,13 @@ namespace Examples
 class DieAction : public Engine::Action {
 	
 public:
-	// construeix una instancia de DieAction
+	// constructs a DieAction instance
 	DieAction();
-	// destrueix una instancia de DieAction
+	// desroys a DieAction instance
 	virtual ~DieAction();
-	// accions que ha de seguir l'agent quan executa una DieAction
+	// code that de agent executes in a DieAction
 	void execute( Engine::Agent & agent );
-	// funcio auxiliar no se pq serveix, Scheduler maybe?
+	// auxiliar method
 	std::string describe() const;
 };
 
