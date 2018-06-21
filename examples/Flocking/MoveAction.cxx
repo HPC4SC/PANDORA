@@ -19,8 +19,7 @@ void MoveAction::execute( Engine::Agent & agent ) {
 	Bird & birdAgent = (Bird&)agent;
 	
 	//mirar
-	std::string ID = agent.getId();
-	Engine::Agent * p_agent = agent.getWorld()-> getAgent(ID);
+	Engine::Agent * p_agent = agent.getWorld()-> getAgent(agent.getId());
 	Engine::AgentsVector flockmates = agent.getWorld()->getNeighbours(p_agent,birdAgent.getSigth(),"Bird");
 	
 	//corregir heading
@@ -82,38 +81,62 @@ void MoveAction::advanceForward(Engine::Point2D<int> &newPosition,const int &age
 	switch (translateHeading(heading)){
 		case 1: //E
 			newPosition._y += agentVelocity;
+			if (newPosition._y == 0) newPosition._y = 68;
+			else if (newPosition._y == 69) newPosition._y = 1;
 			break;
 			
 		case 2: //NE
 			newPosition._x -= agentVelocity;
 			newPosition._y += agentVelocity;
+			if (newPosition._x == 0) newPosition._x = 68;
+			else if (newPosition._x == 69) newPosition._x = 1;
+			else if (newPosition._y == 0) newPosition._y = 68;
+			else if (newPosition._y == 69) newPosition._y = 1;
 			break;
 			
 		case 3: //N
 			newPosition._x -= agentVelocity;
+			if (newPosition._x == 0) newPosition._x = 68;
+			else if (newPosition._x == 69) newPosition._x = 1;
 			break;
 			
 		case 4: //NW
 			newPosition._x -= agentVelocity;
 			newPosition._y -= agentVelocity;
+			if (newPosition._x == 0) newPosition._x = 68;
+			else if (newPosition._x == 69) newPosition._x = 1;
+			else if (newPosition._y == 0) newPosition._y = 68;
+			else if (newPosition._y == 69) newPosition._y = 1;
 			break;
 			
 		case 5: //W
 			newPosition._y -= agentVelocity;
+			if (newPosition._y == 0) newPosition._y = 68;
+			else if (newPosition._y == 69) newPosition._y = 1;
 			break;
 			
 		case 6: //SW
 			newPosition._x += agentVelocity;
 			newPosition._y -= agentVelocity;
+			if (newPosition._x == 0) newPosition._x = 68;
+			else if (newPosition._x == 69) newPosition._x = 1;
+			else if (newPosition._y == 0) newPosition._y = 68;
+			else if (newPosition._y == 69) newPosition._y = 1;
 			break;
 			
 		case 7: //S
 			newPosition._x += agentVelocity;
+			if (newPosition._x == 0) newPosition._x = 68;
+			else if (newPosition._x == 69) newPosition._x = 1;
 			break;
 			
 		case 8: //SE
 			newPosition._x += agentVelocity;
-			newPosition._y += agentVelocity;
+			newPosition._y += agentVelocity;		
+			if (newPosition._x == 0) newPosition._x = 68;
+			else if (newPosition._x == 69) newPosition._x = 1;	
+			else if (newPosition._y == 0) newPosition._y = 68;
+			else if (newPosition._y == 69) newPosition._y = 1;
 			break;
 			
 		default:
