@@ -3,6 +3,7 @@
 #include <World.hxx>
 #include <GeneralState.hxx>
 #include <Agent.hxx>
+#include <Point2D.hxx>
 
 #include <iostream>
 #include <cmath>
@@ -78,65 +79,167 @@ int MoveAction::distNearestFlockmate(Bird & birdAgent, const Engine::AgentsVecto
 
 void MoveAction::advanceForward(Engine::Point2D<int> &newPosition,const int &agentVelocity, Bird & birdAgent) { 
 	float heading = birdAgent.getHeading();
+	Engine::Rectangle<int> r = birdAgent.getWorld()->getBoundaries();
 	switch (translateHeading(heading)){
 		case 1: //E
-			newPosition._y += agentVelocity;
-			if (newPosition._y == 0) newPosition._y = 68;
-			else if (newPosition._y == 69) newPosition._y = 1;
+			if (inside(newPosition._x,newPosition._y + agentVelocity,r)) {
+				newPosition._y += agentVelocity;
+			}
+			else {
+				Engine::Point2D<int> limit = Engine::Point2D<int>(newPosition._x,r.right());
+				int distanceToWarp = newPosition.distance(limit);
+				newPosition._y = r.left();
+				advanceForward(newPosition,agentVelocity - distanceToWarp,birdAgent);
+			}
 			break;
 			
 		case 2: //NE
-			newPosition._x -= agentVelocity;
-			newPosition._y += agentVelocity;
-			if (newPosition._x == 0) newPosition._x = 68;
-			else if (newPosition._x == 69) newPosition._x = 1;
-			else if (newPosition._y == 0) newPosition._y = 68;
-			else if (newPosition._y == 69) newPosition._y = 1;
+			if (inside(newPosition._x - agentVelocity,newPosition._y + agentVelocity,r)) {
+				newPosition._x -= agentVelocity;
+				newPosition._y += agentVelocity;
+				
+			}
+			else { 
+				if (((newPosition._x - agentVelocity) < r.top()) and ((newPosition._y + agentVelocity) > r.right())) { 
+					Engine::Point2D<int> limit = Engine::Point2D<int>(r.top(),r.right());
+					int distanceToWarp = newPosition.distance(limit);
+					newPosition._x = r.bottom();
+					newPosition._y = r.left();
+					advanceForward(newPosition,agentVelocity - distanceToWarp,birdAgent);
+				}
+				else if ((newPosition._x - agentVelocity) < r.top()) { 
+					Engine::Point2D<int> limit = Engine::Point2D<int>(r.top(),newPosition._y);
+					int distanceToWarp = newPosition.distance(limit);
+					newPosition._x = r.bottom();
+					advanceForward(newPosition,agentVelocity - distanceToWarp,birdAgent);
+				}
+				else if ((newPosition._y + agentVelocity) > r.right()) { 
+					Engine::Point2D<int> limit = Engine::Point2D<int>(newPosition._x,r.right());
+					int distanceToWarp = newPosition.distance(limit);
+					newPosition._y = r.left();
+					advanceForward(newPosition,agentVelocity - distanceToWarp,birdAgent);
+				}
+			}
 			break;
 			
 		case 3: //N
-			newPosition._x -= agentVelocity;
-			if (newPosition._x == 0) newPosition._x = 68;
-			else if (newPosition._x == 69) newPosition._x = 1;
+			if (inside(newPosition._x - agentVelocity,newPosition._y,r)) {
+				newPosition._x -= agentVelocity;
+			}
+			else {
+				Engine::Point2D<int> limit = Engine::Point2D<int>(r.top(),newPosition._y);
+				int distanceToWarp = newPosition.distance(limit);
+				newPosition._x = r.bottom();
+				advanceForward(newPosition,agentVelocity - distanceToWarp,birdAgent);
+			}
 			break;
 			
 		case 4: //NW
-			newPosition._x -= agentVelocity;
-			newPosition._y -= agentVelocity;
-			if (newPosition._x == 0) newPosition._x = 68;
-			else if (newPosition._x == 69) newPosition._x = 1;
-			else if (newPosition._y == 0) newPosition._y = 68;
-			else if (newPosition._y == 69) newPosition._y = 1;
+			if (inside(newPosition._x - agentVelocity,newPosition._y - agentVelocity,r)) {
+				newPosition._x -= agentVelocity;
+				newPosition._y -= agentVelocity;
+			}
+			else {
+				if (((newPosition._x - agentVelocity) < r.top()) and ((newPosition._y - agentVelocity) < r.left())) {
+					Engine::Point2D<int> limit = Engine::Point2D<int>(r.top(),r.left());
+					int distanceToWarp = newPosition.distance(limit);
+					newPosition._x = r.bottom();
+					newPosition._y = r.right();
+					advanceForward(newPosition,agentVelocity - distanceToWarp,birdAgent);
+				}
+				else if ((newPosition._x - agentVelocity) < r.top()) {
+					Engine::Point2D<int> limit = Engine::Point2D<int>(r.top(),newPosition._y);
+					int distanceToWarp = newPosition.distance(limit);
+					newPosition._x = r.bottom();
+					advanceForward(newPosition,agentVelocity - distanceToWarp,birdAgent);
+				}
+				else if ((newPosition._y - agentVelocity) < r.left()) {
+					Engine::Point2D<int> limit = Engine::Point2D<int>(newPosition._x,r.left());
+					int distanceToWarp = newPosition.distance(limit);
+					newPosition._y = r.right();
+					advanceForward(newPosition,agentVelocity - distanceToWarp,birdAgent);
+				}
+			}
 			break;
 			
 		case 5: //W
-			newPosition._y -= agentVelocity;
-			if (newPosition._y == 0) newPosition._y = 68;
-			else if (newPosition._y == 69) newPosition._y = 1;
+			if (inside(newPosition._x,newPosition._y - agentVelocity,r)) {
+				newPosition._y -= agentVelocity;
+			}
+			else {
+				Engine::Point2D<int> limit = Engine::Point2D<int>(newPosition._x,r.left());
+				int distanceToWarp = newPosition.distance(limit);
+				newPosition._y = r.right();
+				advanceForward(newPosition,agentVelocity - distanceToWarp,birdAgent);
+			}
 			break;
 			
 		case 6: //SW
-			newPosition._x += agentVelocity;
-			newPosition._y -= agentVelocity;
-			if (newPosition._x == 0) newPosition._x = 68;
-			else if (newPosition._x == 69) newPosition._x = 1;
-			else if (newPosition._y == 0) newPosition._y = 68;
-			else if (newPosition._y == 69) newPosition._y = 1;
+			if (inside(newPosition._x + agentVelocity,newPosition._y - agentVelocity,r)) {
+				newPosition._x += agentVelocity;
+				newPosition._y -= agentVelocity;
+			}
+			else {
+				if (((newPosition._x + agentVelocity) > r.bottom()) and ((newPosition._y - agentVelocity) < r.left())) {
+					Engine::Point2D<int> limit = Engine::Point2D<int>(r.bottom(),r.left());
+					int distanceToWarp = newPosition.distance(limit);
+					newPosition._x = r.top();
+					newPosition._y = r.right();
+					advanceForward(newPosition,agentVelocity - distanceToWarp,birdAgent);
+				}
+				else if ((newPosition._x + agentVelocity) > r.bottom()) {
+					Engine::Point2D<int> limit = Engine::Point2D<int>(r.bottom(),newPosition._y);
+					int distanceToWarp = newPosition.distance(limit);
+					newPosition._x = r.top();
+					advanceForward(newPosition,agentVelocity - distanceToWarp,birdAgent);
+				}
+				else if ((newPosition._y - agentVelocity) < r.left()) {
+					Engine::Point2D<int> limit = Engine::Point2D<int>(newPosition._x,r.left());
+					int distanceToWarp = newPosition.distance(limit);
+					newPosition._y = r.right();
+					advanceForward(newPosition,agentVelocity - distanceToWarp,birdAgent);
+				}
+			}
 			break;
 			
 		case 7: //S
-			newPosition._x += agentVelocity;
-			if (newPosition._x == 0) newPosition._x = 68;
-			else if (newPosition._x == 69) newPosition._x = 1;
+			if (inside(newPosition._x + agentVelocity,newPosition._y,r)) {
+				newPosition._x += agentVelocity;
+			}
+			else {
+				Engine::Point2D<int> limit = Engine::Point2D<int>(r.bottom(),newPosition._y);
+				int distanceToWarp = newPosition.distance(limit);
+				newPosition._x = r.top();
+				advanceForward(newPosition,agentVelocity - distanceToWarp,birdAgent);
+			}
 			break;
 			
 		case 8: //SE
-			newPosition._x += agentVelocity;
-			newPosition._y += agentVelocity;		
-			if (newPosition._x == 0) newPosition._x = 68;
-			else if (newPosition._x == 69) newPosition._x = 1;	
-			else if (newPosition._y == 0) newPosition._y = 68;
-			else if (newPosition._y == 69) newPosition._y = 1;
+			if (inside(newPosition._x + agentVelocity,newPosition._y + agentVelocity,r)) {
+				newPosition._x += agentVelocity;
+				newPosition._y += agentVelocity;
+			}
+			else {
+				if (((newPosition._x + agentVelocity) > r.bottom()) and ((newPosition._y + agentVelocity) > r.right())) {
+					Engine::Point2D<int> limit = Engine::Point2D<int>(r.bottom(),r.right());
+					int distanceToWarp = newPosition.distance(limit);
+					newPosition._x = r.top();
+					newPosition._y = r.left();
+					advanceForward(newPosition,agentVelocity - distanceToWarp,birdAgent);
+				}
+				else if ((newPosition._x + agentVelocity) > r.bottom()) {
+					Engine::Point2D<int> limit = Engine::Point2D<int>(r.bottom(),newPosition._y);
+					int distanceToWarp = newPosition.distance(limit);
+					newPosition._x = r.top();
+					advanceForward(newPosition,agentVelocity - distanceToWarp,birdAgent);
+				}
+				else if ((newPosition._y + agentVelocity) > r.right()) {
+					Engine::Point2D<int> limit = Engine::Point2D<int>(newPosition._x,r.right());
+					int distanceToWarp = newPosition.distance(limit);
+					newPosition._y = r.left();
+					advanceForward(newPosition,agentVelocity - distanceToWarp,birdAgent);
+				}
+			}	
 			break;
 			
 		default:
@@ -201,6 +304,10 @@ void MoveAction::turnAtMost(const float &turn, const float &max_turn, Bird & bir
 	else {
 		birdAgent.setHeading(birdAgent.getHeading() + turn);
 	}
+}
+
+bool MoveAction::inside(int i, int j, Engine::Rectangle<int> r) {
+	return ((j >= r.top() and j <= r.bottom()) and (i >= r.left() and i <= r.right()));
 }
 
 } // namespace Examples
