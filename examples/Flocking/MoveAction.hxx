@@ -36,6 +36,7 @@ public:
 	void turnAway(const float &meanHeading,const float &max_a_turn, Bird & birdAgent);
 	void turnTowards(const float &meanHeading,const float &max_a_turn, Bird & birdAgent);
 	void turnAtMost(const float &turn, const float &max_turn, Bird & birdAgent);
+	bool inside(int i, int j, Engine::Rectangle<int> r);
 };
 
 } // namespace Examples
