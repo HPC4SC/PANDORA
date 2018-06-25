@@ -17,15 +17,9 @@ void Bird::selectActions() {
 }
 
 void Bird::updateState() {
-	if (_velocity < 1) _velocity = 1;
-	else if (_sigth < 1) _sigth = 1;
-	else if (_heading > 359.99) _heading = 0.0;
+	if (_heading > 359.99) _heading = 0.0;
 	else if (_heading < 0.0) _heading = 359.99;
 }
-
-void Bird::registerAttributes(){}
-
-void Bird::serialize(){}
 
 int Bird::getVelocity() const {
 	return _velocity;
@@ -35,7 +29,7 @@ int Bird::getSigth() const {
 	return _sigth;
 }
 
-int Bird::getMindist() {
+int Bird::getMindist() const {
 	return _mindist;
 }
 
@@ -47,15 +41,15 @@ float Bird::getHeading() {
 	return _heading;
 }
 
-float Bird::getMaxATurn() const{
+float Bird::getMaxATurn() const {
 	 return _max_A_turn;
 }
 
-float Bird::getMaxCTurn() const{
+float Bird::getMaxCTurn() const {
 	 return _max_C_turn;
 }
 
-float Bird::getMaxSTurn() {
+float Bird::getMaxSTurn() const {
 	 return _max_S_turn;
 }
 
