@@ -10,11 +10,14 @@ class RandomWorldConfig;
 
 class RandomWorld : public Engine::World {
 	
-	void createAgents();
 	
 public:
+	// creates a RandomWorld instance
 	RandomWorld(Engine::Config * config, Engine::Scheduler * scheduler = 0);
+	// destroys a RandomWorld instance
 	virtual ~RandomWorld();
+	// method that creates and initializes the Agents
+	void createAgents();
 };
 
 } // namespace Examples 

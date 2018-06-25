@@ -14,40 +14,39 @@ namespace Examples {
 class Bird : public Engine::Agent 
 {
 	
-	int _velocity;
-	int _sigth;
-	int _mindist;
-	
-	float _heading;
-	float _max_A_turn;
-	float _max_C_turn;
-	float _max_S_turn;
+	int _velocity; // attribute that represents the vlocity of the bird Agent
+	int _sigth; // attribute that represents the radius of the vision of the birds
+	int _mindist; // attribute that represents the minim distance between bird Agents
+	float _heading; // attribute that represents the direction in witch the bird is moving towards
+	float _max_A_turn; // attribute that represents the maximum turn that a bird will do when it aligns
+	float _max_C_turn; // attribute that represents the maximum turn that a bird will do when it coheres
+	float _max_S_turn; // attribute that represents the maximum turn that a bird will do when it separates
 
 public:
-	// todo remove environment from here
+	// creates a bird Agent instance and initiallazes its attributes with the in values
 	Bird(const std::string & id, const int &velocity, const int &sigth, const int &mindist, const float &max_A_turn, const float &max_C_turn, const float &max_S_turn);
+	// destroys a bird Agent instance
 	virtual ~Bird();
-	
+	// selects wich actions and in wich order the bird Agent executes them
 	void selectActions();
+	// checks that the heading of the bird Agent is between the correct range
 	void updateState();
-	void registerAttributes();
-	void serialize();
-
-	void setVelocity(int v);
+	// returns the value of the _velocity attribute of the bird Agent
 	int getVelocity() const;
-	void setSigth(int s);
+	// returns the value of the _sigth attribute of the bird Agent
 	int getSigth() const;
-	void setMindist(int d);
-	int getMindist();
-	
+	// returns the value of the _mindist attribute of the bird Agent
+	int getMindist() const;
+	// sets the value of the _heading attribute of the bird Agent to h
 	void setHeading(float h);
+	// returns the value of the _heading attribute of the bird Agent
 	float getHeading();
-	void setMaxATurn(float maxTurn);
+	// returns the value of the _max_A_turn attribute of the bird Agent
 	float getMaxATurn() const;
-	void setMaxCTurn(float maxTurn);
+	// returns the value of the _max_C_turn attribute of the bird Agent
 	float getMaxCTurn() const;
-	void setMaxSTurn(float maxTurn);
-	float getMaxSTurn();
+	// returns the value of the _max_S_turn attribute of the bird Agent
+	float getMaxSTurn() const;
 
 	////////////////////////////////////////////////
 	// This code has been automatically generated //
