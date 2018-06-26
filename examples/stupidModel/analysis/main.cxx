@@ -23,47 +23,32 @@
 #include <SimulationRecord.hxx>
 
 #include <analysis/GlobalAgentStats.hxx>
-#include <analysis/GlobalRasterStats.hxx>
 #include <analysis/AgentMean.hxx>
-#include <analysis/AgentSum.hxx>
-#include <analysis/RasterMean.hxx>
-#include <analysis/RasterSum.hxx>
 #include <analysis/AgentNum.hxx>
-#include <analysis/AgentStdDev.hxx>
-//#include <analysis/AgentHDFtoSHP.hxx>
+#include <analysis/AgentHistogram.hxx>
 #include <iostream>
 
-int main(int argc, char *argv[])
-{
-	try
-    {
-        if(argc!=4)
-        {
-            throw Engine::Exception("USAGE: analysis file.h5 agent.csv rasters.csv");
-            return 0;
-        }
-        Engine::SimulationRecord simRecord( 1, false);
-		simRecord.loadHDF5(argv[1], true, true);
-
+int main(int argc, char*argv[]) {
+	try {
+		Engine::SimulationRecord simRecord(1,true);
+		simRecord.loadHDF5("../data/stupidModel.h5",false,true); // (ruta,raster,agent)
+		
 		PostProcess::GlobalAgentStats agentResults;
 		agentResults.addAnalysis(new PostProcess::AgentNum());
-		agentResults.addAnalysis(new PostProcess::AgentMean("resources"));
-		agentResults.addAnalysis(new PostProcess::AgentStdDev("resources"));
-		agentResults.addAnalysis(new PostProcess::AgentSum("resources"));
-
-		agentResults.apply(simRecord, argv[2], "RandomAgent");
-
-		PostProcess::GlobalRasterStats rasterResults;
-		rasterResults.addAnalysis(new PostProcess::RasterMean());
-		rasterResults.addAnalysis(new PostProcess::RasterSum());
-
-		rasterResults.apply(simRecord, argv[3], "resources");
+		agentResults.addAnalysis(new PostProcess::AgentMean("size"));
+		agentResults.apply(simRecord,"agents.csv","Bug");
+		
+		PostProcess::AgentHistogram population("population", 200);
+		
+		population.apply(simRecord,"NumAgents.csv", "Bug");
 	}
-	catch( Engine::Exception & exceptionThrown )
+	catch( std::exception & exceptionThrown )
 	{
-		std::cout << exceptionThrown.what() << std::endl;
+		std::cout << "exception thrown: " << exceptionThrown.what() << std::endl;
 		return -1;
 	}
 	return 0;
+	
 }
+
 

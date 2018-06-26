@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
 	try 
 	{	
 		if(argc>2) {
-			throw Engine::Exception("USAGE: randomWalkers [config file]");
+			throw Engine::Exception("USAGE: stupidModel [config file]");
 		}		
 	
 		std::string fileName("config.xml");

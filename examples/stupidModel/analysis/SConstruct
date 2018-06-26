@@ -23,7 +23,7 @@ from subprocess import call
 pandoraPath = os.getenv('PANDORAPATH', '/usr/local/pandora')
 sys.path.append(pandoraPath+'/bin')
 
-srcFiles += [pandoraPath+'/utils/MpiStubCode.cxx']
+srcFiles += ['../../../utils/MpiStubCode.cxx']
 
 vars = Variables('custom.py')
 vars.Add(BoolVariable('debug', 'compile with debug flags', 'no'))
@@ -49,4 +49,8 @@ env.Append(CPPPATH = ['.', pandoraPath+'/include'])
 env.Append(LIBPATH = [pandoraPath+'/lib'])
 
 env.Program(nameProgram, srcFiles)
+
+
+
+
 
