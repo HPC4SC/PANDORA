@@ -56,8 +56,12 @@ void MoveAction::selectBestPos(int &new_x, int &new_y, const int &vision , Engin
 				nearest_i = i;
 			}
 			else if (maxSugar_x == candidateSugar and (abs(i - new_x) < abs(nearest_i - new_x))) {
-					max_x = candidate_x;
-					nearest_i = i;
+				max_x = candidate_x;
+				nearest_i = i;
+			}
+			else if (maxSugar_x == candidateSugar and (abs(i - new_x) == abs(nearest_i - new_x)) and Engine::GeneralState::statistics().getUniformDistValue(0,1) == 0) {
+				max_x = candidate_x;
+				nearest_i = i;
 			}
 		}
 	}
@@ -73,6 +77,10 @@ void MoveAction::selectBestPos(int &new_x, int &new_y, const int &vision , Engin
 				nearest_j = j;
 			}
 			else if (maxSugar_y == candidateSugar and (abs(j - new_y) < abs(nearest_j - new_y))) {
+				max_y = candidate_y;
+				nearest_j = j;
+			}
+			else if (maxSugar_y == candidateSugar and (abs(j - new_y) == abs(nearest_j - new_y)) and Engine::GeneralState::statistics().getUniformDistValue(0,1) == 0) {
 				max_y = candidate_y;
 				nearest_j = j;
 			}

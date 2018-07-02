@@ -16,9 +16,13 @@ namespace Examples
 class ReplacementAction : public Engine::Action
 {
 public:
+	// creates a ReplacementAgent instance
 	ReplacementAction();
+	// destroys a ReplacementAgent instance
 	virtual ~ReplacementAction();
+	// code that each agent executes when performing a ReplacementAction
 	void execute( Engine::Agent & agent );
+	// auxiliar function
 	std::string describe() const;
 };
 
