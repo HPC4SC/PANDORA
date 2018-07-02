@@ -10,7 +10,9 @@ namespace Examples
 class RandomWorldConfig : public Engine::Config
 {	
 public:
+	// creates a RandomWorldConfig instance
 	RandomWorldConfig( const std::string & xmlFile );
+	// destyroys a RandomWorldConifg instance
 	virtual ~RandomWorldConfig();
 
 
