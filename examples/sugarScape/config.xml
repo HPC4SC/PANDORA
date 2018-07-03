@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <config>  
 	<!-- Global simulation parameters -->
-	<output resultsFile="./data/sugarRush.h5" logsDir="./logs"/>
+	<output resultsFile="./data/sugarScape.h5" logsDir="./logs"/>
 	<numSteps value="300" serializeResolution="1"/>
 	<size width="50" height="50"/>
 	
