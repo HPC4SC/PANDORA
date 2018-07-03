@@ -5,7 +5,7 @@
 ##### please fill with information about your model ##
 ######################################################
 
-nameProgram = 'sugarRush'
+nameProgram = 'sugarScape'
 
 agents = ['RandomAgent']
 namespaceAgents = ['Examples']
