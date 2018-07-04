@@ -16,13 +16,18 @@ RandomAgent::~RandomAgent()
 {
 }
 
-void RandomAgent::selectActions() {
+void RandomAgent::selectActions() { 
+	/* 
+	 * the actions are pushed into the list of actions 
+	 * that the agent must perform in the codeig order
+ 	 */
 	_actions.push_back(new MoveAction());
 	_actions.push_back(new ReplacementAction());
 }
 
 void RandomAgent::registerAttributes() {
-	registerIntAttribute("wealth");
+	// each of this lines registers its own attributte
+	registerIntAttribute("wealth"); 
 	registerIntAttribute("vision");
 	registerIntAttribute("metabolicRate");
 	registerIntAttribute("currentAge");
@@ -30,7 +35,8 @@ void RandomAgent::registerAttributes() {
 }
 
 void RandomAgent::serialize() {
-	serializeAttribute("wealth", _wealth);
+	// with serializeAttribute we update the value of the attribute each step
+	serializeAttribute("wealth", _wealth);  
 	serializeAttribute("vision", _vision);
 	serializeAttribute("metabolicRate", _metabolicRate);
 	serializeAttribute("currentAge", _currentAge);

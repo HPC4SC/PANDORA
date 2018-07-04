@@ -9,6 +9,7 @@ RandomWorldConfig::RandomWorldConfig( const std::string & xmlFile ) : Config(xml
 RandomWorldConfig::~RandomWorldConfig() {}
 
 void RandomWorldConfig::loadParams() {
+	// this are the in parameters that you can find and change in the config.xml file
 	_numBugs = getParamInt( "Bugs", "numBugs");
 	_bugMaxConsumptionRate = getParamInt("Bugs", "maxFoodConsumption");
 	_initialBugSizeMean = getParamInt("Bugs", "initialBugSizeMean");

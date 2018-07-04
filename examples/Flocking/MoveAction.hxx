@@ -21,7 +21,7 @@ public:
 	virtual ~MoveAction();
 	// code that each agent will execute when performing a Move Action
 	void execute( Engine::Agent & agent );
-	// aux method
+	// auxiliar function
 	std::string describe() const;
 	// changes the heading of the agent depending on its stiuation
 	void correctHeading(Bird & birdAgent, const Engine::AgentsVector & flockmates);

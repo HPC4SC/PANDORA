@@ -14,29 +14,29 @@ HuntAction::HuntAction() {}
 HuntAction::~HuntAction() {}
 
 void HuntAction::execute( Engine::Agent & agent ) {	
-	//mirar
 	Engine::Agent * p_agent = agent.getWorld()-> getAgent(agent.getId());
 	Engine::AgentsVector neighbours = agent.getWorld()->getNeighbours(p_agent,1);
 	Engine::Point2D<int> newPosition;
-	if (neighbours.size() > 0) {
+	if (neighbours.size() > 0) { 
 		random_shuffle(neighbours.begin(),neighbours.end());
 		Engine::AgentsVector::iterator neighbour = neighbours.begin();
 		bool menjat = false;
-		while (neighbour != neighbours.end() and not menjat) {
+		while (neighbour != neighbours.end() and not menjat) { // the predator looks around for bugs
 			Engine::Agent* candidate = (neighbour->get());
-			if (Bug * victim = dynamic_cast<Bug*>(candidate)) {
+			if (Bug * victim = dynamic_cast<Bug*>(candidate)) { // if he find a bug it eats it
 				newPosition = candidate->getPosition();
 				victim->remove();
 				menjat = true;
 			}
 			neighbour++;
 		}
-		if (menjat) {
+		if (menjat) { // then the predator that has eaten moves to the bug's position
 			agent.setPosition(newPosition);
 		}
+		// if the predator has only predators around it it doesn't move
 	}
 	
-	else {
+	else { // if the predator is isolated it moves randomly
 		newPosition = agent.getPosition();
 		Engine::World * world = agent.getWorld();
 		int incX = Engine::GeneralState::statistics().getUniformDistValue(-1,1); 

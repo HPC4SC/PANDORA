@@ -19,18 +19,16 @@ void MoveAction::execute( Engine::Agent & agent ) {
 	Engine::World * world = agent.getWorld();
 	Bird & birdAgent = (Bird&)agent;
 	
-	//mirar
+	// look around
 	Engine::Agent * p_agent = agent.getWorld()-> getAgent(agent.getId());
 	Engine::AgentsVector flockmates = agent.getWorld()->getNeighbours(p_agent,birdAgent.getSigth(),"Bird");
-	
-	//corregir heading
+	// change heading
 	if (! flockmates.empty()) correctHeading(birdAgent,flockmates);
-	
-	//avançar velocity
+	// go forward velocity cells in the heading direction
 	Engine::Point2D<int> newPosition = agent.getPosition();
 	int agentVelocity = birdAgent.getVelocity();
 	advanceForward(newPosition,agentVelocity,birdAgent);
-
+	// checks if the position is occupied
 	if(world->checkPosition(newPosition)) {
 		agent.setPosition(newPosition);
 	}
@@ -40,10 +38,9 @@ std::string MoveAction::describe() const {
 	return "MoveAction";
 }
 
-//aux methods-----------------------------------------------------------
-
 void MoveAction::correctHeading(Bird & birdAgent, const Engine::AgentsVector & flockmates) {
 	float nearestHeading;
+	// checks wich of the turns must the bird execute
 	if (distNearestFlockmate(birdAgent,flockmates,nearestHeading) < birdAgent.getMindist()) {
 		MoveAction::separate(birdAgent,nearestHeading);
 	}
@@ -68,6 +65,7 @@ void MoveAction::cohere(Bird & birdAgent, const float &meanTowardsHeading) {
 int MoveAction::distNearestFlockmate(Bird & birdAgent, const Engine::AgentsVector &flockmates, float &nearestHeading) {
 	Bird & nearestAgent = (Bird&)flockmates[0];
 	int index_nearest = 0;
+	// for loop to identify the nearest flockmate
 	for (int i = 1; i < flockmates.size(); ++i) {
 		Bird  & candidate = (Bird&)flockmates[i];
 		if (birdAgent.getPosition().distance(nearestAgent.getPosition()) > birdAgent.getPosition().distance(candidate.getPosition())) index_nearest = i;
@@ -81,11 +79,11 @@ void MoveAction::advanceForward(Engine::Point2D<int> &newPosition,const int &age
 	float heading = birdAgent.getHeading();
 	Engine::Rectangle<int> r = birdAgent.getWorld()->getBoundaries();
 	switch (translateHeading(heading)){
-		case 1: //E
+		case 1: // E
 			if (inside(newPosition._x,newPosition._y + agentVelocity,r)) {
 				newPosition._y += agentVelocity;
 			}
-			else {
+			else { // since the sapce is toroidal the bird must warp to the other edge of the world
 				Engine::Point2D<int> limit = Engine::Point2D<int>(newPosition._x,r.right());
 				int distanceToWarp = newPosition.distance(limit);
 				newPosition._y = r.left();
@@ -93,12 +91,13 @@ void MoveAction::advanceForward(Engine::Point2D<int> &newPosition,const int &age
 			}
 			break;
 			
-		case 2: //NE
+		case 2: // NE
 			if (inside(newPosition._x - agentVelocity,newPosition._y + agentVelocity,r)) {
 				newPosition._x -= agentVelocity;
 				newPosition._y += agentVelocity;
 				
 			}
+			// since the sapce is toroidal the bird must warp to the other edge of the world
 			else { 
 				if (((newPosition._x - agentVelocity) < r.top()) and ((newPosition._y + agentVelocity) > r.right())) { 
 					Engine::Point2D<int> limit = Engine::Point2D<int>(r.top(),r.right());
@@ -122,11 +121,11 @@ void MoveAction::advanceForward(Engine::Point2D<int> &newPosition,const int &age
 			}
 			break;
 			
-		case 3: //N
+		case 3: // N
 			if (inside(newPosition._x - agentVelocity,newPosition._y,r)) {
 				newPosition._x -= agentVelocity;
 			}
-			else {
+			else { // since the sapce is toroidal the bird must warp to the other edge of the world
 				Engine::Point2D<int> limit = Engine::Point2D<int>(r.top(),newPosition._y);
 				int distanceToWarp = newPosition.distance(limit);
 				newPosition._x = r.bottom();
@@ -134,12 +133,12 @@ void MoveAction::advanceForward(Engine::Point2D<int> &newPosition,const int &age
 			}
 			break;
 			
-		case 4: //NW
+		case 4: // NW
 			if (inside(newPosition._x - agentVelocity,newPosition._y - agentVelocity,r)) {
 				newPosition._x -= agentVelocity;
 				newPosition._y -= agentVelocity;
 			}
-			else {
+			else { // since the sapce is toroidal the bird must warp to the other edge of the world
 				if (((newPosition._x - agentVelocity) < r.top()) and ((newPosition._y - agentVelocity) < r.left())) {
 					Engine::Point2D<int> limit = Engine::Point2D<int>(r.top(),r.left());
 					int distanceToWarp = newPosition.distance(limit);
@@ -162,11 +161,11 @@ void MoveAction::advanceForward(Engine::Point2D<int> &newPosition,const int &age
 			}
 			break;
 			
-		case 5: //W
+		case 5: // W
 			if (inside(newPosition._x,newPosition._y - agentVelocity,r)) {
 				newPosition._y -= agentVelocity;
 			}
-			else {
+			else { // since the sapce is toroidal the bird must warp to the other edge of the world
 				Engine::Point2D<int> limit = Engine::Point2D<int>(newPosition._x,r.left());
 				int distanceToWarp = newPosition.distance(limit);
 				newPosition._y = r.right();
@@ -174,12 +173,12 @@ void MoveAction::advanceForward(Engine::Point2D<int> &newPosition,const int &age
 			}
 			break;
 			
-		case 6: //SW
+		case 6: // SW
 			if (inside(newPosition._x + agentVelocity,newPosition._y - agentVelocity,r)) {
 				newPosition._x += agentVelocity;
 				newPosition._y -= agentVelocity;
 			}
-			else {
+			else { // since the sapce is toroidal the bird must warp to the other edge of the world
 				if (((newPosition._x + agentVelocity) > r.bottom()) and ((newPosition._y - agentVelocity) < r.left())) {
 					Engine::Point2D<int> limit = Engine::Point2D<int>(r.bottom(),r.left());
 					int distanceToWarp = newPosition.distance(limit);
@@ -202,11 +201,11 @@ void MoveAction::advanceForward(Engine::Point2D<int> &newPosition,const int &age
 			}
 			break;
 			
-		case 7: //S
+		case 7: // S
 			if (inside(newPosition._x + agentVelocity,newPosition._y,r)) {
 				newPosition._x += agentVelocity;
 			}
-			else {
+			else { // since the sapce is toroidal the bird must warp to the other edge of the world
 				Engine::Point2D<int> limit = Engine::Point2D<int>(r.bottom(),newPosition._y);
 				int distanceToWarp = newPosition.distance(limit);
 				newPosition._x = r.top();
@@ -214,12 +213,12 @@ void MoveAction::advanceForward(Engine::Point2D<int> &newPosition,const int &age
 			}
 			break;
 			
-		case 8: //SE
+		case 8: // SE
 			if (inside(newPosition._x + agentVelocity,newPosition._y + agentVelocity,r)) {
 				newPosition._x += agentVelocity;
 				newPosition._y += agentVelocity;
 			}
-			else {
+			else { // since the sapce is toroidal the bird must warp to the other edge of the world
 				if (((newPosition._x + agentVelocity) > r.bottom()) and ((newPosition._y + agentVelocity) > r.right())) {
 					Engine::Point2D<int> limit = Engine::Point2D<int>(r.bottom(),r.right());
 					int distanceToWarp = newPosition.distance(limit);
@@ -248,17 +247,22 @@ void MoveAction::advanceForward(Engine::Point2D<int> &newPosition,const int &age
 }
 
 int MoveAction::translateHeading(const float &heading) {
-	if(337.5 < heading && heading <= 22.5) return 1; //E
-	else if(22.5 < heading && heading <= 67.5) return 2; //NE
-	else if(67.5 < heading && heading <= 112.5) return 3; //N
-	else if(112.5 < heading && heading <= 157.5) return 4; //NW
-	else if(157.5 < heading && heading <= 202.5) return 5; //W
-	else if(202.5 < heading && heading <= 247.5) return 6; //SW
-	else if(247.5 < heading && heading <= 292.5) return 7; //S
-	else if(292.5 < heading && heading <= 337.5) return 8; //SE
+	/*
+	 *  this coddes are used to identify the heading for the 
+	 * switch structure in the advanceForward method
+	 */
+	if(337.5 < heading && heading <= 22.5) return 1; // E
+	else if(22.5 < heading && heading <= 67.5) return 2; // NE
+	else if(67.5 < heading && heading <= 112.5) return 3; // N
+	else if(112.5 < heading && heading <= 157.5) return 4; // NW
+	else if(157.5 < heading && heading <= 202.5) return 5; // W
+	else if(202.5 < heading && heading <= 247.5) return 6; // SW
+	else if(247.5 < heading && heading <= 292.5) return 7; // S
+	else if(292.5 < heading && heading <= 337.5) return 8; // SE
 }
 
 float MoveAction::calcMeanHeading(Bird & birdAgent, const Engine::AgentsVector &flockmates) {
+	// calculates the mean heading of all the bird's flockmates
 	int x_comp = 0;
 	int y_comp = 0;
 	for (int i = 0; i < flockmates.size(); ++i) {
@@ -271,6 +275,7 @@ float MoveAction::calcMeanHeading(Bird & birdAgent, const Engine::AgentsVector &
 }
 
 float MoveAction::calcMeanTowardsHeading(Bird & birdAgent, const Engine::AgentsVector &flockmates) {
+	// calculates the mean heading of the flockmates that go towards the bird
 	int x_comp = 0;
 	int y_comp = 0;
 	for (int i = 0; i < flockmates.size(); ++i) {

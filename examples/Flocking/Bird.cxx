@@ -7,7 +7,8 @@
 namespace Examples {
 
 Bird::Bird (const std::string & id , const int & velocity, const int &sigth, const int &mindist, const float &max_A_turn, const float &max_C_turn, const float &max_S_turn) : Agent(id), _velocity(velocity), _sigth(sigth), _mindist(mindist), _max_A_turn(max_A_turn), _max_C_turn(max_C_turn), _max_S_turn(max_S_turn) {
-	_heading = Engine::GeneralState::statistics().getUniformDistValue(0,360);
+	// the initial heading is chonsen randomly
+	_heading = Engine::GeneralState::statistics().getUniformDistValue(0,360); 
 }
 
 Bird::~Bird() {}
@@ -16,9 +17,10 @@ void Bird::selectActions() {
 	_actions.push_back(new MoveAction());
 }
 
-void Bird::updateState() {
-	if (_heading > 359.99) _heading = 0.0;
-	else if (_heading < 0.0) _heading = 359.99;
+void Bird::updateState() { 
+	// it is checked that the heading is in the correct range of values
+	if (_heading > 359.99) _heading = 0.00;
+	else if (_heading < 0.00) _heading = 359.99;
 }
 
 int Bird::getVelocity() const {
