@@ -21,7 +21,7 @@ public:
 	virtual ~HuntAction();
 	// code that de agent executes in a HuntAction
 	void execute( Engine::Agent & agent );
-	// auxiliar method
+	// auxiliar function
 	std::string describe() const;
 };
 

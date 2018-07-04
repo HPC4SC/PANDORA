@@ -18,10 +18,16 @@ Bug::Bug( const std::string & id, const int &maxConsumptionRate, const int &size
 Bug::~Bug() {}
 
 void Bug::selectActions() {
+	/* 
+	 * the actions are pushed into the list of actions 
+	 * that the agent must perform in the codeig order
+ 	 */
 	Engine::World * world = this->getWorld();
 	int step = world->getCurrentStep();
-	if (step%2 == 0) {
-		//std::cout << "I'm " << this->getId() << "and now I execute my actions" << std::endl;
+	/* the bugs must be executed before the predateors.
+	 * therefore they are executed in even timesteps
+	 */
+	if (step%2 == 0) { 
 		_actions.push_back(new MoveAction());
 		_actions.push_back(new EatAction());
 		_actions.push_back(new DieAction());
@@ -53,21 +59,22 @@ int Bug::getSurvivalProbability() const {
 }
 
 void Bug::reproduce(const std::string &childId) {
-	std::ostringstream oss;
-	oss <<  childId;
-	Bug * child = new Bug(oss.str(),this->_maxConsumptionRate,0);
+	Bug * child = new Bug(childId,this->_maxConsumptionRate,0);
+	// creation of a new agent
 	_world->addAgent(child);
 	bool colocat = false;
 	Engine::Point2D<int>newPosition = this->getPosition();
 	for (int i = 0; i < 5 and not colocat; ++i) {
-		//trobar una pos no ocupada
+		// find an unoccupied cell within 5 trys
 		int modX = Engine::GeneralState::statistics().getUniformDistValue(-3,3);
 		newPosition._x += modX;
 		int modY = Engine::GeneralState::statistics().getUniformDistValue(-3,3);
 		newPosition._y += modY;
 		if (_world->checkPosition(newPosition)) colocat = true;
 	}
+	// if the agent has foud a valid position it is placed there
 	if (not colocat) child->remove();
+	// otherwise the agent is removed
 	else child->setPosition(newPosition);
 }
 

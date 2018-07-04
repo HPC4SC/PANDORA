@@ -8,6 +8,7 @@ RandomWorldConfig::RandomWorldConfig( const std::string & xmlFile ) : Config(xml
 RandomWorldConfig::~RandomWorldConfig() {}
 
 void RandomWorldConfig::loadParams() {
+	// the attributes are set with the in values of the config file
 	_numBirds = getParamInt( "Birds", "numBirds");
 	_agentVelocity = getParamInt("Birds", "velocity");
 	_agentSigth = getParamInt("Birds", "sigth");

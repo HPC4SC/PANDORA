@@ -22,7 +22,7 @@ public:
 	virtual ~EatAction();
 	// code that de agent executes in a EatAction
 	void execute( Engine::Agent & agent );
-	// auxiliar method
+	// auxiliar function
 	std::string describe() const;
 	
 };

@@ -12,10 +12,10 @@ class RandomWorldConfig;
 
 class RandomWorld : public Engine::World
 {
-	typedef std::vector<char> Row;
+	typedef std::vector<char> Row; 
 	typedef std::vector<Row> Matrix;
 	
-	Matrix gridValues{50,Row(50)}; // attribute that represents the max values of each cell
+	Matrix _gridValues{50,Row(50)}; // attribute that represents the max values of each cell
 	
 	// creates and initializes the Rasters of the simulation
 	void createRasters();

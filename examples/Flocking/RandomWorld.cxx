@@ -18,7 +18,9 @@ RandomWorld::~RandomWorld() {}
 void RandomWorld::createAgents() {
     std::stringstream logName;
 	logName << "agents_" << getId();
-
+	/* the agents are created with it's attributes initialized with 
+	 * the in values and this is registered in the log files
+	 */
     const RandomWorldConfig & randomConfig = (const RandomWorldConfig&)getConfig();
 	for(int i=0; i<randomConfig._numBirds; i++) {
 		if((i%getNumTasks())==getId()){
