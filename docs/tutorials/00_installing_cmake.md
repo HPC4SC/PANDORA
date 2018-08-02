@@ -9,10 +9,13 @@ You will need a PC with GNU/Linux installed . The tutorial will explain how to i
 
 To compile and install Pandora we need some libraries and programs to do so. This is a summary of what we need. How to install everything step by step and will be explained after this part:
 
-* `GDAL`
-* `HDF5`
-* `CMAKE`
-* `SCONS`
+    ```
+    GDAL
+    HDF5
+    CMAKE
+    SCONS
+    ```
+
 * Libraries:
 	
 	```
@@ -92,6 +95,9 @@ This are the dependences of Cassandra, a GUI to analyse Pandora's outputs
 	```bash
 	export GDAL_ROOT=/opt/gdal-1.10.1
 	export LD_LIBRARY_PATH=${GDAL_ROOT}/lib/:${LD_LIBRARY_PATH}
+    ```
+    if you want to avoid to type those command each time you can add thos line to your `.bashrc`:
+    ```bash
 	echo ""  >> ~/.bashrc
 	echo "export GDAL_ROOT=/opt/gdal-1.10.1" >> ~/.bashrc	
 	echo "export LD_LIBRARY_PATH=\${GDAL_ROOT}/lib/:\${LD_LIBRARY_PATH}" >> ~/.bashrc
@@ -190,6 +196,13 @@ Now that we have all the dependencies installed let's go and compile Pandora her
 
 	```bash
 	cmake -DCMAKE_INSTALL_PREFIX=/opt/pandora ../
+	make
+	sudo make install
+	```
+
+    If you want to compile also the example given with pandor you will have to turn on the option with cmake:
+	```bash
+	cmake -Dexample=ON -DCMAKE_INSTALL_PREFIX=/opt/pandora ../
 	make
 	sudo make install
 	```
