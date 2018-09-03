@@ -25,7 +25,6 @@
 #include <cstdlib>
 #include <iomanip>
 #include <boost/filesystem.hpp>
-#include <iostream>
 
 #ifdef __linux
     #include <wait.h>
