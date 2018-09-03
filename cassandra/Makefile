@@ -471,6 +471,13 @@ qrc_cassandra.cpp: cassandra.qrc \
 		../share/cassandra/icons/project_new.png \
 		../share/cassandra/icons/previous.png \
 		../share/cassandra/icons/play.png
+		../share/cassandra/3dmodels/agent.3ds \
+		../share/cassandra/3dmodels/avatars.3ds \
+		../share/cassandra/3dmodels/cube.3ds \
+		../share/cassandra/3dmodels/landscape1.bmp \
+		../share/cassandra/3dmodels/POLYSHIP.BMP \
+		../share/cassandra/3dmodels/skeleton.3ds \
+		../share/cassandra/3dmodels/spaceship.3ds \
 	/usr/lib/x86_64-linux-gnu/qt4/bin/rcc -name cassandra cassandra.qrc -o qrc_cassandra.cpp
 
 compiler_image_collection_make_all: qmake_image_collection.cpp
