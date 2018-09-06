@@ -1,4 +1,5 @@
 
+#include <iostream>
 #include <TimeSeriesModel.hxx>
 #include <boost/filesystem.hpp>
 #include <sstream>
