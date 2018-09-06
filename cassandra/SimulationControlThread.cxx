@@ -20,6 +20,7 @@
  * 
  */
 
+#include <iostream>
 #include <SimulationControlThread.hxx>
 #include <sstream>
 #include <cstdlib>
