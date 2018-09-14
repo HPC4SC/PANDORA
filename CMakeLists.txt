@@ -1,5 +1,4 @@
 cmake_minimum_required (VERSION 3.1)
-option(example "example" OFF)
 project( Pandora )
 
 set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -DGDAL_VERSION_1 -DTIXML_USE_STL -g" )
@@ -54,9 +53,7 @@ include_directories( ${CMAKE_SOURCE_DIR}/tinyxml )
 add_subdirectory( src )
 add_subdirectory( utils )
 add_subdirectory( pyPandora )
-if(example)
-    add_subdirectory( examples )
-endif()
+add_subdirectory( examples )
 add_subdirectory( bin )
 
 #get_cmake_property(_variableNames VARIABLES)

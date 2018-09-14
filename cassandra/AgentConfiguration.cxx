@@ -27,8 +27,6 @@
 #include <Loader3DS.hxx>
 #include <Model3D.hxx>
 #include <cstdlib>
-#include <stdio.h>
-#include <unistd.h>
 
 namespace GUI
 {
@@ -38,24 +36,17 @@ AgentConfiguration::AgentConfiguration() : _color(rand()%256,rand()%256,rand()%2
     _color = QColor::fromHsv(rand() % 256, 255, 190);
 
     std::stringstream oss;
-    //oss <<getenv("PANDORAPATH") << "/share/cassandra/3dmodels/cube.3ds";
-    char *currentDirectory=NULL;
-	size_t size;
-	currentDirectory=getcwd(currentDirectory,size);
-	oss << currentDirectory << "/../share/cassandra/3dmodels/cube.3ds";
-    setFileName3D(oss.str());
-	//setFileName3D( oss.str() );
+    oss <<getenv("PANDORAPATH") << "/share/cassandra/3dmodels/cube.3ds";
+	setFileName3D( oss.str() );
 }
 
 AgentConfiguration::AgentConfiguration( const AgentConfiguration & prototype ) : _color(prototype.getColor()), _icon(0), _useIcon(prototype.useIcon()), _fileName2D(prototype.getFileName2D()), _size(prototype.getSize()), _size3D(prototype.getSize3D()), _fileName3D(prototype.getFileName3D()), _model(0), _showValue(prototype.showValue())
 {
-	std::cout << "FileName2D is: " << _fileName2D << std::endl;
 	if(!_fileName2D.empty())
 	{
 		_icon = new QIcon(prototype.getIcon());
 	}
 	
-	std::cout << "FileName3D is: " << _fileName3D << std::endl;
 	if(!_fileName3D.empty())
 	{
 		_model = Loader3DS::instance()->loadModel(_fileName3D);
@@ -181,3 +172,4 @@ const Model3D & AgentConfiguration::getModel() const
 }
 
 } // namespace GUI
+
