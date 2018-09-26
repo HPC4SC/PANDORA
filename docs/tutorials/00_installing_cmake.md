@@ -168,7 +168,7 @@ Now that we have all the dependencies installed let's go and compile Pandora her
 	$ sudo make install
 	```
 	
-	6. And finally export Pandora's libraries
+	6. Now we need to export Pandora's libraries
 
 	```bash
 	$ export PANDORAPATH=/opt/pandora/
@@ -176,7 +176,33 @@ Now that we have all the dependencies installed let's go and compile Pandora her
 	$ export PYTHONPATH=${PANDORAPATH}/bin:${PYTHONPATH}
 	$ export LD_LIBRARY_PATH=${PANDORAPATH}/lib:${LD_LIBRARY_PATH}
 	```
+	
+	7. Finally we need to install scons in order to compile the simulations
+	
+	```bash
+	$ sudo apt-get install scons
+	```
+	
+	
+- Compile Cassandra
 
+Now we will start to compile the UI made for analyzing the results of 
+PANDORA's simulations.
+
+	 1. First we need to install Cassandra's dependences
+	 
+	 ```bash
+	 $ sudo apt-get install libtinyxml-dev libdevil-dev freeglut3-dev libqwt-dev libqt4-dev libqt4-opengl-dev libgdal1-dev build-essential libboost-random-dev libboost-test-dev libboost-timer-dev libboost-chrono-dev
+	 ```
+
+	2. Now we just have to compile Cassandra
+	
+	```bahs
+	$ cd ../cassandra/
+	$ sudo make
+	```
+	
+Now the Cassandra binary is going to be generated in the ../bin/ directory
         
 [Next - Get Started with pyPandora](01_getting_started_pyPandora.md)
 Or [Next - Get Started with C++](02_getting_started_pandora.md)
