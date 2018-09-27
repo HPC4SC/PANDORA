@@ -185,7 +185,6 @@ Now that we have all the dependencies installed let's go and compile Pandora her
 	
 	
 - Compile Cassandra
-
 Now we will start to compile the UI made for analyzing the results of 
 PANDORA's simulations.
 
