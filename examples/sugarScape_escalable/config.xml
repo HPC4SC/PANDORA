@@ -1,0 +1,10 @@
+<?xml version="1.0" ?>
+<config>  
+	<!-- Global simulation parameters -->
+	<output resultsFile="./data/sugarScape_reescalable.h5" logsDir="./logs"/>
+	<numSteps value="100" serializeResolution="1"/>
+	<size width="80" height="80"/>
+	<Agents numAgents="250"/>
+	
+</config>
+
