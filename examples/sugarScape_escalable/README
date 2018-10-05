@@ -1,0 +1,5 @@
+This code is a Pandora version of the classical sugarScape model. It is based on the data, code and ODD published by Epstein, J. and Axtell, R. version on Netlogo.
+This version has been made to be able to scale the world of Sugar Rush to the desired shape.
+
+- Epstein, J. and Axtell, R. (1996). Growing Artificial Societies: Social Science from the Bottom Up. Washington, D.C.: Brookings Institution Press.
+- Li, J. and Wilensky, U. (2009). NetLogo Sugarscape 1 Immediate Growback model. http://ccl.northwestern.edu/netlogo/models/Sugarscape1ImmediateGrowback. Center for Connected Learning and Computer-Based Modeling, Northwestern University, Evanston, IL.
