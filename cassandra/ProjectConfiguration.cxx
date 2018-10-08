@@ -155,7 +155,7 @@ void ProjectConfiguration::loadAgentsConfigs( TiXmlElement * agents )
 		AgentConfiguration * agentConfig = new AgentConfiguration();
 
 		TiXmlElement * config2d = agent->FirstChildElement("shape2D");
-		TiXmlElement * config3d = agent->FirstChildElement("shape3D");
+		//TiXmlElement * config3d = agent->FirstChildElement("shape3D");
 
 		agentConfig->setSize( atof(config2d->Attribute("size")));
 		agentConfig->setUseIcon( atoi(config2d->Attribute("useIcon")));
@@ -163,9 +163,9 @@ void ProjectConfiguration::loadAgentsConfigs( TiXmlElement * agents )
 		agentConfig->setFileName2D( config2d->Attribute("iconPath"));
 		agentConfig->setColor(QColor(config2d->Attribute("color")));
 
-		agentConfig->setFileName3D( config3d->Attribute("model3D"));		
-		Engine::Point3D<float> size3d(atof(config3d->Attribute("x3D")), atof(config3d->Attribute("y3D")), atof(config3d->Attribute("z3D")));
-		agentConfig->setSize3D( size3d );
+		//agentConfig->setFileName3D( config3d->Attribute("model3D"));
+		//Engine::Point3D<float> size3d(atof(config3d->Attribute("x3D")), atof(config3d->Attribute("y3D")), atof(config3d->Attribute("z3D")));
+		//agentConfig->setSize3D( size3d );
 		
 		_agentsConfig.insert(make_pair(std::string(agent->Attribute("type")), agentConfig));
 		agent = agent->NextSiblingElement();
@@ -226,14 +226,14 @@ TiXmlElement * ProjectConfiguration::storeAgentsConfigs()
 		config2d->SetAttribute("useIcon", config->useIcon());
 		config2d->SetAttribute("showValue", config->showValue());
 
-		TiXmlElement * config3d = new TiXmlElement("shape3D");
-		config3d->SetAttribute("model3D", config->getFileName3D());
-		config3d->SetDoubleAttribute("x3D", config->getSize3D()._x);
-		config3d->SetDoubleAttribute("y3D", config->getSize3D()._y);
-		config3d->SetDoubleAttribute("z3D", config->getSize3D()._z);
+		//TiXmlElement * config3d = new TiXmlElement("shape3D");
+		//config3d->SetAttribute("model3D", config->getFileName3D());
+		//config3d->SetDoubleAttribute("x3D", config->getSize3D()._x);
+		//config3d->SetDoubleAttribute("y3D", config->getSize3D()._y);
+		//config3d->SetDoubleAttribute("z3D", config->getSize3D()._z);
 
 		currentAgent->LinkEndChild(config2d);
-		currentAgent->LinkEndChild(config3d);
+		//currentAgent->LinkEndChild(config3d);
 		agents->LinkEndChild(currentAgent);
 	}
 	return agents;
