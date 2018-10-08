@@ -201,10 +201,10 @@ MainWindow::MainWindow() : _display2D(0), _display3D(0), _agentTypeSelection(0),
 	_showAgentsAction->setStatusTip(tr("Show Agents"));
 	connect(_showAgentsAction, SIGNAL(triggered()), _display2D, SLOT(showAgents()));
 	
-    _show3DAction = new QAction(QIcon(":share/cassandra/icons/3dview.png"), tr("&Raster 3D"), this);
-	_show3DAction->setShortcut(tr("Ctrl+3"));
-	_show3DAction->setStatusTip(tr("Show 3D raster"));
-	connect(_show3DAction, SIGNAL(triggered()), this, SLOT(show3DWindow()));
+    //_show3DAction = new QAction(QIcon(":share/cassandra/icons/3dview.png"), tr("&Raster 3D"), this);
+	//_show3DAction->setShortcut(tr("Ctrl+3"));
+	//_show3DAction->setStatusTip(tr("Show 3D raster"));
+	//connect(_show3DAction, SIGNAL(triggered()), this, SLOT(show3DWindow()));
 
 	_showLabAction = new QAction(QIcon(":share/cassandra/icons/lab.png"), tr("&Laboratory"), this);
 	_showLabAction->setStatusTip(tr("Open Laboratory"));
