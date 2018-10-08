@@ -37,7 +37,7 @@ AgentConfiguration::AgentConfiguration() : _color(rand()%256,rand()%256,rand()%2
 
     std::stringstream oss;
     oss <<getenv("PANDORAPATH") << "/share/cassandra/3dmodels/cube.3ds";
-	setFileName3D( oss.str() );
+	//setFileName3D( oss.str() );
 }
 
 AgentConfiguration::AgentConfiguration( const AgentConfiguration & prototype ) : _color(prototype.getColor()), _icon(0), _useIcon(prototype.useIcon()), _fileName2D(prototype.getFileName2D()), _size(prototype.getSize()), _size3D(prototype.getSize3D()), _fileName3D(prototype.getFileName3D()), _model(0), _showValue(prototype.showValue())

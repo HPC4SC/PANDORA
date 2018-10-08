@@ -66,7 +66,7 @@ Model3D * Loader3DS::loadModel( const std::string & path )
 	{
 		std::stringstream oss;
 		oss << "Loader3DS::loadModel - error loading model in path: " << path;
-		//throw Engine::Exception(oss.str());
+		throw Engine::Exception(oss.str());
 		return 0;
 	}
 	unsigned short id;
