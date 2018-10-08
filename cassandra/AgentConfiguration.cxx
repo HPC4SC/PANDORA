@@ -46,12 +46,14 @@ AgentConfiguration::AgentConfiguration( const AgentConfiguration & prototype ) :
 	{
 		_icon = new QIcon(prototype.getIcon());
 	}
-	
+
+	/*
 	if(!_fileName3D.empty())
 	{
 		_model = Loader3DS::instance()->loadModel(_fileName3D);
 		_model->setModelScale(_size3D);
 	}
+ 	*/
 }
 
 AgentConfiguration::~AgentConfiguration()
