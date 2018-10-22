@@ -28,7 +28,6 @@
 #include <RasterSelection.hxx>
 #include <GenericStatistics.hxx>
 #include <AgentConfigurator.hxx>
-#include <Display3D.hxx>
 #include <AgentConfiguration.hxx>
 #include <RasterConfigurator.hxx>
 #include <Exception.hxx>
@@ -51,6 +50,7 @@
 #include <QMessageBox>
 #include <QSpinBox>
 #include <QLabel>
+#include <QPainter>
 #include <QTimer>
 #include <QDockWidget>
 #include <QListWidgetItem>
@@ -63,7 +63,7 @@
 namespace GUI
 {
 
-MainWindow::MainWindow() : _display2D(0), _display3D(0), _agentTypeSelection(0), _agentTraitSelection(0), _rasterSelection(0), _genericStatistics(0), _viewedStep(0), _progressBar(0)//, _Raster3D(0)//, _windowRaster(true)*/
+MainWindow::MainWindow() : _display2D(0), _agentTypeSelection(0), _agentTraitSelection(0), _rasterSelection(0), _genericStatistics(0), _viewedStep(0), _progressBar(0)//, _windowRaster(true)*/
 { 
 	QDockWidget * agentTypeSelectionDock = new QDockWidget(tr("Agent Types"), this);
 	agentTypeSelectionDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
@@ -92,23 +92,19 @@ MainWindow::MainWindow() : _display2D(0), _display3D(0), _agentTypeSelection(0),
 
 	// resource display 2D
 	_display2D = new Display2D(this);
-	//_display3D = new Display3D(0);
 	_laboratory = new Laboratory(this);
 	_agentAnalysis = new AgentAnalysis(this);
 	_rasterAnalysis = new RasterAnalysis(this);
 	_settings = new Settings;
 	
 	_display2D->show();
-	//_display3D->hide();
 	_laboratory->hide();
 	_agentAnalysis->hide();
 	_settings->hide();
 	
     setCentralWidget(_display2D);
-//	setCentralWidget(_display3D);
 	
 	connect(this, SIGNAL(newViewedStep(int)), _display2D, SLOT(viewedStepChangedSlot(int)));
-    //connect(this, SIGNAL(newViewedStep(int)), _display3D, SLOT(viewedStepChangedSlot(int)));
 	connect(this, SIGNAL(newViewedStep(int)), _genericStatistics, SLOT(viewedStepChangedSlot(int)));
 	connect(_display2D, SIGNAL(calculateStatistics(const std::string &, const std::string &)), _genericStatistics, SLOT(calculateStatistics(const std::string &, const std::string &)));
 	connect(_agentTypeSelection, SIGNAL(itemActivated(QListWidgetItem *)), _display2D, SLOT(typeSelected(QListWidgetItem *)));
@@ -116,7 +112,6 @@ MainWindow::MainWindow() : _display2D(0), _display3D(0), _agentTypeSelection(0),
 	connect(_agentTypeSelection, SIGNAL(itemDoubleClicked(QListWidgetItem *)), this, SLOT(openAgentConfigurator(QListWidgetItem *)));
 	connect(_agentTraitSelection, SIGNAL(itemActivated(QListWidgetItem *)), _display2D, SLOT(stateSelected(QListWidgetItem *)));
 	connect(_rasterSelection, SIGNAL(rastersRearranged(std::list<std::string>, std::list<bool>)), _display2D, SLOT(rastersRearranged(std::list<std::string>, std::list<bool>)));
-	//connect(_rasterSelection, SIGNAL(rastersRearranged(std::list<std::string>, std::list<bool>)), _display3D, SLOT(rastersRearranged(std::list<std::string>, std::list<bool>)));
 	connect(_rasterSelection, SIGNAL(itemDoubleClicked(QListWidgetItem *)), this, SLOT(openRasterConfigurator(QListWidgetItem *)));
 	connect(_settings, SIGNAL(radiusSelectionModified(int)), _display2D, SLOT(radiusSelectionModified(int)));
 
@@ -200,11 +195,6 @@ MainWindow::MainWindow() : _display2D(0), _display3D(0), _agentTypeSelection(0),
 	_showAgentsAction->setShortcut(tr("Ctrl+A"));
 	_showAgentsAction->setStatusTip(tr("Show Agents"));
 	connect(_showAgentsAction, SIGNAL(triggered()), _display2D, SLOT(showAgents()));
-	
-    //_show3DAction = new QAction(QIcon(":share/cassandra/icons/3dview.png"), tr("&Raster 3D"), this);
-	//_show3DAction->setShortcut(tr("Ctrl+3"));
-	//_show3DAction->setStatusTip(tr("Show 3D raster"));
-	//connect(_show3DAction, SIGNAL(triggered()), this, SLOT(show3DWindow()));
 
 	_showLabAction = new QAction(QIcon(":share/cassandra/icons/lab.png"), tr("&Laboratory"), this);
 	_showLabAction->setStatusTip(tr("Open Laboratory"));
@@ -262,7 +252,6 @@ MainWindow::MainWindow() : _display2D(0), _display3D(0), _agentTypeSelection(0),
 	viewMenu->addAction(_zoomInAction);
 	viewMenu->addAction(_showAgentsAction);
 	viewMenu->addSeparator();
-	//viewMenu->addAction(_show3DAction);
 	viewMenu->addAction(_showLabAction);
 
 	QMenu * analysisMenu = menuBar()->addMenu(tr("&Analysis"));
@@ -329,7 +318,6 @@ MainWindow::MainWindow() : _display2D(0), _display3D(0), _agentTypeSelection(0),
 	viewBar->addAction(_zoomInAction);
 	viewBar->addAction(_showAgentsAction);
 	viewBar->addSeparator();
-	//viewBar->addAction(_show3DAction);
 	viewBar->addAction(_showLabAction);
 	
 	// TODO un thread diferent?
@@ -351,7 +339,6 @@ MainWindow::MainWindow() : _display2D(0), _display3D(0), _agentTypeSelection(0),
 	_zoomInAction->setEnabled(false);
 	_zoomOutAction->setEnabled(false);
 	_showAgentsAction->setEnabled(false);
-	//_show3DAction->setEnabled(false);
 	_showLabAction->setEnabled(true);
 
 	_saveProjectAction->setEnabled(false);
@@ -368,12 +355,7 @@ MainWindow::MainWindow() : _display2D(0), _display3D(0), _agentTypeSelection(0),
 
 MainWindow::~MainWindow()
 {
-	/*
-    if(_display3D!=0)
-	{
-		delete _display3D;
-	}
-	 */
+
 	if(_progressBar!=0)
 	{
 		delete _progressBar;
@@ -420,7 +402,6 @@ void MainWindow::adjustGUI()
 	std::cout << "adjusting GUI" << std::endl;
 
     _display2D->setSimulationRecord(ProjectConfiguration::instance()->getSimulationRecord());
-    //_display3D->setSimulationRecord(ProjectConfiguration::instance()->getSimulationRecord());
 	_agentTypeSelection->setSimulationRecord(ProjectConfiguration::instance()->getSimulationRecord());
 	_agentTraitSelection->setSimulationRecord(ProjectConfiguration::instance()->getSimulationRecord());
 	_rasterSelection->setSimulationRecord(ProjectConfiguration::instance()->getSimulationRecord());
@@ -439,7 +420,6 @@ void MainWindow::adjustGUI()
 		_zoomInAction->setEnabled(false);
 		_zoomOutAction->setEnabled(false);
 		_showAgentsAction->setEnabled(false);
-		_show3DAction->setEnabled(false);
 		
 		_saveProjectAction->setEnabled(false);
 		_saveProjectAsAction->setEnabled(false);
@@ -466,7 +446,6 @@ void MainWindow::adjustGUI()
 	_zoomInAction->setEnabled(true);
 	_zoomOutAction->setEnabled(true);
 	_showAgentsAction->setEnabled(true);
-	//_show3DAction->setEnabled(true);
 
 	_saveProjectAction->setEnabled(true);
 	_saveProjectAsAction->setEnabled(true);
@@ -482,7 +461,6 @@ void MainWindow::adjustGUI()
 void MainWindow::quit()
 {
 	close();
-	//_Raster3D.close();
 }
 
 void MainWindow::firstStep()
@@ -573,21 +551,6 @@ void MainWindow::agentConfigured( const std::string & type, const AgentConfigura
 void MainWindow::rasterConfigured( const std::string & type, const RasterConfiguration & config )
 {	
 	ProjectConfiguration::instance()->updateRasterConfig(type, config);
-	//_display3D->updateRasterConfig();
-}
-
-void MainWindow::show3DWindow()
-{
-	/*
-    if(_display3D->isVisible())
-    {
-        _display3D->hide();
-    }
-    else
-    {
-        _display3D->show();
-    }
-    */
 }
 
 void MainWindow::showLaboratory()
@@ -694,39 +657,6 @@ void MainWindow::loadSimulationFinished( bool correct )
 	{
 		QMessageBox::warning(0, "Cassandra", "Error trying to load simulation");
 	}
-}
-
-void MainWindow::show3Dagent(QTreeWidgetItem * item, int )
-{
-    if (item->child(0) != 0);
-    else
-    {
-        Engine::AgentRecord* agentSelected = 0;
-        std::list<Engine::AgentRecord*>::iterator it = agentsSelected.begin();
-        while(it != agentsSelected.end())
-        {
-			Engine::AgentRecord * agentAux = *it;
-            if (agentAux->getId().compare(item->parent()->text(0).toStdString())==0)
-			{
-				agentSelected = agentAux;
-			}
-            it++;
-        }
-		if(!agentSelected)
-		{
-			return;
-		}
-
-        Display3D * displayAgent = new Display3D(0);
-        connect(this, SIGNAL(newViewedStep(int)), displayAgent, SLOT(viewedStepChangedSlot(int)));
-        connect(_rasterSelection, SIGNAL(rastersRearranged(std::list<std::string>)), displayAgent, SLOT(rastersRearranged(std::list<std::string>)));
-        displayAgent->setWindowTitle(item->parent()->text(0));
-
-        displayAgent->setSimulationRecord(ProjectConfiguration::instance()->getSimulationRecord());
-        displayAgent->rastersRearranged(_rasterSelection->getRasterList(), _rasterSelection->getRasterView());
-        displayAgent->setAgentFocus(agentSelected);
-		displayAgent->show();
-    }
 }
 
 void MainWindow::updateAgentsSelected(std::list<Engine::AgentRecord*> agents,Engine::SimulationRecord * sim)

@@ -25,7 +25,6 @@
 
 #include <QMainWindow>
 #include <map>
-#include <Point3D.hxx>
 #include <LoadSimulationThread.hxx>
 #include <QTreeWidgetItem>
 #include <AgentRecord.hxx>
@@ -48,7 +47,6 @@ class AgentTraitSelection;
 class AgentTypeSelection;
 class RasterSelection;
 class GenericStatistics;
-class Display3D;
 class AgentConfiguration;
 class RasterConfiguration;
 class Laboratory;
@@ -82,7 +80,6 @@ private:
 	QAction * _zoomOutAction;
 	QAction * _showAgentsAction;
 
-	QAction * _show3DAction;
 	QAction * _showLabAction;
 	QAction * _agentAnalysisAction;
 	QAction * _rasterAnalysisAction;
@@ -101,7 +98,6 @@ private:
 	QTimer * _loadSimulationTimer;
 
 	Display2D * _display2D;
-    Display3D * _display3D;	
 	Settings * _settings;
 	Laboratory * _laboratory;
 	AgentAnalysis * _agentAnalysis;
@@ -119,7 +115,6 @@ private:
 	
 	int _viewedStep;
 	void setViewedStep( int viewedStep );
-//	Raster3D _Raster3D;
 	
 	bool _windowRaster;
 
@@ -153,8 +148,7 @@ private slots:
 
 	void openAgentConfigurator(QListWidgetItem * item);
 	void openRasterConfigurator(QListWidgetItem * item);
-	
-	void show3DWindow();
+
 	void showLaboratory();
 	void showAgentAnalysis();
 	void showRasterAnalysis();
@@ -172,7 +166,6 @@ private slots:
 
 	void loadSimulationFinished( bool correct);
 
-    void show3Dagent(QTreeWidgetItem * item, int i);
     void showSettings();
 
     void updateAgentsSelected(std::list<Engine::AgentRecord*> agents, Engine::SimulationRecord *sim);
