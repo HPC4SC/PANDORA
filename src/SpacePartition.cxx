@@ -757,7 +757,6 @@ namespace Engine
                 }
             }
         }
-
     }
 
     int SpacePartition::getIdFromPosition( const Point2D<int> & position )
@@ -847,7 +846,6 @@ namespace Engine
 
         for ( int sectionIndex=0; sectionIndex<4; sectionIndex++ )
         {
-
             // section index doesn't matter if is the entire overlap
             // TODO refactor? we are sending 4 times all the info
             sendOverlapZones( sectionIndex, false );
@@ -856,11 +854,9 @@ namespace Engine
             MPI_Barrier( MPI_COMM_WORLD );
             clearRequests( false );
 
-
             sendGhostAgents( sectionIndex );
             receiveGhostAgents( sectionIndex );
         }
-
     }
 
     void SpacePartition::finish( )
