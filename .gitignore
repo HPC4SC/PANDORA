@@ -1,5 +1,7 @@
-
 *.log
+
+.idea
+cmake-build-debug
 
 # Compiled source #
 *.o
