@@ -19,7 +19,6 @@ pandora/build_py/
 
 .sconf_temp/
 bin/cassandra
-cassandra/Makefile
 cassandra/qrc_cassandra.cpp
 cassandra/ui_AgentAnalysis.h
 cassandra/ui_AgentConfigurator.h
