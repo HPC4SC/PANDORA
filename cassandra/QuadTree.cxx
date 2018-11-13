@@ -248,7 +248,7 @@ void QuadTree::setCellColor( const Engine::StaticRaster & raster, const ColorSel
 
 	if(randomColor)
 	{
-		color = QColor(rand()%255, rand()%255, rand()%255);
+		color = QColor(rand_r()%255, rand_r()%255, rand_r()%255);
 	}
     
 	float ambientColor[3];
