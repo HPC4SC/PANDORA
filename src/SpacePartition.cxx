@@ -1536,5 +1536,4 @@ namespace Engine {
     int SpacePartition::getMaxValue(const DynamicRaster &raster, const Point2D<int> &position) const {
         return raster.getMaxValue(getRealPosition(position));
     }
-
 } // namespace Engine
