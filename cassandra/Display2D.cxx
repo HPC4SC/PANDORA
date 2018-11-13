@@ -343,9 +343,9 @@ QColor Display2D::getRandomColor() const
 {
     QColor mix(255, 100, 100);
 
-    int red = rand_r()%255;
-    int green = rand_r()%255;
-    int blue = rand_r()%255;
+    int red = rand()%255;
+    int green = rand()%255;
+    int blue = rand()%255;
     red = (red + mix.red())/2;
     green = (green + mix.green())/2;
     blue = (blue + mix.blue())/2;
