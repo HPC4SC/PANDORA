@@ -137,12 +137,12 @@ void Soldier::fire()
 	if(_isBlueSide)
 	{
 		bulletPosition._y++;			
-		oss << "blueBullet_" << rand_r();
+		oss << "blueBullet_" << rand();
 	}
 	else
 	{
 		bulletPosition._y--;
-		oss << "redBullet_" << rand_r();
+		oss << "redBullet_" << rand();
 	}
 	//std::cout << this << " firing!" << std::endl;
 	
