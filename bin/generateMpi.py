@@ -5,7 +5,7 @@ import sys, os
 def writeRegisterTypes( f, listAgents ):
     f.write('void MpiFactory::registerTypes()\n')
     f.write('{\n')  
-    for i in range(0, len(listAgents)):
+    for i in enumerate(listAgents):
         f.write('\t_types.insert( std::make_pair( "'+listAgents[i]+'", create'+listAgents[i]+'Type()));\n')
     f.write('}\n')
     f.write('\n')
@@ -13,7 +13,7 @@ def writeRegisterTypes( f, listAgents ):
 def writeCreateDefaultPackage( f, listAgents ):
     f.write('void * MpiFactory::createDefaultPackage( const std::string & type )\n')
     f.write('{\n')
-    for i in range(0, len(listAgents)):
+    for i in enumerate(listAgents):
         f.write('\tif(type.compare("'+listAgents[i]+'")==0)\n')
         f.write('\t{\n')
         f.write('\t\treturn new '+listAgents[i]+'Package;\n')
@@ -30,7 +30,7 @@ def writeCreateDefaultPackage( f, listAgents ):
 def writeCreateAndFillAgents( f, listAgents, namespaces ):
     f.write('Agent * MpiFactory::createAndFillAgent( const std::string & type, void * package )\n')
     f.write('{\n')
-    for i in range(0, len(listAgents)):
+    for i in enumerate(listAgents):
         f.write('\tif(type.compare("'+listAgents[i]+'")==0)\n')
         f.write('\t{\n')
         f.write('\t\treturn new '+namespaces[i]+"::"+listAgents[i]+'(package);\n')
@@ -140,7 +140,7 @@ def createFactoryMethods( listAgents, factoryFile, namespaces, listAttributesMap
     f.write('#include <Exception.hxx>\n')
     f.write('#include <sstream>\n')
     f.write('\n')
-    for i in range(0, len(listAgents)):
+    for i in enumerate(listAgents):
         print '\t\tadding: ' + listAgents[i] + ' to factory file: ' + factoryFile
         f.write('#include <'+listAgents[i]+'.hxx>\n')
         f.write('#include "'+listAgents[i]+'_mpi.hxx"\n')
@@ -149,7 +149,7 @@ def createFactoryMethods( listAgents, factoryFile, namespaces, listAttributesMap
     f.write('{\n')
     f.write('\n')
     
-    for i in range(0, len(listAgents)):
+    for i in enumerate(listAgents):
         writeCreateType( f, listAgents[i], listAttributesMaps[i])
 
     writeRegisterTypes( f, listAgents )
@@ -433,4 +433,3 @@ def execute( target, source, env ):
     createFactoryMethods(listAgents, str(target[0]), namespaceAgents, listAttributesMaps )
     print 'done!'
     return None
-
