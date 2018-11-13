@@ -8,34 +8,33 @@
 
 namespace Engine
 {
-	class Agent;
+    class Agent;
 }
 
 namespace Examples
 {
 
-class MoveAction : public Engine::Action
-{
-public:
-    // creates an instance of a MoveAction
-	MoveAction();
-	// destroys an instance of a MoveAction
-	virtual ~MoveAction();
-	// code that each agent will execute when performing a MoveAction
-	void execute( Engine::Agent & agent );
-	/* for all of the cells within the agent's vision selects the one that
-	 * has the most sugar
-	 */
-	void selectBestPos(int &new_x, int &new_y, const int &vision, Engine::World * world);
-	//does the pertinent comparations to decide wich of the cells is better
-	void findMaxSugar(int &maxSugar, const int &cadidateSugar, int &nearest, const int &i, const int &pos, const Engine::Point2D<int> &candidate, Engine::Point2D<int> &max);
-	// checks if the position (i,j) is inside the world
-	bool inside(int i, int j, Engine::Rectangle<int> r);
-	// auxiliar function
-	std::string describe() const;
-};
+    class MoveAction : public Engine::Action
+    {
+    public:
+        // creates an instance of a MoveAction
+        MoveAction();
+        // destroys an instance of a MoveAction
+        virtual ~MoveAction();
+        // code that each agent will execute when performing a MoveAction
+        void execute( Engine::Agent & agent );
+        /* for all of the cells within the agent's vision selects the one that
+         * has the most sugar
+         */
+        void selectBestPos(int &new_x, int &new_y, const int &vision, Engine::World * world);
+        //does the pertinent comparations to decide wich of the cells is better
+        void findMaxSugar(int &maxSugar, const int &cadidateSugar, int &nearest, const int &i, const int &pos, const Engine::Point2D<int> &candidate, Engine::Point2D<int> &max);
+        // checks if the position (i,j) is inside the world
+        bool inside(int i, int j, Engine::Rectangle<int> r);
+        // auxiliar function
+        std::string describe() const;
+    };
 
 } // namespace Examples
 
 #endif // __MoveHomeAction_hxx__
-
