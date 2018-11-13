@@ -246,7 +246,7 @@ def writeVectorAttributesPassing( f, agentName, vectorAttributesMap ):
     f.write('\n')
     f.write('void '+agentName+'::sendVectorAttributes( int target )\n')
     f.write('{\n')
-    if len(vectorAttributesMap) > 0:
+    if vectorAttributesMap:
         f.write('\tint sizeVector = 0;\n')
     for nameAttribute in vectorAttributesMap.keys():
         print 'sending vector: ' + nameAttribute + ' with type: ' + vectorAttributesMap[nameAttribute]
@@ -260,7 +260,7 @@ def writeVectorAttributesPassing( f, agentName, vectorAttributesMap ):
 
     f.write('void '+agentName+'::receiveVectorAttributes( int origin )\n')
     f.write('{\n')
-    if len(vectorAttributesMap) > 0:
+    if vectorAttributesMap:
         f.write('\tint sizeVector = 0;\n')
         f.write('\tMPI_Status status;\n')
     for nameAttribute in vectorAttributesMap.keys():        
