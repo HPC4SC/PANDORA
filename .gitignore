@@ -1,5 +1,6 @@
 *.log
 
+venv
 .idea
 cmake-build-debug
 
