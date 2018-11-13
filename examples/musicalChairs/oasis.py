@@ -243,7 +243,7 @@ class Oasis(World):
 
         random.shuffle(listFarmers)
         index = Point2DInt(0,0)
-        for i in range(0, len(listFarmers)):
+        for i in enumerate(listFarmers):
             aFarmer = listFarmers[i]
             aFarmer.position = index
             self.setValue('farmers', index, 1)
@@ -266,7 +266,7 @@ class Oasis(World):
 
         random.shuffle(listHerders)
         index = Point2DInt(self.config.size._width-1,self.config.size._height-1)
-        for i in range(0, len(listHerders)):
+        for i in enumerate(listHerders):
             aHerder= listHerders[i]
             aHerder.position = index
             self.setValue('herders', index, 1)
