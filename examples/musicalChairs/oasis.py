@@ -207,11 +207,11 @@ class Oasis(World):
             self.setValue('farmers', position, 0)
             self._invasions += 1
             return
-        else:
-            print('\therder invasion failed with random:',randomValue,'and aggressiveness:',herder._aggressiveness,'herder removed:',herder)
-            herder.remove()
-            self.setValue('herders', position, 0)
-            return
+
+        print('\therder invasion failed with random:',randomValue,'and aggressiveness:',herder._aggressiveness,'herder removed:',herder)
+        herder.remove()
+        self.setValue('herders', position, 0)
+        return
     
     def updateNumFields(self):
         self._numFields = 0
