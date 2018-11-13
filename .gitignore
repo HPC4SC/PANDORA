@@ -37,6 +37,7 @@ cassandra/ui_Settings.h
 cassandra/ui_TimeSeriesDialog.h
 cassandra/ui_TraitAnalysisSelection.h
 examples/randomWalkers/randomWalkers
+examples/sugarScape/sugarScape
 src/pyPandora/pyBindings.os
 utils/MpiStubCode.os
 # Temporal folders
