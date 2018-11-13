@@ -11,7 +11,7 @@ def prepareProcess(inputDir,simulationFile, separator, output, attribute ):
 	# headers
 	output.write('var'+'\n')
 	splittedHeader = simulation.readline().split(separator)
-	for i in range(len(splittedHeader)):
+	for i in enumerate(splittedHeader):
 		if splittedHeader[i] == attribute:
 			indexAttribute = i
 	
