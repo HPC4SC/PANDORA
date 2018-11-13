@@ -178,7 +178,7 @@ class Household(Agent):
                 continue
             bestCandidates.append(farm)
              
-        if len(bestCandidates)==0:
+        if bestCandidates:
             return False
 
         bestDistance = 0
@@ -186,7 +186,7 @@ class Household(Agent):
         bestCandidate = bestCandidates[0]
         for candidate in bestCandidates:
             distance = candidate.distance(self._bestFarm)
-            if distance>bestDistance:
+            if distance > bestDistance:
                 continue
             bestDistance = distance
             bestCandidate = candidate
@@ -324,7 +324,7 @@ class Household(Agent):
         return True
 
     def checkFission(self): 
-        if len(self.getWorld()._potentialFarms)==0:
+        if self.getWorld()._potentialFarms:
             return
         if self._age < self._fertilityAge:
             return
