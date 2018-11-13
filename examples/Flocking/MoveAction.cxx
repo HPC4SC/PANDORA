@@ -258,7 +258,7 @@ int MoveAction::translateHeading(const float &heading) {
 	else if(157.5 < heading && heading <= 202.5) return 5; // W
 	else if(202.5 < heading && heading <= 247.5) return 6; // SW
 	else if(247.5 < heading && heading <= 292.5) return 7; // S
-	else if(292.5 < heading && heading <= 337.5) return 8; // SE
+	else return 8; // SE
 }
 
 float MoveAction::calcMeanHeading(Bird & birdAgent, const Engine::AgentsVector &flockmates) {
