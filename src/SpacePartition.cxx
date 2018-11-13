@@ -612,7 +612,6 @@ namespace Engine {
         log_DEBUG(logName.str(),
                   getWallTime() << " step: " << _world->getCurrentStep() << " receive ghost agents for section index: "
                                 << sectionIndex << " finished");
-
     }
 
     void SpacePartition::receiveAgents(const int &sectionIndex) {
