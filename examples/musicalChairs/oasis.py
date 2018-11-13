@@ -77,7 +77,7 @@ class Herder(OasisAgent):
         OasisAgent.__init__( self, id)
 
     def updateState(self):
-        if self.exists == False:
+        if self.exists is False:
             return
         self.naturalGrowth()
 
@@ -105,7 +105,7 @@ class Farmer(OasisAgent):
         OasisAgent.__init__( self, id)
 
     def updateState(self):  
-        if self.exists == False:
+        if self.exists is False:
             return
         self.naturalGrowth()
 
