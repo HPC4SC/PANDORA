@@ -238,7 +238,6 @@ def getMpiTypeConversion( typeInCpp ):
     elif typeInCpp == 'float':
         return 'MPI_FLOAT'
 
-    'Warning, unknown type: ' + typeInCpp + ' using MPI_INTEGER'
     return 'MPI_INTEGER'
 
 def writeVectorAttributesPassing( f, agentName, vectorAttributesMap ):
