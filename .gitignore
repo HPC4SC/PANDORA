@@ -49,4 +49,5 @@ buildDebug/
 buildDebug_py/
 build_py/
 bin/generateMpi.pyc
+bin/mpiCode.py
 build/
