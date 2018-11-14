@@ -13,10 +13,10 @@ CXX           = g++
 DEFINES       = -DTIXML_USE_STL -DQT_NO_DEBUG -DQT_GUI_LIB -DQT_CORE_LIB -DQT_SHARED
 CFLAGS        = -m64 -pipe -O2 -D_REENTRANT -Wall -W $(DEFINES)
 CXXFLAGS      = -m64 -pipe -std=c++11 -O2 -D_REENTRANT -Wall -W $(DEFINES)
-INCPATH       = -I/usr/share/qt4/mkspecs/linux-g++-64 -I. -I/usr/include/qt4/QtCore  -I/opt/pandora/include -I/opt/hdf5-1.8.19/include/ -I/usr/include/qt4/QtGui -I/usr/include/qt4 -I. -Iuis -I../include -I../include/analysis -I/usr/include/qwt -I/usr/include/mpich2/ -I/usr/lib/x86_64-linux-gnu/openmpi/include/ -I/usr/include/mpich -I/usr/include/GL -I/usr/include/qt4/QtOpenGL -I/usr/include/qt4 -I/usr/include/IL -I/usr/local/hdf5/include -I/usr/local/qwt-6.0.0/include/ -I. -I.
-LINK          = mpiCC
+INCPATH       = -I/usr/share/qt4/mkspecs/linux-g++-64 -I. -I/usr/include/qt4/QtCore  -I/opt/pandora/include -I/opt/hdf5-1.8.19/include/ -I/usr/include/qt4/QtGui -I/usr/include/qt4 -I. -Iuis -I../include -I../include/analysis -I/usr/include/qwt -I/usr/include/mpich2/ -I/usr/include/mpich -I/usr/include/GL -I/usr/include/qt4/QtOpenGL -I/usr/include/qt4 -I/usr/include/IL -I/usr/local/hdf5/include -I/usr/local/qwt-6.0.0/include/ -I. -I.
+LINK          = g++
 LFLAGS        = -m64 -Wl,-O1
-LIBS          = $(SUBLIBS)  -L../lib/ -L/usr/lib/x86_64-linux-gnu -L/opt/hdf5-1.8.19/lib/ -L/opt/pandora/lib -lpandora -fopenmp -Llib/ -L/usr/local/qwt-6.0.0/lib/ -L/usr/local/hdf5/lib/ -lqwt -lhdf5 -lGL -lGLU -lQtOpenGL -lIL -ltinyxml -lboost_filesystem -lboost_system -lQtGui -lQtCore -lpthread
+LIBS          = $(SUBLIBS)  -L../lib/ -L/usr/lib/x86_64-linux-gnu -L/opt/hdf5-1.8.19/lib/ -L/opt/pandora/lib -lpandora -fopenmp -Llib/ -L/usr/local/qwt-6.0.0/lib/ -L/usr/local/hdf5/lib/ -lqwt -lhdf5 -lGL -lGLU -lQtOpenGL -lIL -ltinyxml -lboost_filesystem -lboost_system -lQtGui -lQtCore -lpthread 
 AR            = ar cqs
 RANLIB        = 
 QMAKE         = /usr/lib/x86_64-linux-gnu/qt4/bin/qmake
@@ -54,12 +54,8 @@ SOURCES       = main.cxx \
 		GenericStatistics.cxx \
 		StepDataPlot.cxx \
 		RasterSelection.cxx \
-		Display3D.cxx \
 		AgentConfigurator.cxx \
-		Model3D.cxx \
-		Object3D.cxx \
 		Material.cxx \
-		Loader3DS.cxx \
 		DefaultColorSelector.cxx \
 		AgentConfiguration.cxx \
 		RasterConfigurator.cxx \
@@ -93,7 +89,6 @@ SOURCES       = main.cxx \
 		moc_GenericStatistics.cpp \
 		moc_StepDataPlot.cpp \
 		moc_RasterSelection.cpp \
-		moc_Display3D.cpp \
 		moc_AgentConfigurator.cpp \
 		moc_RasterConfigurator.cpp \
 		moc_ColorInterval.cpp \
@@ -125,12 +120,8 @@ OBJECTS       = main.o \
 		GenericStatistics.o \
 		StepDataPlot.o \
 		RasterSelection.o \
-		Display3D.o \
 		AgentConfigurator.o \
-		Model3D.o \
-		Object3D.o \
 		Material.o \
-		Loader3DS.o \
 		DefaultColorSelector.o \
 		AgentConfiguration.o \
 		RasterConfigurator.o \
@@ -165,7 +156,6 @@ OBJECTS       = main.o \
 		moc_GenericStatistics.o \
 		moc_StepDataPlot.o \
 		moc_RasterSelection.o \
-		moc_Display3D.o \
 		moc_AgentConfigurator.o \
 		moc_RasterConfigurator.o \
 		moc_ColorInterval.o \
@@ -303,7 +293,7 @@ qmake:  FORCE
 
 dist: 
 	@$(CHK_DIR_EXISTS) .tmp/cassandra1.0.0 || $(MKDIR) .tmp/cassandra1.0.0 
-	$(COPY_FILE) --parents $(SOURCES) $(DIST) .tmp/cassandra1.0.0/ && $(COPY_FILE) --parents Display2D.hxx MainWindow.hxx AgentTypeSelection.hxx AgentTraitSelection.hxx DataPlot.hxx GenericStatistics.hxx StepDataPlot.hxx RasterSelection.hxx Display3D.hxx AgentConfigurator.hxx Model3D.hxx Object3D.hxx Material.hxx Loader3DS.hxx ColorSelector.hxx DefaultColorSelector.hxx AgentConfiguration.hxx RasterConfigurator.hxx ColorInterval.hxx RasterConfiguration.cxx ProjectConfiguration.hxx LoadSimulationThread.hxx LoadingProgressBar.hxx QuadTree.hxx Settings.hxx Laboratory.hxx RunSimulations.hxx SimulationControlThread.hxx AgentAnalysis.hxx RasterAnalysis.hxx TraitAnalysisSelection.hxx RasterAnalysisSelection.hxx AnalysisControlThread.hxx RunAnalysis.hxx HeatMapView.hxx HeatMapDialog.hxx HeatMapModel.hxx TimeSeriesDialog.hxx TimeSeriesModel.hxx TimeSeriesView.hxx .tmp/cassandra1.0.0/ && $(COPY_FILE) --parents cassandra.qrc .tmp/cassandra1.0.0/ && $(COPY_FILE) --parents main.cxx Display2D.cxx MainWindow.cxx AgentTypeSelection.cxx AgentTraitSelection.cxx DataPlot.cxx MeanDataPlot.cxx SumDataPlot.cxx GenericStatistics.cxx StepDataPlot.cxx RasterSelection.cxx Display3D.cxx AgentConfigurator.cxx Model3D.cxx Object3D.cxx Material.cxx Loader3DS.cxx DefaultColorSelector.cxx AgentConfiguration.cxx RasterConfigurator.cxx ColorInterval.cxx RasterConfiguration.cxx ProjectConfiguration.cxx LoadSimulationThread.cxx LoadingProgressBar.cxx MpiStubCode.cxx QuadTree.cxx Settings.cxx Laboratory.cxx RunSimulations.cxx SimulationControlThread.cxx AgentAnalysis.cxx RasterAnalysis.cxx TraitAnalysisSelection.cxx RasterAnalysisSelection.cxx AnalysisControlThread.cxx RunAnalysis.cxx HeatMapView.cxx HeatMapDialog.cxx HeatMapModel.cxx TimeSeriesDialog.cxx TimeSeriesModel.cxx TimeSeriesView.cxx .tmp/cassandra1.0.0/ && $(COPY_FILE) --parents uis/AgentConfigurator.ui uis/Settings.ui uis/RasterConfigurator.ui uis/ColorInterval.ui uis/LoadingProgressBar.ui uis/Laboratory.ui uis/RunProcess.ui uis/AgentAnalysis.ui uis/RasterAnalysis.ui uis/TraitAnalysisSelection.ui uis/RasterAnalysisSelection.ui uis/HeatMapDialog.ui uis/TimeSeriesDialog.ui .tmp/cassandra1.0.0/ && (cd `dirname .tmp/cassandra1.0.0` && $(TAR) cassandra1.0.0.tar cassandra1.0.0 && $(COMPRESS) cassandra1.0.0.tar) && $(MOVE) `dirname .tmp/cassandra1.0.0`/cassandra1.0.0.tar.gz . && $(DEL_FILE) -r .tmp/cassandra1.0.0
+	$(COPY_FILE) --parents $(SOURCES) $(DIST) .tmp/cassandra1.0.0/ && $(COPY_FILE) --parents Display2D.hxx MainWindow.hxx AgentTypeSelection.hxx AgentTraitSelection.hxx DataPlot.hxx GenericStatistics.hxx StepDataPlot.hxx RasterSelection.hxx AgentConfigurator.hxx Material.hxx ColorSelector.hxx DefaultColorSelector.hxx AgentConfiguration.hxx RasterConfigurator.hxx ColorInterval.hxx RasterConfiguration.cxx ProjectConfiguration.hxx LoadSimulationThread.hxx LoadingProgressBar.hxx QuadTree.hxx Settings.hxx Laboratory.hxx RunSimulations.hxx SimulationControlThread.hxx AgentAnalysis.hxx RasterAnalysis.hxx TraitAnalysisSelection.hxx RasterAnalysisSelection.hxx AnalysisControlThread.hxx RunAnalysis.hxx HeatMapView.hxx HeatMapDialog.hxx HeatMapModel.hxx TimeSeriesDialog.hxx TimeSeriesModel.hxx TimeSeriesView.hxx .tmp/cassandra1.0.0/ && $(COPY_FILE) --parents cassandra.qrc .tmp/cassandra1.0.0/ && $(COPY_FILE) --parents main.cxx Display2D.cxx MainWindow.cxx AgentTypeSelection.cxx AgentTraitSelection.cxx DataPlot.cxx MeanDataPlot.cxx SumDataPlot.cxx GenericStatistics.cxx StepDataPlot.cxx RasterSelection.cxx AgentConfigurator.cxx Material.cxx DefaultColorSelector.cxx AgentConfiguration.cxx RasterConfigurator.cxx ColorInterval.cxx RasterConfiguration.cxx ProjectConfiguration.cxx LoadSimulationThread.cxx LoadingProgressBar.cxx MpiStubCode.cxx QuadTree.cxx Settings.cxx Laboratory.cxx RunSimulations.cxx SimulationControlThread.cxx AgentAnalysis.cxx RasterAnalysis.cxx TraitAnalysisSelection.cxx RasterAnalysisSelection.cxx AnalysisControlThread.cxx RunAnalysis.cxx HeatMapView.cxx HeatMapDialog.cxx HeatMapModel.cxx TimeSeriesDialog.cxx TimeSeriesModel.cxx TimeSeriesView.cxx .tmp/cassandra1.0.0/ && $(COPY_FILE) --parents uis/AgentConfigurator.ui uis/Settings.ui uis/RasterConfigurator.ui uis/ColorInterval.ui uis/LoadingProgressBar.ui uis/Laboratory.ui uis/RunProcess.ui uis/AgentAnalysis.ui uis/RasterAnalysis.ui uis/TraitAnalysisSelection.ui uis/RasterAnalysisSelection.ui uis/HeatMapDialog.ui uis/TimeSeriesDialog.ui .tmp/cassandra1.0.0/ && (cd `dirname .tmp/cassandra1.0.0` && $(TAR) cassandra1.0.0.tar cassandra1.0.0 && $(COMPRESS) cassandra1.0.0.tar) && $(MOVE) `dirname .tmp/cassandra1.0.0`/cassandra1.0.0.tar.gz . && $(DEL_FILE) -r .tmp/cassandra1.0.0
 
 
 clean:compiler_clean 
@@ -324,9 +314,9 @@ mocclean: compiler_moc_header_clean compiler_moc_source_clean
 
 mocables: compiler_moc_header_make_all compiler_moc_source_make_all
 
-compiler_moc_header_make_all: moc_Display2D.cpp moc_MainWindow.cpp moc_AgentTypeSelection.cpp moc_AgentTraitSelection.cpp moc_DataPlot.cpp moc_GenericStatistics.cpp moc_StepDataPlot.cpp moc_RasterSelection.cpp moc_Display3D.cpp moc_AgentConfigurator.cpp moc_RasterConfigurator.cpp moc_ColorInterval.cpp moc_LoadSimulationThread.cpp moc_LoadingProgressBar.cpp moc_Settings.cpp moc_Laboratory.cpp moc_RunSimulations.cpp moc_SimulationControlThread.cpp moc_AgentAnalysis.cpp moc_RasterAnalysis.cpp moc_TraitAnalysisSelection.cpp moc_RasterAnalysisSelection.cpp moc_AnalysisControlThread.cpp moc_RunAnalysis.cpp moc_HeatMapView.cpp moc_HeatMapDialog.cpp moc_TimeSeriesDialog.cpp moc_TimeSeriesView.cpp
+compiler_moc_header_make_all: moc_Display2D.cpp moc_MainWindow.cpp moc_AgentTypeSelection.cpp moc_AgentTraitSelection.cpp moc_DataPlot.cpp moc_GenericStatistics.cpp moc_StepDataPlot.cpp moc_RasterSelection.cpp moc_AgentConfigurator.cpp moc_RasterConfigurator.cpp moc_ColorInterval.cpp moc_LoadSimulationThread.cpp moc_LoadingProgressBar.cpp moc_Settings.cpp moc_Laboratory.cpp moc_RunSimulations.cpp moc_SimulationControlThread.cpp moc_AgentAnalysis.cpp moc_RasterAnalysis.cpp moc_TraitAnalysisSelection.cpp moc_RasterAnalysisSelection.cpp moc_AnalysisControlThread.cpp moc_RunAnalysis.cpp moc_HeatMapView.cpp moc_HeatMapDialog.cpp moc_TimeSeriesDialog.cpp moc_TimeSeriesView.cpp
 compiler_moc_header_clean:
-	-$(DEL_FILE) moc_Display2D.cpp moc_MainWindow.cpp moc_AgentTypeSelection.cpp moc_AgentTraitSelection.cpp moc_DataPlot.cpp moc_GenericStatistics.cpp moc_StepDataPlot.cpp moc_RasterSelection.cpp moc_Display3D.cpp moc_AgentConfigurator.cpp moc_RasterConfigurator.cpp moc_ColorInterval.cpp moc_LoadSimulationThread.cpp moc_LoadingProgressBar.cpp moc_Settings.cpp moc_Laboratory.cpp moc_RunSimulations.cpp moc_SimulationControlThread.cpp moc_AgentAnalysis.cpp moc_RasterAnalysis.cpp moc_TraitAnalysisSelection.cpp moc_RasterAnalysisSelection.cpp moc_AnalysisControlThread.cpp moc_RunAnalysis.cpp moc_HeatMapView.cpp moc_HeatMapDialog.cpp moc_TimeSeriesDialog.cpp moc_TimeSeriesView.cpp
+	-$(DEL_FILE) moc_Display2D.cpp moc_MainWindow.cpp moc_AgentTypeSelection.cpp moc_AgentTraitSelection.cpp moc_DataPlot.cpp moc_GenericStatistics.cpp moc_StepDataPlot.cpp moc_RasterSelection.cpp moc_AgentConfigurator.cpp moc_RasterConfigurator.cpp moc_ColorInterval.cpp moc_LoadSimulationThread.cpp moc_LoadingProgressBar.cpp moc_Settings.cpp moc_Laboratory.cpp moc_RunSimulations.cpp moc_SimulationControlThread.cpp moc_AgentAnalysis.cpp moc_RasterAnalysis.cpp moc_TraitAnalysisSelection.cpp moc_RasterAnalysisSelection.cpp moc_AnalysisControlThread.cpp moc_RunAnalysis.cpp moc_HeatMapView.cpp moc_HeatMapDialog.cpp moc_TimeSeriesDialog.cpp moc_TimeSeriesView.cpp
 moc_Display2D.cpp: Display2D.hxx
 	/usr/lib/x86_64-linux-gnu/qt4/bin/moc $(DEFINES) $(INCPATH) Display2D.hxx -o moc_Display2D.cpp
 
@@ -352,10 +342,6 @@ moc_StepDataPlot.cpp: StepDataPlot.hxx
 
 moc_RasterSelection.cpp: RasterSelection.hxx
 	/usr/lib/x86_64-linux-gnu/qt4/bin/moc $(DEFINES) $(INCPATH) RasterSelection.hxx -o moc_RasterSelection.cpp
-
-moc_Display3D.cpp: Material.hxx \
-		Display3D.hxx
-	/usr/lib/x86_64-linux-gnu/qt4/bin/moc $(DEFINES) $(INCPATH) Display3D.hxx -o moc_Display3D.cpp
 
 moc_AgentConfigurator.cpp: AgentConfiguration.hxx \
 		ui_AgentConfigurator.h \
@@ -464,20 +450,12 @@ qrc_cassandra.cpp: cassandra.qrc \
 		../share/cassandra/icons/settings.png \
 		../share/cassandra/icons/lab.png \
 		../share/cassandra/icons/next.png \
-		../share/cassandra/icons/3dview.png \
 		../share/cassandra/icons/rasterAnalysis.png \
 		../share/cassandra/icons/openFile.png \
 		../share/cassandra/icons/heatmap.png \
 		../share/cassandra/icons/project_new.png \
 		../share/cassandra/icons/previous.png \
-		../share/cassandra/icons/play.png \
-		../share/cassandra/3dmodels/agent.3ds \
-		../share/cassandra/3dmodels/avatars.3ds \
-		../share/cassandra/3dmodels/cube.3ds \
-		../share/cassandra/3dmodels/landscape1.bmp \
-		../share/cassandra/3dmodels/POLYSHIP.BMP \
-		../share/cassandra/3dmodels/skeleton.3ds \
-		../share/cassandra/3dmodels/spaceship.3ds
+		../share/cassandra/icons/play.png
 	/usr/lib/x86_64-linux-gnu/qt4/bin/rcc -name cassandra cassandra.qrc -o qrc_cassandra.cpp
 
 compiler_image_collection_make_all: qmake_image_collection.cpp
@@ -562,7 +540,6 @@ MainWindow.o: MainWindow.cxx MainWindow.hxx \
 		AgentConfigurator.hxx \
 		AgentConfiguration.hxx \
 		ui_AgentConfigurator.h \
-		Display3D.hxx \
 		Material.hxx \
 		RasterConfigurator.hxx \
 		ui_RasterConfigurator.h \
@@ -618,44 +595,15 @@ StepDataPlot.o: StepDataPlot.cxx StepDataPlot.hxx \
 RasterSelection.o: RasterSelection.cxx RasterSelection.hxx
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o RasterSelection.o RasterSelection.cxx
 
-Display3D.o: Display3D.cxx Display3D.hxx \
-		Material.hxx \
-		Exception.hxx \
-		Model3D.hxx \
-		AgentConfiguration.hxx \
-		RasterConfiguration.hxx \
-		ColorSelector.hxx \
-		ProjectConfiguration.hxx \
-		QuadTree.hxx
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o Display3D.o Display3D.cxx
-
 AgentConfigurator.o: AgentConfigurator.cxx AgentConfigurator.hxx \
 		AgentConfiguration.hxx \
 		ui_AgentConfigurator.h \
 		ProjectConfiguration.hxx
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o AgentConfigurator.o AgentConfigurator.cxx
 
-Model3D.o: Model3D.cxx Model3D.hxx \
-		Object3D.hxx \
-		Material.hxx
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o Model3D.o Model3D.cxx
-
-Object3D.o: Object3D.cxx Object3D.hxx \
-		Model3D.hxx \
-		Exception.hxx \
-		Material.hxx
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o Object3D.o Object3D.cxx
-
 Material.o: Material.cxx Material.hxx \
 		Exception.hxx
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o Material.o Material.cxx
-
-Loader3DS.o: Loader3DS.cxx Loader3DS.hxx \
-		Exception.hxx \
-		Model3D.hxx \
-		Object3D.hxx \
-		Material.hxx
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o Loader3DS.o Loader3DS.cxx
 
 DefaultColorSelector.o: DefaultColorSelector.cxx DefaultColorSelector.hxx \
 		ColorSelector.hxx \
@@ -663,9 +611,7 @@ DefaultColorSelector.o: DefaultColorSelector.cxx DefaultColorSelector.hxx \
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o DefaultColorSelector.o DefaultColorSelector.cxx
 
 AgentConfiguration.o: AgentConfiguration.cxx AgentConfiguration.hxx \
-		Exception.hxx \
-		Loader3DS.hxx \
-		Model3D.hxx
+		Exception.hxx
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o AgentConfiguration.o AgentConfiguration.cxx
 
 RasterConfigurator.o: RasterConfigurator.cxx RasterConfigurator.hxx \
@@ -813,9 +759,6 @@ moc_StepDataPlot.o: moc_StepDataPlot.cpp
 
 moc_RasterSelection.o: moc_RasterSelection.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_RasterSelection.o moc_RasterSelection.cpp
-
-moc_Display3D.o: moc_Display3D.cpp 
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_Display3D.o moc_Display3D.cpp
 
 moc_AgentConfigurator.o: moc_AgentConfigurator.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_AgentConfigurator.o moc_AgentConfigurator.cpp

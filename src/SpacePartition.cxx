@@ -956,64 +956,26 @@ namespace Engine {
         Rectangle<int> result;
 
         // origin
-        if (diff._x == -1) {
-            if (_ownedArea._origin._x == 0) {
-                result._origin._x = 0;
-            } else {
-                result._origin._x = _overlap;
-            }
-        } else if (diff._x == 0) {
-            if (_ownedArea._origin._x == 0) {
-                result._origin._x = 0;
-            } else {
-                result._origin._x = _overlap;
-            }
+        if (diff._x == -1 || diff._x == 0) {
+            result._origin._x = _ownedArea._origin._x ? _overlap : 0;
         } else {
             // if left border just remove an overlap
-            if (_ownedArea._origin._x == 0) {
-                result._origin._x = _ownedArea._size._width - _overlap;
-            }
-                // else sum and remove an overlap
-            else {
-                result._origin._x = _ownedArea._size._width;
-            }
+            // else sum and remove an overlap
+            result._origin._x = _ownedArea._origin._x ? _ownedArea._size._width : _ownedArea._size._width - _overlap;
         }
 
-        if (diff._y == -1) {
-            if (_ownedArea._origin._y == 0) {
-                result._origin._y = 0;
-            } else {
-                result._origin._y = _overlap;
-            }
-        } else if (diff._y == 0) {
-            if (_ownedArea._origin._y == 0) {
-                result._origin._y = 0;
-            } else {
-                result._origin._y = _overlap;
-            }
+        if (diff._y == -1 || diff._y == 0) {
+            result._origin._y = _ownedArea._origin._y ? _overlap : 0;
         } else {
             // if top border just remove an overlap
-            if (_ownedArea._origin._y == 0) {
-                result._origin._y = _ownedArea._size._height - _overlap;
-            }
-                // else sum and remove an overlap
-            else {
-                result._origin._y = _ownedArea._size._height;
-            }
+            // else sum and remove an overlap
+            result._origin._y = _ownedArea._origin._y ? _ownedArea._size._height : _ownedArea._size._height - _overlap;
         }
 
         // size
-        if (diff._x != 0) {
-            result._size._width = _overlap;
-        } else {
-            result._size._width = _ownedArea._size._width;
-        }
+        result._size._width = diff._x ? _overlap : _ownedArea._size._width;
+        result._size._height = diff._y ? _overlap : _ownedArea._size._height;
 
-        if (diff._y != 0) {
-            result._size._height = _overlap;
-        } else {
-            result._size._height = _ownedArea._size._height;
-        }
         std::stringstream logName;
         logName << "MPI_raster_world_" << _id;
         log_DEBUG(logName.str(),
@@ -1031,53 +993,26 @@ namespace Engine {
         if (diff._x == -1) {
             result._origin._x = 0;
         } else if (diff._x == 0) {
-            if (_ownedArea._origin._x == 0) {
-                result._origin._x = 0;
-            } else {
-                result._origin._x = _overlap;
-            }
+            result._origin._x = _ownedArea._origin._x ? _overlap : 0;
         } else {
             // if left border it doesn't have a left overlap
-            if (_ownedArea._origin._x == 0) {
-                result._origin._x = _ownedArea._size._width;
-            }
-                // else sum an overlap
-            else {
-                result._origin._x = _ownedArea._size._width + _overlap;
-            }
+            // else sum an overlap
+            result._origin._x = _ownedArea._origin._x ? _ownedArea._size._width + _overlap : _ownedArea._size._width;
         }
 
         if (diff._y == -1) {
             result._origin._y = 0;
         } else if (diff._y == 0) {
-            if (_ownedArea._origin._y == 0) {
-                result._origin._y = 0;
-            } else {
-                result._origin._y = _overlap;
-            }
+            result._origin._y = _ownedArea._origin._y ? _overlap : 0;
         } else {
             // if lower border it doesn't have a lower overlap
-            if (_ownedArea._origin._y == 0) {
-                result._origin._y = _ownedArea._size._height;
-            }
-                // else sum an overlap
-            else {
-                result._origin._y = _ownedArea._size._height + _overlap;
-            }
+            // else sum an overlap
+            result._origin._y = _ownedArea._origin._y ? _ownedArea._size._height + _overlap : _ownedArea._size._height;
         }
 
         // size
-        if (diff._x != 0) {
-            result._size._width = _overlap;
-        } else {
-            result._size._width = _ownedArea._size._width;
-        }
-
-        if (diff._y != 0) {
-            result._size._height = _overlap;
-        } else {
-            result._size._height = _ownedArea._size._height;
-        }
+        result._size._width = diff._x ? _overlap : _ownedArea._size._width;
+        result._size._height = diff._y ? _overlap : _ownedArea._size._height;
 
         std::stringstream logName;
         logName << "MPI_raster_world_" << _id;
@@ -1106,13 +1041,8 @@ namespace Engine {
             }
         } else {
             // if left border just remove an overlap
-            if (_ownedArea._origin._x == 0) {
-                result._origin._x = _ownedArea._size._width - _overlap;
-            }
-                // else sum and remove an overlap
-            else {
-                result._origin._x = _ownedArea._size._width;
-            }
+            // else sum and remove an overlap
+            result._origin._x = _ownedArea._origin._x ? _ownedArea._size._width : _ownedArea._size._width - _overlap;
         }
 
         if (diff._y == -1) {
@@ -1128,13 +1058,8 @@ namespace Engine {
             }
         } else {
             // if top border just remove an overlap
-            if (_ownedArea._origin._y == 0) {
-                result._origin._y = _ownedArea._size._height - _overlap;
-            }
-                // else sum and remove an overlap
-            else {
-                result._origin._y = _ownedArea._size._height;
-            }
+            // else sum and remove an overlap
+            result._origin._y = _ownedArea._origin._y ? _ownedArea._size._height : _ownedArea._size._height - _overlap;
         }
 
         // size
@@ -1144,20 +1069,13 @@ namespace Engine {
             // this result is = to boundaries + 1 overlap
             result._size._width = _ownedArea._size._width / 2;
             // border
-            if (_ownedArea._origin._x != 0) {
+            if (_ownedArea._origin._x != 0 || (sectionIndex != 0 && sectionIndex != 2)) {
                 result._size._width += _overlap;
-            } else {
-                if (sectionIndex != 0 && sectionIndex != 2) {
-                    result._size._width += _overlap;
-                }
             }
 
-            if (_ownedArea._origin._x + _ownedArea._size._width != _world->getConfig().getSize()._width) {
+            if (_ownedArea._origin._x + _ownedArea._size._width != _world->getConfig().getSize()._width ||
+                (sectionIndex != 1 && sectionIndex != 3)) {
                 result._size._width += _overlap;
-            } else {
-                if (sectionIndex != 1 && sectionIndex != 3) {
-                    result._size._width += _overlap;
-                }
             }
         }
 
@@ -1165,22 +1083,17 @@ namespace Engine {
             result._size._height = _overlap * 2;
         } else {
             result._size._height = _ownedArea._size._height / 2;
-            if (_ownedArea._origin._y != 0) {
+
+            if (_ownedArea._origin._y != 0 || (sectionIndex != 0 && sectionIndex != 1)) {
                 result._size._height += _overlap;
-            } else {
-                if (sectionIndex != 0 && sectionIndex != 1) {
-                    result._size._height += _overlap;
-                }
             }
 
-            if (_ownedArea._origin._y + _ownedArea._size._height != _world->getConfig().getSize()._height) {
+            if ((_ownedArea._origin._y + _ownedArea._size._height) != _world->getConfig().getSize()._height ||
+                (sectionIndex != 2 && sectionIndex != 3)) {
                 result._size._height += _overlap;
-            } else {
-                if (sectionIndex != 2 && sectionIndex != 3) {
-                    result._size._height += _overlap;
-                }
             }
         }
+
         std::stringstream logName;
         logName << "MPI_raster_world_" << _id;
         log_DEBUG(logName.str(),
