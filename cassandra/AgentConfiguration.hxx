@@ -39,10 +39,10 @@ class AgentConfiguration
 	std::string _fileName2D;
 	float _size;
     bool _showValue;
-
 	Engine::Point3D<float> _size3D;
 	std::string _fileName3D;
 	Model3D * _model;
+    unsigned int seed = time(NULL);
 		
 public:
 	AgentConfiguration();

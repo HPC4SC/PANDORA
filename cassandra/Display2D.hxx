@@ -80,6 +80,7 @@ class Display2D : public QWidget
     int _sizePixel;
     
     QColor getRandomColor() const;
+
 public:
 	void zoom( float value );
 	Display2D(QWidget * parent);

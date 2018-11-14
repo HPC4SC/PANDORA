@@ -36,11 +36,14 @@
 #include <ProjectConfiguration.hxx>
 #include <ColorSelector.hxx>
 #include <algorithm>
+#include <stdlib.h>
 
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
 namespace GUI
 {
+
+	unsigned int seed = time(NULL);
 
 Display2D::Display2D( QWidget * parent) : QWidget(parent), _simulationRecord(0), _viewedStep(0), _zoom(1), _showAgents(true), _radiusSelection(7), _offset(0,0), _clickedPos(0,0), _type("unknown"), _state("unknown"), _sizePixel(50)
 {
@@ -342,10 +345,9 @@ void Display2D::paintEvent(QPaintEvent *event)
 QColor Display2D::getRandomColor() const
 {
     QColor mix(255, 100, 100);
-
-    int red = rand()%255;
-    int green = rand()%255;
-    int blue = rand()%255;
+    int red = rand_r(&seed)%255;
+    int green = rand_r(&seed)%255;
+    int blue = rand_r(&seed)%255;
     red = (red + mix.red())/2;
     green = (green + mix.green())/2;
     blue = (blue + mix.blue())/2;
