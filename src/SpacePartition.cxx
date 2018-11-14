@@ -1003,7 +1003,7 @@ namespace Engine {
         if (diff._y == -1) {
             result._origin._y = 0;
         } else if (diff._y == 0) {
-            result._origin._y = _ownedArea._origin._y ? _overlap : 0
+            result._origin._y = _ownedArea._origin._y ? _overlap : 0;
         } else {
             // if lower border it doesn't have a lower overlap
             // else sum an overlap
