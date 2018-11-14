@@ -60,7 +60,6 @@ private slots:
 */
 	void selectColor();
 	void selectIcon();
-	void selectModel3D();
 
 	void colorSelected( const QColor & selectedColor );
 

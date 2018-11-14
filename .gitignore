@@ -21,7 +21,6 @@ pandora/build_py/
 
 .sconf_temp/
 bin/cassandra
-cassandra/Makefile
 cassandra/qrc_cassandra.cpp
 cassandra/ui_AgentAnalysis.h
 cassandra/ui_AgentConfigurator.h
@@ -37,6 +36,7 @@ cassandra/ui_Settings.h
 cassandra/ui_TimeSeriesDialog.h
 cassandra/ui_TraitAnalysisSelection.h
 examples/randomWalkers/randomWalkers
+examples/sugarScape/sugarScape
 src/pyPandora/pyBindings.os
 utils/MpiStubCode.os
 # Temporal folders
