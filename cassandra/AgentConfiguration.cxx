@@ -31,9 +31,9 @@
 namespace GUI
 {
 
-AgentConfiguration::AgentConfiguration() : _color(rand()%256,rand()%256,rand()%256), _icon(0), _useIcon(false), _fileName2D(""), _size(1.0f), _size3D(1.0f, 1.0f, 1.0f), _fileName3D(""), _model(0), _showValue(false)
+AgentConfiguration::AgentConfiguration() : _color(rand_r(&seed)%256,rand_r(&seed)%256,rand_r(&seed)%256), _icon(0), _useIcon(false), _fileName2D(""), _size(1.0f), _size3D(1.0f, 1.0f, 1.0f), _fileName3D(""), _model(0), _showValue(false)
 { 
-    _color = QColor::fromHsv(rand() % 256, 255, 190);
+    _color = QColor::fromHsv(rand_r(&seed) % 256, 255, 190);
 
     std::stringstream oss;
     oss <<getenv("PANDORAPATH") << "/share/cassandra/3dmodels/cube.3ds";

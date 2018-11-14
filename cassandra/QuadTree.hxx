@@ -41,6 +41,7 @@ class QuadTree
 	Engine::Point2D<int> _SE;
 	Engine::Point2D<int> _SW;
 
+	unsigned int seed = time(NULL);
 
 	void paintTriangle( const Engine::Point2D<int> & point1, const Engine::Point2D<int> & point2, const RasterConfiguration & rasterConfig, const Engine::StaticRaster & DEMRaster, const Engine::StaticRaster & colorRaster, bool randomColor);
 
