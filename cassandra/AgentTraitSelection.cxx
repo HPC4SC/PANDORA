@@ -61,7 +61,7 @@ void AgentTraitSelection::typeSelected( QListWidgetItem * item )
 	{
 		Engine::AgentRecord * agentRecord = it->second;
         // int
-    	for(Engine::AgentRecord::IntAttributesMap::const_iterator itS=agentRecord->beginInt(); itS!=agentRecord->endInt(); itS++)
+    	for(Engine::AgentRecord::IntAttributesMap::const_iterator itS=agentRecord->beginInt(); itS!=agentRecord->endInt(); ++itS)
 	    {
 		   	std::string stateName = itS->first;
 		    std::list<std::string>::const_iterator itL = std::find(_states.begin(), _states.end(), stateName);
@@ -72,7 +72,7 @@ void AgentTraitSelection::typeSelected( QListWidgetItem * item )
     		}
 	    }
         // float
-        for(Engine::AgentRecord::FloatAttributesMap::const_iterator itS=agentRecord->beginFloat(); itS!=agentRecord->endFloat(); itS++)
+        for(Engine::AgentRecord::FloatAttributesMap::const_iterator itS=agentRecord->beginFloat(); itS!=agentRecord->endFloat(); ++itS)
 	    {
 		   	std::string stateName = itS->first;
 		    std::list<std::string>::const_iterator itL = std::find(_states.begin(), _states.end(), stateName);
@@ -83,7 +83,7 @@ void AgentTraitSelection::typeSelected( QListWidgetItem * item )
     		}
 	    }   
         // strings
-        for(Engine::AgentRecord::StrAttributesMap::const_iterator itS=agentRecord->beginStr(); itS!=agentRecord->endStr(); itS++)
+        for(Engine::AgentRecord::StrAttributesMap::const_iterator itS=agentRecord->beginStr(); itS!=agentRecord->endStr(); ++itS)
 	    {
 		   	std::string stateName = itS->first;
 		    std::list<std::string>::const_iterator itL = std::find(_states.begin(), _states.end(), stateName);
