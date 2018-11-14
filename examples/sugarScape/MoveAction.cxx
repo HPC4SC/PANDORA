@@ -85,7 +85,18 @@ namespace Examples
                 findMaxSugar(maxSugar_y,candidateSugar,nearest_j,r.right(),new_y,candidate_y,max_y);
             }
         }
-        // compares the two best cells and select that one
+        // compares the two best cells and selects the best one
+        selectBestPosition(max_x._x,max_x._y,max_y._x,max_y._y,maxSugar_x,maxSugar_y,ini._x,ini._y,new_x,new_y);
+    }
+
+    void MoveAction::selectBestPosition(const int &maxX_x, const int &maxX_y, const int &maxY_x, const int &maxY_y, const int &maxSugar_x, const int &maxSugar_y, const int &ini_x, const int &ini_y, int &new_x, int &new_y) {
+        Engine::Point2D<int> max_x, max_y, ini;
+        max_x._x = maxX_x;
+        max_x._y = maxX_y;
+        max_y._x = maxY_x;
+        max_y._y = maxY_y;
+        ini._x = ini_x;
+        ini._y = ini_y;
         if (maxSugar_x > maxSugar_y) {
             new_x = max_x._x;
             new_y = max_x._y;
@@ -113,6 +124,7 @@ namespace Examples
             }
         }
     }
+
 
     void MoveAction::findMaxSugar(int &maxSugar, const int &candidateSugar, int &nearest, const int &i, const int &pos, const Engine::Point2D<int> &candidate, Engine::Point2D<int> &max) {
         if (maxSugar < candidateSugar) { // checks if the quanity of sugar is grater
