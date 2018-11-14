@@ -59,11 +59,6 @@ AgentConfigurator::AgentConfigurator( QWidget * parent, const std::string & type
 	}
 
 	_agentConfig.size2D->setValue(_configuration.getSize());
-	//_agentConfig.model3DFilename->setText(_configuration.getFileName3D().c_str());
-
-	//_agentConfig.xSize->setValue(_configuration.getSize3D()._x);
-	//_agentConfig.ySize->setValue(_configuration.getSize3D()._y);
-	//_agentConfig.zSize->setValue(_configuration.getSize3D()._z);
 
 	if(_configuration.useIcon())
 	{
@@ -86,7 +81,6 @@ AgentConfigurator::AgentConfigurator( QWidget * parent, const std::string & type
     }
 	connect(_agentConfig.colorChooserButton, SIGNAL(clicked()), this, SLOT(selectColor()));
 	connect(_agentConfig.iconChooserButton, SIGNAL(clicked()), this, SLOT(selectIcon()));
-	//connect(_agentConfig.model3DButton, SIGNAL(clicked()), this, SLOT(selectModel3D()));
 
 
 	/*
@@ -239,23 +233,6 @@ void AgentConfigurator::selectIcon()
 	}
 }
 
-void AgentConfigurator::selectModel3D()
-{
-	std::size_t rightSlash = _configuration.getFileName3D().find_last_of("/");
-	std::string path = _configuration.getFileName3D().substr(0,rightSlash);
-
-	QString fileName = QFileDialog::getOpenFileName(this, tr("Select Model"), path.c_str(), tr("3D Studio Max (*.3ds);;All Files (*)"));
-	if(fileName.isEmpty())
-	{
-		return;
-	}
-	else
-	{
-		_configuration.setFileName3D(fileName.toStdString());
-		_agentConfig.model3DFilename->setText(fileName);
-	}
-}
-
 void AgentConfigurator::colorSelected(const QColor & color)
 {
 	_configuration.setColor(color);
@@ -270,8 +247,6 @@ void AgentConfigurator::accept()
     _configuration.showValue(_agentConfig.showValues->isChecked());
 
 	_configuration.setSize(_agentConfig.size2D->value());
-	//Engine::Point3D<float> scale(_agentConfig.xSize->value(), _agentConfig.ySize->value(), _agentConfig.zSize->value());
-	//_configuration.setSize3D(scale);
 
 	emit agentConfigured(_type, _configuration);
 	close();
