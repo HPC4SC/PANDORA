@@ -99,7 +99,7 @@ RasterConfigurator::RasterConfigurator(QWidget * parent, const std::string & typ
 	_rasterConfig.elevationRaster->addItem("none (use plane)");
 	//std::cout << "active: " << _configuration.getElevationRaster() << " deform: " << _configuration.getElevationExaggeration() << std::endl;
 
-	for(std::list<std::string>::const_iterator it=orderedRasters.begin(); it!=orderedRasters.end(); it++)
+	for(std::list<std::string>::const_iterator it=orderedRasters.begin(); it!=orderedRasters.end(); ++it)
 	{
 		_rasterConfig.elevationRaster->addItem((*it).c_str());
 		if(_configuration.getElevationRaster().compare(*it)==0)

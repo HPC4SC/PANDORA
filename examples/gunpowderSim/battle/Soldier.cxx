@@ -167,7 +167,7 @@ void Soldier::updateStress()
 
 	Engine::AgentsVector enemies = _world->getNeighbours(this, _fireDistance*1.5f, enemyType);
 	//std::cout << this << " number of enemies: " << enemies.size() << std::endl;
-	for(Engine::AgentsVector::iterator it=enemies.begin(); it!=enemies.end(); it++)
+	for(Engine::AgentsVector::iterator it=enemies.begin(); it!=enemies.end(); ++it)
 	{
 		Soldier * enemy = (Soldier*)(*it).get();
 		if(!enemy->isRouting())
@@ -195,7 +195,7 @@ void Soldier::updateStress()
 	Engine::AgentsVector friends = _world->getNeighbours(this, _cohesionDistance, friendType);
 	
 	//std::cout << this << " number of friends: " << friends.size() << " at cohesion distance: " << _cohesionDistance << std::endl;
-	for(Engine::AgentsVector::iterator it=friends.begin(); it!=friends.end(); it++)
+	for(Engine::AgentsVector::iterator it=friends.begin(); it!=friends.end(); ++it)
 	{
 		Soldier * friendly = (Soldier*)(*it).get();
 		Engine::Point2D<int> friendPosition = friendly->getPosition();
@@ -398,7 +398,7 @@ void Soldier::casualty()
 {
 	// we disperse the stress of seeing a casualty unit to other soldiers near it.
 	Engine::AgentsVector affectedSoldier = _world->getNeighbours(this, _cohesionDistance, getType());
-	for(Engine::AgentsVector::iterator it=affectedSoldier.begin(); it!=affectedSoldier.end(); it++)
+	for(Engine::AgentsVector::iterator it=affectedSoldier.begin(); it!=affectedSoldier.end(); ++it)
 	{
 		Agent * agent = (*it).get();
 		if(agent->isType("blueSoldier") || agent->isType("redSoldier"))

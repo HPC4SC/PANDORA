@@ -184,7 +184,7 @@ TiXmlElement * Config::findElement( const std::string & elementPath )
     }
 
     TiXmlElement * element = _root;
-    for ( std::vector<std::string>::const_iterator it=tokens.begin( ); it!=tokens.end( ); it++ )
+    for ( std::vector<std::string>::const_iterator it=tokens.begin( ); it!=tokens.end( ); ++it )
     {
         element = element->FirstChildElement( *it );
         if ( !element )

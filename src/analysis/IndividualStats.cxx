@@ -40,7 +40,7 @@ void IndividualStats::preProcess(  const Engine::SimulationRecord & , const std:
 	std::stringstream header;
 	header << "id";
 
-	for(std::list<std::string>::iterator it=_attributes.begin(); it!=_attributes.end(); it++)
+	for(std::list<std::string>::iterator it=_attributes.begin(); it!=_attributes.end(); ++it)
 	{
 		header << _separator << *it;
 	}
@@ -71,7 +71,7 @@ void IndividualStats::computeAgent( const Engine::AgentRecord & agentRecord )
 
 	std::stringstream newLine;
 	newLine << agentRecord.getId();
-	for(std::list<std::string>::iterator it=_attributes.begin(); it!=_attributes.end(); it++)
+	for(std::list<std::string>::iterator it=_attributes.begin(); it!=_attributes.end(); ++it)
 	{
 		const std::string & key = *it; 
         if(agentRecord.isInt(key))

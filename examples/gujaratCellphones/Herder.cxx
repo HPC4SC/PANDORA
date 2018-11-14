@@ -132,7 +132,7 @@ void Herder::outVillageKnowledgeTransmission() const
 
 void Herder::knowledgeTransmission( int frequency ) const
 {
-	for(std::list<Herder*>::const_iterator it=_village->beginHerders(); it!=_village->endHerders(); it++)
+	for(std::list<Herder*>::const_iterator it=_village->beginHerders(); it!=_village->endHerders(); ++it)
 	{
 		int value = Engine::GeneralState::statistics().getUniformDistValue(0, 100);
 		if(value<frequency) 

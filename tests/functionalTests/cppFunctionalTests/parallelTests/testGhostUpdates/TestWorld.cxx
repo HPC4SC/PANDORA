@@ -64,12 +64,12 @@ void TestWorld::stepEnvironment()
 	}
 
 	// more than one task, agents turn the state of each other
-	for(Engine::AgentsList::iterator it=_agents.begin(); it!=_agents.end(); it++)
+	for(Engine::AgentsList::iterator it=_agents.begin(); it!=_agents.end(); ++it)
 	{
 		TestAgent * agent = (TestAgent*)(it)->get();
 		assert(agent->isEvenTurn()==lastStepWasEven);
 	}
-	for(Engine::AgentsList::const_iterator it=_testScheduler->beginOverlapAgents(); it!=_testScheduler->endOverlapAgents(); it++)
+	for(Engine::AgentsList::const_iterator it=_testScheduler->beginOverlapAgents(); it!=_testScheduler->endOverlapAgents(); ++it)
 	{
 		const TestAgent * agent = (TestAgent*)(it)->get();
 		assert(agent->isEvenTurn()==lastStepWasEven);

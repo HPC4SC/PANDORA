@@ -113,7 +113,7 @@ void Earth::stepEnvironment()
     	setValue(eHumans, index, 0);
 	    setValue(eZombies, index, 0);
 	}
-	for(Engine::AgentsList::const_iterator it=beginAgents(); it!=endAgents(); it++)
+	for(Engine::AgentsList::const_iterator it=beginAgents(); it!=endAgents(); ++it)
 	{
 		if(!(*it)->exists() || !getBoundaries().contains((*it)->getPosition()))
 		{
