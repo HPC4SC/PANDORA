@@ -48,7 +48,7 @@ Model3D::~Model3D()
 		delete object;
 	}
 	
-	for(MaterialsMap::iterator it=_materials.begin(); it!=_materials.end(); it++)
+	for(MaterialsMap::iterator it=_materials.begin(); it!=_materials.end(); ++it)
 	{
 		delete it->second;
 	}
@@ -57,7 +57,7 @@ Model3D::~Model3D()
 void Model3D::normalizeModel()
 {
 	float maxValue = 0.0f;
-	for(ObjectsList::iterator it=_objects.begin(); it!=_objects.end(); it++)
+	for(ObjectsList::iterator it=_objects.begin(); it!=_objects.end(); ++it)
 	{
 		Object3D * object = (*it);
 		for(int i=0; i<object->_vertexs.size(); i++)
@@ -70,7 +70,7 @@ void Model3D::normalizeModel()
 	}	
 	//std::cout << "max value: " << maxValue << std::endl;
 	
-	for(ObjectsList::iterator it=_objects.begin(); it!=_objects.end(); it++)
+	for(ObjectsList::iterator it=_objects.begin(); it!=_objects.end(); ++it)
 	{
 		Object3D * object = (*it);
 		for(int i=0; i<object->_vertexs.size(); i++)
@@ -83,7 +83,7 @@ void Model3D::normalizeModel()
 void Model3D::paint() const
 {
 	glPushMatrix();
-	for(ObjectsList::const_iterator it=_objects.begin(); it!=_objects.end(); it++)
+	for(ObjectsList::const_iterator it=_objects.begin(); it!=_objects.end(); ++it)
 	{
 		Object3D * object = (*it);
 		object->paint(_modelScale);
@@ -94,7 +94,7 @@ void Model3D::paint() const
 	
 void Model3D::registerTextures()
 {
-	for(MaterialsMap::iterator it=_materials.begin(); it!=_materials.end(); it++)
+	for(MaterialsMap::iterator it=_materials.begin(); it!=_materials.end(); ++it)
 	{
 		Material * material = (Material*)it->second;
 		material->registerTexture();
@@ -117,12 +117,12 @@ void Model3D::registerMaterial( Material * material, const std::string & name )
 void Model3D::init()
 {
 	//std::cout << "model created with " << _objects.size() << " objects and: " << _materials.size() << " materials" << std::endl;
-	for(ObjectsList::iterator it=_objects.begin(); it!=_objects.end(); it++)
+	for(ObjectsList::iterator it=_objects.begin(); it!=_objects.end(); ++it)
 	{
 		Object3D * object = (*it);
 		//std::cout << "\tobject: " << object->_name << " num vertexs: " << object->_vertexs.size() << " and num polygons: " << object->_polygons.size() << std::endl;
 	}	
-	for(MaterialsMap::iterator it=_materials.begin(); it!=_materials.end(); it++)
+	for(MaterialsMap::iterator it=_materials.begin(); it!=_materials.end(); ++it)
 	{
 		//std::cout << "\tmaterial: " << it->first << std::endl;
 	}

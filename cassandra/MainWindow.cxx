@@ -758,7 +758,7 @@ void MainWindow::takeMosaic()
 
     int numberOfSimulations = 0;
     // compute number of simulations to analyse
-	for( boost::filesystem::directory_iterator it(baseDir); it!=boost::filesystem::directory_iterator(); it++ )
+	for( boost::filesystem::directory_iterator it(baseDir); it!=boost::filesystem::directory_iterator(); ++it )
 	{
 		if(!boost::filesystem::is_directory(it->status()))
 		{
@@ -782,7 +782,7 @@ void MainWindow::takeMosaic()
 	std::cout << "num sims: " << numberOfSimulations << " creating mosaic of: " << numRows << "x" << numRows << std::endl;
 
     int i=0;
-	for( boost::filesystem::directory_iterator it(baseDir); it!=boost::filesystem::directory_iterator(); it++ )
+	for( boost::filesystem::directory_iterator it(baseDir); it!=boost::filesystem::directory_iterator(); ++it )
 	{
         if(i>=numRows*numRows)
         {

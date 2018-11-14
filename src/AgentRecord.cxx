@@ -127,7 +127,7 @@ std::string AgentRecord::getCompleteState( int numStep ) const
 {
     std::stringstream completeState;
     completeState << "id: " << _id << " pos: " << getInt( numStep, "x" ) << "/" << getInt( numStep, "y" ) << std::endl;
-    for ( IntAttributesMap::const_iterator it=_intAttributes.begin( ); it!=_intAttributes.end( ); it++ )
+    for ( IntAttributesMap::const_iterator it=_intAttributes.begin( ); it!=_intAttributes.end( ); ++it )
     {
         const std::string & key = it->first;
         if ( key.compare( "exists" )==0 || key.compare( "x" )==0 || key.compare( "y" )==0 )
@@ -136,7 +136,7 @@ std::string AgentRecord::getCompleteState( int numStep ) const
         }
         completeState << "\t" << it->first << ": " << it->second[numStep] << std::endl;
     }
-    for ( FloatAttributesMap::const_iterator it=_floatAttributes.begin( ); it!=_floatAttributes.end( ); it++ )
+    for ( FloatAttributesMap::const_iterator it=_floatAttributes.begin( ); it!=_floatAttributes.end( ); ++it )
     {
         const std::string & key = it->first;
         if ( key.compare( "exists" )==0 || key.compare( "x" )==0 || key.compare( "y" )==0 )
@@ -145,7 +145,7 @@ std::string AgentRecord::getCompleteState( int numStep ) const
         }
         completeState << "\t" << it->first << ": " << it->second[numStep] << std::endl;
     }
-    for ( StrAttributesMap::const_iterator it=_strAttributes.begin( ); it!=_strAttributes.end( ); it++ )
+    for ( StrAttributesMap::const_iterator it=_strAttributes.begin( ); it!=_strAttributes.end( ); ++it )
     {
         const std::string & key = it->first;
         if ( key.compare( "exists" )==0 || key.compare( "x" )==0 || key.compare( "y" )==0 )

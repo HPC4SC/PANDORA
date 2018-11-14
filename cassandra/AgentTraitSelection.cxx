@@ -57,7 +57,7 @@ void AgentTraitSelection::typeSelected( QListWidgetItem * item )
 	_selectedType= item->text().toStdString();
 	_states.clear();
 	clear();
-	for(Engine::SimulationRecord::AgentRecordsMap::const_iterator it=_simulationRecord->beginAgents(_selectedType); it!=_simulationRecord->endAgents(_selectedType); it++)
+	for(Engine::SimulationRecord::AgentRecordsMap::const_iterator it=_simulationRecord->beginAgents(_selectedType); it!=_simulationRecord->endAgents(_selectedType); ++it)
 	{
 		Engine::AgentRecord * agentRecord = it->second;
         // int

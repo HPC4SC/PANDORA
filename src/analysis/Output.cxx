@@ -60,7 +60,7 @@ void Output::apply( const Engine::SimulationRecord & simRecord, const std::strin
 	// all agents
 	if(type.compare("all")==0)
 	{
-		for(Engine::SimulationRecord::AgentTypesMap::const_iterator it=simRecord.beginTypes(); it!=simRecord.endTypes(); it++)
+		for(Engine::SimulationRecord::AgentTypesMap::const_iterator it=simRecord.beginTypes(); it!=simRecord.endTypes(); ++it)
 		{		
 			const Engine::SimulationRecord::AgentRecordsMap & agentRecords = it->second;
 			for(Engine::SimulationRecord::AgentRecordsMap::const_iterator itA=agentRecords.begin(); itA!=agentRecords.end(); itA++)
@@ -73,7 +73,7 @@ void Output::apply( const Engine::SimulationRecord & simRecord, const std::strin
 	{
 		if(simRecord.hasAgentType(type))
 		{
-			for(Engine::SimulationRecord::AgentRecordsMap::const_iterator it=simRecord.beginAgents(type); it!=simRecord.endAgents(type); it++)
+			for(Engine::SimulationRecord::AgentRecordsMap::const_iterator it=simRecord.beginAgents(type); it!=simRecord.endAgents(type); ++it)
 			{
 				computeAgent(*(it->second));
 			}

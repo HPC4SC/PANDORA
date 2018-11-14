@@ -159,7 +159,7 @@ namespace Engine {
                 log_DEBUG(logName.str(), "agent to execute: :" << agent);
                 agentsToExecute.push_back(agent);
             }
-            it++;
+            ++it;
         }
         std::random_shuffle(agentsToExecute.begin(), agentsToExecute.end());
         int numExecutedAgents = 0;
@@ -246,7 +246,7 @@ namespace Engine {
             std::vector <AgentsList> agentsToNeighbors;
             agentsToNeighbors.resize(_neighbors.size());
 
-            for (AgentsList::iterator it = agentsToSend.begin(); it != agentsToSend.end(); it++) {
+            for (AgentsList::iterator it = agentsToSend.begin(); it != agentsToSend.end(); ++it) {
                 AgentPtr agent = *it;
                 if (agent->isType(itType->first)) {
                     int newID = getIdFromPosition(agent->getPosition());
@@ -430,7 +430,7 @@ namespace Engine {
 
             for (size_t i = 0; i < neighborsToUpdate.size(); i++) {
                 Rectangle<int> overlapZone = getOverlap(neighborsToUpdate[i], sectionIndex);
-                for (AgentsList::iterator it = _world->beginAgents(); it != _world->endAgents(); it++) {
+                for (AgentsList::iterator it = _world->beginAgents(); it != _world->endAgents(); ++it) {
                     AgentPtr agent = *it;
                     // we check the type. TODO register the type in another string
                     // TODO refactor!!!
@@ -452,7 +452,7 @@ namespace Engine {
                         }
                     }
                 }
-                for (AgentsList::iterator it = _overlapAgents.begin(); it != _overlapAgents.end(); it++) {
+                for (AgentsList::iterator it = _overlapAgents.begin(); it != _overlapAgents.end(); ++it) {
                     AgentPtr agent = *it;
                     if (agent->isType(itType->first)) {
                         if ((!willBeRemoved(agent->getId())) &&
@@ -478,7 +478,7 @@ namespace Engine {
                     oss << "SpacePartition::sendGhostAgents - " << _id << " error in MPI_Send : " << error;
                     throw Exception(oss.str());
                 }
-                for (AgentsList::iterator it = agentsToNeighbors[i].begin(); it != agentsToNeighbors[i].end(); it++) {
+                for (AgentsList::iterator it = agentsToNeighbors[i].begin(); it != agentsToNeighbors[i].end(); ++it) {
                     Agent *agent = it->get();
                     void *package = agent->fillPackage();
                     log_DEBUG(logName.str(),
@@ -593,14 +593,14 @@ namespace Engine {
                                       getWallTime() << " step: " << _world->getCurrentStep() << " in section index: "
                                                     << sectionIndex << " with overlap zone: " << overlapZone
                                                     << " maintaining agent: " << *it);
-                            it++;
+                            ++it;
                         }
                     } else {
-                        it++;
+                        ++it;
                     }
                 }
                 // afterwards we will add the new ghost agents
-                for (it = newGhostAgents.begin(); it != newGhostAgents.end(); it++) {
+                for (it = newGhostAgents.begin(); it != newGhostAgents.end(); ++it) {
                     AgentPtr agent = *it;
                     log_DEBUG(logName.str(),
                               getWallTime() << " step: " << _world->getCurrentStep() << " in section index: "
@@ -1268,7 +1268,7 @@ namespace Engine {
     }
 
     AgentsList::iterator SpacePartition::getGhostAgent(const std::string &id) {
-        for (AgentsList::iterator it = _overlapAgents.begin(); it != _overlapAgents.end(); it++) {
+        for (AgentsList::iterator it = _overlapAgents.begin(); it != _overlapAgents.end(); ++it) {
             if ((*it)->getId().compare(id) == 0) {
                 return it;
             }
@@ -1325,7 +1325,7 @@ namespace Engine {
 
     AgentsVector SpacePartition::getAgent(const Point2D<int> &position, const std::string &type) {
         AgentsVector result;
-        for (AgentsList::iterator it = _world->beginAgents(); it != _world->endAgents(); it++) {
+        for (AgentsList::iterator it = _world->beginAgents(); it != _world->endAgents(); ++it) {
             AgentPtr agent = *it;
             if (agent->getPosition().isEqual(position)) {
                 if (type.compare("all") == 0 || agent->isType(type)) {
@@ -1333,7 +1333,7 @@ namespace Engine {
                 }
             }
         }
-        for (AgentsList::iterator it = _overlapAgents.begin(); it != _overlapAgents.end(); it++) {
+        for (AgentsList::iterator it = _overlapAgents.begin(); it != _overlapAgents.end(); ++it) {
             AgentPtr agent = *it;
             if (agent->getPosition().isEqual(position)) {
                 if (type.compare("all") == 0 || agent->isType(type)) {
@@ -1345,7 +1345,7 @@ namespace Engine {
     }
 
     AgentsList::iterator SpacePartition::getOwnedAgent(const std::string &id) {
-        for (AgentsList::iterator it = _world->beginAgents(); it != _world->endAgents(); it++) {
+        for (AgentsList::iterator it = _world->beginAgents(); it != _world->endAgents(); ++it) {
             if ((*it)->getId().compare(id) == 0) {
                 return it;
             }
@@ -1354,7 +1354,7 @@ namespace Engine {
     }
 
     bool SpacePartition::willBeRemoved(const std::string &id) {
-        for (AgentsList::iterator it = _removedAgents.begin(); it != _removedAgents.end(); it++) {
+        for (AgentsList::iterator it = _removedAgents.begin(); it != _removedAgents.end(); ++it) {
             if ((*it)->getId().compare(id) == 0) {
                 return true;
             }
@@ -1388,7 +1388,7 @@ namespace Engine {
         while (it != _world->endAgents()) {
             AgentPtr agent = *it;
             if (agent->isType(type)) n++;
-            it++;
+            ++it;
         }
         MPI_Allreduce(&n, &N, 1, MPI_UNSIGNED_LONG, MPI_SUM, MPI_COMM_WORLD);
         return N;

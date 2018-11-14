@@ -205,7 +205,7 @@ void Display2D::paintEvent(QPaintEvent *event)
 	for(Engine::SimulationRecord::AgentTypesMap::const_iterator itType = _simulationRecord->beginTypes(); itType!=_simulationRecord->endTypes(); itType++)
 	{
 		AgentConfiguration * agentConfig = ProjectConfiguration::instance()->getAgentConfig(itType->first);
-		for(Engine::SimulationRecord::AgentRecordsMap::const_iterator it= _simulationRecord->beginAgents(itType); it!=_simulationRecord->endAgents(itType); it++)
+		for(Engine::SimulationRecord::AgentRecordsMap::const_iterator it= _simulationRecord->beginAgents(itType); it!=_simulationRecord->endAgents(itType); ++it)
 		{
 			if(agentConfig->useIcon() && !agentConfig->getFileName2D().empty())
 			{	
@@ -378,7 +378,7 @@ void Display2D::rastersRearranged( std::list<std::string> items, std::list<bool>
 	_orderedRasters.clear();
 
 	std::list<bool>::const_iterator itView = views.begin();
-	for(std::list<std::string>::const_iterator it=items.begin(); it!=items.end(); it++)
+	for(std::list<std::string>::const_iterator it=items.begin(); it!=items.end(); ++it)
 	{
 		if((*itView)==true)
 		{

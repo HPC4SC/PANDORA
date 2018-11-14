@@ -48,7 +48,7 @@ void TestWorld::stepEnvironment()
 		return;
 	}
 
-	for(Engine::AgentsList::iterator it=_agents.begin(); it!=_agents.end(); it++)
+	for(Engine::AgentsList::iterator it=_agents.begin(); it!=_agents.end(); ++it)
 	{
 		TestAgent * agent = (TestAgent*)(*it).get();
 		assert(agent->getFlag()==true);

@@ -94,14 +94,14 @@ void HerderState::computeHash()
 	_hashKey->add(_position._y);
 	_hashKey->add(_resourcesToEat);
 	
-	for ( Engine::IncrementalRaster::ChangeIterator it = _resourcesMap.firstChange(); it != _resourcesMap.endOfChanges(); it++ )
+	for ( Engine::IncrementalRaster::ChangeIterator it = _resourcesMap.firstChange(); it != _resourcesMap.endOfChanges(); ++it )
 	{
 		const Engine::Point2D<int>& p = it->first;
 		_hashKey->add( p._x );
 		_hashKey->add( p._y );
 		_hashKey->add( it->second );
 	}
-	for ( Engine::IncrementalRaster::ChangeIterator it = _knowledgeMap.firstChange(); it != _knowledgeMap.endOfChanges(); it++ )
+	for ( Engine::IncrementalRaster::ChangeIterator it = _knowledgeMap.firstChange(); it != _knowledgeMap.endOfChanges(); ++it )
 	{
 		const Engine::Point2D<int>& p = it->first;
 		_hashKey->add( p._x );

@@ -80,7 +80,7 @@ void Academia::generateNewPaper( Paper & paper )
 		newPosition._y += (agent->getPosition()._y - paper.getPosition()._y)*((1.0f-influence)/2);
 		log_DEBUG( logName.str(), "\tnew kene to: " << newPosition << " influenced by paper: " << agent << " with influence : " << influence);
 		citedPapers.push_back(*it);
-		it++;
+		++it;
 	}
 
 	if(paper.getPosition().distance(newPosition)<academiaConfig._originalityThreshold)

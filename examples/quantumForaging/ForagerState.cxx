@@ -121,14 +121,14 @@ void ForagerState::computeHash()
 	_hashKey->add(_starvation);
 	_hashKey->add(_neededResources);
 	
-	for ( Engine::IncrementalRaster::ChangeIterator it = _resourcesMap.firstChange(); it != _resourcesMap.endOfChanges(); it++ )
+	for ( Engine::IncrementalRaster::ChangeIterator it = _resourcesMap.firstChange(); it != _resourcesMap.endOfChanges(); ++it )
 	{
 		const Engine::Point2D<int>& p = it->first;
 		_hashKey->add( p._x );
 		_hashKey->add( p._y );
 		_hashKey->add( it->second );
 	}
-	for ( Engine::IncrementalRaster::ChangeIterator it = _knowledgeMap.firstChange(); it != _knowledgeMap.endOfChanges(); it++ )
+	for ( Engine::IncrementalRaster::ChangeIterator it = _knowledgeMap.firstChange(); it != _knowledgeMap.endOfChanges(); ++it )
 	{
 		const Engine::Point2D<int>& p = it->first;
 		_hashKey->add( p._x );

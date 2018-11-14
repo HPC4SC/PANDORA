@@ -62,7 +62,7 @@ void GlobalRasterStats::apply( const Engine::SimulationRecord & simRecord, const
   
 	std::stringstream header;
 	header << "timeStep";
-	for(RasterAnalysisList::const_iterator it=_analysisList.begin(); it!=_analysisList.end(); it++)
+	for(RasterAnalysisList::const_iterator it=_analysisList.begin(); it!=_analysisList.end(); ++it)
 	{
 		if((*it)->writeResults())
 		{
@@ -81,7 +81,7 @@ void GlobalRasterStats::apply( const Engine::SimulationRecord & simRecord, const
 		// all agents
 		if(type.compare("all")==0)
 		{	
-			for(Engine::SimulationRecord::RasterMap::const_iterator it=simRecord.beginRasters(); it!=simRecord.endRasters(); it++)
+			for(Engine::SimulationRecord::RasterMap::const_iterator it=simRecord.beginRasters(); it!=simRecord.endRasters(); ++it)
 			{
 				const Engine::SimulationRecord::RasterHistory & rasterHistory = it->second;
 				(*itL)->computeRaster(rasterHistory);
@@ -172,7 +172,7 @@ void GlobalRasterStats::writeParams( std::stringstream & line, const std::string
 		TiXmlHandle hRoot(0);
 
 		TiXmlElement * element = 0;
-		for(Params::iterator it=_params->begin(); it!=_params->end(); it++)
+		for(Params::iterator it=_params->begin(); it!=_params->end(); ++it)
 		{
 			std::list<std::string> & paramsList = *it;
 			// backwards iteration, the first element is the attribute
@@ -220,7 +220,7 @@ void GlobalRasterStats::setParams( Params * params, const std::string & groupFil
 	header << "run";
 
 	// header will have the name of the field + name of parent (if exists)
-	for(Params::iterator it=params->begin(); it!=params->end(); it++)
+	for(Params::iterator it=params->begin(); it!=params->end(); ++it)
 	{
 		header << _separator;
 		std::list<std::string> & paramsList = *it;
@@ -255,7 +255,7 @@ void GlobalRasterStats::setParams( Params * params, const std::string & groupFil
 	// outcome at the end of simulation for several attributes
 	else
 	{
-		for(RasterAnalysisList::const_iterator it=_analysisList.begin(); it!=_analysisList.end(); it++)
+		for(RasterAnalysisList::const_iterator it=_analysisList.begin(); it!=_analysisList.end(); ++it)
 		{
 			if((*it)->writeResults())
 			{

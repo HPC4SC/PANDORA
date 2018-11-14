@@ -61,7 +61,7 @@ void Village::removeHerder(Herder * herder)
 		}
 		else
 		{
-			it++;
+			++it;
 		}
 	}
 }
@@ -89,7 +89,7 @@ void Village::serialize()
 {
 	serializeAttribute("herders", int(_herders.size()));
 	int totalAnimals = 0;
-	for(std::list<Herder*>::iterator it=_herders.begin(); it!=_herders.end(); it++)
+	for(std::list<Herder*>::iterator it=_herders.begin(); it!=_herders.end(); ++it)
 	{
 		totalAnimals += (*it)->getHerdSize();
 	}
@@ -99,7 +99,7 @@ void Village::serialize()
 
 	int knownCells = 0;
 	//std::cout << "init village: " << *this << std::endl;
-	for(std::list<Herder*>::iterator it=_herders.begin(); it!=_herders.end(); it++)
+	for(std::list<Herder*>::iterator it=_herders.begin(); it!=_herders.end(); ++it)
 	{
 		Herder & herder = **it;
 		Engine::DynamicRaster knowledge = _world->getDynamicRaster(herder.getKnowledgeMap());

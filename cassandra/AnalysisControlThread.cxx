@@ -37,7 +37,7 @@ namespace GUI
 AnalysisControlThread::AnalysisControlThread( const std::string & baseDir, const std::string & type, const std::string & outputDir, int resolution, bool isRaster ) : _baseDir(baseDir), _type(type), _outputDir(outputDir), _numberOfSimulations(0), _resolution(resolution), _isRaster(isRaster)
 {
 	// compute number of simulations to analyse
-	for( boost::filesystem::directory_iterator it(_baseDir); it!=boost::filesystem::directory_iterator(); it++ )
+	for( boost::filesystem::directory_iterator it(_baseDir); it!=boost::filesystem::directory_iterator(); ++it )
 	{
 		if(!boost::filesystem::is_directory(it->status()))
 		{
@@ -65,7 +65,7 @@ void AnalysisControlThread::run()
 {
 	_cancelExecution = false;
 	
-	for( boost::filesystem::directory_iterator it(_baseDir); it!=boost::filesystem::directory_iterator(); it++ )
+	for( boost::filesystem::directory_iterator it(_baseDir); it!=boost::filesystem::directory_iterator(); ++it )
 	{
 		std::cout << "next sim" << std::endl;
 		if(!boost::filesystem::is_directory(it->status()))

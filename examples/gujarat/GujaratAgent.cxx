@@ -152,7 +152,7 @@ GujaratAgent * GujaratAgent::getMarriageCandidate()
     const GujaratConfig & gujaratConfig = (const GujaratConfig &)(getWorld()->getConfig());
 	Engine::AgentsVector possible;
 	Engine::AgentsVector neighbors = _world->getNeighbours(this, _socialRange, getType());
-	for(Engine::AgentsVector::iterator it=neighbors.begin(); it!=neighbors.end(); it++)
+	for(Engine::AgentsVector::iterator it=neighbors.begin(); it!=neighbors.end(); ++it)
 	{
 		GujaratAgent * possibleAgent = (GujaratAgent*)(it->get());
 		for(unsigned i=2; i<possibleAgent->_populationAges.size(); i++)
