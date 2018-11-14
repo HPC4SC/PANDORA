@@ -602,7 +602,7 @@ void RasterAnalysis::fillIndividualStats()
 
 	QVBoxLayout * layout = new QVBoxLayout;
 	Engine::RasterRecord * agentRecord = it->second; 
-	for(Engine::RasterRecord::StatesMap::const_iterator itS=agentRecord->beginStates(); itS!=agentRecord->endStates(); itS++)
+	for(Engine::RasterRecord::StatesMap::const_iterator itS=agentRecord->beginStates(); itS!=agentRecord->endStates(); ++itS)
 	{
 		QCheckBox * box = new QCheckBox(QString(itS->first.c_str()));
 		layout->addWidget(box);
@@ -619,7 +619,7 @@ void RasterAnalysis::fillHistogram()
 	Engine::RasterRecord * agentRecord = it->second;
 	
 	QStringList traits;
-	for(Engine::RasterRecord::StatesMap::const_iterator itS=agentRecord->beginStates(); itS!=agentRecord->endStates(); itS++)
+	for(Engine::RasterRecord::StatesMap::const_iterator itS=agentRecord->beginStates(); itS!=agentRecord->endStates(); ++itS)
 	{
 		traits << QString(itS->first.c_str());
 	}
