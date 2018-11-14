@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-import os, sys, random
+import os
 import argparse
 
 # this script processes all the log simulations in one dir, and writes the values of one particular attribute into one single file.
