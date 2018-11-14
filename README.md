@@ -1,3 +1,5 @@
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/e4d9cb350d804f15a0f0a37a8c91f107)](https://www.codacy.com/app/HPC4SC/PANDORA?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=HPC4SC/PANDORA&amp;utm_campaign=Badge_Grade)
+[![CodeFactor](https://www.codefactor.io/repository/github/hpc4sc/pandora/badge)](https://www.codefactor.io/repository/github/hpc4sc/pandora)  
 pandora
 =======
 a C++/Python Agent-Based Modelling framework for large-scale distributed simulations
