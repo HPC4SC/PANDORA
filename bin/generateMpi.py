@@ -5,8 +5,8 @@ import os
 def writeRegisterTypes(f, listAgents):
     f.write('void MpiFactory::registerTypes()\n')
     f.write('{\n')
-    for i in range(0, len(listAgents)):
-        f.write('\t_types.insert( std::make_pair( "' + listAgents[i] + '", create' + listAgents[i] + 'Type()));\n')
+    for i, agent in enumerate(listAgents):
+        f.write('\t_types.insert( std::make_pair( "' + agent + '", create' + agent + 'Type()));\n')
     f.write('}\n')
     f.write('\n')
 
@@ -14,10 +14,10 @@ def writeRegisterTypes(f, listAgents):
 def writeCreateDefaultPackage(f, listAgents):
     f.write('void * MpiFactory::createDefaultPackage( const std::string & type )\n')
     f.write('{\n')
-    for i in range(0, len(listAgents)):
-        f.write('\tif(type.compare("' + listAgents[i] + '")==0)\n')
+    for i, agent in enumerate(listAgents):
+        f.write('\tif(type.compare("' + agent + '")==0)\n')
         f.write('\t{\n')
-        f.write('\t\treturn new ' + listAgents[i] + 'Package;\n')
+        f.write('\t\treturn new ' + agent + 'Package;\n')
         f.write('\t}\n')
     f.write('\n')
     f.write('\tstd::stringstream oss;\n')
@@ -32,10 +32,10 @@ def writeCreateDefaultPackage(f, listAgents):
 def writeCreateAndFillAgents(f, listAgents, namespaces):
     f.write('Agent * MpiFactory::createAndFillAgent( const std::string & type, void * package )\n')
     f.write('{\n')
-    for i in range(0, len(listAgents)):
-        f.write('\tif(type.compare("' + listAgents[i] + '")==0)\n')
+    for i, agent in enumerate(listAgents):
+        f.write('\tif(type.compare("' + agent + '")==0)\n')
         f.write('\t{\n')
-        f.write('\t\treturn new ' + namespaces[i] + "::" + listAgents[i] + '(package);\n')
+        f.write('\t\treturn new ' + namespaces[i] + "::" + agent + '(package);\n')
         f.write('\t}\n')
     f.write('\n')
     f.write('\tstd::stringstream oss;\n')
@@ -144,17 +144,17 @@ def createFactoryMethods(listAgents, factoryFile, namespaces, listAttributesMaps
     f.write('#include <Exception.hxx>\n')
     f.write('#include <sstream>\n')
     f.write('\n')
-    for i in range(0, len(listAgents)):
-        print '\t\tadding: ' + listAgents[i] + ' to factory file: ' + factoryFile
-        f.write('#include <' + listAgents[i] + '.hxx>\n')
-        f.write('#include "' + listAgents[i] + '_mpi.hxx"\n')
+    for i, agent in enumerate(listAgents):
+        print '\t\tadding: ' + agent + ' to factory file: ' + factoryFile
+        f.write('#include <' + agent + '.hxx>\n')
+        f.write('#include "' + agent + '_mpi.hxx"\n')
     f.write('\n')
     f.write('namespace Engine\n')
     f.write('{\n')
     f.write('\n')
 
-    for i in range(0, len(listAgents)):
-        writeCreateType(f, listAgents[i], listAttributesMaps[i])
+    for i, agent in enumerate(listAgents):
+        writeCreateType(f, agent, listAttributesMaps[i])
 
     writeRegisterTypes(f, listAgents)
     writeCreateDefaultPackage(f, listAgents)
@@ -432,8 +432,8 @@ def execute(target, source, env):
     listAgents = []
     listAttributesMaps = []
     namespaceAgents = env['namespaces']
-    for i in range(1, len(source)):
-        sourceName = str(source[i])
+    for i, item in enumerate(source):
+        sourceName = str(item)
         headerName = sourceName.replace(".cxx", ".hxx")
         listAgents += [sourceName.replace(".cxx", "")]
         checkHeader(sourceName.replace(".cxx", ""), headerName)
