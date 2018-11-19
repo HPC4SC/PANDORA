@@ -432,8 +432,8 @@ def execute(target, source, env):
     listAgents = []
     listAttributesMaps = []
     namespaceAgents = env['namespaces']
-    for i, item in enumerate(source):
-        sourceName = str(item)
+    for i in range(1, len(source)):
+        sourceName = str(source[i])
         headerName = sourceName.replace(".cxx", ".hxx")
         listAgents += [sourceName.replace(".cxx", "")]
         checkHeader(sourceName.replace(".cxx", ""), headerName)
