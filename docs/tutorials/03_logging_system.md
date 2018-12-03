@@ -1,6 +1,6 @@
 # Logging with pandora
 
-1. Presentation
+## 1. Presentation  
 The logging system of Pandora allows the developer of new simulations to verify that the written source code is working correctly. It has been designed to be as simple and efficient as possible, without cluttering your program with additional calls.
 These are some additional features provided by the system:
 	- Three logging levels: Info, Debug and Extreme Debug.
@@ -9,7 +9,7 @@ These are some additional features provided by the system:
 
 In this tutorial we will explore in turns the multiple ways to log informations within pandora. We start by a very simple program that does not log any information. You will notice that this program does not contain any informations specific to pandora (World, Config, Agent, Raster ...). This is because in this tutorial we will only explore the aspects relative to the logging of information. 
 
-2. Preparation
+## 2. Preparation  
 Create a file called main.cxx and type in the following content:
 
 ```cpp
@@ -44,7 +44,7 @@ $ ./logging
 ```
 end of main
 
-3. First logs
+## 3. First logs  
 To log information there are three possible calls, depending on the level at which you want to receive the log:
 	- log_INFO -> This level of messages will always be written
 	- log_DEBUG -> Debug logs are written. A compiling option will have to be use to activate this function. This will be explain in the following.
@@ -83,7 +83,7 @@ $ ./logging
 Pandora has now create the files 'test.log' and 'test2.log' inside the directory 'logs'. If you are interested on changing the name of this directory it can be done creating a Configuration for your app (see TUTORIAL CONFIGURATION).
 
 
-4. Levels of logging
+## 4. Levels of logging  
 You can notice that only the log of level info is present in the file test.log. To include the debug informations an option has to be given at compilation time:
 ```bash
 $ scons debug=true
@@ -101,7 +101,7 @@ $ ./logging
 Now the test.log file contains both the debug and extrem debug messages. Notice that in order to activate the extrem debug messages you have to first activate the debug messages. Therefore both options are passed to scons.
 
 
-5. Logging of variables
+## 5. Logging of variables  
 In addition you can log the values of variables. To test this function, add the following lines to the file main.cxx
 
 ```cpp
