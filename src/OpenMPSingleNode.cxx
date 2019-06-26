@@ -70,7 +70,7 @@ void OpenMPSingleNode::executeAgents( )
 
 #ifndef PANDORAEDEBUG
     // shared memory distibution for read-only planning actions, disabled for extreme debug
-    #pragma omp parallel for
+    #pragma omp parallel for schedule(guided)
 #endif
     for ( size_t i=0; i<agentsToExecute.size( ); i++ )
     {
