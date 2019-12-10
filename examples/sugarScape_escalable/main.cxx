@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
 		{
 			fileName = argv[1];
 		}
-		Examples::RandomWorld world(new Examples::RandomWorldConfig(fileName), world.useSpacePartition(2,false));
+		Examples::RandomWorld world(new Examples::RandomWorldConfig(fileName), world.useSpacePartition(2));
 	
 		world.initialize(argc, argv);
 		world.run();
