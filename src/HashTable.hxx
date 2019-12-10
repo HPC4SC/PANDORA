@@ -198,7 +198,7 @@ HashTable<T>::~HashTable( )
     {
                 if ( m_owner )
                         for ( typename Node_List::iterator it = m_buckets[i].begin( );
-                              it != m_buckets[i].end( ); it++ )
+                              it != m_buckets[i].end( ); ++it )
                                 delete it->second;
         m_buckets[i].clear( );
     }
@@ -212,7 +212,7 @@ void HashTable<T>::clear( )
     {
                 if ( m_owner )
                         for ( typename Node_List::iterator it = m_buckets[i].begin( );
-                              it != m_buckets[i].end( ); it++ )
+                              it != m_buckets[i].end( ); ++it )
                                 delete it->second;
         m_buckets[i].clear( );
     }

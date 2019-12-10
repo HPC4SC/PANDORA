@@ -6,7 +6,7 @@ listTests = os.listdir('.')
 print(listTests)
 
 for test in listTests:
-    if os.path.isdir(test) == True:
+    if os.path.isdir(test) is True:
         os.chdir(test)
         print('cleaning environment for test: ',test)
         os.system('rm -rf logs mpiCode data logClean logCompilation logExecution')

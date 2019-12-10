@@ -114,7 +114,7 @@ void StepDataPlot::stepChanged(int step )
 
 void StepDataPlot::fillHistogram( const std::string & type, const std::string & state, int step, QVector<double> & numSamples, const int & minValue )
 {	
-	for(Engine::SimulationRecord::AgentRecordsMap::const_iterator it=_simulationRecord->beginAgents(type); it!=_simulationRecord->endAgents(type); it++)
+	for(Engine::SimulationRecord::AgentRecordsMap::const_iterator it=_simulationRecord->beginAgents(type); it!=_simulationRecord->endAgents(type); ++it)
 	{
 		Engine::AgentRecord * agentRecord = it->second;	
 		bool exists = agentRecord->getInt(step, "exists");
@@ -145,7 +145,7 @@ void StepDataPlot::fillStepMinMaxValues(  const std::string & type, const std::s
 	minValue = std::numeric_limits<double>::max();
 	maxValue = 0;
 
-	for(Engine::SimulationRecord::AgentRecordsMap::const_iterator it=_simulationRecord->beginAgents(type); it!=_simulationRecord->endAgents(type); it++)
+	for(Engine::SimulationRecord::AgentRecordsMap::const_iterator it=_simulationRecord->beginAgents(type); it!=_simulationRecord->endAgents(type); ++it)
 	{
 		Engine::AgentRecord * agentRecord = it->second;	
 		bool exists = agentRecord->getInt(step, "exists");

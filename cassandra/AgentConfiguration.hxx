@@ -36,7 +36,9 @@ class AgentConfiguration
 	bool _useIcon;
 	std::string _fileName2D;
 	float _size;
-    bool _showValue;
+   bool _showValue;
+
+    unsigned int seed = time(NULL);
 		
 public:
 	AgentConfiguration();

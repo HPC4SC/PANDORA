@@ -71,14 +71,14 @@ void Scenario::computeShortestExit(PanicAgent & agent )
 		ExitsList::const_iterator it=_exits.begin();
 		for(int i=0; i<randomExitIndex; i++)
 		{
-			it++;
+			++it;
 		}
 		possibleExits.push_back(*it);
 	}
 	else
 	{
 		float minDistance = std::numeric_limits<float>::max();
-		for(ExitsList::const_iterator it=_exits.begin(); it!=_exits.end(); it++)
+		for(ExitsList::const_iterator it=_exits.begin(); it!=_exits.end(); ++it)
 		{
 			float distance = agent.getPosition().distance(*it);
 			if(distance<minDistance)
@@ -182,7 +182,7 @@ void Scenario::createRasters()
         setValue(eWalls, index, adjacentWalls);
     }
 	
-	for(ScenarioConfig::SupportRastersMap::const_iterator it=scenarioConfig._supportMaps.begin(); it!=scenarioConfig._supportMaps.end(); it++)
+	for(ScenarioConfig::SupportRastersMap::const_iterator it=scenarioConfig._supportMaps.begin(); it!=scenarioConfig._supportMaps.end(); ++it)
 	{
 		std::string name = it->first;
 		std::string fileName = it->second;
@@ -212,7 +212,7 @@ void Scenario::checkPanicEvents()
 		const PanicEvent & event = *it;
 		if(event._step!=getCurrentStep())
 		{
-			it++;
+			++it;
 			continue;
 		}
 		// new event
@@ -246,7 +246,7 @@ void Scenario::checkPanicEvents()
 				}
 			}
 		}
-		it++;
+		++it;
 	}
 
 }

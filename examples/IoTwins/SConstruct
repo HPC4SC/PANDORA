@@ -1,11 +1,17 @@
+############# TEMPLATE FOR MODELS  ###################
+######################################################
+######################################################
+################ CUSTOM INFORMATION  #################
+##### please fill with information about your model ##
+######################################################
 
-nameProgram = 'gujaratCellphones'
+nameProgram = 'espaiBarca'
 
-agents = ['Herder', 'Village']
-world = 'HerderWorld'
-namespaceAgents = ['GujaratCellphones', 'GujaratCellphones']
+agents = ['Person']
+namespaceAgents = ['Examples']
+world = 'EspaiBarca'
 
-srcFiles = ['main.cxx', 'Herder.cxx', 'HerderWorld.cxx','HerderWorldConfig.cxx', 'Village.cxx', 'Climate.cxx', 'HerderState.cxx', 'DecisionModel.cxx', 'MoveAction.cxx']
+srcFiles = Split('main.cxx  EspaiBarca.cxx EspaiConfig.cxx Person.cxx MoveAction.cxx')
 
 ###################################################
 ########## END OF CUSTOM INFORMATION  #############
@@ -18,7 +24,7 @@ from subprocess import call
 pandoraPath = os.getenv('PANDORAPATH', '/usr/local/pandora')
 sys.path.append(pandoraPath+'/bin')
 
-import generateMpi 
+import generateMpi
 
 vars = Variables('custom.py')
 vars.Add(BoolVariable('debug', 'compile with debug flags', 'no'))
@@ -44,12 +50,10 @@ else:
 env.Append(CPPPATH = ['.', pandoraPath+'/include'])
 env.Append(LIBPATH = [pandoraPath+'/lib'])
 
-env.Append(CPPPATH = ['./libmdp/'])
-
 # add the list of mpi code that must be generated & compiled
 mpiAgentsSrc = ['mpiCode/FactoryCode.cxx']
 agentsSrc = ['main.cxx']
-for agent in agents:    
+for agent in agents:
     if agent != '':
         agentsSrc.append(agent+".cxx")
         mpiAgentsSrc.append("mpiCode/"+agent+"_mpi.cxx")
@@ -61,4 +65,3 @@ if (len(namespaceAgents) != len(agents)):
 env.GenerateMPICode( target=mpiAgentsSrc, source=agentsSrc)
 env.Depends(world+'.hxx',mpiAgentsSrc)
 env.Program(nameProgram, srcFiles+mpiAgentsSrc)
-

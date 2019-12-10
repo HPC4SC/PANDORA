@@ -82,7 +82,7 @@ void	HunterGathererMDPState::computeHash()
 	_hashKey.add( _daysStarving );
 
 	for ( Engine::IncrementalRaster::ChangeIterator it = _resources.firstChange();
-		it != _resources.endOfChanges(); it++ )
+		it != _resources.endOfChanges(); ++it )
 	{
 		const Engine::Point2D<int>& p = it->first;
 		_hashKey.add( p._x );
@@ -137,7 +137,7 @@ void	HunterGathererMDPState::print( std::ostream& os ) const
 	os << "starv=" << _daysStarving << ", ";
 	os << "changes=(";
 	for ( Engine::IncrementalRaster::ChangeIterator it = _resources.firstChange();
-		it != _resources.endOfChanges(); it++ )
+		it != _resources.endOfChanges(); ++it )
 	{
 		const Engine::Point2D<int>& p = it->first;
 		os << "( ( " << p._x << ", ";

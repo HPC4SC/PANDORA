@@ -62,7 +62,7 @@ void GlobalAgentStats::apply( const Engine::SimulationRecord & simRecord, const 
   
 	std::stringstream header;
 	header << "timeStep";
-	for(AgentAnalysisList::const_iterator it=_analysisList.begin(); it!=_analysisList.end(); it++)
+	for(AgentAnalysisList::const_iterator it=_analysisList.begin(); it!=_analysisList.end(); ++it)
 	{
 		if((*it)->writeResults())
 		{
@@ -81,7 +81,7 @@ void GlobalAgentStats::apply( const Engine::SimulationRecord & simRecord, const 
 		// all agents
 		if(type.compare("all")==0)
 		{	
-			for(Engine::SimulationRecord::AgentTypesMap::const_iterator it=simRecord.beginTypes(); it!=simRecord.endTypes(); it++)
+			for(Engine::SimulationRecord::AgentTypesMap::const_iterator it=simRecord.beginTypes(); it!=simRecord.endTypes(); ++it)
 			{
 				const Engine::SimulationRecord::AgentRecordsMap & agentRecords = it->second;
 				for(Engine::SimulationRecord::AgentRecordsMap::const_iterator itA=agentRecords.begin(); itA!=agentRecords.end(); itA++)
@@ -94,7 +94,7 @@ void GlobalAgentStats::apply( const Engine::SimulationRecord & simRecord, const 
 		{	
 			if(simRecord.hasAgentType(type))
 			{
-				for(Engine::SimulationRecord::AgentRecordsMap::const_iterator it=simRecord.beginAgents(type); it!=simRecord.endAgents(type); it++)
+				for(Engine::SimulationRecord::AgentRecordsMap::const_iterator it=simRecord.beginAgents(type); it!=simRecord.endAgents(type); ++it)
 				{
 					(*itL)->computeAgent(*(it->second));
 				}
@@ -180,7 +180,7 @@ void GlobalAgentStats::writeParams( std::stringstream & line, const std::string 
 	TiXmlHandle hRoot(0);
 
 	TiXmlElement * element = 0;
-	for(Params::iterator it=_params->begin(); it!=_params->end(); it++)
+	for(Params::iterator it=_params->begin(); it!=_params->end(); ++it)
 	{
 		std::list<std::string> & paramsList = *it;
 		// backwards iteration, the first element is the attribute
@@ -227,7 +227,7 @@ void GlobalAgentStats::setParams( Params * params, const std::string & groupFile
 	header << "run";
 
 	// header will have the name of the field + name of parent (if exists)
-	for(Params::iterator it=params->begin(); it!=params->end(); it++)
+	for(Params::iterator it=params->begin(); it!=params->end(); ++it)
 	{
 		header << _separator;
 		std::list<std::string> & paramsList = *it;
@@ -262,7 +262,7 @@ void GlobalAgentStats::setParams( Params * params, const std::string & groupFile
 	// outcome at the end of simulation for several attributes
 	else
 	{
-		for(AgentAnalysisList::const_iterator it=_analysisList.begin(); it!=_analysisList.end(); it++)
+		for(AgentAnalysisList::const_iterator it=_analysisList.begin(); it!=_analysisList.end(); ++it)
 		{
 			if((*it)->writeResults())
 			{

@@ -120,7 +120,7 @@ void AgentHDFtoSHP::createFeature( const Engine::AgentRecord & agentRecord, int 
 		feature->SetField("num step", timeStep);
 	}
 	// list of data
-	for(Engine::AgentRecord::StatesMap::const_iterator it=agentRecord.beginStates(); it!=agentRecord.endStates(); it++)
+	for(Engine::AgentRecord::StatesMap::const_iterator it=agentRecord.beginStates(); it!=agentRecord.endStates(); ++it)
 	{
 		const std::string & key = it->first;
 
@@ -184,7 +184,7 @@ std::string AgentHDFtoSHP::getFieldNameFromString( const std::string & fieldName
 void AgentHDFtoSHP::defineFields( const Engine::AgentRecord & agentRecord )
 {
     /* TODO
-	for(Engine::AgentRecord::StatesMap::const_iterator it=agentRecord.beginStates(); it!=agentRecord.endStates(); it++)
+	for(Engine::AgentRecord::StatesMap::const_iterator it=agentRecord.beginStates(); it!=agentRecord.endStates(); ++it)
 	{
 		const std::string & key = it->first;		
 		// id, exists, x and y are already managed
