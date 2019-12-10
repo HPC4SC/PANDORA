@@ -13,8 +13,6 @@ namespace Examples {
 
         void createAgents();
 
-        void stepEnvironment();
-
     public:
 
         EspaiBarca(EspaiConfig *config, Engine::Scheduler *scheduler = 0);

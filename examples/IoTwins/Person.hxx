@@ -8,8 +8,7 @@
 namespace Examples
 {
 
-    class Person : public Engine::Agent
-            {
+    class Person : public Engine::Agent {
 
     public:
 
