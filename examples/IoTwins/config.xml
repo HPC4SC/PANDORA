@@ -1,0 +1,7 @@
+<?xml version="1.0" ?>
+<config>
+    <output resultsFile="data/espaiBarca.h5" logsDir="./logs"/>
+    <numSteps value="100" serializeResolution="1"/>
+    <size width="426" height="426"/>
+    <inputData map="resources/buildings.bmp" numAgents="1" />
+</config>
