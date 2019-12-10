@@ -50,7 +50,7 @@ namespace Gujarat
 			while( it != sa._areas.end() )
 			{	  
 				stream << "area:[" << *it << "]";
-				it++;
+				++it;
 			}
 			return stream;	  
 		}

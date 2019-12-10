@@ -62,7 +62,7 @@ void OpenMPSingleNode::executeAgents( )
 
     //AgentsVector agentsToExecute{_world->beginAgents( ), _world->endAgents( ) };
     AgentsVector agentsToExecute;
-    for ( AgentsList::iterator it=_world->beginAgents( ); it!=_world->endAgents( ); it++ )
+    for ( AgentsList::iterator it=_world->beginAgents( ); it!=_world->endAgents( ); ++it )
     {
         agentsToExecute.push_back( *it );
     }
@@ -70,7 +70,7 @@ void OpenMPSingleNode::executeAgents( )
 
 #ifndef PANDORAEDEBUG
     // shared memory distibution for read-only planning actions, disabled for extreme debug
-    #pragma omp parallel for
+    #pragma omp parallel for schedule(guided)
 #endif
     for ( size_t i=0; i<agentsToExecute.size( ); i++ )
     {
@@ -124,7 +124,7 @@ void OpenMPSingleNode::removeAgent( Agent * agent )
 
 AgentsList::iterator OpenMPSingleNode::getAgentIterator( const std::string & id )
 {
-    for ( AgentsList::iterator it=_world->beginAgents( ); it!=_world->endAgents( ); it++ )
+    for ( AgentsList::iterator it=_world->beginAgents( ); it!=_world->endAgents( ); ++it )
     {
         Agent * agent = it->get( );
         if ( agent->getId( )==id )
@@ -158,7 +158,7 @@ void OpenMPSingleNode::removeAgents( )
 AgentsVector OpenMPSingleNode::getAgent( const Point2D<int> & position, const std::string & type )
 {
     AgentsVector result;
-    for ( AgentsList::iterator it=_world->beginAgents( ); it!=_world->endAgents( ); it++ )
+    for ( AgentsList::iterator it=_world->beginAgents( ); it!=_world->endAgents( ); ++it )
     {
         if ( (*it )->getPosition( ).isEqual( position ))
         {

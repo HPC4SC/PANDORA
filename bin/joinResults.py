@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-import os, sys, random
+import os
 import argparse
 
 # this script processes all the log simulations in one dir, and writes the values of one particular attribute into one single file.
@@ -11,7 +11,7 @@ def prepareProcess(inputDir,simulationFile, separator, output, attribute ):
 	# headers
 	output.write('var'+'\n')
 	splittedHeader = simulation.readline().split(separator)
-	for i in range(len(splittedHeader)):
+	for i in enumerate(splittedHeader):
 		if splittedHeader[i] == attribute:
 			indexAttribute = i
 	

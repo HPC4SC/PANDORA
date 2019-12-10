@@ -34,7 +34,7 @@ Logger::Logger( ) : _logsDir( "./logs" )
 
 Logger::~Logger( )
 {
-    for ( FilesMap::iterator it=_files.begin( ); it!=_files.end( ); it++ )
+    for ( FilesMap::iterator it=_files.begin( ); it!=_files.end( ); ++it )
     {
          std::ofstream * file = it->second;
          file->close( );

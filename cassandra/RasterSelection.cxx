@@ -52,11 +52,11 @@ void RasterSelection::setSimulationRecord( Engine::SimulationRecord * simulation
 		update();
 		return;
 	}
-	for(Engine::SimulationRecord::RasterMap::const_iterator it=_simulationRecord->beginRasters(); it!=_simulationRecord->endRasters(); it++)
+	for(Engine::SimulationRecord::RasterMap::const_iterator it=_simulationRecord->beginRasters(); it!=_simulationRecord->endRasters(); ++it)
 	{
 		addItem(it->first.c_str());
 	}
-	for(Engine::SimulationRecord::StaticRasterMap::const_iterator it=_simulationRecord->beginStaticRasters(); it!=_simulationRecord->endStaticRasters(); it++)
+	for(Engine::SimulationRecord::StaticRasterMap::const_iterator it=_simulationRecord->beginStaticRasters(); it!=_simulationRecord->endStaticRasters(); ++it)
 	{
 		addItem(it->first.c_str());
 	}

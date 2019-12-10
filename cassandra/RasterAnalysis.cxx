@@ -187,7 +187,7 @@ void RasterAnalysis::fillParamsTree()
 	{	
 		if(!boost::filesystem::is_directory(it->status()))
 		{
-			it++;
+			++it;
 			continue;
 		}
 
@@ -212,7 +212,7 @@ void RasterAnalysis::fillParamsTree()
 		}
 		else
 		{
-			it++;
+			++it;
 		}
 	}
 	updateNumberOfPermutations();
@@ -220,7 +220,7 @@ void RasterAnalysis::fillParamsTree()
 
 void RasterAnalysis::updateNumberOfPermutations()
 {
-	for( boost::filesystem::directory_iterator it(_baseDir); it!=boost::filesystem::directory_iterator(); it++ )
+	for( boost::filesystem::directory_iterator it(_baseDir); it!=boost::filesystem::directory_iterator(); ++it )
 	{
 		if(!boost::filesystem::is_directory(it->status()))
 		{
@@ -398,7 +398,7 @@ bool RasterAnalysis::loadConfig( const std::string & configDir )
 	}
 
 	QStringList rasters;
-	for(Engine::SimulationRecord::RasterMap::const_iterator it=_sampleRecord->beginRasters(); it!=_sampleRecord->endRasters(); it++)
+	for(Engine::SimulationRecord::RasterMap::const_iterator it=_sampleRecord->beginRasters(); it!=_sampleRecord->endRasters(); ++it)
 	{
 		rasters<< QString(it->first.c_str());
 	}
@@ -416,7 +416,7 @@ void RasterAnalysis::loadConfigs()
 {
 	// take the config of the first simulation
 	boost::filesystem::path basePath(_baseDir);  
-	for( boost::filesystem::directory_iterator it(_baseDir); it!=boost::filesystem::directory_iterator(); it++ )
+	for( boost::filesystem::directory_iterator it(_baseDir); it!=boost::filesystem::directory_iterator(); ++it )
 	{
 		if(!boost::filesystem::is_directory(it->status()))
 		{
@@ -512,7 +512,7 @@ void RasterAnalysis::groupGlobalStats( PostProcess::GlobalRasterStats * global )
 
 	_groups = new PostProcess::GlobalRasterStats::Params();
 
-	for(std::list<QTreeWidgetItem * >::iterator it=params.begin(); it!=params.end(); it++)
+	for(std::list<QTreeWidgetItem * >::iterator it=params.begin(); it!=params.end(); ++it)
 	{
 		QTreeWidgetItem * item = *it;
 		std::list< std::string > aGrouping;
@@ -602,7 +602,7 @@ void RasterAnalysis::fillIndividualStats()
 
 	QVBoxLayout * layout = new QVBoxLayout;
 	Engine::RasterRecord * agentRecord = it->second; 
-	for(Engine::RasterRecord::StatesMap::const_iterator itS=agentRecord->beginStates(); itS!=agentRecord->endStates(); itS++)
+	for(Engine::RasterRecord::StatesMap::const_iterator itS=agentRecord->beginStates(); itS!=agentRecord->endStates(); ++itS)
 	{
 		QCheckBox * box = new QCheckBox(QString(itS->first.c_str()));
 		layout->addWidget(box);
@@ -619,7 +619,7 @@ void RasterAnalysis::fillHistogram()
 	Engine::RasterRecord * agentRecord = it->second;
 	
 	QStringList traits;
-	for(Engine::RasterRecord::StatesMap::const_iterator itS=agentRecord->beginStates(); itS!=agentRecord->endStates(); itS++)
+	for(Engine::RasterRecord::StatesMap::const_iterator itS=agentRecord->beginStates(); itS!=agentRecord->endStates(); ++itS)
 	{
 		traits << QString(itS->first.c_str());
 	}

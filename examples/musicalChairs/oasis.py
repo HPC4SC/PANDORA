@@ -77,7 +77,7 @@ class Herder(OasisAgent):
         OasisAgent.__init__( self, id)
 
     def updateState(self):
-        if self.exists == False:
+        if self.exists is False:
             return
         self.naturalGrowth()
 
@@ -105,7 +105,7 @@ class Farmer(OasisAgent):
         OasisAgent.__init__( self, id)
 
     def updateState(self):  
-        if self.exists == False:
+        if self.exists is False:
             return
         self.naturalGrowth()
 
@@ -207,11 +207,11 @@ class Oasis(World):
             self.setValue('farmers', position, 0)
             self._invasions += 1
             return
-        else:
-            print('\therder invasion failed with random:',randomValue,'and aggressiveness:',herder._aggressiveness,'herder removed:',herder)
-            herder.remove()
-            self.setValue('herders', position, 0)
-            return
+
+        print('\therder invasion failed with random:',randomValue,'and aggressiveness:',herder._aggressiveness,'herder removed:',herder)
+        herder.remove()
+        self.setValue('herders', position, 0)
+        return
     
     def updateNumFields(self):
         self._numFields = 0
@@ -243,7 +243,7 @@ class Oasis(World):
 
         random.shuffle(listFarmers)
         index = Point2DInt(0,0)
-        for i in range(0, len(listFarmers)):
+        for i in enumerate(listFarmers):
             aFarmer = listFarmers[i]
             aFarmer.position = index
             self.setValue('farmers', index, 1)
@@ -266,7 +266,7 @@ class Oasis(World):
 
         random.shuffle(listHerders)
         index = Point2DInt(self.config.size._width-1,self.config.size._height-1)
-        for i in range(0, len(listHerders)):
+        for i in enumerate(listHerders):
             aHerder= listHerders[i]
             aHerder.position = index
             self.setValue('herders', index, 1)

@@ -50,7 +50,7 @@ bool SimulationRecord::loadHDF5( const std::string & fileName, const bool & load
 {
     _loadingPercentageDone = 0.0f;
     // TODO it deletes agent records?
-    for ( AgentTypesMap::iterator it = _types.begin( ); it!=_types.end( ); it++ )
+    for ( AgentTypesMap::iterator it = _types.begin( ); it!=_types.end( ); ++it )
     {
         it->second.clear( );
     }
@@ -127,7 +127,7 @@ bool SimulationRecord::loadHDF5( const std::string & fileName, const bool & load
         H5Dclose( staticRasterNamesDatasetId );
 
         _loadingPercentageDone = 15.0f;
-        for ( StaticRasterMap::iterator it=_staticRasters.begin( ); it!=_staticRasters.end( ); it++ )
+        for ( StaticRasterMap::iterator it=_staticRasters.begin( ); it!=_staticRasters.end( ); ++it )
         {
             _loadingState = "loading static raster: "+it->first;
             if ( !_gui )
@@ -155,7 +155,7 @@ bool SimulationRecord::loadHDF5( const std::string & fileName, const bool & load
 
             _loadingPercentageDone = 20.0f; // from 20 to 50
             float increase = 30.0f/( numRasters*numStepsToLoad );
-            for ( RasterMap::iterator it=_resources.begin( ); it!=_resources.end( ); it++ )
+            for ( RasterMap::iterator it=_resources.begin( ); it!=_resources.end( ); ++it )
             {
                 _loadingState = "loading dynamic raster: "+it->first;
                 if ( !_gui )
@@ -258,7 +258,7 @@ bool SimulationRecord::loadHDF5( const std::string & fileName, const bool & load
 void SimulationRecord::registerAgentTypes( const hid_t & rootGroup )
 {
     H5Literate( rootGroup, H5_INDEX_NAME, H5_ITER_INC, 0, iterateAgentTypes, 0 );
-    for ( std::list<std::string>::iterator it=_agentTypes.begin( ); it!=_agentTypes.end( ); it++ )
+    for ( std::list<std::string>::iterator it=_agentTypes.begin( ); it!=_agentTypes.end( ); ++it )
     {
         _types.insert( make_pair( *it, AgentRecordsMap( ) ));
     }
@@ -674,7 +674,7 @@ SimulationRecord::AgentRecordsVector SimulationRecord::getAgentsAtPosition( int 
     AgentRecordsVector results;
     for ( AgentTypesMap::const_iterator itType=_types.begin( ); itType!=_types.end( ); itType++ )
     {
-        for ( AgentRecordsMap::const_iterator it=beginAgents( itType ); it!=endAgents( itType ); it++ )
+        for ( AgentRecordsMap::const_iterator it=beginAgents( itType ); it!=endAgents( itType ); ++it )
         {
             AgentRecord * agentRecord = it->second;
             int x = agentRecord->getInt( step, "x" );
@@ -700,7 +700,7 @@ double SimulationRecord::getMean( const std::string & type, const std::string & 
         throw Exception( oss.str( ) );
     }
     AgentRecordsMap agents = itType->second;
-    for ( AgentRecordsMap::iterator it=agents.begin( ); it!=agents.end( ); it++ )
+    for ( AgentRecordsMap::iterator it=agents.begin( ); it!=agents.end( ); ++it )
     {
         AgentRecord * agentRecord = it->second;
         bool exists = agentRecord->getInt( step, "exists" );
@@ -736,7 +736,7 @@ double SimulationRecord::getSum( const std::string & type, const std::string & a
         throw Exception( oss.str( ) );
     }
     AgentRecordsMap agents = itType->second;
-    for ( AgentRecordsMap::iterator it=agents.begin( ); it!=agents.end( ); it++ )
+    for ( AgentRecordsMap::iterator it=agents.begin( ); it!=agents.end( ); ++it )
     {
         AgentRecord * agentRecord = it->second;
         bool exists = agentRecord->getInt( step, "exists" );

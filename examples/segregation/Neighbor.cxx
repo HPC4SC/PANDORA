@@ -23,7 +23,7 @@ void Neighbor::updateKnowledge()
     _friends= 0;
     
 
-	for(Engine::AgentsVector::iterator it=neighbors.begin(); it!=neighbors.end(); it++)
+	for(Engine::AgentsVector::iterator it=neighbors.begin(); it!=neighbors.end(); ++it)
 	{
 		if((*it)->isType(getType()))
 		{

@@ -128,7 +128,7 @@ void MoveHomeAction::generatePossibleActions( const GujaratAgent& agent,
 
 		Engine::Point2D<int> newPos = dunes.at(diceSelectOneRandomDune);
 		const HunterGatherer & agentConcrete = dynamic_cast< const HunterGatherer & >( agent );
-		for(std::vector<Sector *>::const_iterator it=agentConcrete.getSectors().begin(); it!=agentConcrete.getSectors().end(); it++)
+		for(std::vector<Sector *>::const_iterator it=agentConcrete.getSectors().begin(); it!=agentConcrete.getSectors().end(); ++it)
 		{
 			if(!(*it)->isEmpty())
 			{

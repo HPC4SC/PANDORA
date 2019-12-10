@@ -184,7 +184,7 @@ void AgentAnalysis::fillParamsTree()
 	{	
 		if(!boost::filesystem::is_directory(it->status()))
 		{
-			it++;
+			++it;
 			continue;
 		}
 
@@ -209,7 +209,7 @@ void AgentAnalysis::fillParamsTree()
 		}
 		else
 		{
-			it++;
+			++it;
 		}
 	}
 	updateNumberOfPermutations();
@@ -217,7 +217,7 @@ void AgentAnalysis::fillParamsTree()
 
 void AgentAnalysis::updateNumberOfPermutations()
 {
-	for( boost::filesystem::directory_iterator it(_baseDir); it!=boost::filesystem::directory_iterator(); it++ )
+	for( boost::filesystem::directory_iterator it(_baseDir); it!=boost::filesystem::directory_iterator(); ++it )
 	{
 		if(!boost::filesystem::is_directory(it->status()))
 		{
@@ -393,7 +393,7 @@ bool AgentAnalysis::loadConfig( const std::string & configDir )
 		_sampleRecord = 0;
 		return false;
 	}
-	for(Engine::SimulationRecord::AgentTypesMap::const_iterator itType = _sampleRecord->beginTypes(); itType!=_sampleRecord->endTypes(); itType++)
+	for(Engine::SimulationRecord::AgentTypesMap::const_iterator itType = _sampleRecord->beginTypes(); itType!=_sampleRecord->endTypes(); ++itType)
 	{
 		QString newType(itType->first.c_str());
 		if(_analysis.agentTypes->findText(newType)==-1)
@@ -415,7 +415,7 @@ void AgentAnalysis::loadConfigs()
 {
 	// take the config of the first simulation
 	boost::filesystem::path basePath(_baseDir);  
-	for( boost::filesystem::directory_iterator it(_baseDir); it!=boost::filesystem::directory_iterator(); it++ )
+	for( boost::filesystem::directory_iterator it(_baseDir); it!=boost::filesystem::directory_iterator(); ++it )
 	{
 		if(!boost::filesystem::is_directory(it->status()))
 		{
@@ -510,7 +510,7 @@ void AgentAnalysis::groupGlobalStats( PostProcess::GlobalAgentStats * global )
 
 	_groups = new PostProcess::GlobalAgentStats::Params();
 
-	for(std::list<QTreeWidgetItem * >::iterator it=params.begin(); it!=params.end(); it++)
+	for(std::list<QTreeWidgetItem * >::iterator it=params.begin(); it!=params.end(); ++it)
 	{
 		QTreeWidgetItem * item = *it;
 		std::list< std::string > aGrouping;
@@ -596,17 +596,17 @@ void AgentAnalysis::fillIndividualStats()
 
 	QVBoxLayout * layout = new QVBoxLayout;
 	Engine::AgentRecord * agentRecord = it->second; 
-	for(Engine::AgentRecord::IntAttributesMap::const_iterator itS=agentRecord->beginInt(); itS!=agentRecord->endInt(); itS++)
+	for(Engine::AgentRecord::IntAttributesMap::const_iterator itS=agentRecord->beginInt(); itS!=agentRecord->endInt(); ++itS)
 	{
 		QCheckBox * box = new QCheckBox(QString(itS->first.c_str()));
 		layout->addWidget(box);
 	}
-    for(Engine::AgentRecord::FloatAttributesMap::const_iterator itS=agentRecord->beginFloat(); itS!=agentRecord->endFloat(); itS++)
+    for(Engine::AgentRecord::FloatAttributesMap::const_iterator itS=agentRecord->beginFloat(); itS!=agentRecord->endFloat(); ++itS)
 	{
 		QCheckBox * box = new QCheckBox(QString(itS->first.c_str()));
 		layout->addWidget(box);
 	}
-    for(Engine::AgentRecord::StrAttributesMap::const_iterator itS=agentRecord->beginStr(); itS!=agentRecord->endStr(); itS++)
+    for(Engine::AgentRecord::StrAttributesMap::const_iterator itS=agentRecord->beginStr(); itS!=agentRecord->endStr(); ++itS)
 	{
 		QCheckBox * box = new QCheckBox(QString(itS->first.c_str()));
 		layout->addWidget(box);
@@ -623,15 +623,15 @@ void AgentAnalysis::fillHistogram()
 	Engine::AgentRecord * agentRecord = it->second;
 	
 	QStringList traits;
-	for(Engine::AgentRecord::IntAttributesMap::const_iterator itS=agentRecord->beginInt(); itS!=agentRecord->endInt(); itS++)
+	for(Engine::AgentRecord::IntAttributesMap::const_iterator itS=agentRecord->beginInt(); itS!=agentRecord->endInt(); ++itS)
 	{
 		traits << QString(itS->first.c_str());
 	}
-    for(Engine::AgentRecord::FloatAttributesMap::const_iterator itS=agentRecord->beginFloat(); itS!=agentRecord->endFloat(); itS++)
+    for(Engine::AgentRecord::FloatAttributesMap::const_iterator itS=agentRecord->beginFloat(); itS!=agentRecord->endFloat(); ++itS)
 	{
 		traits << QString(itS->first.c_str());
 	}
-    for(Engine::AgentRecord::StrAttributesMap::const_iterator itS=agentRecord->beginStr(); itS!=agentRecord->endStr(); itS++)
+    for(Engine::AgentRecord::StrAttributesMap::const_iterator itS=agentRecord->beginStr(); itS!=agentRecord->endStr(); ++itS)
 	{
 		traits << QString(itS->first.c_str());
 	}

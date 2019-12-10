@@ -259,7 +259,7 @@ void SequentialSerializer::init( World & world )
 void SequentialSerializer::serializeAgents( const int & step, const AgentsList::const_iterator & beginAgents, const AgentsList::const_iterator & endAgents )
 {
     int i=0;
-    for ( AgentsList::const_iterator it=beginAgents; it!=endAgents; it++ )
+    for ( AgentsList::const_iterator it=beginAgents; it!=endAgents; ++it )
     {
         if ( !( *it )->exists( ) )
         {
@@ -302,7 +302,7 @@ void SequentialSerializer::finish( )
 
 void SequentialSerializer::finishAgentsSerialization( int step )
 {
-    for ( std::map<std::string, int>::iterator it=_agentIndexMap.begin( ); it!=_agentIndexMap.end( ); it++ )
+    for ( std::map<std::string, int>::iterator it=_agentIndexMap.begin( ); it!=_agentIndexMap.end( ); ++it )
     {
         executeAgentSerialization( it->first, step );
     }
@@ -513,7 +513,7 @@ void SequentialSerializer::registerType( Agent * agent )
         std::ostringstream oss;
         oss<<"step"<<i;
         hid_t stepGroup = H5Gcreate( agentTypeGroup, oss.str( ).c_str( ),  0, H5P_DEFAULT, H5P_DEFAULT );
-        for ( Agent::AttributesList::iterator it=agent->beginIntAttributes( ); it!=agent->endIntAttributes( ); it++ )
+        for ( Agent::AttributesList::iterator it=agent->beginIntAttributes( ); it!=agent->endIntAttributes( ); ++it )
         {
             log_DEBUG( logName.str( ), "\tnew int attribute: " << *it );
             newTypeIntMap->insert( make_pair( *it, new std::vector<int>( ) ) );
@@ -527,7 +527,7 @@ void SequentialSerializer::registerType( Agent * agent )
             H5Dclose( idDataset );
         }
 
-        for ( Agent::AttributesList::iterator it=agent->beginFloatAttributes( ); it!=agent->endFloatAttributes( ); it++ )
+        for ( Agent::AttributesList::iterator it=agent->beginFloatAttributes( ); it!=agent->endFloatAttributes( ); ++it )
         {
             log_DEBUG( logName.str( ), "\tnew float attribute: " << *it );
             newTypeFloatMap->insert( make_pair( *it, new std::vector<float>( ) ) );
@@ -544,7 +544,7 @@ void SequentialSerializer::registerType( Agent * agent )
 
         hid_t idType = H5Tcopy( H5T_C_S1 );
         H5Tset_size ( idType, H5T_VARIABLE );
-        for ( Agent::AttributesList::iterator it=agent->beginStringAttributes( ); it!=agent->endStringAttributes( ); it++ )
+        for ( Agent::AttributesList::iterator it=agent->beginStringAttributes( ); it!=agent->endStringAttributes( ); ++it )
         {
             log_DEBUG( logName.str( ), "\tnew string attribute: " << *it );
             newTypeStringMap->insert( make_pair( *it, new std::vector<std::string>( ) ) );
@@ -578,7 +578,7 @@ int SequentialSerializer::getDataSize( const std::string & type )
 
 void SequentialSerializer::resetCurrentIndexs( )
 {
-    for ( std::map<std::string, int>::iterator it=_agentIndexMap.begin( ); it!=_agentIndexMap.end( ); it++ )
+    for ( std::map<std::string, int>::iterator it=_agentIndexMap.begin( ); it!=_agentIndexMap.end( ); ++it )
     {
         it->second = 0;
     }
@@ -586,7 +586,7 @@ void SequentialSerializer::resetCurrentIndexs( )
 
 void SequentialSerializer::serializeStaticRasters( const StaticRastersRefMap & staticRasters )
 {
-    for ( StaticRastersRefMap::const_iterator it=staticRasters.begin( ); it!=staticRasters.end( ); it++ )
+    for ( StaticRastersRefMap::const_iterator it=staticRasters.begin( ); it!=staticRasters.end( ); ++it )
     {
         std::ostringstream oss;
         oss << "/" << it->first << "/values";
@@ -638,7 +638,7 @@ void SequentialSerializer::serializeRaster( const StaticRaster & raster, const s
 
 void SequentialSerializer::serializeRasters( int step )
 {
-    for ( StaticRastersRefMap::const_iterator it=_dynamicRasters.begin( ); it!=_dynamicRasters.end( ); it++ )
+    for ( StaticRastersRefMap::const_iterator it=_dynamicRasters.begin( ); it!=_dynamicRasters.end( ); ++it )
     {
         std::ostringstream oss;
         oss << "/" << it->first << "/step" << step;

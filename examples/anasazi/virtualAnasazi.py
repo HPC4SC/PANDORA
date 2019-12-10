@@ -178,7 +178,7 @@ class Household(Agent):
                 continue
             bestCandidates.append(farm)
              
-        if len(bestCandidates)==0:
+        if bestCandidates:
             return False
 
         bestDistance = 0
@@ -186,7 +186,7 @@ class Household(Agent):
         bestCandidate = bestCandidates[0]
         for candidate in bestCandidates:
             distance = candidate.distance(self._bestFarm)
-            if distance>bestDistance:
+            if distance > bestDistance:
                 continue
             bestDistance = distance
             bestCandidate = candidate
@@ -204,9 +204,9 @@ class Household(Agent):
         
         yieldFarmValue = self.getWorld().getValue('yield x100', self._bestFarm)
         for location in self.getWorld()._locations:     
-            if closeToFarm==True and (location.distance(self._bestFarm)>self.getWorld().config._mobilityDist):
+            if closeToFarm is True and (location.distance(self._bestFarm) > self.getWorld().config._mobilityDist):
                 continue
-            if lowerYield==True and self.getWorld().getValue('yield x100', location)>yieldFarmValue:
+            if lowerYield is True and self.getWorld().getValue('yield x100', location)>yieldFarmValue:
                 continue
             if self.getWorld().getValue('hydro x100', location)>0:
                 continue
@@ -214,7 +214,7 @@ class Household(Agent):
                 continue
     
             distToWaterResources = self.getDistToWater(location)
-            if distToWaterResources<bestDistance:   
+            if distToWaterResources < bestDistance:
                 candidate._x = location._x
                 candidate._y = location._y
                 bestDistance = distToWaterResources
@@ -324,7 +324,7 @@ class Household(Agent):
         return True
 
     def checkFission(self): 
-        if len(self.getWorld()._potentialFarms)==0:
+        if self.getWorld()._potentialFarms:
             return
         if self._age < self._fertilityAge:
             return
@@ -690,20 +690,20 @@ class Valley(World):
         [self.setValue('water', spot, 1) for spot in self._waterStaticLocations]
 
         # landcover based spots
-        if self._alluviumExist == True:
+        if self._alluviumExist is True:
             def setAlluvium(self, location):
                 cover = self.getValue('landCover', location)                    
-                if cover==landCover.eGeneralValleyFloor:
+                if cover == landCover.eGeneralValleyFloor:
                     self.setValue('water', location, 1)
-                elif cover==landCover.eNorthValleyFloor:
+                elif cover == landCover.eNorthValleyFloor:
                     self.setValue('water', location, 1)
-                elif cover==landCover.eMidValleyFloor:
+                elif cover == landCover.eMidValleyFloor:
                     self.setValue('water', location, 1)
-                elif cover==landCover.eKinbikoCanyon:
+                elif cover == landCover.eKinbikoCanyon:
                         self.setValue('water', location, 1)
             [setAlluvium(self, location) for location in self._locations]
         
-        if self._streamExist == True:
+        if self._streamExist is True:
             def setStream(self, location):
                 cover = self.getValue('landCover', location)
                 if cover==landCover.eKinbikoCanyon:
@@ -711,17 +711,17 @@ class Valley(World):
             [setStream(self, location) for location in self._locations]
 
     def getTerrainFromLandCover( self, value ):
-        if value==landCover.eGeneralValleyFloor:
+        if value == landCover.eGeneralValleyFloor:
             return terrain.eGeneral
-        if value==landCover.eNorthValleyFloor or value==landCover.eNorthDunes:
+        if value == landCover.eNorthValleyFloor or value==landCover.eNorthDunes:
             return terrain.eNorth
-        if value==landCover.eMidValleyFloor or value==landCover.eMidDunes:
+        if value == landCover.eMidValleyFloor or value==landCover.eMidDunes:
             return terrain.eMid
-        if value==landCover.eNonarableUplands:
+        if value == landCover.eNonarableUplands:
             return terrain.eNatural
-        if value==landCover.eArableUplands:
+        if value == landCover.eArableUplands:
             return terrain.eUpland
-        if value==landCover.eKinbikoCanyon:
+        if value == landCover.eKinbikoCanyon:
             return terrain.eKinbiko
         return -1
 
@@ -729,7 +729,7 @@ class Valley(World):
     def stepYield(self):
         def calculateYield(self, location):
             landCoverValue = self.getValue('landCover', location)
-            if landCoverValue==landCover.eEmpty:
+            if landCoverValue == landCover.eEmpty:
                 return
 
             apdsiValue = self._apdsi[self.currentStep][self.getTerrainFromLandCover(landCoverValue)]
@@ -754,7 +754,7 @@ class Valley(World):
     def stepWaterSpots(self):
         self._waterSpots[:] = []
         def checkPotentialWaterSpots(self, location):
-            if self.getValue('water', location)==1:
+            if self.getValue('water', location) == 1:
                 self._waterSpots.append(Point2DInt(location._x, location._y))
         [checkPotentialWaterSpots(self, location) for location in self._locations]
 

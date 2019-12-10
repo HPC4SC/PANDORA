@@ -213,7 +213,7 @@ void ProjectConfiguration::loadRastersConfigs( TiXmlElement * rasters )
 TiXmlElement * ProjectConfiguration::storeAgentsConfigs()
 {
 	TiXmlElement * agents = new TiXmlElement("agents");
-	for(AgentsConfigurationMap::iterator it=_agentsConfig.begin(); it!=_agentsConfig.end(); it++)
+	for(AgentsConfigurationMap::iterator it=_agentsConfig.begin(); it!=_agentsConfig.end(); ++it)
 	{
 		AgentConfiguration * config = it->second;
 		TiXmlElement * currentAgent = new TiXmlElement("agent");
@@ -242,7 +242,7 @@ TiXmlElement * ProjectConfiguration::storeAgentsConfigs()
 TiXmlElement * ProjectConfiguration::storeRastersConfigs()
 {
 	TiXmlElement * rasters = new TiXmlElement("rasters");
-	for(RastersConfigurationMap::iterator it=_rastersConfig.begin(); it!=_rastersConfig.end(); it++)
+	for(RastersConfigurationMap::iterator it=_rastersConfig.begin(); it!=_rastersConfig.end(); ++it)
 	{
 		RasterConfiguration * config = it->second;
 		TiXmlElement * currentRaster = new TiXmlElement("raster");
@@ -320,7 +320,7 @@ Engine::SimulationRecord * ProjectConfiguration::getSimulationRecord()
 
 void ProjectConfiguration::cleanConfigs()
 {
-	for(AgentsConfigurationMap::iterator it=_agentsConfig.begin(); it!=_agentsConfig.end(); it++)
+	for(AgentsConfigurationMap::iterator it=_agentsConfig.begin(); it!=_agentsConfig.end(); ++it)
 	{
 		AgentConfiguration * agentConfig = it->second;
 		delete agentConfig;
@@ -328,7 +328,7 @@ void ProjectConfiguration::cleanConfigs()
 	}
 	_agentsConfig.clear();
 
-	for(RastersConfigurationMap::iterator it=_rastersConfig.begin(); it!=_rastersConfig.end(); it++)
+	for(RastersConfigurationMap::iterator it=_rastersConfig.begin(); it!=_rastersConfig.end(); ++it)
 	{
 		RasterConfiguration * rasterConfig = it->second;
 		delete rasterConfig;

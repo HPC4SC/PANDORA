@@ -44,7 +44,7 @@ namespace Engine
 
     void MpiFactory::cleanTypes( )
     {
-        for ( TypesMap::iterator it=_types.begin( ); it!=_types.end( ); it++ )
+        for ( TypesMap::iterator it=_types.begin( ); it!=_types.end( ); ++it )
         {
             MPI_Datatype * type = it->second;
             MPI_Type_free( type );
