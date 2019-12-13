@@ -28,7 +28,7 @@ namespace Examples
 
     public:
 
-        Person(const std::string &id);
+        Person(const std::string &id, const int &vision, const int &age, const bool &tourist);
 
         virtual ~Person();
 

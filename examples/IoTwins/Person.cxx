@@ -5,7 +5,7 @@
 
 namespace Examples {
 
-    Person::Person(const std::string &id) : Agent(id) {}
+    Person::Person(const std::string &id) : Agent(id), _vision(vision), _age(age), _isToursit(tourist) {}
 
     Person::~Person() {}
 

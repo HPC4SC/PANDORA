@@ -31,7 +31,10 @@ namespace Examples {
             if((i%getNumTasks())==getId()) {
                 std::ostringstream oss;
                 oss << "Person_" << i;
-                Person * agent = new Person(oss.str());
+                int vision, age;
+                bool tourist
+                defineAgent(espaiConfig, vision, age, tourist);
+                Person * agent = new Person(oss.str(), vision, age, tourist);
                 addAgent(agent);
                 Engine::Point2D<int> spawn = this->getRandomPosition();
                 while  (getStaticRaster("map").getValue(spawn) == 0) spawn = this->getRandomPosition();
@@ -39,6 +42,12 @@ namespace Examples {
                 log_INFO(logName.str(), getWallTime() << " new agent: " << agent);
             }
         }
+    }
+
+    void defineAgent(const EspaiConfig &espaiConfig, int &vision, int &age, bool &tourist) {
+        int vision = Engine::GeneralState::statistics().getUniformDistValue(espaiConfig._minAgentVision, espaiConfig._minAgentVision);
+        int age = Engine::GeneralState::statistics().getUniformDistValue(espaiConfig._minAgentAge, espaiConfig._minAgentAge);
+        bool tourist = Engine::GeneralState::statistics().getUniformDistValue(0,100) > espaiConfig._provTourist;
     }
 
 }
