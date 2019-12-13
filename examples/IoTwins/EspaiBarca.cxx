@@ -5,6 +5,8 @@
 #include <GeneralState.hxx>
 #include <Logger.hxx>
 #include <Size.hxx>
+#include <Scheduler.hxx>
+#include <Logger.hxx>
 
 namespace Examples {
 
@@ -15,7 +17,7 @@ namespace Examples {
     void EspaiBarca::createRasters() {
         const EspaiConfig &espaiConfig = (const EspaiConfig &) getConfig();
         registerStaticRaster("map", true, 0);
-        // 0 building 255 street
+        // 0 building 1 street
         Engine::GeneralState::rasterLoader().fillGDALRaster(getStaticRaster("map"), espaiConfig._mapRoute,
                                                             getBoundaries());
     }
@@ -31,7 +33,11 @@ namespace Examples {
                 oss << "Person_" << i;
                 Person * agent = new Person(oss.str());
                 addAgent(agent);
-                agent->setRandomPosition();
+                Engine::Point2D<int> spawn = this->getRandomPosition();
+                std::cout << "before while value is: " << getStaticRaster("map").getValue(spawn) << " and position is: (" << spawn._x << "," << spawn._y << ")" << std::endl;
+                while  (getStaticRaster("map").getValue(spawn) == 0) spawn = this->getRandomPosition();
+                std::cout << "after while value is: " << getStaticRaster("map").getValue(spawn) << " and position is: (" << spawn._x << "," << spawn._y << ")" << std::endl;
+                agent->setPosition(spawn);
                 log_INFO(logName.str(), getWallTime() << " new agent: " << agent);
             }
         }

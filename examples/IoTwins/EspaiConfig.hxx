@@ -8,6 +8,7 @@ namespace Examples {
     class EspaiConfig : public Engine::Config {
 
         std::string _mapRoute;
+
         int _numAgents;
 
     public:
