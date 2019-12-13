@@ -34,9 +34,7 @@ namespace Examples {
                 Person * agent = new Person(oss.str());
                 addAgent(agent);
                 Engine::Point2D<int> spawn = this->getRandomPosition();
-                std::cout << "before while value is: " << getStaticRaster("map").getValue(spawn) << " and position is: (" << spawn._x << "," << spawn._y << ")" << std::endl;
                 while  (getStaticRaster("map").getValue(spawn) == 0) spawn = this->getRandomPosition();
-                std::cout << "after while value is: " << getStaticRaster("map").getValue(spawn) << " and position is: (" << spawn._x << "," << spawn._y << ")" << std::endl;
                 agent->setPosition(spawn);
                 log_INFO(logName.str(), getWallTime() << " new agent: " << agent);
             }

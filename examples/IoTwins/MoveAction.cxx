@@ -18,16 +18,13 @@ namespace Examples {
         int modY = Engine::GeneralState::statistics().getUniformDistValue(-1, 1);
         newPosition._x += modX;
         newPosition._y += modY;
-        std::cout << "Value a on em moc: " << world->getValue("map", agent.getPosition()) << " posicio: ("<< newPosition._x << "," << newPosition._y << ")" <<  std::endl;
         while (world->getValue("map", agent.getPosition()) == 0) {
-            std::cout << "Entro al if" << std::endl;
             newPosition._x -= modX;
             newPosition._y -= modY;
             modX = Engine::GeneralState::statistics().getUniformDistValue(-1, 1);
             modY = Engine::GeneralState::statistics().getUniformDistValue(-1, 1);
             newPosition._x += modX;
             newPosition._y += modY;
-            std::cout << "Value a on em moc despres de canviar: " << world->getValue("map", agent.getPosition()) << std::endl;
         }
         if(world->checkPosition(newPosition)) agent.setPosition(newPosition);
     }

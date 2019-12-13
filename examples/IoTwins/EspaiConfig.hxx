@@ -11,6 +11,16 @@ namespace Examples {
 
         int _numAgents;
 
+        int _minAgentVision;
+
+        int _maxAgentVision;
+
+        int _minAgentAge;
+
+        int _maxAgentAge;
+
+        float _provTourist;
+
     public:
 
         EspaiConfig(const std::string &xmlFile);
