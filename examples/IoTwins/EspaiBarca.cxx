@@ -33,8 +33,9 @@ namespace Examples {
                 oss << "Person_" << i;
                 int vision, age;
                 bool tourist;
-                defineAgent(espaiConfig, vision, age, tourist);
-                Person * agent = new Person(oss.str(), vision, age, tourist);
+                Engine::Point2D<int> finalTarget;
+                defineAgent(espaiConfig, vision, age, tourist, finalTarget);
+                Person * agent = new Person(oss.str(), vision, age, tourist, finalTarget);
                 addAgent(agent);
                 Engine::Point2D<int> spawn = this->getRandomPosition();
                 while  (getStaticRaster("map").getValue(spawn) == 0) spawn = this->getRandomPosition();
@@ -44,10 +45,11 @@ namespace Examples {
         }
     }
 
-    void EspaiBarca::defineAgent(const EspaiConfig &espaiConfig, int &vision, int &age, bool &tourist) {
+    void EspaiBarca::defineAgent(const EspaiConfig &espaiConfig, int &vision, int &age, bool &tourist, Engine::Point2D<int> &finalTarget) {
         vision = Engine::GeneralState::statistics().getUniformDistValue(espaiConfig._minAgentVision, espaiConfig._maxAgentVision);
         age = Engine::GeneralState::statistics().getUniformDistValue(espaiConfig._minAgentAge, espaiConfig._maxAgentAge);
         tourist = Engine::GeneralState::statistics().getUniformDistValue(0,100) > espaiConfig._provTourist;
+        finalTarget = this->getRandomPosition();
     }
 
 }
