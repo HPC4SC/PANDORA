@@ -32,7 +32,7 @@ namespace Examples {
                 std::ostringstream oss;
                 oss << "Person_" << i;
                 int vision, age;
-                bool tourist
+                bool tourist;
                 defineAgent(espaiConfig, vision, age, tourist);
                 Person * agent = new Person(oss.str(), vision, age, tourist);
                 addAgent(agent);
@@ -44,10 +44,10 @@ namespace Examples {
         }
     }
 
-    void defineAgent(const EspaiConfig &espaiConfig, int &vision, int &age, bool &tourist) {
-        int vision = Engine::GeneralState::statistics().getUniformDistValue(espaiConfig._minAgentVision, espaiConfig._minAgentVision);
-        int age = Engine::GeneralState::statistics().getUniformDistValue(espaiConfig._minAgentAge, espaiConfig._minAgentAge);
-        bool tourist = Engine::GeneralState::statistics().getUniformDistValue(0,100) > espaiConfig._provTourist;
+    void EspaiBarca::defineAgent(const EspaiConfig &espaiConfig, int &vision, int &age, bool &tourist) {
+        vision = Engine::GeneralState::statistics().getUniformDistValue(espaiConfig._minAgentVision, espaiConfig._maxAgentVision);
+        age = Engine::GeneralState::statistics().getUniformDistValue(espaiConfig._minAgentAge, espaiConfig._maxAgentAge);
+        tourist = Engine::GeneralState::statistics().getUniformDistValue(0,100) > espaiConfig._provTourist;
     }
 
 }
