@@ -2,6 +2,8 @@
 #define __MoveAction_hxx__
 
 #include <Action.hxx>
+#include <World.hxx>
+#include <Person.hxx>
 #include <string>
 
 namespace Engine {
@@ -11,6 +13,9 @@ namespace Engine {
 namespace Examples {
 
     class MoveAction : public Engine::Action {
+
+        Engine::Point2D<int> selectNextPositon(Engine::Agent &agent, Engine::World *world);
+
     public:
         MoveAction();
 

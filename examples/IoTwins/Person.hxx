@@ -14,6 +14,8 @@ namespace Examples
 
         int _vision;
 
+        int _velocity;
+
         int _age;
 
         bool _isTourist;
@@ -28,7 +30,7 @@ namespace Examples
 
     public:
 
-        Person(const std::string &id, const int &vision, const int &age, const bool &tourist,
+        Person(const std::string &id, const int &vision, const int &velocity, const int &age, const bool &tourist,
                const Engine::Point2D<int> finalTarget);
 
         virtual ~Person();

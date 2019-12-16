@@ -15,6 +15,10 @@ namespace Examples {
 
         int _maxAgentVision;
 
+        int _minAgentVelocity;
+
+        int _maxAgentVelocity;
+
         int _minAgentAge;
 
         int _maxAgentAge;

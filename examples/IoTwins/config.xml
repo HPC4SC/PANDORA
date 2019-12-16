@@ -4,5 +4,5 @@
     <numSteps value="100" serializeResolution="1"/>
     <size width="970" height="970"/>
     <inputData map="resources/bitmaps/buildings.bmp" numAgents="1" />
-    <agentData minVision="1" maxVision="3" minAge="0" maxAge="80" porvTourist="0.5"/>
+    <agentData minVision="1" maxVision="3" minVelocity="1" maxVelocity="2" minAge="0" maxAge="80" porvTourist="0.5"/>
 </config>

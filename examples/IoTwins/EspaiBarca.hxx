@@ -13,7 +13,7 @@ namespace Examples {
 
         void createAgents();
 
-        void defineAgent(const EspaiConfig &espaiConfig, int &vision, int &age, bool &tourist,
+        void defineAgent(const EspaiConfig &espaiConfig, int &vision, int &velocity, int &age, bool &tourist,
                          Engine::Point2D<int> &finalTarget);
 
     public:
