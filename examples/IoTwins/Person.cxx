@@ -8,12 +8,6 @@ namespace Examples {
     Person::Person(const std::string &id, const int &vision, const int &velocity, const int &age, const bool &tourist,
                    const Engine::Point2D<int> finalTraget)
             : Agent(id), _vision(vision), _velocity(velocity), _age(age), _isTourist(tourist), _finalTarget(finalTraget) {
-        std::cout << "I'm Person: " << id << std::endl;
-        std::cout << "I have a vision of: " << _vision << std::endl;
-        std::cout << "I have a velocity of: " << _velocity << std::endl;
-        std::cout << "I'm: " << age << std::endl;
-        std::cout << "I'm a tourist: " << _isTourist << std::endl;
-        std::cout << "My final Target is: (" << _finalTarget._x << "," << _finalTarget._y << ")" << std::endl;
     }
 
     Person::~Person() {}
