@@ -39,6 +39,8 @@ namespace Examples
 
         int getVision();
 
+        int getVelocity();
+
         int getAge();
 
         bool isTourist();
@@ -50,10 +52,6 @@ namespace Examples
         Engine::Point2D<int> getFinalTarget();
 
         Engine::Point2D<int> getTarget();
-
-        void setVision(const int &vision);
-
-        void setAge(const int &age);
 
         void setGroup(const int &group);
 

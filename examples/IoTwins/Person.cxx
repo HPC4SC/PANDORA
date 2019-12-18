@@ -25,6 +25,10 @@ namespace Examples {
         return _vision;
     }
 
+    int Person::getVelocity() {
+        return _velocity;
+    }
+
     int Person::getAge() {
         return _age;
     }
@@ -47,14 +51,6 @@ namespace Examples {
 
     Engine::Point2D<int> Person::getTarget() {
         return _target;
-    }
-
-    void Person::setVision(const int &vision) {
-        _vision = vision;
-    }
-
-    void Person::setAge(const int &age) {
-        _age = age;
     }
 
     void Person::setGroup(const int &group) {
