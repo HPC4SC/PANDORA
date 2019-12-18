@@ -16,9 +16,9 @@ namespace Examples {
 
     void EspaiBarca::createRasters() {
         const EspaiConfig &espaiConfig = (const EspaiConfig &) getConfig();
-        registerStaticRaster("map", true, 0);
+        registerStaticRaster("buildings", true, 0);
         // 0 building 1 street
-        Engine::GeneralState::rasterLoader().fillGDALRaster(getStaticRaster("map"), espaiConfig._mapRoute,
+        Engine::GeneralState::rasterLoader().fillGDALRaster(getStaticRaster("buildings"), espaiConfig._mapRoute,
                                                             getBoundaries());
     }
 
@@ -38,7 +38,7 @@ namespace Examples {
                 Person *agent = new Person(oss.str(), vision, velocity, age, tourist, finalTarget);
                 addAgent(agent);
                 Engine::Point2D<int> spawn = this->getRandomPosition();
-                while (getStaticRaster("map").getValue(spawn) == 0) spawn = this->getRandomPosition();
+                while (getStaticRaster("buildings").getValue(spawn) == 0) spawn = this->getRandomPosition();
                 agent->setPosition(spawn);
                 log_INFO(logName.str(), getWallTime() << " new agent: " << agent);
             }

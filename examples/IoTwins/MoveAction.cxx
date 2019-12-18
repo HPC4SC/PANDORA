@@ -33,7 +33,6 @@ namespace Examples {
             }
         }
         Engine::Point2D<int> newPosition = positionsInReach[betterPositionIndex].first;
-        std::cout << "I'm in: (" << newPosition._x << "," << newPosition._y << ") after moving" << std::endl;
         return newPosition;
     }
 
@@ -42,7 +41,6 @@ namespace Examples {
         std::vector<std::pair<Engine::Point2D<int>, int>> positionsInReach;
         Person &person = dynamic_cast<Person&>(agent);
         Engine::Point2D<int> newPosition = person.getPosition();
-        std::cout << "I'm in: (" << newPosition._x << "," << newPosition._y << ") before moving" << std::endl;
         int firstI = 0;
         int firstJ = 0;
         int lastI = 0;
@@ -52,7 +50,7 @@ namespace Examples {
             for (int j = firstJ; j < lastJ; j++) {
                 if (i != j) {
                     Engine::Point2D<int> candidate = Engine::Point2D<int>(i,j);
-                    if (world->getStaticRaster("map").getValue(candidate) == 1) {
+                    if (world->getStaticRaster("buildings").getValue(candidate) == 1) {
                         std::pair<Engine::Point2D<int>, int> point(candidate,candidate.distance(person.getFinalTarget()));
                         positionsInReach.push_back(point);
                     } else {
