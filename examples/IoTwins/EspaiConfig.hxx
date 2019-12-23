@@ -25,6 +25,14 @@ namespace Examples {
 
         float _provTourist;
 
+        int _minWallDistance;
+
+        int _minAgentDistance;
+
+        int _maxWallDistance;
+
+        int _maxAgentDistance;
+
     public:
 
         EspaiConfig(const std::string &xmlFile);

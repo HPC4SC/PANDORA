@@ -28,10 +28,14 @@ namespace Examples
 
         Engine::Point2D<int> _target;
 
+        int _wallDistance;
+
+        int _agentDistance;
+
     public:
 
         Person(const std::string &id, const int &vision, const int &velocity, const int &age, const bool &tourist,
-               const Engine::Point2D<int> finalTarget);
+               const Engine::Point2D<int> finalTarget, const int &wallDistance, const int &agentDistance);
 
         virtual ~Person();
 
@@ -52,6 +56,10 @@ namespace Examples
         Engine::Point2D<int> getFinalTarget();
 
         Engine::Point2D<int> getTarget();
+
+        int getWallDistance();
+
+        int getAgentDistance();
 
         void setGroup(const int &group);
 

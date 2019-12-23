@@ -6,8 +6,9 @@
 namespace Examples {
 
     Person::Person(const std::string &id, const int &vision, const int &velocity, const int &age, const bool &tourist,
-                   const Engine::Point2D<int> finalTraget)
-            : Agent(id), _vision(vision), _velocity(velocity), _age(age), _isTourist(tourist), _finalTarget(finalTraget) {
+                   const Engine::Point2D<int> finalTraget, const int &wallDistance, const int &agentDistance)
+            : Agent(id), _vision(vision), _velocity(velocity), _age(age), _isTourist(tourist), _finalTarget(finalTraget),
+            _wallDistance(wallDistance), _agentDistance(agentDistance) {
     }
 
     Person::~Person() {}
@@ -46,6 +47,14 @@ namespace Examples {
 
     Engine::Point2D<int> Person::getTarget() {
         return _target;
+    }
+
+    int Person::getWallDistance() {
+        return _wallDistance;
+    }
+
+    int Person::getAgentDistance() {
+        return _agentDistance;
     }
 
     void Person::setGroup(const int &group) {

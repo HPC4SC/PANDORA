@@ -31,11 +31,12 @@ namespace Examples {
             if ((i % getNumTasks()) == getId()) {
                 std::ostringstream oss;
                 oss << "Person_" << i;
-                int vision, age, velocity;
+                int vision, age, velocity, wallDistance, agentDistance;
                 bool tourist;
                 Engine::Point2D<int> finalTarget;
-                defineAgent(espaiConfig, vision, velocity, age, tourist, finalTarget);
-                Person *agent = new Person(oss.str(), vision, velocity, age, tourist, finalTarget);
+                defineAgent(espaiConfig, vision, velocity, age, tourist, finalTarget, wallDistance, agentDistance);
+                Person *agent = new Person(oss.str(), vision, velocity, age, tourist, finalTarget,
+                                           wallDistance, agentDistance);
                 addAgent(agent);
                 Engine::Point2D<int> spawn = this->getRandomPosition();
                 while (getStaticRaster("buildings").getValue(spawn) == 0) spawn = this->getRandomPosition();
@@ -46,15 +47,19 @@ namespace Examples {
     }
 
     void EspaiBarca::defineAgent(const EspaiConfig &espaiConfig, int &vision, int &velocity, int &age, bool &tourist,
-                                 Engine::Point2D<int> &finalTarget) {
+                                 Engine::Point2D<int> &finalTarget, int &wallDistance, int &agentDistance) {
         vision = Engine::GeneralState::statistics().getUniformDistValue(espaiConfig._minAgentVision,
                                                                         espaiConfig._maxAgentVision);
-        velocity =Engine::GeneralState::statistics().getUniformDistValue(espaiConfig._minAgentVelocity,
-                                                                         espaiConfig._maxAgentVelocity);
+        velocity = Engine::GeneralState::statistics().getUniformDistValue(espaiConfig._minAgentVelocity,
+                                                                          espaiConfig._maxAgentVelocity);
         age = Engine::GeneralState::statistics().getUniformDistValue(espaiConfig._minAgentAge,
                                                                      espaiConfig._maxAgentAge);
         tourist = Engine::GeneralState::statistics().getUniformDistValue(0, 100) > espaiConfig._provTourist;
         finalTarget = this->getRandomPosition();
+        wallDistance = Engine::GeneralState::statistics().getUniformDistValue(espaiConfig._minWallDistance,
+                                                                           espaiConfig._maxWallDistance);
+        agentDistance = Engine::GeneralState::statistics().getUniformDistValue(espaiConfig._minAgentDistance,
+                                                                            espaiConfig._maxAgentDistance);
     }
 
 }
