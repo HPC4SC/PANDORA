@@ -18,7 +18,11 @@ namespace Examples {
 
         std::vector<std::pair<Engine::Point2D<int>, int>> lookAround(Engine::Agent &agent, Engine::World *world);
 
-        int assignPriority(Engine::Point2D<int> point, Engine::Agent &agent);
+        int assignPriority(Engine::Point2D<int> point, Engine::Agent &agent, Engine::World *world);
+
+        bool nearWall(const Engine::Point2D<int> point, const Engine::Agent &agent, Engine::World *world);
+
+        bool nearAgent(const Engine::Point2D<int> point, const Engine::Agent &agent, Engine::World *world);
 
         void defineLoopBounds(int &firstI,int &firstJ, int &lastI, int &lastJ, const int &posX, const int &posY,
                           const int &velocity, Engine::World *world);
