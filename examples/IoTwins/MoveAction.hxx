@@ -7,7 +7,7 @@
 #include <string>
 
 namespace Engine {
-    class Human;
+    class Person;
 }
 
 namespace Examples {
@@ -37,7 +37,7 @@ namespace Examples {
         std::string describe() const;
     };
 
-} // namespace Examples
+}
 
-#endif // __MoveHomeAction_hxx__
+#endif
 

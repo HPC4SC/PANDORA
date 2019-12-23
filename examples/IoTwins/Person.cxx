@@ -2,6 +2,7 @@
 #include <World.hxx>
 #include <GeneralState.hxx>
 #include <MoveAction.hxx>
+#include <DoNothingAction.hxx>
 
 namespace Examples {
 
@@ -14,7 +15,11 @@ namespace Examples {
     Person::~Person() {}
 
     void Person::selectActions() {
-        _actions.push_back(new MoveAction());
+        if(_finalTarget == this->getPosition()) {
+            _actions.push_back(new DoNothingAction());
+        } else {
+            _actions.push_back(new MoveAction());
+        }
     }
 
     int Person::getVision() {
