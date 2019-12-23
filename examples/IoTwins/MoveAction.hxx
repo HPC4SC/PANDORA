@@ -16,7 +16,9 @@ namespace Examples {
 
         Engine::Point2D<int> selectNextPositon(Engine::Agent &agent, Engine::World *world);
 
-        std::vector<std::pair<Engine::Point2D<int>, int>> calculateDistances(Engine::Agent &agent, Engine::World *world);
+        std::vector<std::pair<Engine::Point2D<int>, int>> lookAround(Engine::Agent &agent, Engine::World *world);
+
+        int assignPriority(Engine::Point2D<int> point, Engine::Agent &agent);
 
         void defineLoopBounds(int &firstI,int &firstJ, int &lastI, int &lastJ, const int &posX, const int &posY,
                           const int &velocity, Engine::World *world);
