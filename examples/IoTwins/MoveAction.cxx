@@ -42,8 +42,8 @@ namespace Examples {
         std::vector<std::pair<Engine::Point2D<int>, int>> positionsInReach;
         Person &person = dynamic_cast<Person&>(agent);
         Engine::Point2D<int> currentPosition = person.getPosition();
-        std:: cout << "el meu target es: (" << person.getFinalTarget() << ")" << std::endl;
-        std::cout << "position abans de començar: (" << currentPosition << ")" << std::endl;
+        std:: cout << " el meu target es: (" << person.getFinalTarget() << ")" << std::endl;
+        std::cout  << "soc: " << agent.getId() << " position abans de començar: (" << currentPosition << ")" << std::endl;
         int firstI, firstJ, lastI, lastJ;
         firstI = firstJ = lastI = lastJ = 0;
         defineLoopBounds(firstI,firstJ,lastI,lastJ,currentPosition._x,currentPosition._y,person.getVision(),world);
@@ -107,9 +107,9 @@ namespace Examples {
         lastI = posX + capability;
         lastJ = posY + capability;
         if (firstI < boundaries.left()) firstI = boundaries.left();
-        else if (firstJ < boundaries.top()) firstJ = boundaries.top();
-        else if (lastI > boundaries.right()) lastI = boundaries.right();
-        else if (lastJ > boundaries.bottom()) lastJ = boundaries.bottom();
+        if (firstJ < boundaries.top()) firstJ = boundaries.top();
+        if (lastI > boundaries.right()) lastI = boundaries.right();
+        if (lastJ > boundaries.bottom()) lastJ = boundaries.bottom();
     }
 
     std::string MoveAction::describe() const {
