@@ -64,7 +64,6 @@ namespace Examples {
         return positionsInReach;
     }
 
-    // TODO prioritat no depenent nomes de la distancia: distancia amb les parets i altres agents suposem 1m minim
     int MoveAction::assignPriority(Engine::Point2D<int> point, Engine::Agent &agent, Engine::World *world) {
         Person &person = dynamic_cast<Person&>(agent);
         int priority = point.distance(person.getFinalTarget());
