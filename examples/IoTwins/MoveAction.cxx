@@ -72,14 +72,16 @@ namespace Examples {
         return priority;
     }
 
-    bool MoveAction::nearWall(const Engine::Point2D<int> point, const Engine::Agent &agent, Engine::World *world) {
+    bool MoveAction::nearWall(const Engine::Point2D<int> point, Engine::Agent &agent, Engine::World *world) {
         int firstI, firstJ, lastI, lastJ;
         firstI = firstJ = lastI = lastJ = 0;
-        defineLoopBounds(firstI,firstJ,lastI,lastJ,point._x,point._y,1,world);
+        Person &person = dynamic_cast<Person&>(agent);
+        defineLoopBounds(firstI,firstJ,lastI,lastJ,point._x,point._y,person.getWallDistance(),world);
         for (int i = firstI; i < lastI; i++) {
             for (int j = firstJ; j < lastJ; j++) {
                 Engine::Point2D<int> newPoint = Engine::Point2D<int>(i,j);
-                if (point.distance(newPoint) == 1 and world->getStaticRaster("buildings").getValue(newPoint) == 0) {
+                if (point.distance(newPoint) == person.getWallDistance() and
+                    world->getStaticRaster("buildings").getValue(newPoint) == 0) {
                     return false;
                 }
             }
@@ -87,11 +89,12 @@ namespace Examples {
         return true;
     }
 
-    bool MoveAction::nearAgent(const Engine::Point2D<int> point, const Engine::Agent &agent, Engine::World *world) {
+    bool MoveAction::nearAgent(const Engine::Point2D<int> point, Engine::Agent &agent, Engine::World *world) {
         Engine::Agent * p_agent = world->getAgent(agent.getId());
-        Engine::AgentsVector neighbours = world->getNeighbours(p_agent, 1);
+        Person &person = dynamic_cast<Person&>(agent);
+        Engine::AgentsVector neighbours = world->getNeighbours(p_agent,person.getAgentDistance());
         for (int i = 0; i < neighbours.size(); i++) {
-            if (point.distance(neighbours[i]->getPosition()) <= 1) return false;
+            if (point.distance(neighbours[i]->getPosition()) <= person.getAgentDistance()) return false;
         }
         return true;
     }
