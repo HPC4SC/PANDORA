@@ -10,7 +10,7 @@ namespace Examples {
     }
 
     void DoNothingAction::execute(Engine::Agent &agent) {
-        std::cout << "I'm at my taget YAY!!" << std::endl;
+        std::cout << "I'm at my target YAY!!" << std::endl;
     }
 
     std::string DoNothingAction::describe() const {
