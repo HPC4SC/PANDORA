@@ -15,8 +15,8 @@ namespace Examples {
 
     void MoveAction::execute(Engine::Agent&agent) {
         Engine::World *world = agent.getWorld();
+        Person &person = dynamic_cast<Person&>(agent);
         Engine::Point2D<int> newPosition = selectNextPositon(agent,world);
-        std::cout << "position al acabar: (" << newPosition << ")" << std::endl;
         if(world->checkPosition(newPosition)) agent.setPosition(newPosition);
     }
 
@@ -24,12 +24,12 @@ namespace Examples {
         // pair es el punt i la distancia al finalTarget
         std::vector<std::pair<Engine::Point2D<int>, int>> positionsInReach = lookAround(agent,world);
         int betterPositionIndex = 0;
-        int betterPositionDistance = 0;
-        for (int i = 0; i < positionsInReach.size(); i++) {
+        int betterPositionPriority = positionsInReach[1].second;
+        for (int i = 1; i < positionsInReach.size(); i++) {
             if (positionsInReach[i].second != -1) {
-                if (positionsInReach[i].second < betterPositionDistance) {
+                if (positionsInReach[i].second < betterPositionPriority) {
                     betterPositionIndex = i;
-                    betterPositionDistance = positionsInReach[i].second;
+                    betterPositionPriority = positionsInReach[i].second;
                 }
             }
         }
@@ -42,8 +42,6 @@ namespace Examples {
         std::vector<std::pair<Engine::Point2D<int>, int>> positionsInReach;
         Person &person = dynamic_cast<Person&>(agent);
         Engine::Point2D<int> currentPosition = person.getPosition();
-        std:: cout << " el meu target es: (" << person.getFinalTarget() << ")" << std::endl;
-        std::cout  << "soc: " << agent.getId() << " position abans de començar: (" << currentPosition << ")" << std::endl;
         int firstI, firstJ, lastI, lastJ;
         firstI = firstJ = lastI = lastJ = 0;
         defineLoopBounds(firstI,firstJ,lastI,lastJ,currentPosition._x,currentPosition._y,person.getVision(),world);
