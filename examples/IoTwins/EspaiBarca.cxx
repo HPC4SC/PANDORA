@@ -27,7 +27,10 @@ namespace Examples {
         logName << "agents_" << getId();
 
         const EspaiConfig &espaiConfig = (const EspaiConfig &) getConfig();
-        for (int i = 0; i < espaiConfig._numAgents; i++) {
+        int maxAgents = espaiConfig._numAgents - static_cast<int>(this->getNumberOfAgents());
+        int agentsToCreate = Engine::GeneralState::statistics().getUniformDistValue(0,maxAgents);
+
+        for (int i = 0; i < agentsToCreate; i++) {
             if ((i % getNumTasks()) == getId()) {
                 std::ostringstream oss;
                 oss << "Person_" << i;
@@ -44,6 +47,25 @@ namespace Examples {
                 log_INFO(logName.str(), getWallTime() << " new agent: " << agent);
             }
         }
+    }
+
+    void EspaiBarca::step() {
+        std::stringstream logName;
+        logName << "simulation_" << getId();
+        log_INFO(logName.str(), getWallTime() << " executing step: " << _step);
+
+        if (_step%_config->getSerializeResolution() == 0) {
+            _scheduler->serializeRasters(_step);
+            _scheduler->serializeAgents(_step);
+            log_DEBUG(logName.str(), getWallTime() << " step: " << step_ << " serialization done");
+        }
+        createAgents();
+
+        log_DEBUG(logName.str(), getWallTime() << " step: " << _step << " has executed step enviroment");
+        // then the agents perform their actions
+        _scheduler->executeAgents();
+        _scheduler->removeAgents();
+        log_INFO(logName.str(), getWallTime() << " finished step: " << _step);
     }
 
     void EspaiBarca::defineAgent(const EspaiConfig &espaiConfig, int &vision, int &velocity, int &age, bool &tourist,

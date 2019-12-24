@@ -16,6 +16,8 @@ namespace Examples {
         void defineAgent(const EspaiConfig &espaiConfig, int &vision, int &velocity, int &age, bool &tourist,
                          Engine::Point2D<int> &finalTarget, int &wallDistance, int &agentDistance);
 
+        void step();
+
     public:
 
         EspaiBarca(EspaiConfig *config, Engine::Scheduler *scheduler = 0);
