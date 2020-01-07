@@ -24,7 +24,7 @@ namespace Examples {
         // pair es el punt i la distancia al finalTarget
         std::vector<std::pair<Engine::Point2D<int>, int>> positionsInReach = lookAround(agent,world);
         int betterPositionIndex = 0;
-        int betterPositionPriority = positionsInReach[1].second;
+        int betterPositionPriority = positionsInReach[0].second;
         for (int i = 1; i < positionsInReach.size(); i++) {
             if (positionsInReach[i].second != -1) {
                 if (positionsInReach[i].second < betterPositionPriority) {
@@ -65,8 +65,8 @@ namespace Examples {
     int MoveAction::assignPriority(Engine::Point2D<int> point, Engine::Agent &agent, Engine::World *world) {
         Person &person = dynamic_cast<Person&>(agent);
         int priority = point.distance(person.getFinalTarget());
-        if (nearWall(point,agent,world)) priority += 1;
-        else if (nearAgent(point,agent,world)) priority += 1;
+        if (nearAgent(point,agent,world)) priority += 1;
+        //if (nearWall(point,agent,world)) priority += 1;
         return priority;
     }
 
@@ -78,7 +78,7 @@ namespace Examples {
         for (int i = firstI; i < lastI; i++) {
             for (int j = firstJ; j < lastJ; j++) {
                 Engine::Point2D<int> newPoint = Engine::Point2D<int>(i,j);
-                if (point.distance(newPoint) == person.getWallDistance() and
+                if (point.distance(newPoint) <= person.getWallDistance() and
                     world->getStaticRaster("buildings").getValue(newPoint) == 0) {
                     return false;
                 }
