@@ -1,5 +1,6 @@
 #include <DoNothingAction.hxx>
 #include <GeneralState.hxx>
+#include <Person.hxx>
 
 namespace Examples {
 
@@ -10,7 +11,7 @@ namespace Examples {
     }
 
     void DoNothingAction::execute(Engine::Agent &agent) {
-        std::cout << "I'm at my target YAY!!" << std::endl;
+        std::cout << "I'm " << agent.getId() << " and I'm at my target YAY!!" << std::endl;
     }
 
     std::string DoNothingAction::describe() const {

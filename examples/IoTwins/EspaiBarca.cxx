@@ -28,12 +28,12 @@ namespace Examples {
 
         const EspaiConfig &espaiConfig = (const EspaiConfig &) getConfig();
         int maxAgents = espaiConfig._numAgents - static_cast<int>(this->getNumberOfAgents());
-        int agentsToCreate = Engine::GeneralState::statistics().getUniformDistValue(0,maxAgents);
+        int agentsToCreate = Engine::GeneralState::statistics().getUniformDistValue(0,maxAgents); //TODO canviar distribucio
 
         for (int i = 0; i < agentsToCreate; i++) {
             if ((i % getNumTasks()) == getId()) {
                 std::ostringstream oss;
-                oss << "Person_" << i;
+                oss << "Person_" << static_cast<int>(this->getNumberOfAgents()) + 1;
                 int vision, age, velocity, wallDistance, agentDistance;
                 bool tourist;
                 Engine::Point2D<int> finalTarget;
@@ -41,6 +41,7 @@ namespace Examples {
                 Person *agent = new Person(oss.str(), vision, velocity, age, tourist, finalTarget,
                                            wallDistance, agentDistance);
                 addAgent(agent);
+                std::cout << "I add agent: " << agent->getId() << std::endl;
                 Engine::Point2D<int> spawn = this->getRandomPosition();
                 while (getStaticRaster("buildings").getValue(spawn) == 0) spawn = this->getRandomPosition();
                 agent->setPosition(spawn);
@@ -63,6 +64,7 @@ namespace Examples {
 
         log_DEBUG(logName.str(), getWallTime() << " step: " << _step << " has executed step enviroment");
         // then the agents perform their actions
+        std::cout <<  "Inici step: " << _step << std::endl;
         _scheduler->executeAgents();
         _scheduler->removeAgents();
         log_INFO(logName.str(), getWallTime() << " finished step: " << _step);

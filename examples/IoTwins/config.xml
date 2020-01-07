@@ -1,9 +1,9 @@
 <?xml version="1.0" ?>
 <config>
     <output resultsFile="data/espaiBarca.h5" logsDir="./logs"/>
-    <numSteps value="10" serializeResolution="1"/>
+    <numSteps value="60000" serializeResolution="1"/>
     <size width="970" height="970"/>
-    <inputData map="resources/bitmaps/buildings.bmp" numAgents="100"/>
+    <inputData map="resources/bitmaps/buildings.bmp" numAgents="10"/>
     <agentData minVision="1" maxVision="3" minVelocity="1" maxVelocity="2" minAge="0" maxAge="80" porvTourist="0.5"
                minWallDistance = "1" minAgentDistance = "1" maxWallDistance = "2" maxAgentDistance = "2"/>
 </config>
