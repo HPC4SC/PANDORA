@@ -27,7 +27,7 @@ void RandomAgent::selectActions() {
 
 void RandomAgent::registerAttributes() {
 	// each of this lines registers its own attributte
-	registerIntAttribute("wealth"); 
+	registerIntAttribute("wealth");
 	registerIntAttribute("vision");
 	registerIntAttribute("metabolicRate");
 	registerIntAttribute("currentAge");
