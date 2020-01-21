@@ -39,7 +39,7 @@ public:
 	int getMetabolicRate() const;
 	// returns the value of the _currentAge attribute
 	int getCurrentAge() const;
-	// incremenrts the value of the _currentAge attribute by 1
+	// increments the value of the _currentAge attribute by 1
 	void incCurrentAge();
 	// returns the value of the _maxAge attribute
 	int getMaxAge() const;
