@@ -23,13 +23,13 @@ class RandomWorldConfig : public Engine::Config
 public:
 	// creates a RandomWorldConfig instance
 	RandomWorldConfig( const std::string & xmlFile );
-	// destyroys a RandomWorldConifg instance
+	// destroys a RandomWorldConifg instance
 	virtual ~RandomWorldConfig();
 
     void loadParams();
 
-
 	friend class RandomWorld;
+	friend class ReplacementAction;
 };
 
 } // namespace Examples
