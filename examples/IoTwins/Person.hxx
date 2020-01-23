@@ -5,12 +5,14 @@
 #include <Action.hxx>
 #include <Point2D.hxx>
 #include <string>
+#include <vector>
 
-namespace Examples
-{
+namespace Examples {
 
     class Person : public Engine::Agent
             {
+
+    private:
 
         int _vision;
 
@@ -32,10 +34,15 @@ namespace Examples
 
         int _agentDistance;
 
+        int _distanceBAgents;
+
+        std::vector<Engine::Point2D<int>> _visitedPositions;
+
     public:
 
         Person(const std::string &id, const int &vision, const int &velocity, const int &age, const bool &tourist,
-               const Engine::Point2D<int> finalTarget, const int &wallDistance, const int &agentDistance);
+               const Engine::Point2D<int> finalTarget, const int &wallDistance, const int &agentDistance,
+               const int &maxDistanceBAgents);
 
         virtual ~Person();
 
@@ -61,9 +68,15 @@ namespace Examples
 
         int getAgentDistance();
 
+        int getMaxDistanceBetweenAgents();
+
+        bool haveVisited(Engine::Point2D<int> newPosition);
+
         void setGroup(const int &group);
 
         void setTarget(const Engine::Point2D<int> &target);
+
+        void addVisited(Engine::Point2D<int> newPosition);
 
         ////////////////////////////////////////////////
         // This code has been automatically generated //

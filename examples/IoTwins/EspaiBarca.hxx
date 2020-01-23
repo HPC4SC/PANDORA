@@ -14,7 +14,8 @@ namespace Examples {
         void createAgents();
 
         void defineAgent(const EspaiConfig &espaiConfig, int &vision, int &velocity, int &age, bool &tourist,
-                         Engine::Point2D<int> &finalTarget, int &wallDistance, int &agentDistance);
+                         Engine::Point2D<int> &finalTarget, int &wallDistance, int &agentDistance,
+                         int &maxDistanceBAgents);
 
         void step();
 

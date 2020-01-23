@@ -17,9 +17,10 @@ namespace Examples {
         _maxAgentAge = getParamInt("agentData", "maxAge");
         _provTourist = getParamFloat("agentData", "porvTourist");
         _minWallDistance = getParamInt("agentData", "minWallDistance");
-        _minAgentDistance = getParamInt("agentData", "minAgentDistance");
         _maxWallDistance = getParamInt("agentData", "minWallDistance");
+        _minAgentDistance = getParamInt("agentData", "minAgentDistance");
         _maxAgentDistance = getParamInt("agentData", "minAgentDistance");
+        _maxDistanceBAgents = getParamInt("agentData", "maxDistanceBAgents");
     }
 
 }

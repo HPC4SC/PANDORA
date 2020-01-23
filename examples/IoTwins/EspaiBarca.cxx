@@ -34,12 +34,13 @@ namespace Examples {
             if ((i % getNumTasks()) == getId()) {
                 std::ostringstream oss;
                 oss << "Person_" << static_cast<int>(this->getNumberOfAgents()) + 1;
-                int vision, age, velocity, wallDistance, agentDistance;
+                int vision, age, velocity, wallDistance, agentDistance, maxDistanceBAgents;
                 bool tourist;
                 Engine::Point2D<int> finalTarget;
-                defineAgent(espaiConfig, vision, velocity, age, tourist, finalTarget, wallDistance, agentDistance);
+                defineAgent(espaiConfig, vision, velocity, age, tourist, finalTarget, wallDistance, agentDistance,
+                        maxDistanceBAgents);
                 Person *agent = new Person(oss.str(), vision, velocity, age, tourist, finalTarget,
-                                           wallDistance, agentDistance);
+                                           wallDistance, agentDistance, maxDistanceBAgents);
                 addAgent(agent);
                 std::cout << "I add agent: " << agent->getId() << std::endl;
                 Engine::Point2D<int> spawn = this->getRandomPosition();
@@ -63,7 +64,6 @@ namespace Examples {
         createAgents();
 
         log_DEBUG(logName.str(), getWallTime() << " step: " << _step << " has executed step enviroment");
-        // then the agents perform their actions
         std::cout <<  "Inici step: " << _step << std::endl;
         _scheduler->executeAgents();
         _scheduler->removeAgents();
@@ -71,7 +71,8 @@ namespace Examples {
     }
 
     void EspaiBarca::defineAgent(const EspaiConfig &espaiConfig, int &vision, int &velocity, int &age, bool &tourist,
-                                 Engine::Point2D<int> &finalTarget, int &wallDistance, int &agentDistance) {
+                                 Engine::Point2D<int> &finalTarget, int &wallDistance, int &agentDistance,
+                                 int &maxDistanceBAgents) {
         vision = Engine::GeneralState::statistics().getUniformDistValue(espaiConfig._minAgentVision,
                                                                         espaiConfig._maxAgentVision);
         velocity = Engine::GeneralState::statistics().getUniformDistValue(espaiConfig._minAgentVelocity,
@@ -80,10 +81,12 @@ namespace Examples {
                                                                      espaiConfig._maxAgentAge);
         tourist = Engine::GeneralState::statistics().getUniformDistValue(0, 100) > espaiConfig._provTourist;
         finalTarget = this->getRandomPosition();
+        while (getStaticRaster("buildings").getValue(finalTarget) == 0) finalTarget = this->getRandomPosition();
         wallDistance = Engine::GeneralState::statistics().getUniformDistValue(espaiConfig._minWallDistance,
                                                                            espaiConfig._maxWallDistance);
         agentDistance = Engine::GeneralState::statistics().getUniformDistValue(espaiConfig._minAgentDistance,
                                                                             espaiConfig._maxAgentDistance);
+        maxDistanceBAgents = maxDistanceBAgents;
     }
 
 }

@@ -33,6 +33,8 @@ namespace Examples {
 
         int _maxAgentDistance;
 
+        int _maxDistanceBAgents;
+
     public:
 
         EspaiConfig(const std::string &xmlFile);

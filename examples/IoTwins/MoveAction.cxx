@@ -16,17 +16,21 @@ namespace Examples {
     void MoveAction::execute(Engine::Agent&agent) {
         Engine::World *world = agent.getWorld();
         Person &person = dynamic_cast<Person&>(agent);
-        Engine::Point2D<int> newPosition = selectNextPositon(agent,world);
-        if(world->checkPosition(newPosition)) agent.setPosition(newPosition);
+        Engine::Point2D<int> newPosition = selectNextPositon(agent,world); //minDist A*-ish
+        if(world->checkPosition(newPosition)) {
+            agent.setPosition(newPosition);
+            std::cout << "soc: " << person.getId() << " em moc a la posicio: " << newPosition << " el meu target es: " << person.getFinalTarget()  << " la distancia find alla és: " << newPosition.distance(person.getFinalTarget()) << std::endl;
+        }
     }
 
     Engine::Point2D<int> MoveAction::selectNextPositon(Engine::Agent &agent, Engine::World *world) {
         // pair es el punt i la distancia al finalTarget
         std::vector<std::pair<Engine::Point2D<int>, int>> positionsInReach = lookAround(agent,world);
+        Person &person = dynamic_cast<Person&>(agent);
         int betterPositionIndex = 0;
         int betterPositionPriority = positionsInReach[0].second;
         for (int i = 1; i < positionsInReach.size(); i++) {
-            if (positionsInReach[i].second != -1) {
+            if (positionsInReach[i].second != -1 and not person.haveVisited(positionsInReach[i].first)) {
                 if (positionsInReach[i].second < betterPositionPriority) {
                     betterPositionIndex = i;
                     betterPositionPriority = positionsInReach[i].second;
@@ -34,6 +38,10 @@ namespace Examples {
             }
         }
         Engine::Point2D<int> newPosition = positionsInReach[betterPositionIndex].first;
+        if (newPosition == agent.getPosition()) {
+            newPosition = positionsInReach[Engine::GeneralState::statistics().getUniformDistValue(0,positionsInReach.size())].first;
+        }
+        person.addVisited(newPosition);
         return newPosition;
     }
 
@@ -45,8 +53,8 @@ namespace Examples {
         int firstI, firstJ, lastI, lastJ;
         firstI = firstJ = lastI = lastJ = 0;
         defineLoopBounds(firstI,firstJ,lastI,lastJ,currentPosition._x,currentPosition._y,person.getVision(),world);
-        for (int i = firstI; i < lastI; i++) {
-             for (int j = firstJ; j < lastJ; j++) {
+        for (int i = firstI; i <= lastI; i++) {
+             for (int j = firstJ; j <= lastJ; j++) {
                  if (i != j) {
                      Engine::Point2D<int> point = Engine::Point2D<int>(i,j);
                      if (world->getStaticRaster("buildings").getValue(point) == 1) {
@@ -65,8 +73,9 @@ namespace Examples {
     int MoveAction::assignPriority(Engine::Point2D<int> point, Engine::Agent &agent, Engine::World *world) {
         Person &person = dynamic_cast<Person&>(agent);
         int priority = point.distance(person.getFinalTarget());
-        if (nearAgent(point,agent,world)) priority += 1;
+        //if (nearAgent(point,agent,world)) priority += 1;
         //if (nearWall(point,agent,world)) priority += 1;
+        if (tooFarFromAgent(point,agent,world)) priority +=1;
         return priority;
     }
 
@@ -75,8 +84,8 @@ namespace Examples {
         firstI = firstJ = lastI = lastJ = 0;
         Person &person = dynamic_cast<Person&>(agent);
         defineLoopBounds(firstI,firstJ,lastI,lastJ,point._x,point._y,person.getWallDistance(),world);
-        for (int i = firstI; i < lastI; i++) {
-            for (int j = firstJ; j < lastJ; j++) {
+        for (int i = firstI; i <= lastI; i++) {
+            for (int j = firstJ; j <= lastJ; j++) {
                 Engine::Point2D<int> newPoint = Engine::Point2D<int>(i,j);
                 if (point.distance(newPoint) <= person.getWallDistance() and
                     world->getStaticRaster("buildings").getValue(newPoint) == 0) {
@@ -95,6 +104,16 @@ namespace Examples {
             if (point.distance(neighbours[i]->getPosition()) <= person.getAgentDistance()) return false;
         }
         return true;
+    }
+
+    bool MoveAction::tooFarFromAgent(const Engine::Point2D<int> point, Engine::Agent &agent, Engine::World *world) {
+        Engine::Agent * p_agent = world->getAgent(agent.getId());
+        Person &person = dynamic_cast<Person&>(agent);
+        Engine::AgentsVector neighbours = world->getNeighbours(p_agent,person.getMaxDistanceBetweenAgents());
+        if (neighbours.empty()) {
+            return true;
+        }
+        return false;
     }
 
     void MoveAction::defineLoopBounds(int &firstI,int &firstJ, int &lastI, int &lastJ, const int &posX, const int &posY,
