@@ -9,6 +9,8 @@ namespace Examples {
 
     class EspaiBarca : public Engine::World {
 
+        std::vector<Engine::Point2D<int>> _spawnPoints;
+
         void createRasters();
 
         void createAgents();
@@ -18,6 +20,8 @@ namespace Examples {
                          int &maxDistanceBAgents);
 
         void step();
+
+        void setupValidSpawnPoints();
 
     public:
 

@@ -17,9 +17,13 @@ namespace Examples {
     void EspaiBarca::createRasters() {
         const EspaiConfig &espaiConfig = (const EspaiConfig &) getConfig();
         registerStaticRaster("buildings", true, 0);
+        registerStaticRaster("entrances", true, 0);
         // 0 building 1 street
         Engine::GeneralState::rasterLoader().fillGDALRaster(getStaticRaster("buildings"), espaiConfig._mapRoute,
                                                             getBoundaries());
+        Engine::GeneralState::rasterLoader().fillGDALRaster(getStaticRaster("entrances"), espaiConfig._entrancesRoute,
+                                                            getBoundaries());
+        setupValidSpawnPoints();
     }
 
     void EspaiBarca::createAgents() {
@@ -43,8 +47,9 @@ namespace Examples {
                                            wallDistance, agentDistance, maxDistanceBAgents);
                 addAgent(agent);
                 std::cout << "I add agent: " << agent->getId() << std::endl;
-                Engine::Point2D<int> spawn = this->getRandomPosition();
-                while (getStaticRaster("buildings").getValue(spawn) == 0) spawn = this->getRandomPosition();
+                int spawnIndex = Engine::GeneralState::statistics().getUniformDistValue(0,_spawnPoints.size());
+                Engine::Point2D<int> spawn = _spawnPoints[spawnIndex];
+                //while (getStaticRaster("buildings").getValue(spawn) == 0) spawn = this->getRandomPosition();
                 agent->setPosition(spawn);
                 log_INFO(logName.str(), getWallTime() << " new agent: " << agent);
             }
@@ -87,6 +92,17 @@ namespace Examples {
         agentDistance = Engine::GeneralState::statistics().getUniformDistValue(espaiConfig._minAgentDistance,
                                                                             espaiConfig._maxAgentDistance);
         maxDistanceBAgents = maxDistanceBAgents;
+    }
+
+    void EspaiBarca::setupValidSpawnPoints() {
+        for (int i = 0; i < getBoundaries().right(); i++) {
+            for (int j = 0; j < getBoundaries().bottom(); j++) {
+                Engine::Point2D<int> candidate = Engine::Point2D<int>(i,j);
+                if(getStaticRaster("entrances").getValue(candidate) == 1) {
+                    _spawnPoints.push_back(candidate);
+                }
+            }
+        }
     }
 
 }

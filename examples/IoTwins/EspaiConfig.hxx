@@ -9,6 +9,8 @@ namespace Examples {
 
         std::string _mapRoute;
 
+        std::string _entrancesRoute;
+
         int _numAgents;
 
         int _minAgentVision;
