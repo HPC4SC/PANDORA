@@ -16,7 +16,7 @@ namespace Examples {
     void MoveAction::execute(Engine::Agent&agent) {
         Engine::World *world = agent.getWorld();
         Person &person = dynamic_cast<Person&>(agent);
-        Engine::Point2D<int> newPosition = selectNextPositon(agent,world); //minDist A*-ish
+        Engine::Point2D<int> newPosition = selectNextPosition(agent,world); //minDist A*-ish
         if(world->checkPosition(newPosition)) {
             agent.setPosition(newPosition);
             std::cout << "soc: " << person.getId() << " em moc a la posicio: " << newPosition << " el meu target es: " << person.getFinalTarget()  << " la distancia find alla és: " << newPosition.distance(person.getFinalTarget()) << std::endl;
@@ -74,7 +74,7 @@ namespace Examples {
         Person &person = dynamic_cast<Person&>(agent);
         int priority = point.distance(person.getFinalTarget());
         if (nearAgent(point,agent,world)) priority += 1;
-        if (nearWall(point,agent,world)) priority += 1;
+        if (nearWall(point,agent,world) and not targetNearWall(agent,world)) priority += 1;
         if (tooFarFromAgent(point,agent,world)) priority +=1;
         return priority;
     }
@@ -109,6 +109,22 @@ namespace Examples {
         Person &person = dynamic_cast<Person&>(agent);
         Engine::AgentsVector neighbours = world->getNeighbours(p_agent,person.getMaxDistanceBetweenAgents());
         if (neighbours.empty()) return true;
+        return false;
+    }
+
+    bool MoveAction::targetNearWall(Engine::Agent &agent, Engine::World *world) {
+        int firstI, firstJ, lastI, lastJ;
+        firstI = firstJ = lastI = lastJ = 0;
+        Person &person = dynamic_cast<Person&>(agent);
+        Engine::Point2D<int> point = person.getFinalTarget();
+        defineLoopBounds(firstI,firstJ,lastI,lastJ,point._x,point._y,person.getWallDistance(),world);
+        for (int i = firstI; i <= lastI; i++) {
+            for (int j = firstJ; j <= lastJ; j++) {
+                Engine::Point2D<int> newPoint = Engine::Point2D<int>(i,j);
+                if (point.distance(newPoint) <= person.getWallDistance() and
+                    world->getStaticRaster("buildings").getValue(newPoint) == 0) return true;
+            }
+        }
         return false;
     }
 
