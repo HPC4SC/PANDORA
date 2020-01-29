@@ -73,8 +73,8 @@ namespace Examples {
     int MoveAction::assignPriority(Engine::Point2D<int> point, Engine::Agent &agent, Engine::World *world) {
         Person &person = dynamic_cast<Person&>(agent);
         int priority = point.distance(person.getFinalTarget());
-        //if (nearAgent(point,agent,world)) priority += 1;
-        //if (nearWall(point,agent,world)) priority += 1;
+        if (nearAgent(point,agent,world)) priority += 1;
+        if (nearWall(point,agent,world)) priority += 1;
         if (tooFarFromAgent(point,agent,world)) priority +=1;
         return priority;
     }
@@ -88,9 +88,7 @@ namespace Examples {
             for (int j = firstJ; j <= lastJ; j++) {
                 Engine::Point2D<int> newPoint = Engine::Point2D<int>(i,j);
                 if (point.distance(newPoint) <= person.getWallDistance() and
-                    world->getStaticRaster("buildings").getValue(newPoint) == 0) {
-                    return false;
-                }
+                    world->getStaticRaster("buildings").getValue(newPoint) == 0) return false;
             }
         }
         return true;
@@ -110,9 +108,7 @@ namespace Examples {
         Engine::Agent * p_agent = world->getAgent(agent.getId());
         Person &person = dynamic_cast<Person&>(agent);
         Engine::AgentsVector neighbours = world->getNeighbours(p_agent,person.getMaxDistanceBetweenAgents());
-        if (neighbours.empty()) {
-            return true;
-        }
+        if (neighbours.empty()) return true;
         return false;
     }
 
