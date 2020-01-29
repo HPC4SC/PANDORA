@@ -7,11 +7,9 @@
 
 namespace Examples {
 
-    MoveAction::MoveAction() {
-    }
+    MoveAction::MoveAction() {}
 
-    MoveAction::~MoveAction() {
-    }
+    MoveAction::~MoveAction() {}
 
     void MoveAction::execute(Engine::Agent&agent) {
         Engine::World *world = agent.getWorld();

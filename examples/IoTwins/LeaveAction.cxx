@@ -4,11 +4,9 @@
 
 namespace Examples {
 
-    LeaveAction::LeaveAction() {
-    }
+    LeaveAction::LeaveAction() {}
 
-    LeaveAction::~LeaveAction() {
-    }
+    LeaveAction::~LeaveAction() {}
 
     void LeaveAction::execute(Engine::Agent &agent) {
         std::cout << "I'm " << agent.getId() << " and I no longer exist" << std::endl;

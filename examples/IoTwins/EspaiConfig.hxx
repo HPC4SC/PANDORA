@@ -5,7 +5,8 @@
 
 namespace Examples {
 
-    class EspaiConfig : public Engine::Config {
+    class EspaiConfig : public Engine::Config
+            {
 
         std::string _mapRoute;
 

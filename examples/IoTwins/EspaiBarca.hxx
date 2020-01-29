@@ -7,7 +7,8 @@ namespace Examples {
 
     class EspaiConfig;
 
-    class EspaiBarca : public Engine::World {
+    class EspaiBarca : public Engine::World
+            {
 
         std::vector<Engine::Point2D<int>> _spawnPoints;
 

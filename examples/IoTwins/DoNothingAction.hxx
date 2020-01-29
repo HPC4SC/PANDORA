@@ -10,7 +10,8 @@ namespace Engine {
 
 namespace Examples {
 
-    class DoNothingAction : public Engine::Action {
+    class DoNothingAction : public Engine::Action
+            {
 
     public:
         DoNothingAction();

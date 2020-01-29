@@ -11,8 +11,7 @@ namespace Examples {
                    const Engine::Point2D<int> finalTarget, const int &wallDistance, const int &agentDistance,
                    const int &maxDistanceBAgents)
             : Agent(id), _vision(vision), _velocity(velocity), _age(age), _isTourist(tourist), _finalTarget(finalTarget),
-            _wallDistance(wallDistance), _agentDistance(agentDistance), _distanceBAgents(maxDistanceBAgents) {
-    }
+            _wallDistance(wallDistance), _agentDistance(agentDistance), _distanceBAgents(maxDistanceBAgents) {}
 
     Person::~Person() {}
 

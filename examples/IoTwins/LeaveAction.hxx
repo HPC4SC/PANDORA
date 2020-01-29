@@ -10,7 +10,8 @@ namespace Engine {
 
 namespace Examples {
 
-    class LeaveAction : public Engine::Action {
+    class LeaveAction : public Engine::Action
+            {
 
     public:
         LeaveAction();

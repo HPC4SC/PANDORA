@@ -12,7 +12,8 @@ namespace Engine {
 
 namespace Examples {
 
-    class MoveAction : public Engine::Action {
+    class MoveAction : public Engine::Action
+            {
 
         Engine::Point2D<int> selectNextPosition(Engine::Agent &agent, Engine::World *world);
 
