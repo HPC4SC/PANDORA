@@ -73,7 +73,7 @@ namespace Examples {
     int MoveAction::assignPriority(Engine::Point2D<int> point, Engine::Agent &agent, Engine::World *world) {
         Person &person = dynamic_cast<Person&>(agent);
         int priority = point.distance(person.getFinalTarget());
-        // if (nearAgent(point,agent,world)) priority += 1;
+        //if (nearAgent(point,agent,world)) priority += 1;
         //if (nearWall(point,agent,world)) priority += 1;
         if (tooFarFromAgent(point,agent,world)) priority +=1;
         return priority;

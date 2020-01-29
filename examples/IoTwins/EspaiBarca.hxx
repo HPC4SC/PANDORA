@@ -11,6 +11,8 @@ namespace Examples {
 
         std::vector<Engine::Point2D<int>> _spawnPoints;
 
+        int _lastId = 0;
+
         void createRasters();
 
         void createAgents();

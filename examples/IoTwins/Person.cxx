@@ -3,6 +3,7 @@
 #include <GeneralState.hxx>
 #include <MoveAction.hxx>
 #include <DoNothingAction.hxx>
+#include <LeaveAction.hxx>
 
 namespace Examples {
 
@@ -17,7 +18,7 @@ namespace Examples {
 
     void Person::selectActions() {
         if(_finalTarget == this->getPosition()) {
-            _actions.push_back(new DoNothingAction());
+            _actions.push_back(new LeaveAction());
         } else {
             _actions.push_back(new MoveAction());
         }
@@ -83,11 +84,11 @@ namespace Examples {
     }
 
     void Person::addVisited(Engine::Point2D<int> newPosition) {
-        /*if(_visitedPositions.size() < 50)*/ _visitedPositions.push_back(newPosition);
-        /*else {
+        if(_visitedPositions.size() < 20) _visitedPositions.push_back(newPosition);
+        else {
             for (int i = 0; i < _visitedPositions.size()-1; i++) _visitedPositions[i] = _visitedPositions[i+1];
             _visitedPositions[_visitedPositions.size()-1] = newPosition;
-        }*/
+        }
     }
 
 }

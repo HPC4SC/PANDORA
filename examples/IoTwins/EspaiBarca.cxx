@@ -21,6 +21,7 @@ namespace Examples {
         // 0 building 1 street
         Engine::GeneralState::rasterLoader().fillGDALRaster(getStaticRaster("buildings"), espaiConfig._mapRoute,
                                                             getBoundaries());
+        // 0 validSpawnPoint 1 invalid
         Engine::GeneralState::rasterLoader().fillGDALRaster(getStaticRaster("entrances"), espaiConfig._entrancesRoute,
                                                             getBoundaries());
         setupValidSpawnPoints();
@@ -34,10 +35,11 @@ namespace Examples {
         int maxAgents = espaiConfig._numAgents - static_cast<int>(this->getNumberOfAgents());
         int agentsToCreate = Engine::GeneralState::statistics().getUniformDistValue(0,maxAgents); //TODO canviar distribucio
 
-        for (int i = 0; i < agentsToCreate; i++) {
+        for (int i = 0; i < agentsToCreate and _lastId < espaiConfig._numAgents; i++) {
             if ((i % getNumTasks()) == getId()) {
+                _lastId += 1;
                 std::ostringstream oss;
-                oss << "Person_" << static_cast<int>(this->getNumberOfAgents()) + 1;
+                oss << "Person_" << _lastId;
                 int vision, age, velocity, wallDistance, agentDistance, maxDistanceBAgents;
                 bool tourist;
                 Engine::Point2D<int> finalTarget;
@@ -98,7 +100,7 @@ namespace Examples {
         for (int i = 0; i < getBoundaries().right(); i++) {
             for (int j = 0; j < getBoundaries().bottom(); j++) {
                 Engine::Point2D<int> candidate = Engine::Point2D<int>(i,j);
-                if(getStaticRaster("entrances").getValue(candidate) == 1) {
+                if(getStaticRaster("entrances").getValue(candidate) == 0) {
                     _spawnPoints.push_back(candidate);
                 }
             }

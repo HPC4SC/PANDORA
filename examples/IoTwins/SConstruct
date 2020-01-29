@@ -11,7 +11,7 @@ agents = ['Person']
 namespaceAgents = ['Examples']
 world = 'EspaiBarca'
 
-srcFiles = Split('main.cxx  EspaiBarca.cxx EspaiConfig.cxx Person.cxx MoveAction.cxx DoNothingAction.cxx')
+srcFiles = Split('main.cxx  EspaiBarca.cxx EspaiConfig.cxx Person.cxx MoveAction.cxx DoNothingAction.cxx LeaveAction.cxx')
 
 ###################################################
 ########## END OF CUSTOM INFORMATION  #############
