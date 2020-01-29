@@ -8,9 +8,9 @@
 namespace Examples {
 
     Person::Person(const std::string &id, const int &vision, const int &velocity, const int &age, const bool &tourist,
-                   const Engine::Point2D<int> finalTraget, const int &wallDistance, const int &agentDistance,
+                   const Engine::Point2D<int> finalTarget, const int &wallDistance, const int &agentDistance,
                    const int &maxDistanceBAgents)
-            : Agent(id), _vision(vision), _velocity(velocity), _age(age), _isTourist(tourist), _finalTarget(finalTraget),
+            : Agent(id), _vision(vision), _velocity(velocity), _age(age), _isTourist(tourist), _finalTarget(finalTarget),
             _wallDistance(wallDistance), _agentDistance(agentDistance), _distanceBAgents(maxDistanceBAgents) {
     }
 
