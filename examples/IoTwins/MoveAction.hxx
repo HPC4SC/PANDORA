@@ -14,7 +14,7 @@ namespace Examples {
 
     class MoveAction : public Engine::Action {
 
-        Engine::Point2D<int> selectNextPositon(Engine::Agent &agent, Engine::World *world);
+        Engine::Point2D<int> selectNextPosition(Engine::Agent &agent, Engine::World *world);
 
         std::vector<std::pair<Engine::Point2D<int>, int>> lookAround(Engine::Agent &agent, Engine::World *world);
 

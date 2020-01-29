@@ -23,7 +23,7 @@ namespace Examples {
         }
     }
 
-    Engine::Point2D<int> MoveAction::selectNextPositon(Engine::Agent &agent, Engine::World *world) {
+    Engine::Point2D<int> MoveAction::selectNextPosition(Engine::Agent &agent, Engine::World *world) {
         // pair es el punt i la distancia al finalTarget
         std::vector<std::pair<Engine::Point2D<int>, int>> positionsInReach = lookAround(agent,world);
         Person &person = dynamic_cast<Person&>(agent);
