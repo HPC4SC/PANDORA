@@ -4,21 +4,27 @@
 #include <MoveAction.hxx>
 #include <DoNothingAction.hxx>
 #include <LeaveAction.hxx>
+#include <WanderAction.hxx>
 
 namespace Examples {
 
     Person::Person(const std::string &id, const int &vision, const int &velocity, const int &age, const bool &tourist,
                    const Engine::Point2D<int> finalTarget, const int &wallDistance, const int &agentDistance,
-                   const int &maxDistanceBAgents)
-            : Agent(id), _vision(vision), _velocity(velocity), _age(age), _isTourist(tourist), _finalTarget(finalTarget),
-            _wallDistance(wallDistance), _agentDistance(agentDistance), _distanceBAgents(maxDistanceBAgents) {}
+                   const int &maxDistanceBAgents, const int &provFollow)
+            : Agent(id), _vision(vision), _velocity(velocity), _age(age), _isTourist(tourist),
+            _finalTarget(finalTarget), _wallDistance(wallDistance),_agentDistance(agentDistance),
+            _distanceBAgents(maxDistanceBAgents), _provFollow(provFollow) {}
 
     Person::~Person() {}
 
     void Person::selectActions() {
         if(_finalTarget == this->getPosition()) {
             _actions.push_back(new LeaveAction());
-        } else {
+        }
+        else if(Engine::GeneralState::statistics().getUniformDistValue(0,100) < _provFollow) {
+            _actions.push_back(new WanderAction());
+        }
+        else {
             _actions.push_back(new MoveAction());
         }
     }

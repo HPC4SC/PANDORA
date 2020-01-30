@@ -6,5 +6,5 @@
     <inputData map="resources/bitmaps/buildings.bmp" entrances="resources/bitmaps/entrances.bmp" numAgents="100"/>
     <agentData minVision="2" maxVision="3" minVelocity="1" maxVelocity="2" minAge="0" maxAge="80" porvTourist="0.5"
                minWallDistance = "0" maxWallDistance = "1" minAgentDistance = "0" maxAgentDistance = "1"
-               maxDistanceBAgents = "10"/>
+               maxDistanceBAgents = "10" provFollow = "50"/>
 </config>

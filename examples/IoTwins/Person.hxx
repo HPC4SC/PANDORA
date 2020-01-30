@@ -38,11 +38,13 @@ namespace Examples {
 
         std::vector<Engine::Point2D<int>> _visitedPositions;
 
+        int _provFollow;
+
     public:
 
         Person(const std::string &id, const int &vision, const int &velocity, const int &age, const bool &tourist,
                const Engine::Point2D<int> finalTarget, const int &wallDistance, const int &agentDistance,
-               const int &maxDistanceBAgents);
+               const int &maxDistanceBAgents, const int &provFollow);
 
         virtual ~Person();
 

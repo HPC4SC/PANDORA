@@ -22,6 +22,7 @@ namespace Examples {
         _minAgentDistance = getParamInt("agentData", "minAgentDistance");
         _maxAgentDistance = getParamInt("agentData", "minAgentDistance");
         _maxDistanceBAgents = getParamInt("agentData", "maxDistanceBAgents");
+        _provFollow = getParamInt("agentData", "provFollow");
     }
 
 }

@@ -38,6 +38,8 @@ namespace Examples {
 
         int _maxDistanceBAgents;
 
+        int _provFollow;
+
     public:
 
         EspaiConfig(const std::string &xmlFile);
