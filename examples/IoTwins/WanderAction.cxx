@@ -11,6 +11,7 @@ namespace Examples {
         Engine::Point2D<int> newPosition = selectNextPosition(agent,world);
         if(world->checkPosition(newPosition)) {
             agent.setPosition(newPosition);
+            std::cout << "I'm " << agent.getId() << " and I wander to "  << newPosition << std::endl;
         }
     }
 

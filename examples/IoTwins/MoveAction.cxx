@@ -17,7 +17,7 @@ namespace Examples {
         Engine::Point2D<int> newPosition = selectNextPosition(agent,world); //minDist A*-ish
         if(world->checkPosition(newPosition)) {
             agent.setPosition(newPosition);
-            std::cout << "soc: " << person.getId() << " em moc a la posicio: " << newPosition << " el meu target es: " << person.getFinalTarget()  << " la distancia find alla és: " << newPosition.distance(person.getFinalTarget()) << std::endl;
+            std::cout << "I'm " << agent.getId() << " and I move to "  << newPosition << std::endl;
         }
     }
 
