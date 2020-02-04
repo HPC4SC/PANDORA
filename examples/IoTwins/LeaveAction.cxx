@@ -9,8 +9,8 @@ namespace Examples {
     LeaveAction::~LeaveAction() {}
 
     void LeaveAction::execute(Engine::Agent &agent) {
-        std::cout << "I'm " << agent.getId() << " and I no longer exist" << std::endl;
-        Person & person = (Person&)agent;
+        Person &person = dynamic_cast<Person&>(agent);
+        std::cout << "I'm " << agent.getId() << " I'm a toruist: " << person.isTourist() << " and I no longer exist" << std::endl;
         agent.remove();
     }
 

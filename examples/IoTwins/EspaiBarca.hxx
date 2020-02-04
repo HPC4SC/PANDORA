@@ -12,6 +12,8 @@ namespace Examples {
 
         std::vector<Engine::Point2D<int>> _spawnPoints;
 
+        std::vector<Engine::Point2D<int>> _infoPoints;
+
         int _lastId = 0;
 
         void createRasters();
@@ -19,12 +21,14 @@ namespace Examples {
         void createAgents();
 
         void defineAgent(const EspaiConfig &espaiConfig, int &vision, int &velocity, int &age, bool &tourist,
-                         Engine::Point2D<int> &finalTarget, int &wallDistance, int &agentDistance,
-                         int &maxDistanceBAgents, int &provFollow);
+                         Engine::Point2D<int> &finalTarget, Engine::Point2D<int> &target, int &wallDistance,
+                         int &agentDistance, int &maxDistanceBAgents, int &provFollow);
 
         void step();
 
         void setupValidSpawnPoints();
+
+        void setupValidInfoPoints();
 
     public:
 

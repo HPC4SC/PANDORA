@@ -43,8 +43,8 @@ namespace Examples {
     public:
 
         Person(const std::string &id, const int &vision, const int &velocity, const int &age, const bool &tourist,
-               const Engine::Point2D<int> finalTarget, const int &wallDistance, const int &agentDistance,
-               const int &maxDistanceBAgents, const int &provFollow);
+               const Engine::Point2D<int> finalTarget, const Engine::Point2D<int> target, const int &wallDistance,
+               const int &agentDistance, const int &maxDistanceBAgents, const int &provFollow);
 
         virtual ~Person();
 

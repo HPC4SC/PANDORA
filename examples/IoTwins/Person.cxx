@@ -9,24 +9,28 @@
 namespace Examples {
 
     Person::Person(const std::string &id, const int &vision, const int &velocity, const int &age, const bool &tourist,
-                   const Engine::Point2D<int> finalTarget, const int &wallDistance, const int &agentDistance,
-                   const int &maxDistanceBAgents, const int &provFollow)
-            : Agent(id), _vision(vision), _velocity(velocity), _age(age), _isTourist(tourist),
-            _finalTarget(finalTarget), _wallDistance(wallDistance),_agentDistance(agentDistance),
+                   const Engine::Point2D<int> finalTarget, const Engine::Point2D<int> target,
+                   const int &wallDistance, const int &agentDistance, const int &maxDistanceBAgents,
+                   const int &provFollow)
+            : Agent(id), _vision(vision), _velocity(velocity), _age(age), _isTourist(tourist),_finalTarget(finalTarget),
+            _target(target), _wallDistance(wallDistance),_agentDistance(agentDistance),
             _distanceBAgents(maxDistanceBAgents), _provFollow(provFollow) {}
 
     Person::~Person() {}
 
     void Person::selectActions() {
-        if(_finalTarget == this->getPosition()) {
-            _actions.push_back(new LeaveAction());
+        if (_target == this->getPosition() and _isTourist) {
+            do _finalTarget = this->getWorld()->getRandomPosition();
+            while (this->getWorld()->getStaticRaster("buildings").getValue(_finalTarget) == 0);
+            _target = Engine::Point2D<int>(-1,-1);
+            std::cout << "I'm " << this->getId() << " my final target after seeing where i have to go is: " << _finalTarget << std::endl;
         }
+        if (_finalTarget == this->getPosition()) _actions.push_back(new LeaveAction());
         else {
-            if(Engine::GeneralState::statistics().getUniformDistValue(0,100) < _provFollow) {
+            if (Engine::GeneralState::statistics().getUniformDistValue(0,100) < _provFollow) {
                 _actions.push_back(new WanderAction());
-            } else {
-                _actions.push_back(new MoveAction());
             }
+            else _actions.push_back(new MoveAction());
         }
     }
 
@@ -90,11 +94,11 @@ namespace Examples {
     }
 
     void Person::addVisited(Engine::Point2D<int> newPosition) {
-        if(_visitedPositions.size() < 20) _visitedPositions.push_back(newPosition);
+        /*if(_visitedPositions.size() < 20) _visitedPositions.push_back(newPosition);
         else {
             for (int i = 0; i < _visitedPositions.size()-1; i++) _visitedPositions[i] = _visitedPositions[i+1];
             _visitedPositions[_visitedPositions.size()-1] = newPosition;
-        }
+        }*/
     }
 
 }

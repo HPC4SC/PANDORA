@@ -9,6 +9,7 @@ namespace Examples {
     void EspaiConfig::loadParams() {
         _mapRoute = getParamStr("inputData", "map");
         _entrancesRoute = getParamStr("inputData", "entrances");
+        _infoPointsRoute = getParamStr("inputData", "infoPoints");
         _numAgents = getParamInt("inputData", "numAgents");
         _minAgentVision = getParamInt("agentData", "minVision");
         _maxAgentVision = getParamInt("agentData", "maxVision");
@@ -16,7 +17,7 @@ namespace Examples {
         _maxAgentVelocity = getParamInt("agentData", "maxVelocity");
         _minAgentAge = getParamInt("agentData", "minAge");
         _maxAgentAge = getParamInt("agentData", "maxAge");
-        _provTourist = getParamFloat("agentData", "porvTourist");
+        _provTourist = getParamInt("agentData", "porvTourist");
         _minWallDistance = getParamInt("agentData", "minWallDistance");
         _maxWallDistance = getParamInt("agentData", "minWallDistance");
         _minAgentDistance = getParamInt("agentData", "minAgentDistance");
