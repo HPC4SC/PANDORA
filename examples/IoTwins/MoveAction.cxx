@@ -14,10 +14,10 @@ namespace Examples {
     void MoveAction::execute(Engine::Agent&agent) {
         Engine::World *world = agent.getWorld();
         Person &person = dynamic_cast<Person&>(agent);
-        Engine::Point2D<int> newPosition = selectNextPosition(agent,world); //utility function
+        Engine::Point2D<int> newPosition = selectNextPosition(agent,world); //minDist A*-ish
         if(world->checkPosition(newPosition)) {
             agent.setPosition(newPosition);
-            std::cout << "I'm " << agent.getId() << " I'm a tourist: " << person.isTourist() << " and I move to "  << newPosition << " my target is: " << person.getTarget() << " and my final target is: " << person.getFinalTarget() << " distance to target final is: "<< newPosition.distance(person.getFinalTarget()) << std::endl;
+            std::cout << "I'm " << agent.getId() << " and I move to "  << newPosition << std::endl;
         }
     }
 
@@ -70,9 +70,7 @@ namespace Examples {
 
     int MoveAction::assignPriority(Engine::Point2D<int> point, Engine::Agent &agent, Engine::World *world) {
         Person &person = dynamic_cast<Person&>(agent);
-        int priority;
-        if (person.getTarget() != Engine::Point2D<int>(-1,-1)) priority = point.distance(person.getTarget());
-        else priority = point.distance(person.getFinalTarget());
+        int priority = point.distance(person.getFinalTarget());
         if (nearAgent(point,agent,world)) priority += 1;
         if (nearWall(point,agent,world) and not targetNearWall(agent,world)) priority += 1;
         if (tooFarFromAgent(point,agent,world)) priority +=1;
@@ -116,9 +114,7 @@ namespace Examples {
         int firstI, firstJ, lastI, lastJ;
         firstI = firstJ = lastI = lastJ = 0;
         Person &person = dynamic_cast<Person&>(agent);
-        Engine::Point2D<int> point;
-        if (person.getTarget() != Engine::Point2D<int>(-1,-1)) point = person.getFinalTarget();
-        else point = person.getTarget();
+        Engine::Point2D<int> point = person.getFinalTarget();
         defineLoopBounds(firstI,firstJ,lastI,lastJ,point._x,point._y,person.getWallDistance(),world);
         for (int i = firstI; i <= lastI; i++) {
             for (int j = firstJ; j <= lastJ; j++) {

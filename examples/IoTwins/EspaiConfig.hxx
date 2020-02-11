@@ -12,8 +12,6 @@ namespace Examples {
 
         std::string _entrancesRoute;
 
-        std::string _infoPointsRoute;
-
         int _numAgents;
 
         int _minAgentVision;
@@ -28,7 +26,7 @@ namespace Examples {
 
         int _maxAgentAge;
 
-        int _provTourist;
+        float _provTourist;
 
         int _minWallDistance;
 
