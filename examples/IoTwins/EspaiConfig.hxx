@@ -12,6 +12,8 @@ namespace Examples {
 
         std::string _entrancesRoute;
 
+        std::string _finalTargetsRoute;
+
         int _numAgents;
 
         int _minAgentVision;

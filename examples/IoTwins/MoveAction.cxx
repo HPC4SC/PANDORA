@@ -17,7 +17,7 @@ namespace Examples {
         Engine::Point2D<int> newPosition = selectNextPosition(agent,world); //minDist A*-ish
         if(world->checkPosition(newPosition)) {
             agent.setPosition(newPosition);
-            std::cout << "I'm " << agent.getId() << " and I move to "  << newPosition << std::endl;
+            std::cout << "I'm " << agent.getId() << " and I move to "  << newPosition << " and my finalTarget is " << person.getFinalTarget() << std::endl;
         }
     }
 
@@ -28,7 +28,7 @@ namespace Examples {
         int betterPositionIndex = 0;
         int betterPositionPriority = positionsInReach[0].second;
         for (int i = 1; i < positionsInReach.size(); i++) {
-            if (positionsInReach[i].second != -1 and not person.haveVisited(positionsInReach[i].first)) {
+            if (positionsInReach[i].second != -1 /*and not person.haveVisited(positionsInReach[i].first)*/) {
                 if (positionsInReach[i].second < betterPositionPriority) {
                     betterPositionIndex = i;
                     betterPositionPriority = positionsInReach[i].second;
@@ -39,7 +39,7 @@ namespace Examples {
         if (newPosition == agent.getPosition()) {
             newPosition = positionsInReach[Engine::GeneralState::statistics().getUniformDistValue(0,positionsInReach.size())].first;
         }
-        person.addVisited(newPosition);
+        //person.addVisited(newPosition);
         return newPosition;
     }
 
@@ -55,6 +55,11 @@ namespace Examples {
              for (int j = firstJ; j <= lastJ; j++) {
                  if (i != j) {
                      Engine::Point2D<int> point = Engine::Point2D<int>(i,j);
+                     if (point == person.getFinalTarget()) {
+                         std::pair<Engine::Point2D<int>, int> newPoint(point,0);
+                         positionsInReach.push_back(newPoint);
+                         break;
+                     }
                      if (world->getStaticRaster("buildings").getValue(point) == 1) {
                          std::pair<Engine::Point2D<int>, int> newPoint(point,assignPriority(point,agent,world));
                          positionsInReach.push_back(newPoint);

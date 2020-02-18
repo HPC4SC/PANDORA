@@ -18,11 +18,11 @@ namespace Examples {
     Person::~Person() {}
 
     void Person::selectActions() {
-        if(_finalTarget == this->getPosition()) {
+        if (_finalTarget == this->getPosition()) {
             _actions.push_back(new LeaveAction());
         }
         else {
-            if(Engine::GeneralState::statistics().getUniformDistValue(0,100) < _provFollow) {
+            if (Engine::GeneralState::statistics().getUniformDistValue(0,100) < _provFollow) {
                 _actions.push_back(new WanderAction());
             } else {
                 _actions.push_back(new MoveAction());

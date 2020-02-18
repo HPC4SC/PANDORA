@@ -17,14 +17,18 @@ namespace Examples {
     void EspaiBarca::createRasters() {
         const EspaiConfig &espaiConfig = (const EspaiConfig &) getConfig();
         registerStaticRaster("buildings", true, 0);
-        registerStaticRaster("entrances", true, 0);
+        registerStaticRaster("entrances", true, 1);
+        registerStaticRaster("finalTargets", true, 2);
         // 0 building 1 street
         Engine::GeneralState::rasterLoader().fillGDALRaster(getStaticRaster("buildings"), espaiConfig._mapRoute,
-                                                            getBoundaries());
+                getBoundaries());
         // 0 validSpawnPoint 1 invalid
         Engine::GeneralState::rasterLoader().fillGDALRaster(getStaticRaster("entrances"), espaiConfig._entrancesRoute,
-                                                            getBoundaries());
-        setupValidSpawnPoints();
+                getBoundaries());
+        // 0 valid finalTarget 1 noTarget
+        Engine::GeneralState::rasterLoader().fillGDALRaster(getStaticRaster("finalTargets"),
+                espaiConfig._finalTargetsRoute, getBoundaries());
+        setupValidRasterPoints();
     }
 
     void EspaiBarca::createAgents() {
@@ -33,7 +37,7 @@ namespace Examples {
 
         const EspaiConfig &espaiConfig = (const EspaiConfig &) getConfig();
         int maxAgents = espaiConfig._numAgents - static_cast<int>(this->getNumberOfAgents());
-        int agentsToCreate = Engine::GeneralState::statistics().getUniformDistValue(0,maxAgents); //TODO canviar distribucio
+        int agentsToCreate = Engine::GeneralState::statistics().getUniformDistValue(0,6); //TODO canviar distribucio
 
         for (int i = 0; i < agentsToCreate and _lastId < espaiConfig._numAgents; i++) {
             if ((i % getNumTasks()) == getId()) {
@@ -48,8 +52,7 @@ namespace Examples {
                 Person *agent = new Person(oss.str(),vision,velocity,age,tourist,finalTarget,wallDistance,agentDistance,
                         maxDistanceBAgents,provFollow);
                 addAgent(agent);
-                std::cout << "I add agent: " << agent->getId() << std::endl;
-                int spawnIndex = Engine::GeneralState::statistics().getUniformDistValue(0,_spawnPoints.size());
+                int spawnIndex = Engine::GeneralState::statistics().getUniformDistValue(0,_spawnPoints.size() - 1);
                 Engine::Point2D<int> spawn = _spawnPoints[spawnIndex];
                 agent->setPosition(spawn);
                 log_INFO(logName.str(), getWallTime() << " new agent: " << agent);
@@ -86,8 +89,7 @@ namespace Examples {
         age = Engine::GeneralState::statistics().getUniformDistValue(espaiConfig._minAgentAge,
                                                                      espaiConfig._maxAgentAge);
         tourist = Engine::GeneralState::statistics().getUniformDistValue(0, 100) > espaiConfig._provTourist;
-        finalTarget = this->getRandomPosition();
-        while (getStaticRaster("buildings").getValue(finalTarget) == 0) finalTarget = this->getRandomPosition();
+        finalTarget = _finalTargets[Engine::GeneralState::statistics().getUniformDistValue(0, _finalTargets.size() - 1)];
         wallDistance = Engine::GeneralState::statistics().getUniformDistValue(espaiConfig._minWallDistance,
                                                                            espaiConfig._maxWallDistance);
         agentDistance = Engine::GeneralState::statistics().getUniformDistValue(espaiConfig._minAgentDistance,
@@ -96,13 +98,12 @@ namespace Examples {
         provFollow = espaiConfig._provFollow;
     }
 
-    void EspaiBarca::setupValidSpawnPoints() {
-        for (int i = 0; i < getBoundaries().right(); i++) {
-            for (int j = 0; j < getBoundaries().bottom(); j++) {
+    void EspaiBarca::setupValidRasterPoints() {
+        for (int i = 0; i < getBoundaries().right(); ++i) {
+            for (int j = 0; j < getBoundaries().bottom(); ++j) {
                 Engine::Point2D<int> candidate = Engine::Point2D<int>(i,j);
-                if(getStaticRaster("entrances").getValue(candidate) == 0) {
-                    _spawnPoints.push_back(candidate);
-                }
+                if (getStaticRaster("entrances").getValue(candidate) == 0) _spawnPoints.push_back(candidate);
+                if (getStaticRaster("finalTargets").getValue(candidate) == 0) _finalTargets.push_back(candidate);
             }
         }
     }

@@ -9,9 +9,10 @@ namespace Examples {
     void WanderAction::execute(Engine::Agent &agent) {
         Engine::World *world = agent.getWorld();
         Engine::Point2D<int> newPosition = selectNextPosition(agent,world);
+        Person &person = dynamic_cast<Person&>(agent);
         if(world->checkPosition(newPosition)) {
             agent.setPosition(newPosition);
-            std::cout << "I'm " << agent.getId() << " and I wander to "  << newPosition << std::endl;
+            std::cout << "I'm " << agent.getId() << " and I wander to "  << newPosition << " and my finalTarget is " << person.getFinalTarget() << std::endl;
         }
     }
 

@@ -12,6 +12,8 @@ namespace Examples {
 
         std::vector<Engine::Point2D<int>> _spawnPoints;
 
+        std::vector<Engine::Point2D<int>> _finalTargets;
+
         int _lastId = 0;
 
         void createRasters();
@@ -24,7 +26,7 @@ namespace Examples {
 
         void step();
 
-        void setupValidSpawnPoints();
+        void setupValidRasterPoints();
 
     public:
 
