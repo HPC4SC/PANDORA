@@ -67,12 +67,25 @@ namespace Engine
 
     public:
         Scheduler( ) : _id( 0 ), _numTasks( 1 ), _world( 0 ) { }
+        /**
+         * @brief Set the World object to the current scheduler
+         * 
+         * @param world pointer to the world currently used in the simulation
+         */
         void setWorld( World * world ) { _world = world;}
         virtual ~Scheduler( ) {}
 
-        //! any initializing procedure BEFORE creating agents/rasters ( i.e. init communications and define boundaries for parallel nodes )
+        /**
+         * @brief any initializing procedure BEFORE creating agents/rasters ( i.e. init communications and define boundaries for parallel nodes )
+         * 
+         * @param argc Not used
+         * @param argv Not used
+         */
         virtual void init( int argc, char *argv[] ) = 0;
-        //! initializing procedures AFTER creating agents/rasters ( i.e. send initial data to other nodes in parallel schedulers )
+        /**
+         * @brief initializing procedures AFTER creating agents/rasters ( i.e. send initial data to other nodes in parallel schedulers )
+         * 
+         */
         virtual void initData( ) = 0;
 
         //! responsible for executing the agents and update world
@@ -84,8 +97,11 @@ namespace Engine
         virtual const Rectangle<int> & getBoundaries( ) const { return _boundaries; };
         virtual Point2D<int> getRandomPosition( ) const = 0;
 
-        // ids
-        //! id will always be 0 unless the execution is distributed in some way
+        /**
+         * @brief Get the Id object. id will always be 0 unless the execution is distributed in some way
+         * 
+         * @return const int& 
+         */
         const int & getId( ) const { return _id; }
         //! num tasks will always be 1 unless the execution is distributed in some way
         const int & getNumTasks( ) const { return _numTasks; }

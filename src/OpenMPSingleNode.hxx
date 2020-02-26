@@ -49,14 +49,26 @@ class OpenMPSingleNode : public Scheduler
     // returns the iterator inside World::_agents with _id = id; in case it is not found returns _agents.end( )
     AgentsList::iterator getAgentIterator( const std::string & id );
 public:
+    /**
+     * @brief Construct a new OpenMPSingleNode object. And creates the corresponding serializer.
+     * 
+     */
     OpenMPSingleNode( );
     virtual ~OpenMPSingleNode( );
 
     void finish( );
 
-    //! initializes everything needed before creation of agents and rasters ( i.e. sizes )
+    /**
+     * @brief initializes everything needed before creation of agents and rasters ( i.e. sizes )
+     * 
+     * @param argc Not used
+     * @param argv Not used
+     */
     void init( int argc, char *argv[] );
-    // initialize data processes after creation of agents and rasters
+    /**
+     * @brief initialize data processes after creation of agents and rasters
+     * 
+     */
     void initData( );
     //! responsible for executing the agents and update world
     virtual void executeAgents( );
@@ -70,7 +82,11 @@ public:
 
     Point2D<int> getRandomPosition( ) const;
 
-    // TODO boost timer?
+    /**
+     * @brief Get the WallTime object
+     * 
+     * @return double 
+     */
     double getWallTime( ) const;
     size_t getNumberOfTypedAgents( const std::string & type ) const { return 0; }
 

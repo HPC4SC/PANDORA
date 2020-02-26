@@ -70,8 +70,18 @@ class SequentialSerializer
     void serializeRaster( const StaticRaster & raster, const std::string & datasetKey );
 
 public:
+    /**
+     * @brief Construct a new Sequential Serializer object
+     * 
+     * @param scheduler Specifices which schedular data must be serialized.
+     */
     SequentialSerializer( const Scheduler & scheduler );
     virtual ~SequentialSerializer( );
+    /**
+     * @brief initializes the serializer with the current world
+     * 
+     * @param world 
+     */
     void init( World & world );
     void finish( );
 
