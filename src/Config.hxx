@@ -64,6 +64,10 @@ public:
     // xml-based constructor
     Config( const std::string & configFile );
     virtual ~Config( );
+    /**
+    * @brief loads the parameters from the XML, eg.config.xml, input file into the simulation
+    * 
+    */
     void loadFile( );
 
     friend std::ostream & operator<<( std::ostream & stream, const Config & c )
@@ -74,6 +78,11 @@ public:
     const Size<int> & getSize( ) const;
     const int & getNumSteps( ) const;
     const int & getSerializeResolution( ) const;
+    /**
+     * @brief Get the Results File object
+     * 
+     * @return const std::string& 
+     */
     const std::string & getResultsFile( ) const{return _resultsFile; }
     virtual void loadParams( ){};
 

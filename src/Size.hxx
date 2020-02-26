@@ -34,10 +34,20 @@ public:
     Type _width;
     Type _height;
 
+    /**
+     * @brief Construct a new Size object
+     * 
+     */
     Size( ) : _width( 0 ), _height( 0 )
     {
     }
 
+    /**
+     * @brief Construct a new Size object
+     * 
+     * @param width width of the Size object
+     * @param height height of the Size object
+     */
     Size( const Type & width, const Type & height ) : _width( width ), _height( height )
     {
     }

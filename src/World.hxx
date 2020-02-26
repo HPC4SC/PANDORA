@@ -76,15 +76,23 @@ protected:
     virtual void step( );
 
 public:
-    //! constructor.
-    /*!
-    The World object is bounded to an instance of Config
-    The parameter 'allowMultipleAgentsPerCell' defines if more than one agent can occupy a cell of the World.
-    */
+    /**
+	 * @brief The World object is bounded to an instance of Config.
+	 * 
+	 * @param config configuration input file for the simulation.
+	 * @param scheduler selected scheduler for the current simulation.
+	 * @param allowMultipleAgentsPerCell defines if more than one agent can occupy a cell of the World.
+	 */
     World( Config * config, Scheduler * scheduler = 0, const bool & allowMultipleAgentsPerCell = true );
 
     virtual ~World( );
 
+    /**
+     * @brief Initialized the selected scheduler, the rasters and the agents of the simulation
+     * 
+     * @param argc Not used
+     * @param argv Not used
+     */
     void initialize( int argc = 0, char *argv[] = 0 );
     //! Runs the simulation. Performs each step and stores the states. Requires calling 'init' method a-priori.
     void run( );
@@ -148,10 +156,23 @@ public:
     // get a raster name from its index
     const std::string & getRasterName( const int & index ) const;
 public:
-    //! Factory method design pattern for creating concrete agents and rasters. It is delegated to concrete Worlds. This method must be defined by children, it is the method where agents are created and addAgents must be called
+    /**
+     * @brief Factory method design pattern for creating concrete agents and rasters.
+     * It is delegated to concrete Worlds. This method must be defined by children, 
+     * it is the method where agents are created and addAgents must be called
+     * 
+     */
     virtual void createAgents( ){ };
-    //! to be redefined for subclasses
+    /**
+     * @brief to be defined in the subclass. Create the raster maps used in the simulation
+     * 
+     */
     virtual void createRasters( ){ }
+    /**
+     * @brief Get the Config object
+     * 
+     * @return const Config& 
+     */
     const Config & getConfig( ) const { return *_config; }
 
     int    getCurrentTimeStep( ) const { return _step; }
@@ -194,9 +215,20 @@ public:
         return false;
     }
 
-    //! factory method for distributed Scheduler based on spatial distribution of a simulation
+    /**
+	 * @brief factory method for distributed Scheduler based on spatial distribution of a simulation.
+	 * 
+	 * @param overlap number of depth of the overlap zone.
+	 * @param finalize if true will call MPI_Finalize at the end of run ( default behavior ).
+	 * @return Scheduler* 
+	 */
     static Scheduler * useSpacePartition( int overlap = 1, bool finalize = true );
-    //! factory method for sequential Scheduler without any non-shared communication mechanism, apt for being executed in a single computer
+    
+    /**
+	 * @brief factory method for sequential Scheduler without any non-shared communication mechanism, apt for being executed in a single computer.
+	 * 
+	 * @return Scheduler* 
+	 */
     static Scheduler * useOpenMPSingleNode( );
 };
 
