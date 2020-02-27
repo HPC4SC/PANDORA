@@ -34,7 +34,10 @@ namespace Engine
 {
     class Agent;
 
-    //! struct containing raster information sent between nodes
+    /**
+     * @brief struct containing raster information sent between nodes
+     * 
+     */
     struct MpiOverlap
     {
         // TODO move from string to index
@@ -49,8 +52,10 @@ namespace Engine
       * Each node contains the same amount of space and the agents inside
       * It is efficient for models where a homogeneous density of agents is expected around the whole world
       */
-    class SpacePartition : public Scheduler
+    class SpacePartition : public Scheduler 
     {
+
+    protected:
         Serializer _serializer;
 
         Point2D<int> _localRasterSize;
@@ -146,8 +151,17 @@ namespace Engine
         //! send overlapping data to neighbours before run
         void initOverlappingData( );
 
+        /**
+         * @brief Get the _ownedArea attribute
+         * 
+         * @return const Rectangle<int>& 
+         */
         const Rectangle<int> & getOwnedArea( ) const;
-        //! returns the attribute _overlap
+        /**
+         * @brief Get the _overlap attribute
+         * 
+         * @return const int& 
+         */
         const int & getOverlap( ) const;
         //! transform from global coordinates to real coordinates ( in terms of world position )
         Point2D<int> getRealPosition( const Point2D<int> & globalPosition ) const;
