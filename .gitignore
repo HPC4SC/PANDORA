@@ -57,3 +57,4 @@ build/
 *.tmp
 /docs/doxygen/html/
 /docs/doxygen/latex/
+/.vscode/
