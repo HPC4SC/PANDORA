@@ -406,7 +406,6 @@ namespace Engine
     */
     }
 
-
     const std::string & World::getRasterName( const int & index ) const
     {
         for ( RasterNameMap::const_iterator it=_rasterNames.begin( ); it!=_rasterNames.end( ); ++it )

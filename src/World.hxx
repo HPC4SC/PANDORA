@@ -88,7 +88,7 @@ public:
     virtual ~World( );
 
     /**
-     * @brief Initialized the selected scheduler, the rasters and the agents of the simulation
+     * @brief Initialized the selected scheduler, the rasters and the agents of the simulation.
      * 
      * @param argc Not used
      * @param argv Not used
@@ -123,7 +123,12 @@ public:
     DynamicRaster & getDynamicRaster( const std::string & key );
     const DynamicRaster & getDynamicRaster( const std::string & key ) const;
 
-    //! returns static raster identified by parameter 'key'.
+    /**
+     * @brief return the static raster in position 'index'.
+     * 
+     * @param index position of the static raster.
+     * @return StaticRaster&
+     */
     StaticRaster & getStaticRaster( const size_t & index );
     StaticRaster & getStaticRaster( const std::string & key );
 
@@ -153,25 +158,30 @@ public:
     //! gets the maximum allowed value of raster "index" in global position "position"
     int getMaxValue( const int & index, const Point2D<int> & position ) const;
 
-    // get a raster name from its index
+    /**
+     * @brief returns the name of the raster in position 'index'.
+     * 
+     * @param index the position of the reaster.
+     * @return const std::string&.
+     */
     const std::string & getRasterName( const int & index ) const;
 public:
     /**
      * @brief Factory method design pattern for creating concrete agents and rasters.
      * It is delegated to concrete Worlds. This method must be defined by children, 
-     * it is the method where agents are created and addAgents must be called
+     * it is the method where agents are created and addAgents must be called.
      * 
      */
     virtual void createAgents( ){ };
     /**
-     * @brief to be defined in the subclass. Create the raster maps used in the simulation
+     * @brief to be defined in the subclass. Create the raster maps used in the simulation.
      * 
      */
     virtual void createRasters( ){ }
     /**
-     * @brief Get the Config object
+     * @brief Get the Config object.
      * 
-     * @return const Config& 
+     * @return const Config&
      */
     const Config & getConfig( ) const { return *_config; }
 
@@ -189,6 +199,11 @@ public:
     // methods that need to be defined for current state of the code
     AgentsList::iterator beginAgents( ) { return _agents.begin( ); }
     AgentsList::iterator endAgents( ) { return _agents.end( ); }
+    /**
+     * @brief Get the Number Of Rasters.
+     * 
+     * @return size_t
+     */
     size_t getNumberOfRasters( ) const { return _rasters.size( ); }
     size_t getNumberOfAgents( ) const { return _agents.size( ); }
     size_t getNumberOfTypedAgents( const std::string & type ) const;
@@ -203,16 +218,37 @@ public:
     void addFloatAttribute( const std::string & type, const std::string & key, float value );
     const int & getId( ) const;
     const int & getNumTasks( ) const;
-
+    /**
+     * @brief returns if a raster in index 'index' must be serialized.
+     * 
+     * @param index index of the raster.
+     * @return true
+     * @return false 
+     */
     bool rasterToSerialize( size_t index ) { return _serializeRasters.at( index ); }
+    /**
+     * @brief returns if the dynamic_raster in index 'index' exists.
+     * 
+     * @param index index of the raster to checks.
+     * @return true 
+     * @return false 
+     */
     bool isRasterDynamic( size_t index ) { return _dynamicRasters.at( index ); }
+    /**
+     * @brief returns if the raster in index 'index' exists.
+     * 
+     * @param index index of the raster to check.
+     * @return true 
+     * @return false 
+     */
     bool rasterExists( size_t index )
     {
-        if ( _rasters.at( index ))
+        /*if ( _rasters.at( index ))
         {
             return true;
         }
-        return false;
+        return false;*/
+        return bool(_rasters.at( index ));
     }
 
     /**
