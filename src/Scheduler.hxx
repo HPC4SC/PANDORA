@@ -90,7 +90,10 @@ namespace Engine
 
         //! responsible for executing the agents and update world
         virtual void executeAgents( ) = 0;
-        //! procedures that need to be executed after simulation ( i.e. finish communications for parallel nodes )
+        /**
+         * @brief procedures that need to be executed after simulation ( i.e. finish communications for parallel nodes )
+         * 
+         */
         virtual void finish( ) = 0;
 
         //! basic method to use while exploring boundaries of World
@@ -125,7 +128,17 @@ namespace Engine
         virtual void addStringAttribute( const std::string & type, const std::string & key, const std::string & value ) = 0;
         virtual void addIntAttribute( const std::string & type, const std::string & key, int value ) = 0;
         virtual void addFloatAttribute( const std::string & type, const std::string & key, float value ) = 0;
+        /**
+         * @brief serialize the agents with the information of the current step. It's mandatory to implement.
+         * 
+         * @param step current simulation time
+         */
         virtual void serializeAgents( const int & step ) = 0;
+        /**
+         * @brief serialize the rasters with the information of the current step. It's mandatory to implement.
+         * 
+         * @param step current simulation time
+         */
         virtual void serializeRasters( const int & step ) = 0;
 
         virtual void setValue( DynamicRaster & raster, const Point2D<int> & position, int value ) = 0;

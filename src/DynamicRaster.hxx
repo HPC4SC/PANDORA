@@ -45,7 +45,10 @@ public:
     bool operator!=( const DynamicRaster& other ) const;
 
     // parameters: starting pos and size in matrix to grow
-    //! Increases each cell value by 1 if it is under the maximum allowed.
+    /**
+     * @brief Increases each cell value by 1 if it is under the maximum allowed.
+     * 
+     */
     void updateRasterIncrement( );
     // parameters: starting pos and size in matrix to grow
     //! Assigns to each cell in raster the max value allowed for it.

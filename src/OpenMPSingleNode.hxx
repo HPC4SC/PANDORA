@@ -55,7 +55,10 @@ public:
      */
     OpenMPSingleNode( );
     virtual ~OpenMPSingleNode( );
-
+    /**
+     * @brief procedures that need to be executed after simulation ( i.e. stop the timer )
+     * 
+     */
     void finish( );
 
     /**
@@ -93,7 +96,17 @@ public:
     void addStringAttribute( const std::string & type, const std::string & key, const std::string & value );
     void addFloatAttribute( const std::string & type, const std::string & key, float value );
     void addIntAttribute( const std::string & type, const std::string & key, int value );
+    /**
+     * @brief serialize the agents with the information of the current step
+     * 
+     * @param step current simulation time
+     */
     void serializeAgents( const int & step );
+    /**
+     * @brief serialize the rasters with the information of the current step
+     * 
+     * @param step current simulation time
+     */
     void serializeRasters( const int & step );
     int countNeighbours( Agent * target, const double & radius, const std::string & type );
     AgentsVector getNeighbours( Agent * target, const double & radius, const std::string & type );
