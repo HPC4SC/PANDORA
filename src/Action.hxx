@@ -34,6 +34,11 @@ namespace Engine
     public:
         Action( );
         virtual ~Action( );
+        /**
+         * @brief code that will be run by the agent. Must be implemented in child class.
+         * 
+         * @param agent agent that will perform the Action.
+         */
         virtual void execute( Agent & agent ) = 0;
         virtual std::string describe( ) const;
     };

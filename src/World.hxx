@@ -72,7 +72,10 @@ protected:
     void updateRasterToMaxValues( const int & index );
 
 
-    //! dumps current state of the simulation. Then applies next simulation step.
+    /**
+     * @brief dumps current state of the simulation. Then applies next simulation step.
+     * 
+     */
     virtual void step( );
 
 public:
@@ -106,7 +109,10 @@ public:
     AgentsVector getNeighbours( Agent * target, const double & radius, const std::string & type="all" );
     //! returns an integer identifying the current step where the simulation is. The identifiers denote an order from older to newer steps.
     int getCurrentStep( ) const;
-    //! this method can be redefined by the children in order to modify the execution of each step on a given resource field. Default is grow 1 until max
+    /**
+     * @brief this method can be redefined by the children in order to modify the execution of each step on a given resource field. Default is grow 1 until max.
+     * 
+     */
     virtual void stepEnvironment( );
     //! dump the rasters through a serializer.
     void serializeRasters( );
@@ -114,7 +120,11 @@ public:
     void serializeStaticRasters( );
     //! dump the agents through a serializer.
     void serializeAgents( );
-    //! the override of this method allows to modify rasters between step executions
+    /**
+     * @brief the override of this method allows to modify rasters between step executions.
+     * 
+     * @param index index of the raster.
+     */
     virtual void stepRaster( const int & index );
 
     //! returns raster identified by parameter 'key'.
@@ -165,7 +175,7 @@ public:
      * @return const std::string&.
      */
     const std::string & getRasterName( const int & index ) const;
-public:
+
     /**
      * @brief Factory method design pattern for creating concrete agents and rasters.
      * It is delegated to concrete Worlds. This method must be defined by children, 
