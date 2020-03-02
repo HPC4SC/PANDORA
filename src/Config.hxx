@@ -76,10 +76,23 @@ public:
     }
 
     const Size<int> & getSize( ) const;
-    const int & getNumSteps( ) const;
-    const int & getSerializeResolution( ) const;
+
     /**
-     * @brief Get the Results File object
+     * @brief Get the _numSteps object
+     * 
+     * @return const int& 
+     */
+    const int & getNumSteps( ) const;
+
+    /**
+     * @brief Get the _serializeResolution object
+     * 
+     * @return const int& 
+     */
+    const int & getSerializeResolution( ) const;
+
+    /**
+     * @brief Get the _resultsFile object
      * 
      * @return const std::string& 
      */
