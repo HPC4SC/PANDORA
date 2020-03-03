@@ -305,7 +305,7 @@ namespace Engine {
         }
 
         for (size_t d = 0; d < _world->getNumberOfRasters(); d++) {
-            if (!_world->rasterExists(d) || !_world->isRasterDynamic(d)) {
+            if (!_world->rasterExists(d) || !_world->isRasterDynamic(d)) { //solo se envian los dinamicos
                 log_DEBUG(logName.str(),
                           getWallTime() << " step: " << _world->getCurrentStep() << " index: " << d << " not sending");
                 continue;

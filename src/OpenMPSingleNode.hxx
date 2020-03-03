@@ -46,15 +46,22 @@ class OpenMPSingleNode : public Scheduler
     // list of agents that are removed during a time step, and need to be erased by the end of the time step
     AgentsList _removedAgents;
 
-    // returns the iterator inside World::_agents with _id = id; in case it is not found returns _agents.end( )
+    /**
+     * @brief returns the iterator inside World::_agents with _id = id; in case it is not found returns _agents.end( ).
+     * 
+     * @param id id of the agent.
+     * @return AgentsList::iterator 
+     */
     AgentsList::iterator getAgentIterator( const std::string & id );
 public:
+    
     /**
      * @brief Construct a new OpenMPSingleNode object. And creates the corresponding serializer.
      * 
      */
     OpenMPSingleNode( );
     virtual ~OpenMPSingleNode( );
+    
     /**
      * @brief procedures that need to be executed after simulation ( i.e. stop the timer )
      * 
@@ -68,14 +75,23 @@ public:
      * @param argv Not used
      */
     void init( int argc, char *argv[] );
+    
     /**
      * @brief initialize data processes after creation of agents and rasters
      * 
      */
     void initData( );
-    //! responsible for executing the agents and update world
+    
+    /**
+     * @brief responsible for executing the agents and update world
+     * 
+     */
     virtual void executeAgents( );
 
+    /**
+     * @brief removes the necessary agents form the simulation.
+     * 
+     */
     void removeAgents( );
     void removeAgent( Agent * agent );
 
@@ -96,12 +112,14 @@ public:
     void addStringAttribute( const std::string & type, const std::string & key, const std::string & value );
     void addFloatAttribute( const std::string & type, const std::string & key, float value );
     void addIntAttribute( const std::string & type, const std::string & key, int value );
+    
     /**
      * @brief serialize the agents with the information of the current step
      * 
      * @param step current simulation time
      */
     void serializeAgents( const int & step );
+    
     /**
      * @brief serialize the rasters with the information of the current step
      * 

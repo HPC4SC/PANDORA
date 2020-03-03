@@ -67,6 +67,7 @@ namespace Engine
 
     public:
         Scheduler( ) : _id( 0 ), _numTasks( 1 ), _world( 0 ) { }
+        
         /**
          * @brief Set the World object to the current scheduler
          * 
@@ -82,14 +83,19 @@ namespace Engine
          * @param argv Not used
          */
         virtual void init( int argc, char *argv[] ) = 0;
+        
         /**
          * @brief initializing procedures AFTER creating agents/rasters ( i.e. send initial data to other nodes in parallel schedulers )
          * 
          */
         virtual void initData( ) = 0;
-
-        //! responsible for executing the agents and update world
+        
+        /**
+         * @brief responsible for executing the agents and update world
+         * 
+         */
         virtual void executeAgents( ) = 0;
+        
         /**
          * @brief procedures that need to be executed after simulation ( i.e. finish communications for parallel nodes )
          * 
@@ -115,6 +121,11 @@ namespace Engine
         // agent addition, removal and getters
         //! do anything needed after adding agent to the list of World _agents
         virtual void agentAdded( AgentPtr agent, bool executedAgent ){};
+
+        /**
+         * @brief removes the necessary agents form the simulation.
+         * 
+         */
         virtual void removeAgents( ) = 0;
         virtual void removeAgent( Agent * agent ) = 0;
 
@@ -128,12 +139,14 @@ namespace Engine
         virtual void addStringAttribute( const std::string & type, const std::string & key, const std::string & value ) = 0;
         virtual void addIntAttribute( const std::string & type, const std::string & key, int value ) = 0;
         virtual void addFloatAttribute( const std::string & type, const std::string & key, float value ) = 0;
+        
         /**
          * @brief serialize the agents with the information of the current step. It's mandatory to implement.
          * 
          * @param step current simulation time
          */
         virtual void serializeAgents( const int & step ) = 0;
+        
         /**
          * @brief serialize the rasters with the information of the current step. It's mandatory to implement.
          * 
