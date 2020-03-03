@@ -21,5 +21,9 @@ void Predator::selectActions() {
 	}
 }
 
+
+void Predator::updateState( ) {}
+void Predator::updateKnowledge( ) {}
+
 }
 

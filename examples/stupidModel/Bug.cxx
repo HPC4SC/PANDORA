@@ -78,5 +78,9 @@ void Bug::reproduce(const std::string &childId) {
 	else child->setPosition(newPosition);
 }
 
+
+	void Bug::updateState( ) {}
+	void Bug::updateKnowledge( ) {}
+
 } // namespace Examples
 

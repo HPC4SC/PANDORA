@@ -79,6 +79,7 @@ protected:
     virtual void step( );
 
 public:
+    
     /**
 	 * @brief The World object is bounded to an instance of Config.
 	 * 
@@ -107,8 +108,14 @@ public:
     int countNeighbours( Agent * target, const double & radius, const std::string & type="all" );
     //! returns a list with the neighbours of agent 'target' within the radius 'radius' using Euclidean Distance.
     AgentsVector getNeighbours( Agent * target, const double & radius, const std::string & type="all" );
-    //! returns an integer identifying the current step where the simulation is. The identifiers denote an order from older to newer steps.
+    
+    /**
+     * @brief returns an integer identifying the current step where the simulation is. The identifiers denote an order from older to newer steps.
+     * 
+     * @return current step. 
+     */
     int getCurrentStep( ) const;
+   
     /**
      * @brief this method can be redefined by the children in order to modify the execution of each step on a given resource field. Default is grow 1 until max.
      * 
@@ -120,6 +127,7 @@ public:
     void serializeStaticRasters( );
     //! dump the agents through a serializer.
     void serializeAgents( );
+    
     /**
      * @brief the override of this method allows to modify rasters between step executions.
      * 
@@ -127,10 +135,36 @@ public:
      */
     virtual void stepRaster( const int & index );
 
-    //! returns raster identified by parameter 'key'.
+    /**
+     * @brief returns raster identified by parameter 'key'.
+     * 
+     * @param index represents where the raster is located.
+     * @return DynamicRaster& 
+     */
     DynamicRaster & getDynamicRaster( const size_t & index );
+
+    /**
+     * @brief returns raster identified by parameter 'key'.
+     * 
+     * @param index represents where the raster is located.
+     * @return DynamicRaster& 
+     */
     const DynamicRaster & getDynamicRaster( const size_t & index ) const;
+
+    /**
+     * @brief returns raster identified by parameter 'key'.
+     * 
+     * @param key name identifying the raster.
+     * @return DynamicRaster& 
+     */
     DynamicRaster & getDynamicRaster( const std::string & key );
+
+    /**
+     * @brief returns raster identified by parameter 'key'.
+     * 
+     * @param key name identifying the raster.
+     * @return DynamicRaster& 
+     */
     const DynamicRaster & getDynamicRaster( const std::string & key ) const;
 
     /**
@@ -183,11 +217,13 @@ public:
      * 
      */
     virtual void createAgents( ){ };
+   
     /**
      * @brief to be defined in the subclass. Create the raster maps used in the simulation.
      * 
      */
     virtual void createRasters( ){ }
+    
     /**
      * @brief Get the Config object.
      * 
@@ -206,18 +242,40 @@ public:
       */
     const Rectangle<int> & getBoundaries( ) const;
 
-    // methods that need to be defined for current state of the code
+    /**
+     * @brief returns the iteratior pointing to the first Agent in the _agents vector.
+     * 
+     * @return AgentsList::iterator 
+     */
     AgentsList::iterator beginAgents( ) { return _agents.begin( ); }
+    
+    /**
+     * @brief returns the iteratior pointing to the last Agent in the _agents vector.
+     * 
+     * @return AgentsList::iterator 
+     */
     AgentsList::iterator endAgents( ) { return _agents.end( ); }
+    
     /**
      * @brief Get the Number Of Rasters.
      * 
      * @return size_t
      */
     size_t getNumberOfRasters( ) const { return _rasters.size( ); }
+
+    /**
+     * @brief Get the Number Of Agents.
+     * 
+     * @return size_t.
+     */
     size_t getNumberOfAgents( ) const { return _agents.size( ); }
     size_t getNumberOfTypedAgents( const std::string & type ) const;
 
+    /**
+     * @brief erases Agent pointed by "it" form the _agents AgentList.
+     * 
+     * @param it pointed Agent to be removed.
+     */
     void eraseAgent( AgentsList::iterator & it ) { _agents.erase( it ); }
     void removeAgent( Agent * agent );
     void removeAgent( std::shared_ptr<Agent> agentPtr );
@@ -228,6 +286,7 @@ public:
     void addFloatAttribute( const std::string & type, const std::string & key, float value );
     const int & getId( ) const;
     const int & getNumTasks( ) const;
+    
     /**
      * @brief returns if a raster in index 'index' must be serialized.
      * 
@@ -236,6 +295,7 @@ public:
      * @return false 
      */
     bool rasterToSerialize( size_t index ) { return _serializeRasters.at( index ); }
+    
     /**
      * @brief returns if the dynamic_raster in index 'index' exists.
      * 
@@ -244,6 +304,7 @@ public:
      * @return false 
      */
     bool isRasterDynamic( size_t index ) { return _dynamicRasters.at( index ); }
+    
     /**
      * @brief returns if the raster in index 'index' exists.
      * 

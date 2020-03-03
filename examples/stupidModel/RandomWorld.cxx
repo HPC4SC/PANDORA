@@ -44,7 +44,7 @@ void RandomWorld::createAgents() {
 	        log_INFO(logName.str(), getWallTime() << " new bug: " << bug);
 		}
 	}
-	for (int i = 0; i < 200; i++) { // 200 predators are created and placed randomly
+	for (int i = 0; i < 500; i++) { // 200 predators are created and placed randomly
 		if ((i%getNumTasks()) == getId()) {
 			std::ostringstream oss;
 			oss << "Predator_" << i;

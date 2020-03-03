@@ -68,25 +68,54 @@ namespace Engine
 
         std::list<MpiOverlap*> _sendRequests;
         std::list<MpiOverlap*> _receiveRequests;
-        // this method checks whether all the requests in the pool created by MPI_Isend and MPI_Irecv are finished before continuing
+
+        /**
+         * @brief this method checks whether all the requests in the pool created by MPI_Isend and MPI_Irecv are finished before continuing
+         * 
+         * @param updateMaxValues true updates the max values. Else doen't update max values.
+         */
         void clearRequests( bool updateMaxValues );
 
         // method to send a list of agents to their respective future world
         void sendAgents( AgentsList & agentsToSend );
-        // Method to send overlap zones in the section we have executed
-        // if entire overlap is true, the node will send its owned zone in overlap as well as adjacents overlapped zones
+         
+        /**
+         * @brief Method to send overlap zones in the section we have executed
+         * 
+         * @param sectionIndex index representing wich section it is.
+         * @param entireOverlap if true, the node will send its owned zone in overlap as well as adjacents overlapped zones, else it won't send the adjecent ones.
+         */
         void sendOverlapZones( const int & sectionIndex, const bool & entireOverlap = true );
         void sendMaxOverlapZones( );
-        // method to copy of agents to neighbours
+         
+        /**
+         * @brief method to copy the agents that levae the ovperlap zone to the neighbours cores.
+         * 
+         * @param sectionIndex index representing the section.
+         */
         void sendGhostAgents( const int & sectionIndex );
 
-        // add the agent to overlap agents list, and remove previous instances if they exist
         //void updateOverlapAgent( Agent * agent );
+        /**
+         * @brief add the agent to overlap agents list, and remove previous instances if they exist
+         * 
+         * @param sectionIndex index representing the section.
+         */
         void receiveGhostAgents( const int & sectionIndex );
-        // method to receive agents
+        
+        /**
+         * @brief  method to receive agents.
+         * 
+         * @param sectionIndex index representing the section.
+         */
         void receiveAgents( const int & sectionIndex );
-        // method to receive overlap zones from neighbors that have executed adjacent sections
-        // if entire overlap is true, the node will send its owned zone in overlap as well as adjacents overlapped zones
+        
+        /**
+         * @brief method to receive overlap zones from neighbors that have executed adjacent sections.
+         * 
+         * @param sectionIndex index representing wich section it is.
+         * @param entireOverlap if true, the node will recieve its owned zone in overlap as well as adjacents overlapped zones, else it won't recieve the adjecent ones.
+         */
         void receiveOverlapData( const int & sectionIndex, const bool & entireOverlap = true );
         void receiveMaxOverlapData( );
 
@@ -103,13 +132,33 @@ namespace Engine
         //! this method returns true if neighbor is corner of _id
         bool isCorner( const int & neighbor ) const;
 
-        //! this method returns the general overlap zone between both worlds
+        /**
+         * @brief this method returns the general overlap zone between both worlds.
+         * 
+         * @param id represents the neihgbour world.
+         * @param sectionIndex section beeing executed.
+         * @return Rectangle<int> 
+         */
         Rectangle<int> getOverlap( const int & id, const int & sectionIndex ) const;
         //! this method returns the external part of the strict overlap between World and id,
         Rectangle<int> getExternalOverlap( const int & id ) const;
-        //! this method returns the internal part of the strict overlap between World and id,
+        
+        /**
+         * @brief this method returns the internal part of the strict overlap between World and id.
+         * 
+         * @param id represents the neighbour world.
+         * @return Rectangle<int> 
+         */
         Rectangle<int> getInternalOverlap( const int & id ) const;
-        //! returns true if neighbor id must be updated this section index execution
+        
+        /**
+         * @brief returns true if neighbor id must be updated this section index execution.
+         * 
+         * @param id id of the neighbour.
+         * @param sectionIndex section beeing executed.
+         * @return true 
+         * @return false 
+         */
         bool needsToBeUpdated( const int & id, const int & sectionIndex );
         //! returns true if neighbor id will send data to _id, according to index execution
         bool needsToReceiveData( const int & id, const int & sectionIndex );
@@ -123,7 +172,12 @@ namespace Engine
         void stablishBoundaries( );
         //! define original position of world, given overlap, size and id.
         void stablishWorldPosition( );
-        //! applies next simulation step on the Section of the space identified by parameter 'sectionIndex'.
+
+        /**
+         * @brief applies next simulation step on the Section of the space identified by parameter 'sectionIndex'.
+         * 
+         * @param sectionIndex identifier of the section.
+         */
         void stepSection( const int & sectionIndex );
 
         //! returns the id of the section that contains the point 'position'
@@ -157,6 +211,7 @@ namespace Engine
          * @return const Rectangle<int>& 
          */
         const Rectangle<int> & getOwnedArea( ) const;
+        
         /**
          * @brief Get the _overlap attribute
          * 
@@ -179,7 +234,11 @@ namespace Engine
         void init( int argc, char *argv[] );
         // initialize data processes after creation of agents and rasters
         void initData( );
-        //! responsible for executing the agents and update world
+        
+        /**
+         * @brief responsible for executing the agents and update world.
+         * 
+         */
         void executeAgents( );
 
         void agentAdded( AgentPtr agent, bool executedAgent );

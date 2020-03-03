@@ -30,6 +30,8 @@ public:
 	void registerAttributes();
 	// gives value to the registered attributes
 	void serialize();
+	void updateState( );
+	void updateKnowledge( );
 
 	// setter of the _size attribute
 	void setSize(const int &size);

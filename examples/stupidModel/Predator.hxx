@@ -22,6 +22,9 @@ public:
 	// selects wich actions and in wich order each Predator agent
 	void selectActions();
 	
+	void updateState( );
+	void updateKnowledge( );
+	
 	////////////////////////////////////////////////
 	// This code has been automatically generated //
 	/////// Please do not modify it ////////////////

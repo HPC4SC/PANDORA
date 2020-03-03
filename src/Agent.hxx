@@ -113,10 +113,29 @@ namespace Engine
 
         // defined in children, it must use serializeAttribute to save valuable data
         virtual void serialize( ){};
-
+        
+        /**
+         * @brief defined in children. Updated the knowledge of the agent at the beginning of the step.
+         * 
+         */
         virtual void updateKnowledge( ){};
-        virtual void selectActions( ){};
-        virtual void updateState( ){};
+        
+        /**
+         * @brief defined in children. Selects the actions that the agent will perform during the current step.
+         * 
+         */
+        virtual void selectActions( ) {};
+
+        /**
+         * @brief defined in children. Updates the state of the agents once all actions are executed.
+         * 
+         */
+        virtual void updateState( ) {};
+
+        /**
+         * @brief executes the selected actions of the agent in the curreny step. 
+         * 
+         */
         void executeActions( );
 
         // mpi related
