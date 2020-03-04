@@ -114,7 +114,12 @@ namespace Engine
         const int & getId( ) const { return _id; }
         //! num tasks will always be 1 unless the execution is distributed in some way
         const int & getNumTasks( ) const { return _numTasks; }
-        //! MPI version of wall time
+        
+        /**
+         * @brief Get the Wall Time of the simulatio. Must be implemented in the children.
+         * 
+         * @return double 
+         */
         virtual double getWallTime( ) const = 0;
         virtual size_t getNumberOfTypedAgents( const std::string & type ) const = 0;
 

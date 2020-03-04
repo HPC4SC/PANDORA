@@ -76,7 +76,7 @@ namespace Engine {
 
     void SpacePartition::stablishBoundaries() {
         // position of world related to the complete set of computer nodes
-        int worldsPerRow = sqrt(_numTasks);
+        int worldsPerRow = sqrt(_numTasks); //canviar numTasks a más de 1. Mirar para que se usa numTasks = numberOfWorlds
         _worldPos = getPositionFromId(_id);
 
         for (int x = _worldPos._x - 1; x <= _worldPos._x + 1; x++) {
