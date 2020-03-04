@@ -156,11 +156,17 @@ namespace Engine
          * 
          * @param id id of the neighbour.
          * @param sectionIndex section beeing executed.
-         * @return true 
-         * @return false 
+         * @return bool
          */
         bool needsToBeUpdated( const int & id, const int & sectionIndex );
-        //! returns true if neighbor id will send data to _id, according to index execution
+
+        /**
+         * @brief returns true if neighbor id will send data to _id, according to index execution
+         * 
+         * @param id id of the neighbour
+         * @param sectionIndex section being executed
+         * @return bool
+         */
         bool needsToReceiveData( const int & id, const int & sectionIndex );
 
         //! amount of width around one boundary considering the side of the World object that owns _overlap
