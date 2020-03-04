@@ -140,7 +140,13 @@ namespace Engine
          * @return Rectangle<int> 
          */
         Rectangle<int> getOverlap( const int & id, const int & sectionIndex ) const;
-        //! this method returns the external part of the strict overlap between World and id,
+        
+        /**
+         * @brief this method returns the external part of the strict overlap between World and id.
+         * 
+         * @param id id of the world.
+         * @return Rectangle<int> 
+         */
         Rectangle<int> getExternalOverlap( const int & id ) const;
         
         /**
@@ -174,7 +180,11 @@ namespace Engine
 
         //! check correct overlap/size relation
         void checkOverlapSize( );
-        //! compute _boundaries based on Size, number of nodes and _overlap
+
+        /**
+         * @brief compute _boundaries based on Size, number of nodes and _overlap
+         * 
+         */
         void stablishBoundaries( );
         //! define original position of world, given overlap, size and id.
         void stablishWorldPosition( );
@@ -196,30 +206,48 @@ namespace Engine
         //! if true will call MPI_Finalize at the end of run ( default behavior )
         bool _finalize;
 
-        //! this method returns true if the agent is already in executedAgents list
+        /**
+         * @brief this method returns true if the agent is already in executedAgents list.
+         * 
+         * @param id id representing the Agent.
+         * @return true 
+         * @return false 
+         */
         bool hasBeenExecuted( const std::string & id ) const;
         //! return an agent, if it is in the list of ghosts
         AgentsList::iterator getGhostAgent( const std::string & id );
         //! this list has the agents that need to be removed at the end of step.
         AgentsList _removedAgents;
-        //! return an agent, if it is in the list of owned
+        
+        /**
+         * @brief return an agent, if it is in the list of owned
+         * 
+         * @param id id of the Agent.
+         * @return AgentsList::iterator 
+         */
         AgentsList::iterator getOwnedAgent( const std::string & id );
 
-        //! true if the agent is in the list of agents to remove
+        /**
+         * @brief true if the agent is in the list of agents to remove.
+         * 
+         * @param id id of the checked Agent.
+         * @return true 
+         * @return false 
+         */
         bool willBeRemoved( const std::string & id );
         double _initialTime;
         //! send overlapping data to neighbours before run
         void initOverlappingData( );
 
         /**
-         * @brief Get the _ownedArea attribute
+         * @brief Get the _ownedArea attribute.
          * 
          * @return const Rectangle<int>& 
          */
         const Rectangle<int> & getOwnedArea( ) const;
         
         /**
-         * @brief Get the _overlap attribute
+         * @brief Get the _overlap attribute.
          * 
          * @return const int& 
          */
@@ -257,7 +285,11 @@ namespace Engine
 
         Point2D<int> getRandomPosition( ) const;
 
-        //! MPI version of wall time
+        /**
+         * @brief MPI version of wall time
+         * 
+         * @return double 
+         */
         double getWallTime( ) const;
         size_t getNumberOfTypedAgents( const std::string & type ) const;
 

@@ -89,6 +89,11 @@ namespace Engine
         bool exists( ) const;
         void setExists( bool exists );
 
+        /**
+         * @brief Get the position of the Agent.
+         * 
+         * @return const Point2D<int>& 
+         */
         const Point2D<int> & getPosition( ) const;
         void setPosition( const Point2D<int> & position );
 

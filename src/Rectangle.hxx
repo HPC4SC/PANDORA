@@ -59,6 +59,13 @@ public:
         this->intervals2Rectangle( OX, OY );
     }
 
+    /**
+     * @brief returts if "point" is contained by the Rectangle.
+     * 
+     * @param point point we want to check.
+     * @return true 
+     * @return false 
+     */
     bool contains( const Point2D<Type> & point ) const
     {
         if ( point._x < _origin._x || point._x >= _origin._x+_size._width )
