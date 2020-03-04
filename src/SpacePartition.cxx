@@ -333,6 +333,8 @@ namespace Engine {
                                                        << " will send overlap to: " << neighborsToUpdate[i]
                                                        << " with size: " << send->_data.size() << " and zone: "
                                                        << overlapZone);
+
+                // Create a vector to be sent out of the raster (d) structure
                 for (size_t n = 0; n < send->_data.size(); n++) {
                     Point2D<int> index(overlapZone._origin._x + n % overlapZone._size._width,
                                        overlapZone._origin._y + n / overlapZone._size._width);
@@ -344,6 +346,8 @@ namespace Engine {
                 }
                 log_DEBUG(logName.str(), getWallTime() << " step: " << _world->getCurrentStep() << " raster: " << d
                                                        << " will be sent");
+
+                // Queueing the overlap zone to be send
                 MPI_Isend(&send->_data[0], send->_data.size(), MPI_INTEGER, neighborsToUpdate[i], eRasterData,
                           MPI_COMM_WORLD, &send->_request);
                 _sendRequests.push_back(send);
@@ -677,7 +681,7 @@ namespace Engine {
             }
         }
 
-        // for each raster, we receive data from all the active neighbors
+        // for each (dynamic) raster, we receive data from all the active neighbors
         for (size_t d = 0; d < _world->getNumberOfRasters(); d++) {
             if (!_world->rasterExists(d) || !_world->isRasterDynamic(d)) {
                 continue;
