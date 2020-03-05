@@ -144,6 +144,11 @@ namespace Engine
         void executeActions( );
 
         // mpi related
+        /**
+         * @brief fills an MPI package with information of an Agent.
+         * 
+         * @return void* 
+         */
         virtual void * fillPackage( ) = 0;
         virtual void sendVectorAttributes( int target ) = 0;
         virtual void receiveVectorAttributes( int origin ) = 0;

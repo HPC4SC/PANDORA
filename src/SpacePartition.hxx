@@ -70,16 +70,16 @@ namespace Engine
         std::list<MpiOverlap*> _receiveRequests;
 
         /**
-         * @brief this method checks whether all the requests in the pool created by MPI_Isend and MPI_Irecv are finished before continuing
+         * @brief this method checks whether all the requests in the pool created by MPI_Isend and MPI_Irecv are finished before continuing.
          * 
          * @param updateMaxValues true updates the max values. Else don't update max values.
          */
         void clearRequests( bool updateMaxValues );
 
         /**
-         * @brief method to send a list of agents to their respective future world
+         * @brief method to send a list of agents to their respective future world.
          * 
-         * @param agentsToSend list of agents that are going to change its world
+         * @param agentsToSend list of agents that are going to change its world.
          */
         void sendAgents( AgentsList & agentsToSend );
          
@@ -123,14 +123,28 @@ namespace Engine
         void receiveOverlapData( const int & sectionIndex, const bool & entireOverlap = true );
         void receiveMaxOverlapData( );
 
-        //! id's of neighboring computer nodes
+        /**
+         * @brief id's of neighboring computer nodes.
+         * 
+         */
         std::vector<int> _neighbors;
-        //! area inside boundaries owned by the computer node without overlap
+        
+        /**
+         * @brief area inside boundaries owned by the computer node without overlap.
+         * 
+         */
         Rectangle<int> _ownedArea;
-        //! the four sections into a world is divided
+        
+        /**
+         * @brief the four sections into a world is divided.
+         * 
+         */
         std::vector<Rectangle<int> > _sections;
 
-        //! list of agents owned by other nodes in overlapping positions
+        /**
+         * @brief list of agents owned by other nodes in overlapping positions
+         * 
+         */
         AgentsList _overlapAgents;
 
         //! this method returns true if neighbor is corner of _id
@@ -171,7 +185,7 @@ namespace Engine
         bool needsToBeUpdated( const int & id, const int & sectionIndex );
 
         /**
-         * @brief returns true if neighbor id will send data to _id, according to index execution
+         * @brief returns true if neighbor id will send data to _id, according to index execution.
          * 
          * @param id id of the neighbour
          * @param sectionIndex section being executed
@@ -179,14 +193,17 @@ namespace Engine
          */
         bool needsToReceiveData( const int & id, const int & sectionIndex );
 
-        //! amount of width around one boundary considering the side of the World object that owns _overlap
+        /**
+         * @brief amount of width around one boundary considering the side of the World object that owns _overlap.
+         * 
+         */
         int _overlap;
 
         //! check correct overlap/size relation
         void checkOverlapSize( );
 
         /**
-         * @brief compute _boundaries based on Size, number of nodes and _overlap
+         * @brief compute _boundaries based on Size, number of nodes and _overlap.
          * 
          */
         void stablishBoundaries( );
@@ -200,14 +217,28 @@ namespace Engine
          */
         void stepSection( const int & sectionIndex );
 
-        //! returns the id of the section that contains the point 'position'
+        /**
+         * @brief returns the id of the section that contains the point 'position'.
+         * 
+         * @param position 
+         * @return int 
+         */
         int getIdFromPosition( const Point2D<int> & position );
         //! given the id of a section returns that section position
         Point2D<int> getPositionFromId( const int & id ) const;
-        //! given the id of a neighbour world section, returns its index, the position in the vector _neighbors
+        
+        /**
+         * @brief given the id of a neighbour world section, returns its index, the position in the vector _neighbors.
+         * 
+         * @param id id of the world.
+         * @return int 
+         */
         int getNeighborIndex( const int & id );
 
-        //! if true will call MPI_Finalize at the end of run ( default behavior )
+        /**
+         * @brief if true will call MPI_Finalize at the end of run ( default behavior ).
+         * 
+         */
         bool _finalize;
 
         /**
@@ -220,7 +251,11 @@ namespace Engine
         bool hasBeenExecuted( const std::string & id ) const;
         //! return an agent, if it is in the list of ghosts
         AgentsList::iterator getGhostAgent( const std::string & id );
-        //! this list has the agents that need to be removed at the end of step.
+        
+        /**
+         * @brief this list has the agents that need to be removed at the end of step.
+         * 
+         */
         AgentsList _removedAgents;
         
         /**

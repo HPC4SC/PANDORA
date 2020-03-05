@@ -55,8 +55,19 @@ namespace Engine
 
         void * createDefaultPackage( const std::string & type );
         Agent * createAndFillAgent( const std::string & type, void * package );
-
+        
+        /**
+         * @brief returns the first position of the typesMap.
+         * 
+         * @return TypesMap::iterator.
+         */
         TypesMap::iterator beginTypes( );
+
+        /**
+         * @brief returns the last position of the typesMap.
+         * 
+         * @return TypesMap::iterator 
+         */
         TypesMap::iterator endTypes( );
     };
 } // namespace Engine
