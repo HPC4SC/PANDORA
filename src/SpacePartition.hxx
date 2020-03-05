@@ -207,7 +207,11 @@ namespace Engine
          * 
          */
         void stablishBoundaries( );
-        //! define original position of world, given overlap, size and id.
+        
+        /**
+         * @brief define original position of world, given overlap, size and id.
+         * 
+         */
         void stablishWorldPosition( );
 
         /**
@@ -291,7 +295,13 @@ namespace Engine
          * @return const int& 
          */
         const int & getOverlap( ) const;
-        //! transform from global coordinates to real coordinates ( in terms of world position )
+        
+        /**
+         * @brief transform from global coordinates to real coordinates ( in terms of world position ).
+         * 
+         * @param globalPosition 
+         * @return Point2D<int> 
+         */
         Point2D<int> getRealPosition( const Point2D<int> & globalPosition ) const;
 
     public:
@@ -300,12 +310,21 @@ namespace Engine
 
         void finish( );
 
-        const Rectangle<int> & getBoundaries( ) const;
-        //! initialization of the object World for the simulation. Required to be called before calling run.
-
-        //! initializes everything needed before creation of agents and rasters ( i.e. sizes )
+        const Rectangle<int> & getBoundaries( ) const;        
+        
+        /**
+         * @brief initializes everything needed before creation of agents and rasters ( i.e. sizes ).
+         *          initialization of the object World for the simulation. Required to be called before calling run. 
+         * 
+         * @param argc 
+         * @param argv 
+         */
         void init( int argc, char *argv[] );
-        // initialize data processes after creation of agents and rasters
+        
+        /**
+         * @brief initialize data processes after creation of agents and rasters.
+         * 
+         */
         void initData( );
         
         /**

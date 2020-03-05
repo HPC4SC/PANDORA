@@ -48,9 +48,16 @@ namespace Engine
         static MpiFactory * instance( );
         virtual ~MpiFactory( );
 
-        //! method defined by script that adds custom mpi types for each agent
+        /**
+         * @brief method defined by script that adds custom mpi types for each agent.
+         * 
+         */
         void registerTypes( );
-        //! method to delete from mpi stack all the created types
+        
+        /**
+         * @brief method to delete from mpi stack all the created types.
+         * 
+         */
         void cleanTypes( );
 
         void * createDefaultPackage( const std::string & type );

@@ -150,7 +150,19 @@ namespace Engine
          * @return void* 
          */
         virtual void * fillPackage( ) = 0;
+        
+        /**
+         * @brief sends the registered vector attributes of an Agent.
+         * 
+         * @param target Agent that will recieve the data.
+         */
         virtual void sendVectorAttributes( int target ) = 0;
+
+        /**
+         * @brief recieves the registered vector attributes of an Agent.
+         * 
+         * @param origin Agent that sent the data. 
+         */
         virtual void receiveVectorAttributes( int origin ) = 0;
 
         AttributesList::iterator beginStringAttributes( ){ return _stringAttributes.begin( ); }
