@@ -72,11 +72,15 @@ namespace Engine
         /**
          * @brief this method checks whether all the requests in the pool created by MPI_Isend and MPI_Irecv are finished before continuing
          * 
-         * @param updateMaxValues true updates the max values. Else doen't update max values.
+         * @param updateMaxValues true updates the max values. Else don't update max values.
          */
         void clearRequests( bool updateMaxValues );
 
-        // method to send a list of agents to their respective future world
+        /**
+         * @brief method to send a list of agents to their respective future world
+         * 
+         * @param agentsToSend list of agents that are going to change its world
+         */
         void sendAgents( AgentsList & agentsToSend );
          
         /**
