@@ -101,7 +101,12 @@ public:
     //! Runs the simulation. Performs each step and stores the states. Requires calling 'init' method a-priori.
     void run( );
 
-    //! add an agent to the world, and remove it from overlap agents if exist
+    /**
+     * @brief add an agent to the world, and remove it from overlap agents if exist
+     * 
+     * @param agent Agent to be added
+     * @param executedAgent true, the Agent has been executed. False otherwise.
+     */
     virtual void addAgent( Agent * agent, bool executedAgent = true );
 
     //! returns the number of neighbours of agent 'target' within the radius 'radius' using Euclidean Distance.
