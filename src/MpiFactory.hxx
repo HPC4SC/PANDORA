@@ -38,6 +38,11 @@ namespace Engine
         typedef std::map< std::string, MPI_Datatype *> TypesMap;
 
     private:
+        
+        /**
+         * @brief unique instance of the MpiFactory.
+         * 
+         */
         static MpiFactory * _instance;
 
         MpiFactory( );
@@ -45,6 +50,12 @@ namespace Engine
         TypesMap _types;
 
     public:
+        
+        /**
+         * @brief If there's no instance of MpiFactory one is created and retured. Otherwise the instance is
+         * 
+         * @return MpiFactory* 
+         */
         static MpiFactory * instance( );
         virtual ~MpiFactory( );
 
@@ -60,7 +71,21 @@ namespace Engine
          */
         void cleanTypes( );
 
+        /**
+         * @brief Create a Default Package object
+         * 
+         * @param type type of the package created.
+         * @return void* 
+         */
         void * createDefaultPackage( const std::string & type );
+
+        /**
+         * @brief creates and initializes a recieved Agent.
+         * 
+         * @param type type of the Agent.
+         * @param package data of the Agent.
+         * @return Agent* 
+         */
         Agent * createAndFillAgent( const std::string & type, void * package );
         
         /**
