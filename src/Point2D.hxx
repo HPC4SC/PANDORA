@@ -40,10 +40,20 @@ public:
     Type _x;
     Type _y;
 
+    /**
+     * @brief Construct a new Point2D object with _x = 0 and _y = 0.
+     * 
+     */
     Point2D( ) : _x( 0 ), _y( 0 )
     {
     }
 
+    /**
+     * @brief Construct a new Point 2 D object with _x = x and _y = y.
+     * 
+     * @param x 
+     * @param y 
+     */
     Point2D( const Type & x, const Type & y ) : _x( x ), _y( y )
     {
     }
