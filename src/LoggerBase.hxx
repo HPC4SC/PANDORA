@@ -29,6 +29,7 @@ namespace Engine
 
 class Logger
 {
+private:
     typedef std::map <std::string, std::ofstream *> FilesMap;
 
     FilesMap _files;

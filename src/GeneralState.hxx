@@ -10,6 +10,7 @@ namespace Engine
 {
     class GeneralState
     {
+    private:
         static GeneralState   * _instance;
         Logger                  _logger;
         Statistics              _statistics;

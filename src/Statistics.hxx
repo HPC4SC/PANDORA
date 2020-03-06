@@ -33,6 +33,7 @@ namespace Engine
 
 class Statistics
 {
+private:
 	typedef boost::mt19937 RandomEngine;
 	typedef boost::variate_generator<boost::mt19937&,boost::gamma_distribution<> >  TypeGenerator;
 

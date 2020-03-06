@@ -31,7 +31,15 @@ namespace Engine
 
 class IncrementalRaster : public DynamicRaster
 {
-    typedef std::map< Point2D<int>, int >    ChangeTable;
+
+private:
+    typedef std::map<Point2D<int>, int> ChangeTable;
+    typedef ChangeTable::const_iterator    ChangeIterator;
+
+    ChangeTable _changes;
+    const DynamicRaster * _baseRaster;
+    int    _currentMinValue;
+    int    _currentMaxValue;
 
 public:
     IncrementalRaster( );
@@ -51,8 +59,6 @@ public:
 
     //virtual    void        updateCurrentMinMaxValues( );
 
-    typedef ChangeTable::const_iterator    ChangeIterator;
-
     ChangeIterator        firstChange( ) const { return _changes.begin( ); }
     ChangeIterator        endOfChanges( ) const { return _changes.end( ); }
     Size<int> getSize( ) const;
@@ -68,12 +74,6 @@ public:
         return _changes.size( ) < other._changes.size( );
     }
 
-private:
-
-    ChangeTable _changes;
-    const DynamicRaster * _baseRaster;
-    int    _currentMinValue;
-    int    _currentMaxValue;
 };
 
 }
