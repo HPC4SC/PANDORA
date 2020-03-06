@@ -19,6 +19,7 @@ namespace Engine
 
 class ShpLoader
 {
+private:
     // shapefile source
     GDAL_DATA_CLASS * _gdalData;
     // layer to be loaded

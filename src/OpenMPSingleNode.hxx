@@ -40,6 +40,7 @@ class Agent;
   */
 class OpenMPSingleNode : public Scheduler
 {
+private:
     boost::timer::cpu_timer _timer;
     SequentialSerializer _serializer;
 
