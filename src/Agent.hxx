@@ -86,6 +86,12 @@ namespace Engine
 
         const std::string & getId( ) const;
 
+        /**
+         * @brief True if the Agent exists in the simulation. False otherwise.
+         * 
+         * @return true 
+         * @return false 
+         */
         bool exists( ) const;
         void setExists( bool exists );
 
@@ -116,7 +122,10 @@ namespace Engine
         bool isType( const std::string & type ) const;
         virtual std::string getType( ) const;
 
-        // defined in children, it must use serializeAttribute to save valuable data
+        /**
+         * @brief defined in children, it must use serializeAttribute to save valuable data.
+         * 
+         */
         virtual void serialize( ){};
         
         /**

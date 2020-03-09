@@ -102,7 +102,11 @@ namespace Engine
          */
         virtual void finish( ) = 0;
 
-        //! basic method to use while exploring boundaries of World
+        /**
+         * @brief basic method to use while exploring boundaries of World
+         * 
+         * @return const Rectangle<int>& 
+         */
         virtual const Rectangle<int> & getBoundaries( ) const { return _boundaries; };
         virtual Point2D<int> getRandomPosition( ) const = 0;
 
