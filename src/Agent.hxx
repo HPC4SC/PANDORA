@@ -40,50 +40,105 @@ namespace Engine
         typedef std::list<std::string> AttributesList;
 
     private:
-        // list of attributes of an agent
-        AttributesList _intAttributes;
-        AttributesList _floatAttributes;
-        AttributesList _stringAttributes;
+        AttributesList _intAttributes;  //! list of integer attributes of the Agent.
+        AttributesList _floatAttributes; //! list of float attributes of the Agent.
+        AttributesList _stringAttributes; //! list of string attributes of the Agent.
 
     protected:
-        /** Agent identifier **/
-        std::string _id;
-        /** Flag to control if agent is "dead" or alive". it is used in analyzer in order to know if agent must be painted **/
-        bool _exists;
-        /** Position of the agent, in global coordinates **/
-        Point2D<int> _position;
-        /** Pointer to the world that owns this agent **/
-        World * _world;
+        
+        std::string _id; //! Agent identifier.
+        bool _exists; //! Flag to control if agent is "dead" or alive". it is used in analyzer in order to know if agent must be painted.
+        Point2D<int> _position; //! Position of the agent, in global coordinates.
+        World * _world; //! Pointer to the world that owns this agent.
 
+        /**
+         * @brief used in child class. Serializes a float attribute.
+         * 
+         * @param name name of the serialized attribute.
+         * @param value value of the serializred attribute.
+         */
         void serializeAttribute( const std::string & name, const float & value );
+
+        /**
+         * @brief used in child class. Serializes a integer attribute.
+         * 
+         * @param name name of the serialized attribute.
+         * @param value value of the serializred attribute.
+         */
         void serializeAttribute( const std::string & name, const int & value );
+
+        /**
+         * @brief used in child class. Serializes a string attribute.
+         * 
+         * @param name name of the serialized attribute.
+         * @param value value of the serializred attribute.
+         */
         void serializeAttribute( const std::string & name, const std::string & value );
 
-        std::list<Action*> _actions;
+        std::list<Action*> _actions; //! list of actions to be executed by the Agent.
     public:
+
+        /**
+         * @brief get the size of the intAttributes list.
+         * 
+         * @return int 
+         */
         int  getIntSize( ) { return _intAttributes.size( ); }
+
+        /**
+         * @brief get the size of the floatAttributes list.
+         * 
+         * @return int 
+         */
         int  getFloatSize( ) { return _floatAttributes.size( ); }
+
+        /**
+         * @brief get the size of the stringAttributes list.
+         * 
+         * @return int 
+         */
         int  getStrSize( ) { return _stringAttributes.size( ); }
+
+        /**
+         * @brief adds an attribute to the intAttriutes list.
+         * 
+         * @param name name of the attribute.
+         */
         void registerIntAttribute( const std::string & name ) { _intAttributes.push_back( name ); }
+
+        /**
+         * @brief adds an attribute to the floatAttriutes list.
+         * 
+         * @param name name of the attribute.
+         */
         void registerFloatAttribute( const std::string & name ) { _floatAttributes.push_back( name ); }
+
+        /**
+         * @brief adds an attribute to the stringAttriutes list.
+         * 
+         * @param name name of the attribute.
+         */
         void registerStringAttribute( const std::string & name ) { _stringAttributes.push_back( name ); }
 
-        //! Standard constructor.
-        /*!
-          \param id id of the agent. It must be unique in the entire simulation.
+       
+       /**
+        * @brief Construct a new Agent object.
+        * 
+        * @param id  unique identifier of the Agent.
         */
         Agent( const std::string & id );
-        // els atribs de dalt segueixen : atribut\n comentari
-        // perque els mètodes segueixen : comment\n metode ????
-        // proposta : usar asserts 'require' i 'ensure'
-        // exemple : 'require' afegit
-        //! Standard constructor.
-        /*! require :
-          \param id id of the agent. It must be unique in the entire simulation.
-        */
 
+        /**
+         * @brief Destroy the Agent object.
+         * 
+         */
         virtual ~Agent( );
 
+        /**
+         * @brief get the id of the Agent.
+         * 
+         * @return const std::string&.
+         */
         const std::string & getId( ) const;
 
         /**
@@ -93,24 +148,66 @@ namespace Engine
          * @return false 
          */
         bool exists( ) const;
+
+        /**
+         * @brief set the exists attribute.
+         * 
+         * @param exists new value of the exists attribute.
+         */
         void setExists( bool exists );
 
         /**
-         * @brief Get the position of the Agent.
+         * @brief get the position of the Agent.
          * 
          * @return const Point2D<int>& 
          */
         const Point2D<int> & getPosition( ) const;
+
+        /**
+         * @brief set the position attribute.
+         * 
+         * @param position new value of the position attribute.
+         */
         void setPosition( const Point2D<int> & position );
 
-        // delete agent from world
+        /**
+         * @brief delete the Agent from world.
+         * 
+         */
         void remove( );
+
+        /**
+         * @brief set the _world attribute of the Agent.
+         * 
+         * @param world new world attribute.
+         */
         void setWorld( World * world );
+
+        /**
+         * @brief get the _world attribute pointer.
+         * 
+         * @return World*.
+         */
         World * getWorld( );
+
+        /**
+         * @brief get the _world attribute reference.
+         * 
+         * @return World&.
+         */
         World & getWorldRef( );
+
+        /**
+         * @brief get the _world attribute const pointer.
+         * 
+         * @return const World*.
+         */
         const World * getWorld( ) const;
 
-        // method to locate the agent to a valid random position of _world
+        /**
+         * @brief method to locate the agent to a valid random position of _world.
+         * 
+         */
         void setRandomPosition( );
 
         //! Prints a representation of the state to the given stream.
@@ -118,8 +215,20 @@ namespace Engine
         friend std::ostream& operator << ( std::ostream &os, const Agent*  agent ) { return agent->print( os ); }
         virtual std::ostream& print( std::ostream& os ) const;
 
-        // this function returns true if the type of the agent is the one passed by reference
+        /**
+         * @brief this function returns true if the type of the agent is the one passed by reference.
+         * 
+         * @param type type we want to compare with.
+         * @return true.
+         * @return false. 
+         */
         bool isType( const std::string & type ) const;
+
+        /**
+         * @brief get the type of the Agent.
+         * 
+         * @return std::string.
+         */
         virtual std::string getType( ) const;
 
         /**
@@ -152,7 +261,6 @@ namespace Engine
          */
         void executeActions( );
 
-        // mpi related
         /**
          * @brief fills an MPI package with information of an Agent.
          * 
@@ -174,16 +282,59 @@ namespace Engine
          */
         virtual void receiveVectorAttributes( int origin ) = 0;
 
+        /**
+         * @brief returns the interator pointing to the begin() position of _stringAttributes.
+         * 
+         * @return AttributesList::iterator.
+         */
         AttributesList::iterator beginStringAttributes( ){ return _stringAttributes.begin( ); }
+
+        /**
+         * @brief returns the interator pointing to the end() position of _stringAttributes.
+         * 
+         * @return AttributesList::iterator.
+         */
         AttributesList::iterator endStringAttributes( ){ return _stringAttributes.end( ); }
 
+        /**
+         * @brief returns the interator pointing to the begin() position of _intAttributes.
+         * 
+         * @return AttributesList::iterator.
+         */
         AttributesList::iterator beginIntAttributes( ){ return _intAttributes.begin( ); }
+
+        /**
+         * @brief returns the interator pointing to the end() position of _intAttributes.
+         * 
+         * @return AttributesList::iterator.
+         */
         AttributesList::iterator endIntAttributes( ){ return _intAttributes.end( ); }
 
+        /**
+         * @brief returns the interator pointing to the begin() position of _floatAttributes.
+         * 
+         * @return AttributesList::iterator.
+         */
         AttributesList::iterator beginFloatAttributes( ){ return _floatAttributes.begin( ); }
+
+        /**
+         * @brief returns the interator pointing to the end() position of _floatAttributes.
+         * 
+         * @return AttributesList::iterator.
+         */
         AttributesList::iterator endFloatAttributes( ){ return _floatAttributes.end( ); }
 
+        /**
+         * @brief registers the Agent attributes to be serialized.
+         * 
+         */
         virtual void registerAttributes( ){ }
+
+        /**
+         * @brief changes the type of the Agent.
+         * 
+         * @param newType new type of the Agent.
+         */
         void changeType( const std::string & newType );
     };
 } // namespace Engine
