@@ -288,7 +288,7 @@ void SequentialSerializer::serializeAgent( Agent * agent, const int & step, int 
     addIntAttribute( type, "y", agent->getPosition( )._y );
     agent->serialize( );
 
-    if ( getDataSize( type )>=20000 )
+    if ( getDataSize( type )>=20000 ) //TODO preguntar que es esto
     {
         executeAgentSerialization( type, step );
     }

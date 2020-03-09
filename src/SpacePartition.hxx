@@ -308,8 +308,17 @@ namespace Engine
         SpacePartition( const int & overlap, bool finalize );
         virtual ~SpacePartition( );
 
+        /**
+         * @brief procedures that need to be executed after simulation ( i.e. finish communications for parallel nodes )
+         * 
+         */
         void finish( );
 
+        /**
+         * @brief Get the Boundaries object 
+         * 
+         * @return const Rectangle<int>& 
+         */
         const Rectangle<int> & getBoundaries( ) const;        
         
         /**
@@ -351,10 +360,45 @@ namespace Engine
         double getWallTime( ) const;
         size_t getNumberOfTypedAgents( const std::string & type ) const;
 
+        /**
+         * @brief calls the serializer to add an integer attribute of an Agent.
+         * 
+         * @param type type of int value.
+         * @param key name of the attribute.
+         * @param value value of the attribute.
+         */
         void addIntAttribute( const std::string & type, const std::string & key, int value );
+
+        /**
+         * @brief calls the serializer to add a string attribute of an Agent.
+         * 
+         * @param type type of string value.
+         * @param key name of the attribute.
+         * @param value value of the attribute.
+         */
         void addStringAttribute( const std::string & type, const std::string & key, const std::string & value );
+
+        /**
+         * @brief calls the serializer to add a float of an Agent.
+         * 
+         * @param type type of float value.
+         * @param key name of the attribute.
+         * @param value value of the attribute.
+         */
         void addFloatAttribute( const std::string & type, const std::string & key, float value );
+        
+        /**
+         * @brief serialize the agents with the information of the current step.
+         * 
+         * @param step current simulation time.
+         */
         void serializeAgents( const int & step );
+
+        /**
+         * @brief serialize the rasters with the information of the current step.
+         * 
+         * @param step current simulation time.
+         */
         void serializeRasters( const int & step );
         int countNeighbours( Agent * target, const double & radius, const std::string & type );
         AgentsVector getNeighbours( Agent * target, const double & radius, const std::string & type );
