@@ -41,6 +41,12 @@ namespace Engine
          * @param agent agent that will perform the Action.
          */
         virtual void execute( Agent & agent ) = 0;
+
+        /**
+         * @brief describes the type of Action executed. implemented in child class.
+         * 
+         * @return std::string 
+         */
         virtual std::string describe( ) const;
     };
 } // namespace Engine
