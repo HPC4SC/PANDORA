@@ -42,39 +42,170 @@ public:
     typedef std::map<std::string, StrValues > StrAttributesMap;
 
 private:
-    std::string _id;
-    // total number of steps in simulation ( not agent life )
-    int _numSteps;
-    IntAttributesMap _intAttributes;
-    FloatAttributesMap _floatAttributes;
-    StrAttributesMap _strAttributes;
+    std::string _id; //! id of the Agent.
+    int _numSteps; //! Total number of steps in simulation ( not agent life ).
+    IntAttributesMap _intAttributes; //! Map that represents the integer attributes of the Agent.
+    FloatAttributesMap _floatAttributes; //! Map that represents the float attributes of the Agent.
+    StrAttributesMap _strAttributes; //! Map that represents the string attributes of the Agent.
+
 public:
+    /**
+     * @brief Construct a new Agent Record object.
+     * 
+     * @param id Identifier of the Agent.
+     * @param numSteps Total number of steps in simulation ( not agent life ).
+     */
     AgentRecord( const std::string & id, int numSteps );
+
+    /**
+     * @brief Destroy the Agent Record object.
+     * 
+     */
     virtual ~AgentRecord( );
 
-    void addInt( int numStep, const std::string & id, int value );
-    void addFloat( int numStep, const std::string & id, float value );
-    void addStr( int numStep, const std::string & id, const std::string & value );
+    /**
+     * @brief Adds an integer value to the _intAttributes map. If the attribute exists it's value it's updated.
+     * 
+     * @param numStep Current step of the simulation.
+     * @param key Name of the attribute.
+     * @param value Value of the attribute.
+     */
+    void addInt( int numStep, const std::string & key, int value );
 
+    /**
+     * @brief Adds an float value to the _floatAttributes map. If the attribute exists it's value it's updated.
+     * 
+     * @param numStep Current step of the simulation.
+     * @param key Name of the attribute.
+     * @param value Value of the attribute.
+     */
+    void addFloat( int numStep, const std::string & key, float value );
+
+    /**
+     * @brief Adds an float value to the _strAttributes map. If the attribute exists it's value it's updated.
+     * 
+     * @param numStep Current step of the simulation.
+     * @param key Name of the attribute.
+     * @param value Value of the attribute.
+     */
+    void addStr( int numStep, const std::string & key, const std::string & value );
+
+    /**
+     * @brief Get the value of the key integer attribute in the thep numStep.
+     * 
+     * @param numStep Step we want to check.
+     * @param key Name of the attribute.
+     * @return int 
+     */
     int getInt( int numStep, const std::string & key ) const;
+
+    /**
+     * @brief Get the value of the key float attribute in the thep numStep.
+     * 
+     * @param numStep Step we want to check.
+     * @param key Name of the attribute.
+     * @return float 
+     */
     float getFloat( int numStep, const std::string & key ) const;
+
+    /**
+     * @brief Get the value of the key string attribute in the thep numStep.
+     * 
+     * @param numStep Step we want to check.
+     * @param key Name of the attribute.
+     * @return const std::string& 
+     */
     const std::string & getStr( int numStep, const std::string & key ) const;
+
+    /**
+     * @brief Get the state of the Agent in step numStep.
+     * 
+     * @param numStep Step we want to check.
+     * @return std::string 
+     */
     std::string getCompleteState( int numStep ) const;
 
+    /**
+     * @brief Returns the iterator to the first position of the _intAttributes.
+     * 
+     * @return IntAttributesMap::const_iterator 
+     */
     IntAttributesMap::const_iterator beginInt( ) const { return _intAttributes.begin( ); }
+
+    /**
+     * @brief Returns the iterator to the last position of the _intAttributes.
+     * 
+     * @return IntAttributesMap::const_iterator 
+     */
     IntAttributesMap::const_iterator endInt( ) const { return _intAttributes.end( ); }
 
+    /**
+     * @brief Returns the iterator to the first position of the _floatAttributes.
+     * 
+     * @return FloatAttributesMap::const_iterator 
+     */
     FloatAttributesMap::const_iterator beginFloat( ) const { return _floatAttributes.begin( ); }
+
+    /**
+     * @brief Returns the iterator to the last position of the _floatAttributes.
+     * 
+     * @return FloatAttributesMap::const_iterator 
+     */
     FloatAttributesMap::const_iterator endFloat( ) const { return _floatAttributes.end( ); }
 
+    /**
+     * @brief Returns the iterator to the first position of the _strAttributes.
+     * 
+     * @return StrAttributesMap::const_iterator 
+     */
     StrAttributesMap::const_iterator beginStr( ) const { return _strAttributes.begin( ); }
+
+    /**
+     * @brief Returns the iterator to the last position of the _strAttributes.
+     * 
+     * @return StrAttributesMap::const_iterator 
+     */
     StrAttributesMap::const_iterator endStr( ) const { return _strAttributes.end( ); }
 
+    /**
+     * @brief Get the _id attribute.
+     * 
+     * @return const std::string& 
+     */
     const std::string & getId( ) const { return _id; }
+
+    /**
+     * @brief Get the _numSteps attribute.
+     * 
+     * @return int 
+     */
     int getNumSteps( ) const { return _numSteps; }
 
+    /**
+     * @brief true id key is in _intAttributres, false otherwise.
+     * 
+     * @param key Name of the attribute.
+     * @return true 
+     * @return false 
+     */
     bool isInt( const std::string & key ) const;
+
+    /**
+     * @brief true id key is in _floatAttributres, false otherwise.
+     * 
+     * @param key Name of the attribute.
+     * @return true 
+     * @return false 
+     */
     bool isFloat( const std::string & key ) const;
+
+    /**
+     * @brief true id key is in _strAttributres, false otherwise.
+     * 
+     * @param key Name of the attribute.
+     * @return true 
+     * @return false 
+     */
     bool isStr( const std::string & key ) const;
 };
 

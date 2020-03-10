@@ -47,7 +47,7 @@ namespace Engine
     protected:
         
         std::string _id; //! Agent identifier.
-        bool _exists; //! Flag to control if agent is "dead" or alive". it is used in analyzer in order to know if agent must be painted.
+        bool _exists; //! Flag to control if agent is "dead" or "alive". it is used in analyzer in order to know if agent must be painted.
         Point2D<int> _position; //! Position of the agent, in global coordinates.
         World * _world; //! Pointer to the world that owns this agent.
 
@@ -120,7 +120,6 @@ namespace Engine
          */
         void registerStringAttribute( const std::string & name ) { _stringAttributes.push_back( name ); }
 
-       
        /**
         * @brief Construct a new Agent object.
         * 
@@ -210,10 +209,9 @@ namespace Engine
          */
         void setRandomPosition( );
 
-        //! Prints a representation of the state to the given stream.
-        friend std::ostream& operator << ( std::ostream &os, const Agent&  agent ) { return agent.print( os ); }
-        friend std::ostream& operator << ( std::ostream &os, const Agent*  agent ) { return agent->print( os ); }
-        virtual std::ostream& print( std::ostream& os ) const;
+        friend std::ostream& operator << ( std::ostream &os, const Agent&  agent ) { return agent.print( os ); } //! Prints a representation of the state to the given stream.
+        friend std::ostream& operator << ( std::ostream &os, const Agent*  agent ) { return agent->print( os ); } //! Prints a representation of the state to the given stream.
+        virtual std::ostream& print( std::ostream& os ) const; //! Prints a representation of the state to the given stream.
 
         /**
          * @brief this function returns true if the type of the agent is the one passed by reference.

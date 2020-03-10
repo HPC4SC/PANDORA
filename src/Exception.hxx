@@ -31,10 +31,26 @@ namespace Engine
 
 class Exception : public std::exception
 {
-    std::string _error;
+    std::string _error; //! Error message of the exception.
 public:
+    /**
+     * @brief Construct a new Exception.
+     * 
+     * @param error Error message.
+     */
     Exception( const std::string & error ) : _error( error ){}
+
+    /**
+     * @brief Destroy the Exception object.
+     * 
+     */
     virtual ~Exception( ) throw( ) {}
+
+    /**
+     * @brief Throws the capturated exception.
+     * 
+     * @return const char* 
+     */
     virtual const char* what( ) const throw( )
     {
         return _error.c_str( );
