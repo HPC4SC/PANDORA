@@ -10,7 +10,16 @@
 namespace Engine
 {
 
-// this method checks whether P1 and P2 are in the same side of the line defined by A and B
+/**
+ * @brief Checks whether P1 and P2 are in the same side of the line defined by A and B.
+ * 
+ * @param P1 First Point2D.
+ * @param P2 Second Point2D.
+ * @param A First Point2D defining the line.
+ * @param B Second Point2D defining the line.
+ * @return true 
+ * @return false 
+ */
 bool sameSide( Engine::Point2D<int> P1, Engine::Point2D<int> P2, Engine::Point2D<int> A, Engine::Point2D<int> B )
 {
     Engine::Point3D<long long int> BA( B._x-A._x, B._y-A._y, 0 );
@@ -27,7 +36,16 @@ bool sameSide( Engine::Point2D<int> P1, Engine::Point2D<int> P2, Engine::Point2D
     return false;
 }
 
-// this method checks whether p is inside a triangle defined by the points ( 0, 0 ), b and c
+// 
+/**
+ * @brief Checks whether p is inside a triangle defined by the points ( 0, 0 ), b and c
+ * 
+ * @param p Point2D to check.
+ * @param b Point2D defining the triangle.
+ * @param c Point2D defining the triangle.
+ * @return true 
+ * @return false 
+ */
 bool insideTriangle( Engine::Point2D<int> p,  Engine::Point2D<int> b, Engine::Point2D<int> c )
 {
     Engine::Point2D<int> a( 0, 0 );
