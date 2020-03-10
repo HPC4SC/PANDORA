@@ -36,22 +36,60 @@ private:
     typedef std::map<Point2D<int>, int> ChangeTable;
     typedef ChangeTable::const_iterator    ChangeIterator;
 
-    ChangeTable _changes;
-    const DynamicRaster * _baseRaster;
-    int    _currentMinValue;
-    int    _currentMaxValue;
+    ChangeTable _changes; //! Changes made in the raster.
+    const DynamicRaster * _baseRaster; //! Base of the current raster.
+    int    _currentMinValue; //! Current maximum value of the raster.
+    int    _currentMaxValue; //! Current minimum value of the raster.
 
 public:
+    /**
+     * @brief Construct a new IncrementalRaster object.
+     * 
+     */
     IncrementalRaster( );
+
+    /**
+     * @brief Construct a new Incremental Raster object.
+     * 
+     * @param baseRaster DynamicRaster, base of the IncrementalRatser.
+     */
     IncrementalRaster( const DynamicRaster& baseRaster );
+
+    /**
+     * @brief Construct a new Incremental Raster object.
+     * 
+     * @param other IncrementalRaster, base of the IncrementalRatser.
+     */
     IncrementalRaster( const IncrementalRaster& other );
 
+    /**
+     * @brief Destroy the Incremental Raster object.
+     * 
+     */
     virtual ~IncrementalRaster( );
 
-    virtual void        resize(  const Size<int> & size );
+    /**
+     * @brief Resize the IncrementalRaster.
+     * 
+     * @param size New size of the raster.
+     */
+    virtual void  resize(  const Size<int> & size );
 
-    void         setValue( const Point2D<int> & pos, int value );
-    const int&     getValue( const Point2D<int> & pos ) const;
+    /**
+     * @brief Set the value of the specified position.
+     * 
+     * @param pos Position to be updated.
+     * @param value New Value.
+     */
+    void setValue( const Point2D<int> & pos, int value );
+
+    /**
+     * @brief Get the value of the raster in the specified position.
+     * 
+     * @param pos Position to check.
+     * @return const int& 
+     */
+    const int& getValue( const Point2D<int> & pos ) const;
     int getMaxValue( const Point2D<int> & position ) const;
 
     int            getCurrentMinValue( ) const { return _currentMinValue; }
