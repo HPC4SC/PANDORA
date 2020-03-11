@@ -131,11 +131,6 @@ public:
         return *this;
     }
 
-    Rectangle<Type> clone( ) const
-    {
-        return Rectangle<int>( _size, _origin );
-    }
-
     bool operator==( const Rectangle<Type> & rectangle ) const
     {
         return _origin==rectangle._origin && _size==rectangle._size;
@@ -146,9 +141,37 @@ public:
         return !( (*this )==rectangle );
     }
 
+    Rectangle<Type> clone( ) const
+    {
+        return Rectangle<int>( _size, _origin );
+    }
+
+    /**
+     * @brief Return the leftmost X coordinate of the Rectangle
+     * 
+     * @return Type 
+     */
     Type left( ) const{return _origin._x;}
+
+    /**
+     * @brief Return the rightmost X coordinate of the Rectangle
+     * 
+     * @return Type 
+     */
     Type right( ) const{return _origin._x+_size._width-1;}
+
+    /**
+     * @brief Return the topmost Y coordinate of the Rectangle
+     * 
+     * @return Type 
+     */
     Type top( ) const{return _origin._y;}
+
+    /**
+     * @brief Return the bottommost Y coordinate of the Rectangle
+     * 
+     * @return Type 
+     */
     Type bottom( ) const{return _origin._y+_size._height-1;}
 
 public:

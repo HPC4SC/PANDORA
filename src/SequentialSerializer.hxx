@@ -84,7 +84,12 @@ private:
      * @param step current step of the simulation.
      */
     void finishAgentsSerialization( int step );
-    // register the type of agent into the data structures _agentIndexsMap, _stringAttributes and _intAttributes and create HDF5 structures
+
+    /**
+     * @brief register the type of agent into the data structures _agentIndexsMap, _stringAttributes and _intAttributes and create HDF5 structures
+     * 
+     * @param agent 
+     */
     void registerType( Agent * agent );
     int getDataSize( const std::string & type );
 

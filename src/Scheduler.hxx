@@ -108,6 +108,12 @@ namespace Engine
          * @return const Rectangle<int>& 
          */
         virtual const Rectangle<int> & getBoundaries( ) const { return _boundaries; };
+
+        /**
+         * @brief Get a random Point2D within the area owned by this node/scheduler
+         * 
+         * @return Point2D<int> 
+         */
         virtual Point2D<int> getRandomPosition( ) const = 0;
 
         /**
@@ -116,7 +122,12 @@ namespace Engine
          * @return const int& 
          */
         const int & getId( ) const { return _id; }
-        //! num tasks will always be 1 unless the execution is distributed in some way
+
+        /**
+         * @brief _numTasks will always be 1 unless the execution is distributed in some way
+         * 
+         * @return const int& 
+         */
         const int & getNumTasks( ) const { return _numTasks; }
         
         /**
