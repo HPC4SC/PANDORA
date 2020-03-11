@@ -33,6 +33,7 @@ namespace Engine
 //! DynamicRaster adds mechanisms to modify the values of the raster map. It is serialized each time step.
 class DynamicRaster : public StaticRaster
 {
+private:
     std::vector< std::vector<int> > _maxValues; //! Matrix of the maximun values of the raster.
     int    _currentMaxValue; //! Current maximum value of the raster.
     int    _currentMinValue; //! Current minimum value of the raster.
@@ -121,7 +122,7 @@ public:
     void resize( const Size<int> & size );
 
     /**
-     * @brief Sets the _currentMaxValue value to the maximum numeric limit and _currrentMinValue to the minimum numeric limit.
+     * @brief Sets the _currentMaxValue value to the maximum numeric limit and _currentMinValue to the minimum numeric limit.
      * 
      */
     void updateCurrentMinMaxValues( );
