@@ -39,34 +39,39 @@ namespace Engine
 
     private:
         
+        static MpiFactory * _instance; //! Unique instance of the MpiFactory.
+
         /**
-         * @brief unique instance of the MpiFactory.
+         * @brief Construct a new Mpi Factory object.
          * 
          */
-        static MpiFactory * _instance;
-
         MpiFactory( );
 
-        TypesMap _types;
+        TypesMap _types; //! Map of the different Agent types.
 
     public:
         
         /**
-         * @brief If there's no instance of MpiFactory one is created and retured. Otherwise the _instance member is returned
+         * @brief If there's no instance of MpiFactory one is created and retured. Otherwise the _instance member is returned.
          * 
          * @return MpiFactory* 
          */
         static MpiFactory * instance( );
+
+        /**
+         * @brief Destroy the Mpi Factory object.
+         * 
+         */
         virtual ~MpiFactory( );
 
         /**
-         * @brief method defined by script that adds custom mpi types for each agent.
+         * @brief Method defined by script that adds custom mpi types for each agent.
          * 
          */
         void registerTypes( );
         
         /**
-         * @brief method to delete from mpi stack all the created types.
+         * @brief Method to delete from mpi stack all the created types.
          * 
          */
         void cleanTypes( );
@@ -74,29 +79,29 @@ namespace Engine
         /**
          * @brief Create a Default Package object
          * 
-         * @param type type of the package created.
+         * @param type Type of the package created.
          * @return void* 
          */
         void * createDefaultPackage( const std::string & type );
 
         /**
-         * @brief creates and initializes a recieved Agent.
+         * @brief Creates and initializes a recieved Agent.
          * 
-         * @param type type of the Agent.
-         * @param package data of the Agent.
+         * @param type Type of the Agent.
+         * @param package Data of the Agent.
          * @return Agent* 
          */
         Agent * createAndFillAgent( const std::string & type, void * package );
         
         /**
-         * @brief returns the first position of the typesMap.
+         * @brief Returns the first position of the typesMap.
          * 
          * @return TypesMap::iterator.
          */
         TypesMap::iterator beginTypes( );
 
         /**
-         * @brief returns the last position of the typesMap.
+         * @brief Returns the last position of the typesMap.
          * 
          * @return TypesMap::iterator 
          */
