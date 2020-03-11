@@ -90,23 +90,80 @@ public:
      * @return const int& 
      */
     const int& getValue( const Point2D<int> & pos ) const;
+
+    /**
+     * @brief Get the _maxValue attribute.
+     * 
+     * @param position position we want to check.
+     * @return int 
+     */
     int getMaxValue( const Point2D<int> & position ) const;
 
-    int            getCurrentMinValue( ) const { return _currentMinValue; }
-    int            getCurrentMaxValue( ) const { return _currentMaxValue; }
+    /**
+     * @brief Get the _currentMinValue attribute.
+     * 
+     * @return int 
+     */
+    int getCurrentMinValue( ) const { return _currentMinValue; }
+
+    /**
+     * @brief Get the _currentMaxValue attribute.
+     * 
+     * @return int 
+     */
+    int getCurrentMaxValue( ) const { return _currentMaxValue; }
 
     //virtual    void        updateCurrentMinMaxValues( );
 
-    ChangeIterator        firstChange( ) const { return _changes.begin( ); }
-    ChangeIterator        endOfChanges( ) const { return _changes.end( ); }
+    /**
+     * @brief Returns the iterator pointing to the first position of _changes.
+     * 
+     * @return ChangeIterator 
+     */
+    ChangeIterator firstChange( ) const { return _changes.begin( ); }
+
+    /**
+     * @brief Returns the iterator pointing to the last position of _changes.
+     * 
+     * @return ChangeIterator 
+     */
+    ChangeIterator endOfChanges( ) const { return _changes.end( ); }
+
+    /**
+     * @brief Get the _size attribute.
+     * 
+     * @return Size<int> 
+     */
     Size<int> getSize( ) const;
 
+    /**
+     * @brief True if the _changes of both IncrementalRasters is the same, false otherwise.
+     * 
+     * @param other IncrementalRaster we want to compare with.
+     * @return true 
+     * @return false 
+     */
     bool operator==( const IncrementalRaster& other ) const;
+
+    /**
+     * @brief True if the _changes of both IncrementalRasters is not the same, false otherwise.
+     * 
+     * @param other IncrementalRaster we want to compare with.
+     * @return true 
+     * @return false 
+     */
     bool operator!=( const IncrementalRaster& other ) const
     {
         return !( this->operator==( other ));
     }
 
+    /**
+     * @brief True if the calling raster has less changes than other.
+     * 
+     * @param other IncrementalRaster we want to compare with.
+     * @return true 
+     * @return false 
+     */
     bool operator<( const IncrementalRaster& other ) const
     {
         return _changes.size( ) < other._changes.size( );
