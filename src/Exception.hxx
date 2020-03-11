@@ -31,6 +31,7 @@ namespace Engine
 
 class Exception : public std::exception
 {
+private:
     std::string _error; //! Error message of the exception.
 public:
     /**

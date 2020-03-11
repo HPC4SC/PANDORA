@@ -52,7 +52,7 @@ namespace Engine
     public:
         
         /**
-         * @brief If there's no instance of MpiFactory one is created and retured. Otherwise the instance is
+         * @brief If there's no instance of MpiFactory one is created and retured. Otherwise the _instance member is returned
          * 
          * @return MpiFactory* 
          */
