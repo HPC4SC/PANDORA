@@ -49,72 +49,84 @@ private:
     typedef std::map< std::string, FloatMap * > FloatAttributesMap;
     typedef std::map< std::string, StringMap * > StringAttributesMap;
 
-    const Scheduler & _scheduler;
-    const Config * _config;
+    const Scheduler & _scheduler; //! Reference to the used Scheduler.
+    const Config * _config; //! Pointer to the Config instance.
 
-    hid_t _fileId;
-    hid_t _agentsFileId;
-    StaticRastersRefMap _dynamicRasters;
+    hid_t _fileId; //! Output file route.
+    hid_t _agentsFileId; //! Agent information file route.
+    StaticRastersRefMap _dynamicRasters; //! Map of the different raster maps.
 
-    StringAttributesMap _stringAttributes;
-    IntAttributesMap _intAttributes;
-    FloatAttributesMap _floatAttributes;
-    std::map<std::string, int> _agentIndexMap;
+    StringAttributesMap _stringAttributes; //! Map of the string attributes of the Agents.
+    IntAttributesMap _intAttributes; //! Map of the integer attributes of the Agents.
+    FloatAttributesMap _floatAttributes; //! Map of the float attributes of the Agents.
+    std::map<std::string, int> _agentIndexMap; //! Map of the indexs of the Agents.
 
     /**
-     * @brief writes the serialized Agents into the output file.
+     * @brief Writes the serialized Agents into the output file.
      * 
      * @param type Agent type.
-     * @param step current simulation step.
+     * @param step Current simulation step.
      */
     void executeAgentSerialization( const std::string & type, int step );
 
     /**
-     * @brief serialize the information of an Agent un the current step
+     * @brief Serialize the information of an Agent un the current step.
      * 
      * @param agent Agent to serialize.
-     * @param step current step of the simulation.
-     * @param index index of the agent in the AgentsList.
+     * @param step Current step of the simulation.
+     * @param index Index of the agent in the AgentsList.
      */
     void serializeAgent( Agent * agent, const int & step, int index );
 
     /**
-     * @brief finished the serialization of the Agents.
+     * @brief Finished the serialization of the Agents.
      * 
-     * @param step current step of the simulation.
+     * @param step Current step of the simulation.
      */
     void finishAgentsSerialization( int step );
 
     /**
-     * @brief register the type of agent into the data structures _agentIndexsMap, _stringAttributes and _intAttributes and create HDF5 structures
+     * @brief Register the type of agent into the data structures _agentIndexsMap, _stringAttributes and _intAttributes and create HDF5 structures.
      * 
-     * @param agent 
+     * @param agent Pointer to the Agent.
      */
     void registerType( Agent * agent );
+
+    /**
+     * @brief Get the DataSize object.
+     * 
+     * @param type Type of the Agent.
+     * @return int 
+     */
     int getDataSize( const std::string & type );
 
     /**
-     * @brief resets the _agentIndexMap structure.
+     * @brief Resets the _agentIndexMap structure.
      * 
      */
     void resetCurrentIndexs( );
 
     /**
-     * @brief serialize the specified raster with the information of the current step.
+     * @brief Serialize the specified raster with the information of the current step.
      * 
-     * @param raster raster to serialize.
-     * @param datasetKey key of the generated dataset.
+     * @param raster Raster to serialize.
+     * @param datasetKey Key of the generated dataset.
      */
     void serializeRaster( const StaticRaster & raster, const std::string & datasetKey );
 
 public:
     
     /**
-     * @brief Construct a new Sequential Serializer object
+     * @brief Construct a new SequentialSerializer object
      * 
      * @param scheduler Specifices which schedular data must be serialized.
      */
     SequentialSerializer( const Scheduler & scheduler );
+
+    /**
+     * @brief Destroy the SequentialSerializer object.
+     * 
+     */
     virtual ~SequentialSerializer( );
     
     /**

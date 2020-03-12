@@ -58,20 +58,16 @@ private:
     RasterMap _resources;
     StaticRasterMap _staticRasters;
     AgentTypesMap _types;
-    int _numSteps;
-    // the step currently being loaded
-    int _loadingStep;
-
-    // resolution of loaded data
-    int _loadedResolution;
-    // resolution of serializedData
-    int _serializedResolution;
+    int _numSteps; //! Number of steps of the simulation.
+    int _loadingStep; //! The step currently being loaded.
+    int _loadedResolution; //! Resolution of loaded data.
+    int _serializedResolution; //! Resolution of serializedData
 
     // we need to know min and max values for each numerical attribute in order to paint agents
-    IntAttributesMap _minIntValues;
-    IntAttributesMap _maxIntValues;
-    FloatAttributesMap _minFloatValues;
-    FloatAttributesMap _maxFloatValues;
+    IntAttributesMap _minIntValues; //! Minimum values for each integer attribute of the agents.
+    IntAttributesMap _maxIntValues; //! Maximum values for each integer attribute of the agents.
+    FloatAttributesMap _minFloatValues; //! Minimum values for each float attribute of the agents.
+    FloatAttributesMap _maxFloatValues; //! Maximum values for each float attribute of the agents.
 
     Size<int> _size;
 
@@ -81,8 +77,7 @@ private:
     static herr_t iterateAgentTypes( hid_t loc_id, const char * name, const H5L_info_t *linfo, void *opdata );
     static herr_t iterateAgentDatasets( hid_t loc_id, const char * name, const H5L_info_t *linfo, void *opdata );
 
-    // false if loading without gui
-    bool _gui;
+    bool _gui; //! False if loading without gui.
     float _loadingPercentageDone;
     std::string _loadingState;
     static std::list< std::string > _agentTypes;
