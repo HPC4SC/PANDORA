@@ -33,19 +33,57 @@ namespace Engine
     class RasterLoader
     {
     public:
+        /**
+         * @brief Construct a new RasterLoader object.
+         * 
+         */
         RasterLoader( );
+
+        /**
+         * @brief Destroy the RasterLoader object.
+         * 
+         */
         virtual ~RasterLoader( );
 
-        // load a GDAL file conforming World position
+        /**
+         * @brief Load a GDAL file conforming World position.
+         * 
+         * @param raster Raster that will store the input information.
+         * @param fileName Route to the file holding the information.
+         * @param definedBoundaries Boundaries of the raster.
+         */
         void fillGDALRaster( StaticRaster & raster, const std::string & fileName, const Rectangle<int> & definedBoundaries = Rectangle<int>( ) );
-        // load an HDF5 conforming adjusting raster to data, or to World position if not null
+
+        /**
+         * @brief Load an HDF5 conforming adjusting raster to data, or to World position if not null.
+         * 
+         * @param raster Raster that will store the input information.
+         * @param fileName Name of the file.
+         * @param pathToData Route to the file holding the information.
+         * @param world Pointer to the world of ther raster.
+         */
         void fillHDF5RasterDirectPath( StaticRaster & raster, const std::string & fileName, const std::string & pathToData, World * world );
 
-        // load an HDF5 from a serialized dynamic raster at a given time step
+        /**
+         * @brief Load an HDF5 from a serialized dynamic raster at a given time step.
+         * 
+         * @param raster Raster that will store the input information.
+         * @param fileName Name of the file.
+         * @param rasterName Name of the raster.
+         * @param step Current step of the simulation.
+         * @param world Pointer to the world of ther raster.
+         */
         void fillHDF5Raster( StaticRaster & raster, const std::string & fileName, const std::string & rasterName, int step, World * world = 0 );
-        // load an HDF5 from a serialized static raster
+
+        /**
+         * @brief Load an HDF5 from a serialized static raster.
+         * 
+         * @param raster Raster that will store the input information.
+         * @param fileName Name of the file.
+         * @param rasterName Name of the raster.
+         * @param world Pointer to the world of ther raster.
+         */
         void fillHDF5Raster( StaticRaster & raster, const std::string & fileName, const std::string & rasterName, World * world = 0 );
-        // load a raster file from a GRASS database conforming adjusting raster to data, or to World position if not null
     };
 } // namespace Engine
 #endif // __RasterLoader_hxx__

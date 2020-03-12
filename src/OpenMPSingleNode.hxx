@@ -145,43 +145,43 @@ public:
     size_t getNumberOfTypedAgents( const std::string & type ) const { return 0; }
 
     /**
-     * @brief calls the serializer to add an string attribute of an Agent.
+     * @brief Calls the serializer to add an string attribute of an Agent.
      * 
-     * @param type type of int value.
-     * @param key name of the attribute.
-     * @param value value of the attribute.
+     * @param type Type of int value.
+     * @param key Name of the attribute.
+     * @param value Value of the attribute.
      */
     void addStringAttribute( const std::string & type, const std::string & key, const std::string & value );
 
     /**
-     * @brief calls the serializer to add a float attribute of an Agent.
+     * @brief Calls the serializer to add a float attribute of an Agent.
      * 
-     * @param type type of float value.
-     * @param key name of the attribute.
-     * @param value value of the attribute.
+     * @param type Type of float value.
+     * @param key Name of the attribute.
+     * @param value Value of the attribute.
      */
     void addFloatAttribute( const std::string & type, const std::string & key, float value );
 
     /**
-     * @brief calls the serializer to add a integer attribute of an Agent.
+     * @brief Calls the serializer to add a integer attribute of an Agent.
      * 
-     * @param type type of int value.
-     * @param key name of the attribute.
-     * @param value value of the attribute.
+     * @param type Type of int value.
+     * @param key Name of the attribute.
+     * @param value Value of the attribute.
      */
     void addIntAttribute( const std::string & type, const std::string & key, int value );
     
     /**
-     * @brief serialize the agents with the information of the current step.
+     * @brief Serialize the agents with the information of the current step.
      * 
-     * @param step current simulation time.
+     * @param step Current simulation time.
      */
     void serializeAgents( const int & step );
     
     /**
-     * @brief serialize the rasters with the information of the current step.
+     * @brief Serialize the rasters with the information of the current step.
      * 
-     * @param step current simulation time.
+     * @param step Current simulation time.
      */
     void serializeRasters( const int & step );
 
@@ -236,7 +236,7 @@ public:
      * @brief Get the _maxValue of the specified position.
      * 
      * @param raster Raster to check.
-     * @param position position to check.
+     * @param position Position to check.
      * @return int 
      */
     int getMaxValue( const DynamicRaster & raster, const Point2D<int> & position ) const;
