@@ -31,8 +31,8 @@ namespace Engine
 template <typename Type> class Size
 {
 public:
-    Type _width;
-    Type _height;
+    Type _width; //! With of the rectangle.
+    Type _height; //! Heigth of the rectangle.
 
     /**
      * @brief Construct a new Size object
@@ -52,22 +52,47 @@ public:
     {
     }
 
+    /**
+     * @brief Clones the calling size.
+     * 
+     * @return Size<Type> 
+     */
     Size<Type> clone( ) const
     {
         return Size<Type>( _width, _height );
     }
 
+    /**
+     * @brief Shape output of Size.
+     * 
+     * @param stream Data stream.
+     * @param size Point to be printed.
+     * @return std::ostream& 
+     */
     friend std::ostream & operator<<( std::ostream & stream, const Size<Type> & size )
     {
         return stream << size._width << "/" << size._height;
     }
 
+    /**
+     * @brief Check if the calling size is equal to the given one.
+     * 
+     * @param size Size compated with.
+     * @param delta Error of the comparison.
+     * @return true 
+     * @return false 
+     */
     bool isEqual( const Size<Type> & size, const double & delta = 0.0001 ) const
     {
         return distance( size )<=delta;
     }
 
-    //! Euclidean Distance between sizes
+    /**
+     * @brief Euclidean Distance between sizes
+     * 
+     * @param size Size we want to konw the distance with.
+     * @return double 
+     */
     double distance( const Size<Type> & size ) const
     {
         double diffWidth = _width-size._width;
@@ -75,47 +100,113 @@ public:
         return sqrt( diffWidth*diffWidth+diffHeight*diffHeight );
     }
 
+    /**
+     * @brief Equality of two sizes.
+     * 
+     * @param size Size to compare with.
+     * @return true 
+     * @return false 
+     */
     bool operator==( const Size<Type> & size ) const
     {
         return isEqual( size );
     }
 
+    /**
+     * @brief Non equality of two sizes.
+     * 
+     * @param size Size to compare with.
+     * @return true 
+     * @return false 
+     */
     bool operator!=( const Size<Type>& size ) const
     {
         return !isEqual( size );
     }
 
-    // global arithmethic operations
+    /**
+     * @brief Adds the given value to the size components.
+     * 
+     * @param value Added value.
+     * @return Size<Type> 
+     */
     Size<Type> operator+( const Type & value ) const
     {
         return Size<Type>( _width+value, _height+value );
     }
+
+    /**
+     * @brief Substracts the given value to the size components.
+     * 
+     * @param value Substracted value.
+     * @return Size<Type> 
+     */
     Size<Type> operator-( const Type & value ) const
     {
         return Size<Type>( _width-value, _height-value );
     }
+
+    /**
+     * @brief Multiplies by the given value to the size components.
+     * 
+     * @param value Multiplied by value.
+     * @return Size<Type> 
+     */
     Size<Type> operator*( const Type & value ) const
     {
         return Size<Type>( _width*value, _height*value );
     }
+
+    /**
+     * @brief Devided by the given value to the size components.
+     * 
+     * @param value Devided by value.
+     * @return Size<Type> 
+     */
     Size<Type> operator/( const Type & value ) const
     {
         return Size<Type>( _width/value, _height/value );
     }
 
-    // point to point operations
+    /**
+     * @brief Adds the given point value to the size components.
+     * 
+     * @param point Added point.
+     * @return Size<Type> 
+     */
     Size<Type> operator+( const Size<Type> & point ) const
     {
         return Size<Type>( _width+point._width, _height+point._height );
     }
+
+    /**
+     * @brief Substracts the given point value to the size components.
+     * 
+     * @param point Substracted point.
+     * @return Size<Type> 
+     */
     Size<Type> operator-( const Size<Type> & point ) const
     {
         return Size<Type>( _width-point._width, _height-point._height );
     }
+
+    /**
+     * @brief Multiplies by the given value to the size components.
+     * 
+     * @param point Multiplied by point.
+     * @return Size<Type> 
+     */
     Size<Type> operator*( const Size<Type> & point ) const
     {
         return Size<Type>( _width*point._width, _height*point._height );
     }
+
+    /**
+     * @brief Devided by the given value to the size components.
+     * 
+     * @param point Devided by point.
+     * @return Size<Type> 
+     */
     Size<Type> operator/( const Size<Type> & point ) const
     {
         return Size<Type>( _width/point._width, _height/point._height );
