@@ -95,7 +95,7 @@ public:
     }
 
     /**
-     * @brief  Point2D Assignation.
+     * @brief Point2D Assignation.
      * 
      * @param point Value of the Point2D
      * @return Point2D<Type>& 
