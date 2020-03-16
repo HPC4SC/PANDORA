@@ -49,43 +49,110 @@ struct ColorEntry
 class StaticRaster
 {
 protected:
-    std::vector< std::vector<int> >_values;
+    std::vector< std::vector<int> >_values; //! Matrix of values of the raster.
 
-    int _minValue;
-    int _maxValue;
+    int _minValue; //! Minimum value of the raster.
+    int _maxValue; //! Maximum value of the raster.
 
-    bool _hasColorTable;
-    std::vector< ColorEntry > _colorTable;
+    bool _hasColorTable; //! True the raster has a color table, otherwise a color table is not set.
+    std::vector< ColorEntry > _colorTable; //! Color pallet of the raster.
 public:
+    /**
+     * @brief Construct a new Static Raster object.
+     * 
+     */
     StaticRaster( );
+
+    /**
+     * @brief Destroy the Static Raster object
+     * 
+     */
     virtual ~StaticRaster( );
 
-    //! Equality operators
-    bool operator==( const StaticRaster& other ) const;
+    /**
+     * @brief Equality operator between two rasters.
+     * 
+     * @param other Raster to compare with.
+     * @return true 
+     * @return false 
+     */
+    bool operator==( const StaticRaster& other ) const; 
+
+    /**
+     * @brief Non-equality operator between two rasters.
+     * 
+     * @param other Raster to compare with.
+     * @return true 
+     * @return false 
+     */
     bool operator!=( const StaticRaster& other ) const;
 
-    //! changes raster size. Parameter 'size' represents the new dimesions for the raster area.
+    /**
+     * @brief Changes raster size.
+     * 
+     * @param size Represents the new dimesions for the raster area.
+     */
     virtual void resize( const Size<int> & size );
     
     /**
-     * @brief Reads the value in the cell located by parameter "position". Returns -1 if "position" is out of the area of the raster.
+     * @brief Gets the value in the cell located by parameter "position". Returns -1 if "position" is out of the area of the raster.
      * 
-     * @param position position of the raster whose value we need.
+     * @param position Position of the raster whose value we need.
      * @return const int& 
      */
     virtual const int & getValue( const Point2D<int>& position ) const;
 
-    //! Returns size of the raster codifying the horizontal and vertical dimensions in a Size object.
+    /**
+     * @brief Returns size of the raster codifying the horizontal and vertical dimensions in a Size object.
+     * 
+     * @return Size<int> 
+     */
     virtual Size<int> getSize( ) const;
-    //! Reads attribute _maxValue.
+     
+    /**
+     * @brief Gets attribute _maxValue.
+     * 
+     * @return const int& 
+     */
     virtual const int & getMaxValue( ) const;
-    //! Reads the '_minValue' attribute.
+    
+    /**
+     * @brief Gets the '_minValue' attribute.
+     * 
+     * @return const int& 
+     */
     const int & getMinValue( ) const;
 
+    /**
+     * @brief Gets the average value of the raster.
+     * 
+     * @return float 
+     */
     float getAvgValue( ) const;
+    
+    /**
+     * @brief Updates the new minumim and maximum values of the raster.
+     * 
+     */
     void updateMinMaxValues( );
 
+    /**
+     * @brief Set the color table.
+     * 
+     * @param hasColorTable Specifies if a color table is already set.
+     * @param size Size of the raster.
+     */
     void setColorTable( bool hasColorTable, int size );
+
+    /**
+     * @brief Adds a color entry to the _colorTable.
+     * 
+     * @param index Index of the new entry.
+     * @param r Red component.
+     * @param g Green component.
+     * @param b Blue component.
+     * @param alpha Aplha of the entry.
+     */
     void addColorEntry( int index, short r, short g, short b, short alpha );
     
     /**
@@ -94,7 +161,21 @@ public:
      * @return int 
      */
     int getNumColorEntries( ) const;
+
+    /**
+     * @brief True if a color table is set. False otehrwise.
+     * 
+     * @return true 
+     * @return false 
+     */
     bool hasColorTable( ) const;
+
+    /**
+     * @brief Get the color entry in the index position.
+     * 
+     * @param index Position of the checked entry.
+     * @return ColorEntry 
+     */
     ColorEntry getColorEntry( int index ) const;
 
     friend class RasterLoader;
