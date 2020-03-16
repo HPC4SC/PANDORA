@@ -47,33 +47,37 @@ class World
 public:
     typedef std::map< std::string, int> RasterNameMap;
 protected:
-    std::shared_ptr<Config> _config;
-    //! global list of agents
-    AgentsList _agents;
+    std::shared_ptr<Config> _config; //! Pointer to the configuration of the world.
+    AgentsList _agents; //! Global list of agents.
 
-    //! false if each cell can have just one agent
-    bool _allowMultipleAgentsPerCell;
+    bool _allowMultipleAgentsPerCell; //! False if each cell can have just one agent.
 
-    //! current simulation step
-    int _step;
+    int _step; //! Current simulation step.
 
-    Scheduler * _scheduler;
+    Scheduler * _scheduler; //! Pointer to the scheduler of the world.
 
 protected:
-    // rasters that won't change values during the simulation
-    std::map<std::string, int> _rasterNames;
-    std::vector<StaticRaster * > _rasters;
-    // true if the raster is dynamic
-    std::vector<bool> _dynamicRasters;
-    std::vector<bool> _serializeRasters;
-
-    //! stub method for grow resource to max of initialrasters, used by children of world at init time
-    void updateRasterToMaxValues( const std::string & key );
-    void updateRasterToMaxValues( const int & index );
-
+    std::map<std::string, int> _rasterNames; //! Names of the simulation rasters.
+    std::vector<StaticRaster * > _rasters; //! Rasters of the simularions.
+    std::vector<bool> _dynamicRasters; // True if the raster is dynamic, false the raster is static.
+    std::vector<bool> _serializeRasters; // True if the raster must be serialized, false otherwise.
 
     /**
-     * @brief dumps current state of the simulation. Then applies next simulation step.
+     * @brief Stub method for grow resource to max of initialrasters, used by children of world at init time.
+     * 
+     * @param key Name of the raster.
+     */
+    void updateRasterToMaxValues( const std::string & key );
+
+    /**
+     * @brief Stub method for grow resource to max of initialrasters, used by children of world at init time.
+     * 
+     * @param index Index of the raster in the _rasters vector.
+     */
+    void updateRasterToMaxValues( const int & index );
+
+    /**
+     * @brief Dumps current state of the simulation. Then applies next simulation step.
      * 
      */
     virtual void step( );
@@ -83,134 +87,250 @@ public:
     /**
 	 * @brief The World object is bounded to an instance of Config.
 	 * 
-	 * @param config configuration input file for the simulation.
-	 * @param scheduler selected scheduler for the current simulation.
-	 * @param allowMultipleAgentsPerCell defines if more than one agent can occupy a cell of the World.
+	 * @param config Configuration input file for the simulation.
+	 * @param scheduler Selected scheduler for the current simulation.
+	 * @param allowMultipleAgentsPerCell Defines if more than one agent can occupy a cell of the World.
 	 */
     World( Config * config, Scheduler * scheduler = 0, const bool & allowMultipleAgentsPerCell = true );
 
+    /**
+     * @brief Destroy the World object.
+     * 
+     */
     virtual ~World( );
 
     /**
      * @brief Initialized the selected scheduler, the rasters and the agents of the simulation.
      * 
-     * @param argc Not used
-     * @param argv Not used
+     * @param argc Not used.
+     * @param argv Not used.
      */
     void initialize( int argc = 0, char *argv[] = 0 );
-    //! Runs the simulation. Performs each step and stores the states. Requires calling 'init' method a-priori.
+    
+    /**
+     * @brief Runs the simulation. Performs each step and stores the states. Requires calling 'init' method a-priori.
+     * 
+     */
     void run( );
 
     /**
-     * @brief add an agent to the world, and remove it from overlap agents if exist
+     * @brief Add an agent to the world, and remove it from overlap agents if exist.
      * 
-     * @param agent Agent to be added
-     * @param executedAgent true, the Agent has been executed. False otherwise.
+     * @param agent Agent to be added.
+     * @param executedAgent True, the Agent has been executed. False otherwise.
      */
     virtual void addAgent( Agent * agent, bool executedAgent = true );
 
-    //! returns the number of neighbours of agent 'target' within the radius 'radius' using Euclidean Distance.
+    /**
+     * @brief Returns the number of neighbours of agent 'target' within the radius 'radius' using Euclidean Distance.
+     * 
+     * @param target Reference agent.
+     * @param radius Radius of the circle we want to check.
+     * @param type Type of the agents to check.
+     * @return int 
+     */
     int countNeighbours( Agent * target, const double & radius, const std::string & type="all" );
-    //! returns a list with the neighbours of agent 'target' within the radius 'radius' using Euclidean Distance.
+    
+    /**
+     * @brief Returns a list with the neighbours of agent 'target' within the radius 'radius' using Euclidean Distance.
+     * 
+     * @param target Reference agent.
+     * @param radius Radius of the circle we want to check.
+     * @param type Type of the agents to check.
+     * @return AgentsVector 
+     */
     AgentsVector getNeighbours( Agent * target, const double & radius, const std::string & type="all" );
     
     /**
-     * @brief returns an integer identifying the current step where the simulation is. The identifiers denote an order from older to newer steps.
+     * @brief Returns an integer identifying the current step where the simulation is. The identifiers denote an order from older to newer steps.
      * 
      * @return current step. 
      */
     int getCurrentStep( ) const;
    
     /**
-     * @brief this method can be redefined by the children in order to modify the execution of each step on a given resource field. Default is grow 1 until max.
+     * @brief This method can be redefined by the children in order to modify the execution of each step on a given resource field. Default is grow 1 until max.
      * 
      */
     virtual void stepEnvironment( );
-    //! dump the rasters through a serializer.
+    
+    /**
+     * @brief Dump the rasters through a serializer.
+     * 
+     */
     void serializeRasters( );
-    //! dump the static rasters through a serializer.
+    
+    /**
+     * @brief Dump the static rasters through a serializer.
+     * 
+     */
     void serializeStaticRasters( );
-    //! dump the agents through a serializer.
+    
+    /**
+     * @brief Dump the agents through a serializer.
+     * 
+     */
     void serializeAgents( );
     
     /**
-     * @brief the override of this method allows to modify rasters between step executions.
+     * @brief The override of this method allows to modify rasters between step executions.
      * 
-     * @param index index of the raster.
+     * @param index Index of the raster.
      */
     virtual void stepRaster( const int & index );
 
     /**
-     * @brief returns raster identified by parameter 'key'.
+     * @brief Returns raster identified by parameter 'key'.
      * 
-     * @param index represents where the raster is located.
+     * @param index Represents where the raster is located.
      * @return DynamicRaster& 
      */
     DynamicRaster & getDynamicRaster( const size_t & index );
 
     /**
-     * @brief returns raster identified by parameter 'key'.
+     * @brief Returns raster identified by parameter 'key'.
      * 
-     * @param index represents where the raster is located.
+     * @param index Represents where the raster is located.
      * @return DynamicRaster& 
      */
     const DynamicRaster & getDynamicRaster( const size_t & index ) const;
 
     /**
-     * @brief returns raster identified by parameter 'key'.
+     * @brief Returns raster identified by parameter 'key'.
      * 
-     * @param key name identifying the raster.
+     * @param key Name identifying the raster.
      * @return DynamicRaster& 
      */
     DynamicRaster & getDynamicRaster( const std::string & key );
 
     /**
-     * @brief returns raster identified by parameter 'key'.
+     * @brief Returns raster identified by parameter 'key'.
      * 
-     * @param key name identifying the raster.
+     * @param key Name identifying the raster.
      * @return DynamicRaster& 
      */
     const DynamicRaster & getDynamicRaster( const std::string & key ) const;
 
     /**
-     * @brief return the static raster in position 'index'.
+     * @brief Return the static raster in position 'index'.
      * 
-     * @param index position of the static raster.
+     * @param index Position of the static raster.
      * @return StaticRaster&
      */
     StaticRaster & getStaticRaster( const size_t & index );
+
+    /**
+     * @brief Return the static raster with name 'key'.
+     * 
+     * @param key Name of the raster.
+     * @return StaticRaster& 
+     */
     StaticRaster & getStaticRaster( const std::string & key );
 
-    //! create a new static raster map with the stablished size and given key
+    /**
+     * @brief Create a new static raster map with the stablished size and given key.
+     * 
+     * @param key Name of the raster.
+     * @param serialize True the raster must be serialized, otherwise the raster must not be serialized.
+     * @param index Layer of the raster.
+     */
     void registerStaticRaster( const std::string & key, const bool & serialize, int index = -1 );
-    //! create a new raster map with the stablished size and given key
+    
+    /**
+     * @brief Create a new dynamic raster map with the stablished size and given key.
+     * 
+     * @param key Name of the raster.
+     * @param serialize True the raster must be serialized, otherwise the raster must not be serialized.
+     * @param index Layer of the raster.
+     */
     void registerDynamicRaster( const std::string & key, const bool & serialize, int index = -1 );
-    //! checks if position parameter 'newPosition' is free to occupy by an agent, 'newPosition' is inside of the world and the maximum of agent cell-occupancy is not exceeded.
+    
+    /**
+     * @brief Checks if position parameter 'newPosition' is free to occupy by an agent, 
+     * 'newPosition' is inside of the world and the maximum of agent cell-occupancy is not exceeded.
+     * 
+     * @param newPosition Position to check.
+     * @return true 
+     * @return false 
+     */
     bool checkPosition( const Point2D<int> & newPosition ) const;
 
-    //! sets the value of raster "key" to value "value" in global position "position"
+    /**
+     * @brief Sets the value of raster "key" to value "value" in global position "position".
+     * 
+     * @param key Name of the raster.
+     * @param position Position to be updated.
+     * @param value New value.
+     */
     void setValue( const std::string & key, const Point2D<int> & position, int value );
-    //! sets the value of raster "index" to value "value" in global position "position"
+    
+    /**
+     * @brief Sets the value of raster "index" to value "value" in global position "position".
+     * 
+     * @param index Index of the raster in the _rasters vector.
+     * @param position Position to be updated.
+     * @param value New value.
+     */
     void setValue( const int & index, const Point2D<int> & position, int value );
-    //! returns the value of raster "key" in global position "position"
+    
+    /**
+     * @brief Returns the value of raster "key" in global position "position".
+     * 
+     * @param key Name of the raster.
+     * @param position Position we want to check.
+     * @return int 
+     */
     int getValue( const std::string & key, const Point2D<int> & position ) const;
-    //! returns the value of raster "index" in global position "position"
+    
+    /**
+     * @brief Returns the value of raster "index" in global position "position".
+     * 
+     * @param index Index of the raster in the _rasters vector.
+     * @param position Position we want to check.
+     * @return int 
+     */
     int getValue( const int & index, const Point2D<int> & position ) const;
 
-    //! sets the maximum allowed value of raster "key" to value "value" in global position "position"
+    /**
+     * @brief Sets the maximum allowed value of raster "key" to value "value" in global position "position".
+     * 
+     * @param key Name of the raster.
+     * @param position Position we want to update.
+     * @param value New maximum value.
+     */
     void setMaxValue( const std::string & key, const Point2D<int> & position, int value );
-    //! sets the maximum allowed value of raster "index" to value "value" in global position "position"
+    
+    /**
+     * @brief Sets the maximum allowed value of raster "index" to value "value" in global position "position".
+     * 
+     * @param index Index of the raster in the _rasters vector.
+     * @param position Position we want to update.
+     * @param value New maximum value.
+     */
     void setMaxValue( const int & index, const Point2D<int> & position, int value );
 
-    //! gets the maximum allowed value of raster "key" in global position "position"
+    /**
+     * @brief Gets the maximum allowed value of raster "key" in global position "position".
+     * 
+     * @param key Name of the raster.
+     * @param position Position we want to check.
+     * @return int 
+     */
     int getMaxValue( const std::string & key, const Point2D<int> & position ) const;
-    //! gets the maximum allowed value of raster "index" in global position "position"
+    
+    /**
+     * @brief Gets the maximum allowed value of raster "index" in global position "position".
+     * 
+     * @param index Index of the raster in the _rasters vector.
+     * @param position Position we want to check.
+     * @return int 
+     */
     int getMaxValue( const int & index, const Point2D<int> & position ) const;
 
     /**
-     * @brief returns the name of the raster in position 'index'.
+     * @brief Teturns the name of the raster in position 'index'.
      * 
-     * @param index the position of the reaster.
+     * @param index Index of the raster in the _rasters vector.
      * @return const std::string&.
      */
     const std::string & getRasterName( const int & index ) const;
@@ -224,7 +344,7 @@ public:
     virtual void createAgents( ){ };
    
     /**
-     * @brief to be defined in the subclass. Create the raster maps used in the simulation.
+     * @brief To be defined in the subclass. Create the raster maps used in the simulation.
      * 
      */
     virtual void createRasters( ){ }
@@ -236,26 +356,41 @@ public:
      */
     const Config & getConfig( ) const { return *_config; }
 
-    int    getCurrentTimeStep( ) const { return _step; }
-    //! time from initialization step to the moment the method is executed
+    /**
+     * @brief Get the value of the _step attribute.
+     * 
+     * @return int 
+     */
+    int getCurrentTimeStep( ) const { return _step; }
+
+    /**
+     * @brief Time from initialization step to the moment the method is executed.
+     * 
+     * @return double 
+     */
     double getWallTime( ) const;
-    //! provides a random valid position inside boundaries
+    
+    /**
+     * @brief Provides a random valid position inside boundaries.
+     * 
+     * @return Point2D<int> 
+     */
     Point2D<int> getRandomPosition( );
 
-    /** get the boundaries of the world. For sequential executions it will be the boundaries of the entire simulation,
-      * but if this is not the case it is the area owned by the instance plus the overlaps
+    /** Get the boundaries of the world. For sequential executions it will be the boundaries of the entire simulation,
+      * but if this is not the case it is the area owned by the instance plus the overlaps.
       */
     const Rectangle<int> & getBoundaries( ) const;
 
     /**
-     * @brief returns the iteratior pointing to the first Agent in the _agents vector.
+     * @brief Returns the iteratior pointing to the first Agent in the _agents vector.
      * 
      * @return AgentsList::iterator 
      */
     AgentsList::iterator beginAgents( ) { return _agents.begin( ); }
     
     /**
-     * @brief returns the iteratior pointing to the last Agent in the _agents vector.
+     * @brief Returns the iteratior pointing to the last Agent in the _agents vector.
      * 
      * @return AgentsList::iterator 
      */
@@ -274,46 +409,116 @@ public:
      * @return size_t.
      */
     size_t getNumberOfAgents( ) const { return _agents.size( ); }
+    
+    /**
+     * @brief Get the number of agents of the specified type.
+     * 
+     * @param type Type of the agents we want to check.
+     * @return size_t 
+     */
     size_t getNumberOfTypedAgents( const std::string & type ) const;
 
     /**
-     * @brief erases Agent pointed by "it" form the _agents AgentList.
+     * @brief Erases Agent pointed by "it" form the _agents AgentList.
      * 
      * @param it pointed Agent to be removed.
      */
     void eraseAgent( AgentsList::iterator & it ) { _agents.erase( it ); }
+
+    /**
+     * @brief Removes the specified agent from the simulation.
+     * 
+     * @param agent Agent to be removed.
+     */
     void removeAgent( Agent * agent );
+    
+    /**
+     * @brief Removes the agent pointed to bu the given pointer.
+     * 
+     * @param agentPtr Pointe rto the agent to be removed.
+     */
     void removeAgent( std::shared_ptr<Agent> agentPtr );
+
+    /**
+     * @brief Get the agent of the given id.
+     * 
+     * @param id Identifier of the agent.
+     * @return Agent* 
+     */
     Agent * getAgent( const std::string & id );
+
+    /**
+     * @brief Get the agents in the speccified position.
+     * 
+     * @param position Position we want to check.
+     * @param type Type of the agents to check.
+     * @return AgentsVector 
+     */
     AgentsVector getAgent( const Point2D<int> & position, const std::string & type="all" );
+
+    /**
+     * @brief Adds a string attrbute of the agents.
+     * 
+     * @param type Type of the attribute.
+     * @param key Name of the attribute.
+     * @param value Value of the attribute.
+     */
     void addStringAttribute( const std::string & type, const std::string & key, const std::string & value );
+
+    /**
+     * @brief Adds a integer attrbute of the agents.
+     * 
+     * @param type Type of the attribute.
+     * @param key Name of the attribute.
+     * @param value Value of the attribute.
+     */
     void addIntAttribute( const std::string & type, const std::string & key, int value );
+
+    /**
+     * @brief Adds a float attrbute of the agents.
+     * 
+     * @param type Type of the attribute.
+     * @param key Name of the attribute.
+     * @param value Value of the attribute.
+     */
     void addFloatAttribute( const std::string & type, const std::string & key, float value );
+
+    /**
+     * @brief Get the identifier of the world.
+     * 
+     * @return const int& 
+     */
     const int & getId( ) const;
+
+    /**
+     * @brief Get the number of tasks executing the simulation.
+     * 
+     * @return const int& 
+     */
     const int & getNumTasks( ) const;
     
     /**
-     * @brief returns if a raster in index 'index' must be serialized.
+     * @brief Returns if a raster in index 'index' must be serialized.
      * 
-     * @param index index of the raster.
+     * @param index Index of the raster.
      * @return true
      * @return false 
      */
     bool rasterToSerialize( size_t index ) { return _serializeRasters.at( index ); }
     
     /**
-     * @brief returns if the dynamic_raster in index 'index' exists.
+     * @brief Returns if the dynamic_raster in index 'index' exists.
      * 
-     * @param index index of the raster to checks.
+     * @param index Index of the raster to checks.
      * @return true 
      * @return false 
      */
     bool isRasterDynamic( size_t index ) { return _dynamicRasters.at( index ); }
     
     /**
-     * @brief returns if the raster in index 'index' exists.
+     * @brief Returns if the raster in index 'index' exists.
      * 
-     * @param index index of the raster to check.
+     * @param index Index of the raster to check.
      * @return true 
      * @return false 
      */
@@ -328,16 +533,16 @@ public:
     }
 
     /**
-	 * @brief factory method for distributed Scheduler based on spatial distribution of a simulation.
+	 * @brief Factory method for distributed Scheduler based on spatial distribution of a simulation.
 	 * 
-	 * @param overlap number of depth of the overlap zone.
-	 * @param finalize if true will call MPI_Finalize at the end of run ( default behavior ).
+	 * @param overlap Number of depth of the overlap zone.
+	 * @param finalize If true will call MPI_Finalize at the end of run ( default behavior ).
 	 * @return Scheduler* 
 	 */
     static Scheduler * useSpacePartition( int overlap = 1, bool finalize = true );
     
     /**
-	 * @brief factory method for sequential Scheduler without any non-shared communication mechanism, apt for being executed in a single computer.
+	 * @brief Factory method for sequential Scheduler without any non-shared communication mechanism, apt for being executed in a single computer.
 	 * 
 	 * @return Scheduler* 
 	 */
