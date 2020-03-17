@@ -24,6 +24,7 @@ namespace PostProcess
 
 class AgentHDFtoSHP : public Output 
 {
+private:
 	GDAL_DATA_CLASS * _gdalData;
 	OGRLayer * _layer;
 

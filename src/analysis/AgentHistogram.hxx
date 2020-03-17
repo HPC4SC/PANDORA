@@ -34,7 +34,8 @@ namespace PostProcess
 {
 
 class AgentHistogram : public Output
-{	
+{
+private:
 	std::string _attribute; //! Attribute to make the histogram.
 	int _interval; //! Interval of steps that the histogram will take into account. 
 	int _numStep; //! If a num step is passed the histogram will be generated from it. If not, the final result of the simulation will be stored.
