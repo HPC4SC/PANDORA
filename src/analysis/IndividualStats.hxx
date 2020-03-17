@@ -37,13 +37,24 @@ namespace PostProcess
 
 class IndividualStats : public Output 
 {
+
+private:
+
 	int _numStep; //! Number of step to check.
 	std::ofstream _file; //! Output file.
 
 	std::list<std::string> _attributes; //! Attributes of the agent.
 
+	/**
+	 * @brief Checks whether attribute key is already stored in _attributes or not.
+	 * 
+	 * @param key the name of the attribute to be checked
+	 * @return bool
+	 */
 	bool attributeToStore( const std::string & key );
+
 public:
+
 	/**
 	 * @brief Set a list of attributes and store for numStep time step, including agent id.
 	 * 

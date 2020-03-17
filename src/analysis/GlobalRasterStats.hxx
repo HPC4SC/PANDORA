@@ -85,18 +85,17 @@ public:
 	 * 
 	 * @param analysis New analysis to add.
 	 */
-	void addAnalysis( RasterAnalysis * analysis );
+	void addAnalysis( std::shared_ptr<RasterAnalysis> analysis );
 
 	/**
 	 * @brief Add an analysis to execute.
 	 * 
 	 * @param analysis New analysis to add.
 	 */
-	void addAnalysis( std::shared_ptr<RasterAnalysis> analysis );
 	void addAnalysis( RasterAnalysis * analysis );
 
 	/**
-	 * @brief Get the Name of the calss.
+	 * @brief Get the Name of the class.
 	 * 
 	 * 
 	 * @return std::string 
