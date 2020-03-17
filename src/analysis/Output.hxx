@@ -37,17 +37,59 @@ namespace PostProcess
 class Output
 {
 protected:
-	std::string _separator;
+	std::string _separator; //! Separator between values on the output file.
 
+	/**
+	 * @brief Implemented in child class. Processes needed to be executed before the computation of the agent.
+	 * 
+	 * @param simRecord Simulation record instance.
+	 * @param outputFile Route to the output file.
+	 */
 	virtual void preProcess( const Engine::SimulationRecord & simRecord, const std::string & outputFile );
+
+	/**
+	 * @brief Implemented in child class. Processes needed to be executed after the computation of the agent.
+	 * 
+	 * @param simRecord Simulation record instance.
+	 * @param outputFile Route to the output file.
+	 */
 	virtual void postProcess( const Engine::SimulationRecord & simRecord, const std::string & outputFile );
+
+	/**
+	 * @brief Implemented in child class. Calculates the specified metric of the given attribute of the agent.
+	 * 
+	 * @param agentRecord Agent record instance.
+	 */
 	virtual void computeAgent( const Engine::AgentRecord & agentRecord );
 
 public:
+	/**
+	 * @brief Construct a new Output instance.
+	 * 
+	 * @param separator Separator between values on the output file.
+	 */
 	Output( const std::string & separator );
+
+	/**
+	 * @brief Implemented in child class. Destroy the Output instance.
+	 * 
+	 */
 	virtual ~Output();
 
+	/**
+	 * @brief Implemented in child. Calculates the specified metrics for the analysis of the simulation.
+	 * 
+	 * @param simRecord Simulation record instance.
+	 * @param outputFile Route to the ooutput file.
+	 * @param type Type of the agents.
+	 */
 	virtual void apply( const Engine::SimulationRecord & simRecord, const std::string & outputFile, const std::string & type );
+
+	/**
+	 * @brief Must be implemented in child. Gets the name of the class.
+	 * 
+	 * @return std::string 
+	 */
 	virtual std::string getName() const = 0;
 };
 

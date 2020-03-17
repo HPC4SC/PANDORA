@@ -29,22 +29,47 @@ template <typename Type> class Interval
 {
 public:
 
-    Type _min;
-    Type _max;
+    Type _min; //! Minimun value of the Interval.
+    Type _max; //! Maximum value of the Interval.
 
+    /**
+     * @brief Construct a new Interval object with _min = 0 and _max = 0.
+     * 
+     */
     Interval( ) : _min( 0 ), _max( 0 )
     {
     }
 
+    /**
+     * @brief Construct a new Interval object with _min = min and _max = max.
+     * 
+     * @param min Initial value of _min.
+     * @param max Initial value of _max.
+     */
     Interval( Type min, Type max ) : _min( min ), _max( max )
     {
     }
 
+    /**
+     * @brief True if x's value is grater or equal than _min and lesser or equal than _max, false otherwise.
+     * 
+     * @param x Value we want to check
+     * @return true 
+     * @return false 
+     */
     inline bool isInside( Type x )
     {
         return ( x>=_min ) && ( x<=_max );
     }
 
+    /**
+     * @brief Builds the intersection between the calling Interval and the other Interval.
+     * 
+     * @param other Interval compared with the calling one.
+     * @param result result Interval.
+     * @return true 
+     * @return false 
+     */
     bool intersection( Interval other, Interval & result )
     {
         if ( _min <= other._min )
@@ -66,7 +91,13 @@ public:
         return true;
     }
 
-
+    /**
+     * @brief Outstream.
+     * 
+     * @param stream output string.
+     * @param intv Interval output.
+     * @return std::ostream& 
+     */
     friend std::ostream & operator<<( std::ostream & stream, Interval<Type> & intv )
     {
         return stream << "[" << intv._min << ".." << intv._max << "]";

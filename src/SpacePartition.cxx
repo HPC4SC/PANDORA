@@ -771,8 +771,9 @@ namespace Engine {
                     it = _sendRequests.erase(it);
                     log_DEBUG(logName.str(),
                               getWallTime() << " request finished, lacking: " << _sendRequests.size() << " requests");
-                    delete send;
+                    delete send; 
                 }
+                 //TODO else sleep(1)
             }
         }
 
