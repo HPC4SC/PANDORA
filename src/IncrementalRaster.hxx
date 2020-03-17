@@ -31,49 +31,144 @@ namespace Engine
 
 class IncrementalRaster : public DynamicRaster
 {
-    typedef std::map< Point2D<int>, int >    ChangeTable;
+
+private:
+    typedef std::map<Point2D<int>, int> ChangeTable;
+    typedef ChangeTable::const_iterator    ChangeIterator;
+
+    ChangeTable _changes; //! Changes made in the raster.
+    const DynamicRaster * _baseRaster; //! Base of the current raster.
+    int    _currentMinValue; //! Current maximum value of the raster.
+    int    _currentMaxValue; //! Current minimum value of the raster.
 
 public:
+    /**
+     * @brief Construct a new IncrementalRaster object.
+     * 
+     */
     IncrementalRaster( );
+
+    /**
+     * @brief Construct a new Incremental Raster object.
+     * 
+     * @param baseRaster DynamicRaster, base of the IncrementalRatser.
+     */
     IncrementalRaster( const DynamicRaster& baseRaster );
+
+    /**
+     * @brief Construct a new Incremental Raster object.
+     * 
+     * @param other IncrementalRaster, base of the IncrementalRatser.
+     */
     IncrementalRaster( const IncrementalRaster& other );
 
+    /**
+     * @brief Destroy the Incremental Raster object.
+     * 
+     */
     virtual ~IncrementalRaster( );
 
-    virtual void        resize(  const Size<int> & size );
+    /**
+     * @brief Resize the IncrementalRaster.
+     * 
+     * @param size New size of the raster.
+     */
+    virtual void  resize(  const Size<int> & size );
 
-    void         setValue( const Point2D<int> & pos, int value );
-    const int&     getValue( const Point2D<int> & pos ) const;
+    /**
+     * @brief Set the value of the specified position.
+     * 
+     * @param pos Position to be updated.
+     * @param value New Value.
+     */
+    void setValue( const Point2D<int> & pos, int value );
+
+    /**
+     * @brief Get the value of the raster in the specified position.
+     * 
+     * @param pos Position to check.
+     * @return const int& 
+     */
+    const int& getValue( const Point2D<int> & pos ) const;
+
+    /**
+     * @brief Get the _maxValue attribute.
+     * 
+     * @param position position we want to check.
+     * @return int 
+     */
     int getMaxValue( const Point2D<int> & position ) const;
 
-    int            getCurrentMinValue( ) const { return _currentMinValue; }
-    int            getCurrentMaxValue( ) const { return _currentMaxValue; }
+    /**
+     * @brief Get the _currentMinValue attribute.
+     * 
+     * @return int 
+     */
+    int getCurrentMinValue( ) const { return _currentMinValue; }
+
+    /**
+     * @brief Get the _currentMaxValue attribute.
+     * 
+     * @return int 
+     */
+    int getCurrentMaxValue( ) const { return _currentMaxValue; }
 
     //virtual    void        updateCurrentMinMaxValues( );
 
-    typedef ChangeTable::const_iterator    ChangeIterator;
+    /**
+     * @brief Returns the iterator pointing to the first position of _changes.
+     * 
+     * @return ChangeIterator 
+     */
+    ChangeIterator firstChange( ) const { return _changes.begin( ); }
 
-    ChangeIterator        firstChange( ) const { return _changes.begin( ); }
-    ChangeIterator        endOfChanges( ) const { return _changes.end( ); }
+    /**
+     * @brief Returns the iterator pointing to the last position of _changes.
+     * 
+     * @return ChangeIterator 
+     */
+    ChangeIterator endOfChanges( ) const { return _changes.end( ); }
+
+    /**
+     * @brief Get the _size attribute.
+     * 
+     * @return Size<int> 
+     */
     Size<int> getSize( ) const;
 
+    /**
+     * @brief True if the _changes of both IncrementalRasters is the same, false otherwise.
+     * 
+     * @param other IncrementalRaster we want to compare with.
+     * @return true 
+     * @return false 
+     */
     bool operator==( const IncrementalRaster& other ) const;
+
+    /**
+     * @brief True if the _changes of both IncrementalRasters is not the same, false otherwise.
+     * 
+     * @param other IncrementalRaster we want to compare with.
+     * @return true 
+     * @return false 
+     */
     bool operator!=( const IncrementalRaster& other ) const
     {
         return !( this->operator==( other ));
     }
 
+    /**
+     * @brief True if the calling raster has less changes than other.
+     * 
+     * @param other IncrementalRaster we want to compare with.
+     * @return true 
+     * @return false 
+     */
     bool operator<( const IncrementalRaster& other ) const
     {
         return _changes.size( ) < other._changes.size( );
     }
 
-private:
-
-    ChangeTable _changes;
-    const DynamicRaster * _baseRaster;
-    int    _currentMinValue;
-    int    _currentMaxValue;
 };
 
 }

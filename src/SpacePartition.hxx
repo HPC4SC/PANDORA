@@ -56,187 +56,234 @@ namespace Engine
     {
 
     protected:
-        Serializer _serializer;
+        Serializer _serializer; //! Serializer instance.
 
-        Point2D<int> _localRasterSize;
+        Point2D<int> _localRasterSize; //! Raster size of the current world.
 
-        //! map of already executed agents
-        std::map<std::string, std::weak_ptr<Agent> > _executedAgentsHash;
+        std::map<std::string, std::weak_ptr<Agent> > _executedAgentsHash; //! Map of already executed agents
+        
+        Point2D<int> _worldPos; //! Position of World inside global limits
 
-        //! position of World inside global limits
-        Point2D<int> _worldPos;
+        std::list<MpiOverlap*> _sendRequests; //! MPI request sended.
+        std::list<MpiOverlap*> _receiveRequests; //! MPI request recieved.
 
-        std::list<MpiOverlap*> _sendRequests;
-        std::list<MpiOverlap*> _receiveRequests;
+        std::vector<int> _neighbors; //! Id's of neighboring computer nodes.
+        Rectangle<int> _ownedArea; //! Area inside boundaries owned by the computer node without overlap.
+        std::vector<Rectangle<int> > _sections; //! The four sections into a world is divided.
+        AgentsList _overlapAgents; //! List of agents owned by other nodes in overlapping positions.
+
+        bool _finalize; //! If true will call MPI_Finalize at the end of run ( default behavior ).
+
+        AgentsList _removedAgents; //! This list has the agents that need to be removed at the end of step.
+        
+        double _initialTime; //! Initial simulation time.
 
         /**
-         * @brief this method checks whether all the requests in the pool created by MPI_Isend and MPI_Irecv are finished before continuing
+         * @brief This method checks whether all the requests in the pool created by MPI_Isend and MPI_Irecv are finished before continuing.
          * 
-         * @param updateMaxValues true updates the max values. Else doen't update max values.
+         * @param updateMaxValues True updates the max values. Else don't update max values.
          */
         void clearRequests( bool updateMaxValues );
 
-        // method to send a list of agents to their respective future world
+        /**
+         * @brief Method to send a list of agents to their respective future world.
+         * 
+         * @param agentsToSend List of agents that are going to change its world.
+         */
         void sendAgents( AgentsList & agentsToSend );
          
         /**
-         * @brief Method to send overlap zones in the section we have executed
+         * @brief Method to send overlap zones in the section we have executed.
          * 
-         * @param sectionIndex index representing wich section it is.
-         * @param entireOverlap if true, the node will send its owned zone in overlap as well as adjacents overlapped zones, else it won't send the adjecent ones.
+         * @param sectionIndex Index representing wich section it is.
+         * @param entireOverlap If true, the node will send its owned zone in overlap as well as adjacents overlapped zones, else it won't send the adjecent ones.
          */
         void sendOverlapZones( const int & sectionIndex, const bool & entireOverlap = true );
+
+        /**
+         * @brief Method to send the maximum values in the overlap zones in the section we have executed.
+         * 
+         */
         void sendMaxOverlapZones( );
          
         /**
-         * @brief method to copy the agents that levae the ovperlap zone to the neighbours cores.
+         * @brief Method to copy the agents that levae the ovperlap zone to the neighbours cores.
          * 
-         * @param sectionIndex index representing the section.
+         * @param sectionIndex Index representing the section.
          */
         void sendGhostAgents( const int & sectionIndex );
 
         //void updateOverlapAgent( Agent * agent );
+
         /**
-         * @brief add the agent to overlap agents list, and remove previous instances if they exist
+         * @brief Add the agent to overlap agents list, and remove previous instances if they exist
          * 
-         * @param sectionIndex index representing the section.
+         * @param sectionIndex Index representing the section.
          */
         void receiveGhostAgents( const int & sectionIndex );
         
         /**
-         * @brief  method to receive agents.
+         * @brief  Method to receive agents.
          * 
-         * @param sectionIndex index representing the section.
+         * @param sectionIndex Index representing the section.
          */
         void receiveAgents( const int & sectionIndex );
         
         /**
-         * @brief method to receive overlap zones from neighbors that have executed adjacent sections.
+         * @brief Method to receive overlap zones from neighbors that have executed adjacent sections.
          * 
-         * @param sectionIndex index representing wich section it is.
-         * @param entireOverlap if true, the node will recieve its owned zone in overlap as well as adjacents overlapped zones, else it won't recieve the adjecent ones.
+         * @param sectionIndex Index representing wich section it is.
+         * @param entireOverlap If true, the node will recieve its owned zone in overlap as well as adjacents overlapped zones, else it won't recieve the adjecent ones.
          */
         void receiveOverlapData( const int & sectionIndex, const bool & entireOverlap = true );
+
+        /**
+         * @brief Method to recieve the maximum values in the overlap zones in the section we have executed.
+         * 
+         */
         void receiveMaxOverlapData( );
-
-        //! id's of neighboring computer nodes
-        std::vector<int> _neighbors;
-        //! area inside boundaries owned by the computer node without overlap
-        Rectangle<int> _ownedArea;
-        //! the four sections into a world is divided
-        std::vector<Rectangle<int> > _sections;
-
-        //! list of agents owned by other nodes in overlapping positions
-        AgentsList _overlapAgents;
-
-        //! this method returns true if neighbor is corner of _id
+ 
+        /**
+         * @brief This method returns true if neighbor is corner of _id.
+         * 
+         * @param neighbor Id of the neighbour.
+         * @return true 
+         * @return false 
+         */
         bool isCorner( const int & neighbor ) const;
 
         /**
-         * @brief this method returns the general overlap zone between both worlds.
+         * @brief This method returns the general overlap zone between both worlds.
          * 
-         * @param id represents the neihgbour world.
-         * @param sectionIndex section beeing executed.
+         * @param id Represents the neihgbour world.
+         * @param sectionIndex Section beeing executed.
          * @return Rectangle<int> 
          */
         Rectangle<int> getOverlap( const int & id, const int & sectionIndex ) const;
         
         /**
-         * @brief this method returns the external part of the strict overlap between World and id.
+         * @brief This method returns the external part of the strict overlap between World and id.
          * 
-         * @param id id of the world.
+         * @param id Id of the world.
          * @return Rectangle<int> 
          */
         Rectangle<int> getExternalOverlap( const int & id ) const;
         
         /**
-         * @brief this method returns the internal part of the strict overlap between World and id.
+         * @brief This method returns the internal part of the strict overlap between World and id.
          * 
-         * @param id represents the neighbour world.
+         * @param id Represents the neighbour world.
          * @return Rectangle<int> 
          */
         Rectangle<int> getInternalOverlap( const int & id ) const;
         
         /**
-         * @brief returns true if neighbor id must be updated this section index execution.
+         * @brief Returns true if neighbor id must be updated this section index execution.
          * 
-         * @param id id of the neighbour.
-         * @param sectionIndex section beeing executed.
+         * @param id Id of the neighbour.
+         * @param sectionIndex Section beeing executed.
          * @return bool
          */
         bool needsToBeUpdated( const int & id, const int & sectionIndex );
 
         /**
-         * @brief returns true if neighbor id will send data to _id, according to index execution
+         * @brief Returns true if neighbor id will send data to _id, according to index execution.
          * 
-         * @param id id of the neighbour
-         * @param sectionIndex section being executed
+         * @param id Id of the neighbour
+         * @param sectionIndex Section being executed
          * @return bool
          */
         bool needsToReceiveData( const int & id, const int & sectionIndex );
 
-        //! amount of width around one boundary considering the side of the World object that owns _overlap
-        int _overlap;
+        int _overlap; //! Amount of width around one boundary considering the side of the World object that owns _overlap.
 
-        //! check correct overlap/size relation
+        /**
+         * @brief Check correct overlap/size relation.
+         * 
+         */
         void checkOverlapSize( );
 
         /**
-         * @brief compute _boundaries based on Size, number of nodes and _overlap
+         * @brief Compute _boundaries based on Size, number of nodes and _overlap.
          * 
          */
         void stablishBoundaries( );
-        //! define original position of world, given overlap, size and id.
+        
+        /**
+         * @brief Define original position of world, given overlap, size and id.
+         * 
+         */
         void stablishWorldPosition( );
 
         /**
-         * @brief applies next simulation step on the Section of the space identified by parameter 'sectionIndex'.
+         * @brief Applies next simulation step on the Section of the space identified by parameter 'sectionIndex'.
          * 
-         * @param sectionIndex identifier of the section.
+         * @param sectionIndex Identifier of the section.
          */
         void stepSection( const int & sectionIndex );
 
-        //! returns the id of the section that contains the point 'position'
+        /**
+         * @brief Returns the id of the section that contains the point 'position'.
+         * 
+         * @param position Position of the world.
+         * @return int 
+         */
         int getIdFromPosition( const Point2D<int> & position );
-        //! given the id of a section returns that section position
+        
+        /**
+         * @brief Given the id of a section returns that section position.
+         * 
+         * @param id Identifier of the world.
+         * @return Point2D<int> 
+         */
         Point2D<int> getPositionFromId( const int & id ) const;
-        //! given the id of a neighbour world section, returns its index, the position in the vector _neighbors
+        
+        /**
+         * @brief Given the id of a neighbour world section, returns its index, the position in the vector _neighbors.
+         * 
+         * @param id Identifier of the world.
+         * @return int 
+         */
         int getNeighborIndex( const int & id );
 
-        //! if true will call MPI_Finalize at the end of run ( default behavior )
-        bool _finalize;
-
         /**
-         * @brief this method returns true if the agent is already in executedAgents list.
+         * @brief This method returns true if the agent is already in executedAgents list.
          * 
-         * @param id id representing the Agent.
+         * @param id Identifier representing the Agent.
          * @return true 
          * @return false 
          */
         bool hasBeenExecuted( const std::string & id ) const;
-        //! return an agent, if it is in the list of ghosts
-        AgentsList::iterator getGhostAgent( const std::string & id );
-        //! this list has the agents that need to be removed at the end of step.
-        AgentsList _removedAgents;
         
         /**
-         * @brief return an agent, if it is in the list of owned
+         * @brief Return an agent, if it is in the list of ghosts.
          * 
-         * @param id id of the Agent.
+         * @param id Identifier of the agent.
+         * @return AgentsList::iterator 
+         */
+        AgentsList::iterator getGhostAgent( const std::string & id );
+        
+        /**
+         * @brief Teturn an agent, if it is in the list of owned
+         * 
+         * @param id Identifier of the Agent.
          * @return AgentsList::iterator 
          */
         AgentsList::iterator getOwnedAgent( const std::string & id );
 
         /**
-         * @brief true if the agent is in the list of agents to remove.
+         * @brief True if the agent is in the list of agents to remove.
          * 
-         * @param id id of the checked Agent.
+         * @param id Identifier of the checked Agent.
          * @return true 
          * @return false 
          */
         bool willBeRemoved( const std::string & id );
-        double _initialTime;
-        //! send overlapping data to neighbours before run
+        
+        /**
+         * @brief Send overlapping data to neighbours before run.
+         * 
+         */
         void initOverlappingData( );
 
         /**
@@ -252,21 +299,51 @@ namespace Engine
          * @return const int& 
          */
         const int & getOverlap( ) const;
-        //! transform from global coordinates to real coordinates ( in terms of world position )
+        
+        /**
+         * @brief transform from global coordinates to real coordinates ( in terms of world position ).
+         * 
+         * @param globalPosition Position in the general World.
+         * @return Point2D<int> 
+         */
         Point2D<int> getRealPosition( const Point2D<int> & globalPosition ) const;
 
     public:
+        /**
+         * @brief Construct a new SpacePartition instance.
+         * 
+         * @param overlap Overlap distance.
+         * @param finalize If true the simulation will finalize if a MPI fault occurs, otherwise the simulation will continue.
+         */
         SpacePartition( const int & overlap, bool finalize );
         virtual ~SpacePartition( );
 
+        /**
+         * @brief procedures that need to be executed after simulation ( i.e. finish communications for parallel nodes )
+         * 
+         */
         void finish( );
 
-        const Rectangle<int> & getBoundaries( ) const;
-        //! initialization of the object World for the simulation. Required to be called before calling run.
-
-        //! initializes everything needed before creation of agents and rasters ( i.e. sizes )
+        /**
+         * @brief Get the Boundaries object 
+         * 
+         * @return const Rectangle<int>& 
+         */
+        const Rectangle<int> & getBoundaries( ) const;        
+        
+        /**
+         * @brief initializes everything needed before creation of agents and rasters ( i.e. sizes ).
+         *          initialization of the object World for the simulation. Required to be called before calling run. 
+         * 
+         * @param argc 
+         * @param argv 
+         */
         void init( int argc, char *argv[] );
-        // initialize data processes after creation of agents and rasters
+        
+        /**
+         * @brief initialize data processes after creation of agents and rasters.
+         * 
+         */
         void initData( );
         
         /**
@@ -275,41 +352,184 @@ namespace Engine
          */
         void executeAgents( );
 
+        /**
+         * @brief Adds an agent to the _executedAgentsHash.
+         * 
+         * @param agent Agent to be added.
+         * @param executedAgent If true the agent has been executed, otherwise th agent has not been executed.
+         */
         void agentAdded( AgentPtr agent, bool executedAgent );
+
+        /**
+         * @brief Removes the necessary agents form the simulation.
+         * 
+         */
         void removeAgents( );
+
+        /**
+         * @brief Pushes the agent to the _removedAgents.
+         * 
+         * @param agent Pointer to the agent to be removed.
+         */
         void removeAgent( Agent * agent );
 
-        //! this method will return an agent, both looking at owned and ghost agents
+        /**
+         * @brief This method will return an agent, both looking at owned and ghost agents.
+         * 
+         * @param id Identifier of the agent.
+         * @return Agent* 
+         */
         Agent * getAgent( const std::string & id );
+
+        /**
+         * @brief Get the Agents of the Type "type" in position "position".
+         * 
+         * @param position Position to check.
+         * @param type Type of the selected Agents.
+         * @return AgentsVector 
+         */
         AgentsVector getAgent( const Point2D<int> & position, const std::string & type="all" );
 
+        /**
+         * @brief Gets a random position within the World.
+         * 
+         * @return Point2D<int> 
+         */
         Point2D<int> getRandomPosition( ) const;
 
         /**
-         * @brief MPI version of wall time
+         * @brief MPI version of wall time.
          * 
          * @return double 
          */
         double getWallTime( ) const;
+
+        /**
+         * @brief Get the number of agents of the specified type.
+         * 
+         * @param type Selected Agent type.
+         * @return size_t 
+         */
         size_t getNumberOfTypedAgents( const std::string & type ) const;
 
+        /**
+         * @brief Calls the serializer to add an integer attribute of an agent.
+         * 
+         * @param type Type of int value.
+         * @param key Name of the attribute.
+         * @param value Value of the attribute.
+         */
         void addIntAttribute( const std::string & type, const std::string & key, int value );
+
+        /**
+         * @brief Calls the serializer to add a string attribute of an agent.
+         * 
+         * @param type Type of string value.
+         * @param key Name of the attribute.
+         * @param value Value of the attribute.
+         */
         void addStringAttribute( const std::string & type, const std::string & key, const std::string & value );
+
+        /**
+         * @brief Calls the serializer to add a float of an agent.
+         * 
+         * @param type Type of float value.
+         * @param key Name of the attribute.
+         * @param value Value of the attribute.
+         */
         void addFloatAttribute( const std::string & type, const std::string & key, float value );
+        
+        /**
+         * @brief Serialize the agents with the information of the current step.
+         * 
+         * @param step Current simulation time.
+         */
         void serializeAgents( const int & step );
+
+        /**
+         * @brief Serialize the rasters with the information of the current step.
+         * 
+         * @param step Current simulation time.
+         */
         void serializeRasters( const int & step );
+
+        /**
+         * @brief Counts the neighbours of an agent of a concrete type  witith the radius.
+         * 
+         * @param target Agent in the center of the radius.
+         * @param radius Radius of the circle to check.
+         * @param type Type of the agents to check.
+         * @return int 
+         */
         int countNeighbours( Agent * target, const double & radius, const std::string & type );
+
+        /**
+         * @brief Gets the neighbours of an agent of a concrete type  witith the radius.
+         * 
+         * @param target Agent in the center of the radius.
+         * @param radius Radius of the circle to check.
+         * @param type Type of the agents to check.
+         * @return AgentsVector 
+         */
         AgentsVector getNeighbours( Agent * target, const double & radius, const std::string & type );
 
+        /**
+         * @brief Set the value of a concrete position.
+         * 
+         * @param raster Raster to update.
+         * @param position Position to update.
+         * @param value New value of the position.
+         */
         void setValue( DynamicRaster & raster, const Point2D<int> & position, int value );
+
+        /**
+         * @brief Get the value of a concrete position.
+         * 
+         * @param raster Raster to check.
+         * @param position Position to check.
+         * @return int 
+         */
         int getValue( const DynamicRaster & raster, const Point2D<int> & position ) const;
+
+        /**
+         * @brief Set the _maxValue of the position specified.
+         * 
+         * @param raster Raster to update.
+         * @param position Position to change the _maxValue.
+         * @param value New maxValue.
+         */
         void setMaxValue( DynamicRaster & raster, const Point2D<int> & position, int value );
+
+        /**
+         * @brief Get the _maxValue of the specified position.
+         * 
+         * @param raster Raster to check.
+         * @param position Position to check.
+         * @return int 
+         */
         int getMaxValue( const DynamicRaster & raster, const Point2D<int> & position ) const;
 
         friend class Serializer;
 
+        /**
+         * @brief Get the number of the agents on the overlap zones.
+         * 
+         * @return size_t 
+         */
         size_t getNumberOfOverlapAgents( ) const { return _overlapAgents.size( ); }
+
+        /**
+         * @brief Returns a const_iterator pointing to the first position of the _overlapAgents list.
+         * 
+         * @return AgentsList::const_iterator 
+         */
         AgentsList::const_iterator beginOverlapAgents( ) const{ return _overlapAgents.begin( ); }
+
+        /**
+         * @brief Returns a const_iterator pointing to the last position of the _overlapAgents list.
+         * 
+         * @return AgentsList::const_iterator 
+         */
         AgentsList::const_iterator endOverlapAgents( ) const{ return _overlapAgents.end( ); }
     };
 } // namespace Engine

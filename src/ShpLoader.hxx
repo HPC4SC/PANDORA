@@ -19,37 +19,94 @@ namespace Engine
 
 class ShpLoader
 {
-    // shapefile source
-    GDAL_DATA_CLASS * _gdalData;
-    // layer to be loaded
-    OGRLayer * _activeLayer;
+private:
+    
+    GDAL_DATA_CLASS * _gdalData; //! Shapefile source
+    OGRLayer * _activeLayer; //! Layer to be loaded
 
-    // returns the index of field which name is fieldName inside _activeLayer
+    /**
+     * @brief Returns the index of field which name is fieldName inside _activeLayer.
+     * 
+     * @param fieldName Name of the checked field.
+     * @return int 
+     */
     int getFieldIndex( const std::string & fieldName );
 public:
+    /**
+     * @brief Construct a new ShpLoader object.
+     * 
+     */
     ShpLoader( );
+
+    /**
+     * @brief Destroy the Loader object.
+     * 
+     */
     virtual ~ShpLoader( );
 
-    // this method opens the shapefile in file and allocates its info to _gdalData, selecting the first layer
-    // throws an exception if the file can't be opened or there are no layers
+    /**
+     * @brief this method opens the shapefile in file and allocates its info to _gdalData, selecting the first layer. 
+     * Throws an exception if the file can't be opened or there are no layers
+     * 
+     * @param file Route to the shapefile.
+     */
     void open( const std::string & file );
 
-    // returns the number of layers ( 0 if no active _gdalData
+    /**
+     * @brief Returns the number of layers ( 0 if no active _gdalData).
+     * 
+     * @return int 
+     */
     int getNumLayers( );
-    // sets the layer to be read. thows an exception if no active _gdalData
+
+    /**
+     * @brief Sets the layer to be read. thows an exception if no active _gdalData.
+     * 
+     * @param activeLayerIndex Index of the layer on the shapefile.
+     */
     void setActiveLayer( int activeLayerIndex );
-    // returns the number of features in layer _activeLayer from source _gdalData. throws an exception of layer or datasource were not loaded
+    
+    /**
+     * @brief Returns the number of features in layer _activeLayer from source _gdalData. Throws an exception of layer or datasource were not loaded.
+     * 
+     * @return int 
+     */
     int getNumFeatures( );
 
-    // field related getters
-    // returns the geometry of feature in position indexFeature. Throws an exception if index out of range
+    // 
+    /**
+     * @brief Greturns the geometry of feature in position indexFeature. Throws an exception if index out of range.
+     * 
+     * @param indexFeature Index of the layer on the shapefile.
+     * @return Point2D<int> 
+     */
     Point2D<int> getPosition( int indexFeature );
 
-    // returns the field fieldName of of feature in position indexFeature as string. Throws an exception if index out of range or fieldName does not exist
+    /**
+     * @brief Returns the field fieldName of of feature in position indexFeature as string. Throws an exception if index out of range or fieldName does not exist.
+     * 
+     * @param indexFeature Index of the layer on the shapefile.
+     * @param fieldName Name of the field.
+     * @return std::string 
+     */
     std::string getFieldAsString( int indexFeature, const std::string & fieldName );
-    // returns the field fieldName of feature in position indexFeature as integer. Throws an exception if index out of range or fieldName does not exist
+    
+    /**
+     * @brief Returns the field fieldName of feature in position indexFeature as integer. Throws an exception if index out of range or fieldName does not exist.
+     * 
+     * @param indexFeature Index of the layer on the shapefile.
+     * @param fieldName Name of the field.
+     * @return int 
+     */
     int getFieldAsInt( int indexFeature, const std::string & fieldName );
-    // returns the field fieldName of feature in position indexFeature as double. Throws an exception if index out of range or fieldName does not exist
+    
+    /**
+     * @brief Returns the field fieldName of feature in position indexFeature as double. Throws an exception if index out of range or fieldName does not exist.
+     * 
+     * @param indexFeature Index of the layer on the shapefile.
+     * @param fieldName Name of the field.
+     * @return double 
+     */
     double getFieldAsFloat( int indexFeature, const std::string & fieldName );
 };
 

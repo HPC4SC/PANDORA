@@ -33,46 +33,112 @@ namespace Engine
 //! DynamicRaster adds mechanisms to modify the values of the raster map. It is serialized each time step.
 class DynamicRaster : public StaticRaster
 {
-    std::vector< std::vector<int> >    _maxValues;
-    int    _currentMaxValue;
-    int    _currentMinValue;
+private:
+    std::vector< std::vector<int> > _maxValues; //! Matrix of the maximun values of the raster.
+    int    _currentMaxValue; //! Current maximum value of the raster.
+    int    _currentMinValue; //! Current minimum value of the raster.
+
 public:
+    /**
+     * @brief Construct a new Dynamic Raster object.
+     * 
+     */
     DynamicRaster( );
+
+    /**
+     * @brief Destroy the Dynamic Raster object
+     * 
+     */
     virtual ~DynamicRaster( );
 
-    //! Equality operators
-    bool operator==( const DynamicRaster& other ) const;
-    bool operator!=( const DynamicRaster& other ) const;
+    bool operator==( const DynamicRaster& other ) const; //! Equality operators
+    bool operator!=( const DynamicRaster& other ) const; //! Equality operators
 
-    // parameters: starting pos and size in matrix to grow
     /**
      * @brief Increases each cell value by 1 if it is under the maximum allowed.
      * 
      */
     void updateRasterIncrement( );
-    // parameters: starting pos and size in matrix to grow
-    //! Assigns to each cell in raster the max value allowed for it.
+    
+    /**
+     * @brief Assigns to each cell in raster the max value allowed for it.
+     * 
+     */
     void updateRasterToMaxValues( );
 
-    //! Reads the maximum allowed value in the cell located by parameter "position". Returns -1 if "position" is out of the area of the raster.
+    /**
+     * @brief Reads the maximum allowed value in the cell located by parameter "position". Returns -1 if "position" is out of the area of the raster.
+     * 
+     * @param position Position of the raster checked.
+     * @return int 
+     */
     virtual int getMaxValue( const Point2D<int>& position ) const;
 
-    //! Assigns the value "value" to the cell located by parameter "position". Does nothing if "position" is out of the area of the raster.
+    /**
+     * @brief Assigns the value "value" to the cell located by parameter "position". Does nothing if "position" is out of the area of the raster.
+     * 
+     * @param position Position where the maxValue is set.
+     * @param value New maxValue.
+     */
     virtual void setValue( const Point2D<int>& position, int value );
-    //! Changes the maximum value allowed in the cell located by parameter "position" to the new amount "value". Does nothing if "position" is out of the area of the raster.
+    
+    /**
+     * @brief Changes the maximum value allowed in the cell located by parameter "position" to the new amount "value". 
+     * Does nothing if "position" is out of the area of the raster.
+     * 
+     * @param position Position where the maxValue is set.
+     * @param value New maxValue.
+     */
     void setMaxValue( const Point2D<int>& position, int value );
 
-    //! Initializes the components of vector '_values' to defaultValue, and to maxValue the ones from vector _maxValue.
+    /**
+     * @brief  Initializes the components of vector '_values' to defaultValue, and to maxValue the ones from vector _maxValue.
+     * 
+     * @param minValue Minimum value of the raster.
+     * @param maxValue Maximum value of the raster.
+     * @param defaultValue Default value of the raster.
+     */
     void setInitValues( int minValue, int maxValue, int defaultValue );
-    //! Sets new value for attribute maxValue.
+    //! 
+    /**
+     * @brief Sets new value for attribute _maxValue of the raster.
+     * 
+     * @param maxValue New value of _maxValue.
+     */
     void setMaxValue( const int & maxValue );
-    //! Sets new value for attribute minValue.
+    
+    /**
+     * @brief Sets new value for attribute minValue of the raster.
+     * 
+     * @param minValue New value of _minValue.
+     */
     void setMinValue( const int & minValue );
+
+    /**
+     * @brief Resizes the Raster with the new size.
+     * 
+     * @param size New raster size.
+     */
     void resize( const Size<int> & size );
 
+    /**
+     * @brief Sets the _currentMaxValue value to the maximum numeric limit and _currentMinValue to the minimum numeric limit.
+     * 
+     */
     void updateCurrentMinMaxValues( );
 
+    /**
+     * @brief Get the _currentMinValue.
+     * 
+     * @return int 
+     */
     int  getCurrentMinValue( ) const { return _currentMinValue; }
+
+    /**
+     * @brief Get the _currentMaxValue.
+     * 
+     * @return int 
+     */
     int  getCurrentMaxValue( ) const { return _currentMaxValue; }
 
     friend class RasterLoader;

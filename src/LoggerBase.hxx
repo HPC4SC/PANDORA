@@ -29,15 +29,37 @@ namespace Engine
 
 class Logger
 {
+private:
     typedef std::map <std::string, std::ofstream *> FilesMap;
 
-    FilesMap _files;
-    std::string _logsDir;
+    FilesMap _files; //! Map of different log files.
+    std::string _logsDir; //! Route to the logs directories.
 public:
+    /**
+     * @brief Construct a new Logger object.
+     * 
+     */
     Logger( );
+
+    /**
+     * @brief Destroy the Logger object.
+     * 
+     */
     virtual ~Logger( );
-    // message to file
+    
+    /**
+     * @brief Message to file.
+     * 
+     * @param fileName Name o fthe log file.
+     * @return std::ofstream& 
+     */
     std::ofstream & log( const std::string & fileName );
+
+    /**
+     * @brief Set the _logsDir attribute.
+     * 
+     * @param logsDir New logs directory.
+     */
     void setLogsDir( const std::string & logsDir );
 };
 

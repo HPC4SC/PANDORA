@@ -38,25 +38,73 @@ namespace Engine
         typedef std::map< std::string, MPI_Datatype *> TypesMap;
 
     private:
-        static MpiFactory * _instance;
+        
+        static MpiFactory * _instance; //! Unique instance of the MpiFactory.
 
+        /**
+         * @brief Construct a new Mpi Factory object.
+         * 
+         */
         MpiFactory( );
 
-        TypesMap _types;
+        TypesMap _types; //! Map of the different Agent types.
 
     public:
+        
+        /**
+         * @brief If there's no instance of MpiFactory one is created and retured. Otherwise the _instance member is returned.
+         * 
+         * @return MpiFactory* 
+         */
         static MpiFactory * instance( );
+
+        /**
+         * @brief Destroy the Mpi Factory object.
+         * 
+         */
         virtual ~MpiFactory( );
 
-        //! method defined by script that adds custom mpi types for each agent
+        /**
+         * @brief Method defined by script that adds custom mpi types for each agent.
+         * 
+         */
         void registerTypes( );
-        //! method to delete from mpi stack all the created types
+        
+        /**
+         * @brief Method to delete from mpi stack all the created types.
+         * 
+         */
         void cleanTypes( );
 
+        /**
+         * @brief Create a Default Package object
+         * 
+         * @param type Type of the package created.
+         * @return void* 
+         */
         void * createDefaultPackage( const std::string & type );
-        Agent * createAndFillAgent( const std::string & type, void * package );
 
+        /**
+         * @brief Creates and initializes a recieved Agent.
+         * 
+         * @param type Type of the Agent.
+         * @param package Data of the Agent.
+         * @return Agent* 
+         */
+        Agent * createAndFillAgent( const std::string & type, void * package );
+        
+        /**
+         * @brief Returns the first position of the typesMap.
+         * 
+         * @return TypesMap::iterator.
+         */
         TypesMap::iterator beginTypes( );
+
+        /**
+         * @brief Returns the last position of the typesMap.
+         * 
+         * @return TypesMap::iterator 
+         */
         TypesMap::iterator endTypes( );
     };
 } // namespace Engine
