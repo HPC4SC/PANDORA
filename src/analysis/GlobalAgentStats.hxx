@@ -35,27 +35,81 @@ public:
 	typedef std::list< std::list<std::string> > Params;
 protected:
 	typedef std::list<std::shared_ptr<AgentAnalysis> > AgentAnalysisList;
-	AgentAnalysisList _analysisList;
+	AgentAnalysisList _analysisList; //! Analysis actions to be performed in the simulationRecord.
 
-	// if true analysis will be deleted in destructor
-	bool _analysisOwnership;
+	bool _analysisOwnership; //! If true analysis will be deleted in destructor.
 
-	Params * _params;
-	std::string _groupFile;
-	std::string _inputDir;
+	Params * _params; //! Attributes.
+	std::string _groupFile; //! Route to the group file.
+	std::string _inputDir; //! Input files directory.
 
+	/**
+	 * @brief Write the attributes on the output file.
+	 * 
+	 * @param line Line to write.
+	 * @param fileName Name of the output file.
+	 */
 	void writeParams( std::stringstream & line, const std::string & fileName );
 public:
-	GlobalAgentStats( const std::string & separator=";");	
+	/**
+	 * @brief Construct a new GlobalAgentStats instance.
+	 * 
+	 * @param separator Separator between values on the output file.
+	 */
+	GlobalAgentStats( const std::string & separator=";");
+
+	/**
+	 * @brief Destroy the GlobalAgentStats object
+	 * 
+	 */
 	virtual ~GlobalAgentStats();
 
+	/**
+	 * @brief Set the _analysisOwnership attribute.
+	 * 
+	 * @param analysisOwnership New value of _analysisOwnership.
+	 */
 	void setAnalysisOwnership( bool analysisOwnership );
+
+	/**
+	 * @brief Apply the analysis of the agents.
+	 * 
+	 * @param simRecord Simulation record instance.
+	 * @param outputFile Route to the ooutput file.
+	 * @param type Type of the agent.
+	 */
 	void apply( const Engine::SimulationRecord & simRecord, const std::string & outputFile, const std::string & type );
+
+	/**
+	 * @brief Add an analysis to execute.
+	 * 
+	 * @param analysis New analysis to add.
+	 */
 	void addAnalysis( std::shared_ptr<AgentAnalysis> analysis );
+
+	/**
+	 * @brief Add an analysis to execute.
+	 * 
+	 * @param analysis New analysis to add.
+	 */
     void addAnalysis( AgentAnalysis * analysis );
 
+	/**
+	 * @brief Get the name of the raster.
+	 * 
+	 * @return std::string 
+	 */
 	std::string getName() const;
-	// set params for performing group analysis. If a single analysis is applied a time series file will be generated following resolution and numSteps.
+
+	/**
+	 * @brief Set params for performing group analysis. If a single analysis is applied a time series file will be generated following resolution and numSteps.
+	 * 
+	 * @param params Attributes.
+	 * @param groupFile Route to the group file.
+	 * @param inputDir Input files directory.
+	 * @param numSteps Number of steps to analyze.
+	 * @param resolution Resolution of the steps.
+	 */
 	void setParams( Params * params, const std::string & groupFile, const std::string & inputDir, int numSteps=1, int resolution=1);
 };
 

@@ -103,20 +103,53 @@ public:
 class RasterAnalysis : public Analysis
 {
 public:
+	/**
+	 * @brief Construct a new RasterAnalysis instance.
+	 * 
+	 * @param name Name od the class.
+	 * @param writeResults If true the results will be writen. Otherwise the results are not writen.
+	 */
 	RasterAnalysis( const std::string & name, bool writeResults = true ) : Analysis(name, writeResults)
 	{
 	}
+
+	/**
+	 * @brief Implemented in child class. Destroy the Raster Analysis instance.
+	 * 
+	 */
 	virtual ~RasterAnalysis(){}
+
+	/**
+	 * @brief Must be implemented in chlid class. Compute the specified metric for the value raster.
+	 * 
+	 * @param rasterHistory Values of the raster in the simulation.
+	 */
 	virtual void computeRaster( const Engine::SimulationRecord::RasterHistory & rasterHistory ) = 0;
 };
 
 class AgentAnalysis : public Analysis
 {
 public:
+	/**
+	 * @brief Construct a new AgentAnalysis instance.
+	 * 
+	 * @param name Name of the class.
+	 * @param writeResults If true the results will be writen. Otherwise the results are not writen.
+	 */
 	AgentAnalysis( const std::string & name, bool writeResults = true ) : Analysis(name, writeResults)
 	{
 	}
+
+	/**
+	 * @brief Destroy the AgentAnalysis instance.
+	 * 
+	 */
 	virtual ~AgentAnalysis(){}
+
+	/**
+	 * @brief Must be implemented in chlid class. Compute the specified metric for the value agent.
+	 * 
+	 */
 	virtual void computeAgent( const Engine::AgentRecord & ) = 0;
 };
 
