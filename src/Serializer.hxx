@@ -54,14 +54,20 @@ private:
     typedef std::map< std::string, FloatMap * > FloatAttributesMap;
     typedef std::map< std::string, StringMap * > StringAttributesMap;
 
-    const Config * _config; //! Pointer to the Config instance.
     const SpacePartition & _scheduler; //! Reference to the used Scheduler.
+    const Config * _config; //! Pointer to the Config instance.
+
+    hid_t _fileId; //! Output file route.
+    hid_t _agentsFileId; //! Agent information file route.
+    hid_t _currentAgentDatasetId; //! This id is used to track the data set of the agent being serialized.
 
     StaticRastersRefMap _dynamicRasters; //! Map of the different raster maps.
 
-    hid_t _agentsFileId; //! Agent information file route.
-    hid_t _fileId; //! Output file route.
-    hid_t _currentAgentDatasetId; //! This id is used to track the data set of the agent being serialized.
+    IntAttributesMap _intAttributes; //! Map of the integer attributes of the Agents.
+    FloatAttributesMap _floatAttributes; //! Map of the float attributes of the Agents.
+    StringAttributesMap _stringAttributes; //! Map of the string attributes of the Agents.
+    
+    std::map<std::string, int> _agentIndexMap; //! Map of the indexs of the Agents.
 
      /**
      * @brief Serialize the specified raster with the information of the current step.
@@ -77,11 +83,6 @@ private:
      * @param agent Type of the Agnet.
      */
     void registerType( Agent * agent );
-    IntAttributesMap _intAttributes; //! Map of the integer attributes of the Agents.
-    FloatAttributesMap _floatAttributes; //! Map of the float attributes of the Agents.
-    StringAttributesMap _stringAttributes; //! Map of the string attributes of the Agents.
-
-    std::map<std::string, int> _agentIndexMap; //! Map of the indexs of the Agents.
 
     /**
      * @brief Writes the serialized Agents into the output file.

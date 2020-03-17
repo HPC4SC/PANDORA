@@ -54,11 +54,13 @@ private:
 
     hid_t _fileId; //! Output file route.
     hid_t _agentsFileId; //! Agent information file route.
+
     StaticRastersRefMap _dynamicRasters; //! Map of the different raster maps.
 
     StringAttributesMap _stringAttributes; //! Map of the string attributes of the Agents.
     IntAttributesMap _intAttributes; //! Map of the integer attributes of the Agents.
     FloatAttributesMap _floatAttributes; //! Map of the float attributes of the Agents.
+    
     std::map<std::string, int> _agentIndexMap; //! Map of the indexs of the Agents.
 
     /**

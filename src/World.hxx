@@ -59,8 +59,8 @@ protected:
 protected:
     std::map<std::string, int> _rasterNames; //! Names of the simulation rasters.
     std::vector<StaticRaster * > _rasters; //! Rasters of the simularions.
-    std::vector<bool> _dynamicRasters; // True if the raster is dynamic, false the raster is static.
-    std::vector<bool> _serializeRasters; // True if the raster must be serialized, false otherwise.
+    std::vector<bool> _dynamicRasters; //! True if the raster is dynamic, false the raster is static.
+    std::vector<bool> _serializeRasters; //! True if the raster must be serialized, false otherwise.
 
     /**
      * @brief Stub method for grow resource to max of initialrasters, used by children of world at init time.

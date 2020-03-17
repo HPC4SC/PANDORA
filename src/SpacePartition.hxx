@@ -67,6 +67,17 @@ namespace Engine
         std::list<MpiOverlap*> _sendRequests; //! MPI request sended.
         std::list<MpiOverlap*> _receiveRequests; //! MPI request recieved.
 
+        std::vector<int> _neighbors; //! Id's of neighboring computer nodes.
+        Rectangle<int> _ownedArea; //! Area inside boundaries owned by the computer node without overlap.
+        std::vector<Rectangle<int> > _sections; //! The four sections into a world is divided.
+        AgentsList _overlapAgents; //! List of agents owned by other nodes in overlapping positions.
+
+        bool _finalize; //! If true will call MPI_Finalize at the end of run ( default behavior ).
+
+        AgentsList _removedAgents; //! This list has the agents that need to be removed at the end of step.
+        
+        double _initialTime; //! Initial simulation time.
+
         /**
          * @brief This method checks whether all the requests in the pool created by MPI_Isend and MPI_Irecv are finished before continuing.
          * 
@@ -131,11 +142,6 @@ namespace Engine
          * 
          */
         void receiveMaxOverlapData( );
-
-        std::vector<int> _neighbors; //! Id's of neighboring computer nodes.
-        Rectangle<int> _ownedArea; //! Area inside boundaries owned by the computer node without overlap.
-        std::vector<Rectangle<int> > _sections; //! The four sections into a world is divided.
-        AgentsList _overlapAgents; //! List of agents owned by other nodes in overlapping positions.
  
         /**
          * @brief This method returns true if neighbor is corner of _id.
@@ -240,8 +246,6 @@ namespace Engine
          */
         int getNeighborIndex( const int & id );
 
-        bool _finalize; //! If true will call MPI_Finalize at the end of run ( default behavior ).
-
         /**
          * @brief This method returns true if the agent is already in executedAgents list.
          * 
@@ -259,8 +263,6 @@ namespace Engine
          */
         AgentsList::iterator getGhostAgent( const std::string & id );
         
-        AgentsList _removedAgents; //! This list has the agents that need to be removed at the end of step.
-        
         /**
          * @brief Teturn an agent, if it is in the list of owned
          * 
@@ -277,8 +279,6 @@ namespace Engine
          * @return false 
          */
         bool willBeRemoved( const std::string & id );
-
-        double _initialTime; //! Initial simulation time.
         
         /**
          * @brief Send overlapping data to neighbours before run.

@@ -70,6 +70,12 @@ private:
 
     Size<int> _size; //! Size of the simulation world.
 
+    bool _gui; //! False if loading without gui.
+    float _loadingPercentageDone; //! Percentage of the total data loaded.
+    std::string _loadingState; //! Information about which file is beeing loaded.
+    static std::list< std::string > _agentTypes; //! Different agent types.
+    static std::list< std::string > _agentAttributes; //! Different agent attributes.
+
     // we need this function in order to be called by H5Giterate. It must be static to match the C call signature
     //static herr_t registerAgentStep( hid_t loc_id, const char *name, void *opdata );
 
@@ -94,12 +100,6 @@ private:
      * @return herr_t 
      */
     static herr_t iterateAgentDatasets( hid_t loc_id, const char * name, const H5L_info_t *linfo, void *opdata );
-
-    bool _gui; //! False if loading without gui.
-    float _loadingPercentageDone; //! Percentage of the total data loaded.
-    std::string _loadingState; //! Information about which file is beeing loaded.
-    static std::list< std::string > _agentTypes; //! Different agent types.
-    static std::list< std::string > _agentAttributes; //! Different agent attributes.
 
     /**
      * @brief Loads the agents of the simulation.
