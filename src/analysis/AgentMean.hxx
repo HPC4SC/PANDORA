@@ -14,9 +14,14 @@ namespace PostProcess
 
 class AgentMean : public AgentAnalysis
 {
+
+private:
+
 	std::string _attributeName; //! Attribute to make the histogram.
 	std::vector<int> _numAgents; //! Number of agents taken into acount for the mean.
+
 public:
+
 	/**
 	 * @brief Construct a new AgentMean.
 	 * 
@@ -48,6 +53,7 @@ public:
 	 * 
 	 */
 	void postProcess();
+	
 };
 
 } // namespace PostProcess

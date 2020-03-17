@@ -14,7 +14,9 @@ namespace PostProcess
 
 class AgentNum : public AgentAnalysis
 {
+
 public:
+
 	/**
 	 * @brief Construct a new AgentNum.
 	 * 
@@ -33,6 +35,7 @@ public:
 	 * @param agentRecord Agent record instance.
 	 */
 	void computeAgent( const Engine::AgentRecord & agentRecord );
+	
 };
 
 } // namespace PostProcess

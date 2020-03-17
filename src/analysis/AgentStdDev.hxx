@@ -14,10 +14,15 @@ namespace PostProcess
 
 class AgentStdDev : public AgentAnalysis
 {
+
+private:
+
 	std::string _attributeName; //! Attribute to calculate the standard deviation.
 	std::vector<int> _numAgents; //! Number of agents taken into acount for the standard deviation.
 	std::vector< std::vector<float> > _values; //! Values of the attribute to check.
+
 public:
+
 	/**
 	 * @brief Construct a new AgentStdDev.
 	 * 
@@ -49,6 +54,7 @@ public:
 	 * 
 	 */
 	void postProcess();
+	
 };
 
 } // namespace PostProcess
