@@ -15,7 +15,9 @@ namespace PostProcess
 
 class RasterSum : public RasterAnalysis
 {
+
 public:
+
 	/**
 	 * @brief Construct a new RasterSum.
 	 * 
@@ -34,6 +36,7 @@ public:
 	 * @param rasterHistory Raster values of the simulation.
 	 */
 	void computeRaster( const Engine::SimulationRecord::RasterHistory & rasterHistory );
+	
 };
 
 } // namespace PostProcess

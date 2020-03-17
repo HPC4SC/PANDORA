@@ -35,6 +35,7 @@ public:
 	 * @param agentRecord Agent record instance.
 	 */
 	void computeAgent( const Engine::AgentRecord & agentRecord );
+	
 };
 
 } // namespace PostProcess

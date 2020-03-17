@@ -14,8 +14,13 @@ namespace PostProcess
 
 class RasterMean : public RasterAnalysis
 {
-	long int _numCells; //! Number of cells taken into account for the mean.
+
+private:
+
+	long int _numCells;
+
 public:
+
 	/**
 	 * @brief Construct a new RasterMean.
 	 * 
@@ -40,6 +45,7 @@ public:
 	 * 
 	 */
 	void postProcess();
+	
 };
 
 } // namespace PostProcess

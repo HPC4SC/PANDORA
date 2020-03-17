@@ -93,6 +93,7 @@ public:
 	 * @param analysis New analysis to add.
 	 */
 	void addAnalysis( std::shared_ptr<RasterAnalysis> analysis );
+	void addAnalysis( RasterAnalysis * analysis );
 
 	/**
 	 * @brief Get the Name of the calss.
