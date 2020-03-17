@@ -14,12 +14,31 @@ namespace PostProcess
 
 class RasterMean : public RasterAnalysis
 {
-	long int _numCells;
+	long int _numCells; //! Number of cells taken into account for the mean.
 public:
+	/**
+	 * @brief Construct a new RasterMean.
+	 * 
+	 */
 	RasterMean();
+
+	/**
+	 * @brief Destroy the RasterMean.
+	 * 
+	 */
 	virtual ~RasterMean();
+
+	/**
+	 * @brief Calculates the mean value of each cell during the simulation.
+	 * 
+	 * @param rasterHistory Raster values of the simulation.
+	 */
 	void computeRaster( const Engine::SimulationRecord::RasterHistory & rasterHistory );
 
+	/**
+	 * @brief Processes needed to be executed after the computation of the agent.
+	 * 
+	 */
 	void postProcess();
 };
 

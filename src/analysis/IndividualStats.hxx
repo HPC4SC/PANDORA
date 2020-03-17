@@ -37,22 +37,62 @@ namespace PostProcess
 
 class IndividualStats : public Output 
 {
-	int _numStep;
-	std::ofstream _file;
+	int _numStep; //! Number of step to check.
+	std::ofstream _file; //! Output file.
 
-	std::list<std::string> _attributes;
+	std::list<std::string> _attributes; //! Attributes of the agent.
 
 	bool attributeToStore( const std::string & key );
 public:
-	// set a list of attributes and store for numStep time step, including agent id
+	/**
+	 * @brief Set a list of attributes and store for numStep time step, including agent id.
+	 * 
+	 * @param numStep Number of step to check.
+	 * @param separator Separator between values on the output file.
+	 */
 	IndividualStats( int numStep, const std::string & separator=";");
+
+	/**
+	 * @brief Destroy the IndividualStats instance.
+	 * 
+	 */
 	virtual ~IndividualStats();
 
+	/**
+	 * @brief Prints the individual agents in the output file.
+	 * 
+	 * @param agentRecord Agent record instance.
+	 */
 	void computeAgent( const Engine::AgentRecord & agentRecord );
+
+	/**
+	 * @brief Add one attribut eto the _attributes list.
+	 * 
+	 * @param attribute Attribute to add.
+	 */
 	void addAttribute( const std::string & attribute );
+
+	/**
+	 * @brief Processes needed to be executed after the computation of the agent.
+	 * 
+	 * @param simRecord Simulation record instance.
+	 * @param outputFile Route to the output file.
+	 */
 	void preProcess( const Engine::SimulationRecord & simRecord, const std::string & outputFile );
+
+	/**
+	 * @brief Processes needed to be executed after the computation of the agent.
+	 * 
+	 * @param simRecord Simulation record instance.
+	 * @param outputFile Route to the output file.
+	 */
 	void postProcess( const Engine::SimulationRecord & simRecord, const std::string & outputFile );
 
+	/**
+	 * @brief Gets the name of the class.
+	 * 
+	 * @return std::string 
+	 */
 	std::string getName() const;
 
 };
