@@ -26,7 +26,7 @@
 #include <QDialog>
 #include <ui_AgentAnalysis.h>
 #include <tinyxml.h>
-#include <GlobalAgentStats.hxx>
+#include <analysis/GlobalAgentStats.hxx>
 
 namespace Engine
 {

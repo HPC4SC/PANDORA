@@ -77,7 +77,10 @@ void OpenMPSingleNode::executeAgents( )
         Agent * agent = agentsToExecute[i].get( );
         agent->updateKnowledge( );
         agent->selectActions( );
-        #pragma omp atomic
+    }
+    for ( size_t i=0; i<agentsToExecute.size( ); i++ )
+    {
+        Agent * agent = agentsToExecute[i].get( );
         agent->executeActions( );
         agent->updateState( );
     }

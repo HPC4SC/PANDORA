@@ -34,7 +34,6 @@ class IncrementalRaster : public DynamicRaster
 
 private:
     typedef std::map<Point2D<int>, int> ChangeTable;
-    typedef ChangeTable::const_iterator    ChangeIterator;
 
     ChangeTable _changes; //! Changes made in the raster.
     const DynamicRaster * _baseRaster; //! Base of the current raster.
@@ -42,6 +41,8 @@ private:
     int    _currentMaxValue; //! Current minimum value of the raster.
 
 public:
+    typedef ChangeTable::const_iterator    ChangeIterator;
+
     /**
      * @brief Construct a new IncrementalRaster object.
      * 
