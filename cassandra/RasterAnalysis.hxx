@@ -26,7 +26,7 @@
 #include <QDialog>
 #include <ui_RasterAnalysis.h>
 #include <tinyxml.h>
-#include <GlobalRasterStats.hxx>
+#include <analysis/GlobalRasterStats.hxx>
 
 namespace Engine
 {

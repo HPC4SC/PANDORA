@@ -21,13 +21,13 @@
  */
 
 #include <AnalysisControlThread.hxx>
-#include <Analysis.hxx>
+#include <analysis/Analysis.hxx>
 
 #include <boost/filesystem.hpp>
 #include <tinyxml.h>
 #include <QMessageBox>
 #include <iomanip>
-#include <Output.hxx>
+#include <analysis/Output.hxx>
 
 #include <iostream>
 

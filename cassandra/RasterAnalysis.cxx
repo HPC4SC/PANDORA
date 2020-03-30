@@ -31,8 +31,8 @@
 #include <RunAnalysis.hxx>
 #include <AnalysisControlThread.hxx>
 
-#include <RasterMean.hxx>
-#include <RasterSum.hxx>
+#include <analysis/RasterMean.hxx>
+#include <analysis/RasterSum.hxx>
 //#include <RasterStdDev.hxx>
 /*
 #include <IndividualStats.hxx>

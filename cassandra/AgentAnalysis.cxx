@@ -31,12 +31,12 @@
 #include <RunAnalysis.hxx>
 #include <AnalysisControlThread.hxx>
 
-#include <AgentMean.hxx>
-#include <AgentSum.hxx>
-#include <AgentStdDev.hxx>
-#include <IndividualStats.hxx>
-#include <AgentHistogram.hxx>
-#include <AgentHDFtoSHP.hxx>
+#include <analysis/AgentMean.hxx>
+#include <analysis/AgentSum.hxx>
+#include <analysis/AgentStdDev.hxx>
+#include <analysis/IndividualStats.hxx>
+#include <analysis/AgentHistogram.hxx>
+#include <analysis/AgentHDFtoSHP.hxx>
 
 namespace GUI
 {
