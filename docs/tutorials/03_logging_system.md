@@ -40,9 +40,8 @@ $ ./logging
 
 The output should be something like:
 ```bash
-$ ./logging
+$ end of main
 ```
-end of main
 
 ## 3. First logs  
 To log information there are three possible calls, depending on the level at which you want to receive the log:
