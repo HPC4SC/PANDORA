@@ -394,7 +394,11 @@ class MyAgent : public Engine::Agent
 {
 	int _gatheredResources;
 
+```
+
 and define its value as 0 at construction time, in MyAgent.cxx:
+
+```cpp
 
 MyAgent::MyAgent( const std::string & id ) : Agent(id), _gatheredResources(0)
 {
@@ -414,7 +418,11 @@ public:
 	virtual ~MyAgent();
 	void registerAttributes();
 
-	and record the attribute as integer in MyAgent.cxx:
+```
+
+and record the attribute as integer in MyAgent.cxx:
+
+```cpp
 
 void MyAgent::registerAttributes()
 {

@@ -57,7 +57,7 @@ protected:
     Scheduler * _scheduler; //! Pointer to the scheduler of the world.
 
 protected:
-    std::map<std::string, int> _rasterNames; //! Names of the simulation rasters.
+    std::map<std::string, int> _rasterNames; //! <rasterName, rasterIndex in _rasters>.
     std::vector<StaticRaster * > _rasters; //! Rasters of the simularions.
     std::vector<bool> _dynamicRasters; //! True if the raster is dynamic, false the raster is static.
     std::vector<bool> _serializeRasters; //! True if the raster must be serialized, false otherwise.
