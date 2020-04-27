@@ -3,13 +3,25 @@
 ## 1. Presentation  
 The logging system of Pandora allows the developer of new simulations to verify that the written source code is working correctly. It has been designed to be as simple and efficient as possible, without cluttering your program with additional calls.
 These are some additional features provided by the system:
-	- Three logging levels: Info, Debug and Extreme Debug.
-	- Possibility to use several different log files.
-	- Message generation is built on STL streams.
+
+- Three logging levels: Info, Debug and Extreme Debug.
+- Possibility to use several different log files.
+- Message generation is built on STL streams.
 
 In this tutorial we will explore in turns the multiple ways to log informations within pandora. We start by a very simple program that does not log any information. You will notice that this program does not contain any informations specific to pandora (World, Config, Agent, Raster ...). This is because in this tutorial we will only explore the aspects relative to the logging of information. 
 
-## 2. Preparation  
+## 2. Compilation of the engine (PANDORA) in not-debug, debug or extreme debug modes
+If PANDORA also contains debug directives (log_DEBUG(...) & log_EDEBUG(...)), and you need to register that logs for your executions, you need to compile PANDORA itself in one mode or another. To do so, we just need to refer to the [Compile and Install (using CMAKE) section](00_installing_cmake.md), 'Compile Pandora' section. The command is:
+
+```bash
+cmake debug=[true|**false**] -D edebug=[true|**false**] -DCMAKE_INSTALL_PREFIX=/${PANDORAPATH} ../
+```
+
+, where the values in bold are the default ones used if the parameter is not specified.
+
+Then, we need to compile the corresponding model in not-debug, debug or edebug modes, as it's explained down below.
+
+## 3. Preparation  
 Create a file called main.cxx and type in the following content:
 
 ```cpp
@@ -43,7 +55,7 @@ The output should be something like:
 $ end of main
 ```
 
-## 3. First logs  
+## 4. First logs  
 To log information there are three possible calls, depending on the level at which you want to receive the log:
 	- log_INFO -> This level of messages will always be written
 	- log_DEBUG -> Debug logs are written. A compiling option will have to be use to activate this function. This will be explain in the following.
@@ -82,7 +94,7 @@ $ ./logging
 Pandora has now create the files 'test.log' and 'test2.log' inside the directory 'logs'. If you are interested on changing the name of this directory it can be done creating a Configuration for your app (see TUTORIAL CONFIGURATION).
 
 
-## 4. Levels of logging  
+## 5. Levels of logging  
 You can notice that only the log of level info is present in the file test.log. To include the debug informations an option has to be given at compilation time:
 ```bash
 $ scons debug=true
@@ -100,7 +112,7 @@ $ ./logging
 Now the test.log file contains both the debug and extrem debug messages. Notice that in order to activate the extrem debug messages you have to first activate the debug messages. Therefore both options are passed to scons.
 
 
-## 5. Logging of variables  
+## 6. Logging of variables  
 In addition you can log the values of variables. To test this function, add the following lines to the file main.cxx
 
 ```cpp

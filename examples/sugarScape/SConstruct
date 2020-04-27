@@ -42,10 +42,10 @@ if env['debug'] == True:
     env.Append(CCFLAGS = '-g -O0 -Wall -DPANDORADEBUG'.split())
     if env['edebug']==True:
         env.Append(CCFLAGS = '-DPANDORAEDEBUG')
-    env.Append(LIBS = 'pandorad')
 else:
     env.Append(CCFLAGS = '-Ofast'.split())
-    env.Append(LIBS = 'pandora')
+
+env.Append(LIBS = 'pandora')
 
 env.Append(CPPPATH = ['.', pandoraPath+'/include'])
 env.Append(LIBPATH = [pandoraPath+'/lib'])
