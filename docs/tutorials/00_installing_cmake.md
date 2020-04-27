@@ -59,14 +59,12 @@ To compile and install Pandora we need some libraries and programs to do so, thi
 	$ sudo make install
 	```
 
-	4. And finally we have to help cmake find the new gdal libraries
+	4. And finally we have to help cmake find the new gdal libraries. Add these lines to the end of the ~/.bashrc file and reload it:
 
 	```bash
 	$ export GDAL_ROOT=/opt/gdal-1.10.1
 	$ export LD_LIBRARY_PATH=${GDAL_ROOT}/lib/:${LD_LIBRARY_PATH}
-	$ echo ""  >> ~/.bashrc
-	$ echo "export GDAL_ROOT=/opt/gdal-1.10.1" >> ~/.bashrc	
-	$ echo "export LD_LIBRARY_PATH=\${GDAL_ROOT}/lib/:\${LD_LIBRARY_PATH}" >> ~/.bashrc
+	$ source ~/.bashrc
 	```
 	
 - Then we have to return to the home directory to install HDF5
@@ -103,14 +101,12 @@ cd ~/
 	$ sudo make install
 	```
 
-	5. And finally we have to help cmake find the new hdf5 libraries
+	5. And finally we have to help cmake find the new hdf5 libraries. Add these lines to the end of the ~/.bashrc file and reload it::
 
 	```bash
-	$ export HDF5_ROOT=/opt/hdf5-1.8.19/
+	$ export HDF5_ROOT=/opt/hdf5-1.8.19
 	$ export LD_LIBRARY_PATH=${HDF5_ROOT}/lib/:${LD_LIBRARY_PATH}
-	$ echo ""  >> ~/.bashrc
-	$ echo "export HDF5_ROOT=/opt/hdf5-1.8.19/"  >> ~/.bashrc
-	$ echo "export LD_LIBRARY_PATH=\${HDF5_ROOT}/lib/:\${LD_LIBRARY_PATH}" >> ~/.bashrc
+	$ source ~/.bashrc
 	```
 
 Return to the home directory using the same command we used before
@@ -132,7 +128,7 @@ Before compiling Pandora we need to install some more libraries
 	```
 
 - Compile Pandora
-Now that we have all the dependencies installed let's go and compile Pandora herself
+Now that we have all the dependencies installed let's go and compile Pandora itself
 
 	1. The first thing that we need to do is make the directory for her in our home directory
 
@@ -153,31 +149,33 @@ Now that we have all the dependencies installed let's go and compile Pandora her
 	$ sudo apt-get install cmake
 	```
 	
-	4. Then we have to make a build folder to build the makefiles
+	4. Then we have to make a build/ folder to build the makefiles & and a install/ folder to later deploy Pandora:
 
 	```bash
 	$ mkdir build
-	$ cd build
+	$ mkdir ../install
 	```
 	
-	5. After that we need to configure, compile and install Pandora
+	5. After that we need to configure, compile and install Pandora. The values in bold for debug and edebug parameters are the ones by default if nothing is specified.
 
 	```bash
-	$ cmake -DCMAKE_INSTALL_PREFIX=/opt/pandora ../
+	$ cd build
+	$ cmake debug=[true|**false**] -D edebug=[true|**false**] -DCMAKE_INSTALL_PREFIX=/${PANDORAPATH} ../
 	$ make
 	$ sudo make install
 	```
 	
-	6. Now we need to export Pandora's libraries
+	6. Now we need to export Pandora's libraries. Add these lines to the end of the ~/.bashrc file and reload it:
 
 	```bash
-	$ export PANDORAPATH=/opt/pandora/
+	$ export PANDORAPATH=/root/pandora/install
 	$ export PATH=${PANDORAPATH}/bin:${PATH}
 	$ export PYTHONPATH=${PANDORAPATH}/bin:${PYTHONPATH}
 	$ export LD_LIBRARY_PATH=${PANDORAPATH}/lib:${LD_LIBRARY_PATH}
+	$ source ~/.bashrc
 	```
 	
-	7. Finally we need to install scons in order to compile the simulations
+	7. Finally we need to install scons in order to compile the simulations:
 	
 	```bash
 	$ sudo apt-get install scons
@@ -188,7 +186,7 @@ Now that we have all the dependencies installed let's go and compile Pandora her
 Now we will start to compile the UI made for analyzing the results of 
 PANDORA's simulations.
 
-	 1. First we need to install Cassandra's dependences
+	 1. First we need to install Cassandra's dependences:
 	 
 	 ```bash
 	 $ sudo apt-get install libtinyxml-dev libdevil-dev freeglut3-dev libqwt-dev libqt4-dev libqt4-opengl-dev libgdal1-dev build-essential libboost-random-dev libboost-test-dev libboost-timer-dev libboost-chrono-dev

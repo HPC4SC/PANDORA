@@ -13,10 +13,10 @@ CXX           = g++
 DEFINES       = -DTIXML_USE_STL -DQT_NO_DEBUG -DQT_GUI_LIB -DQT_CORE_LIB -DQT_SHARED
 CFLAGS        = -m64 -pipe -O2 -D_REENTRANT -Wall -W $(DEFINES)
 CXXFLAGS      = -m64 -pipe -std=c++11 -O2 -D_REENTRANT -Wall -W $(DEFINES)
-INCPATH       = -I/usr/share/qt4/mkspecs/linux-g++-64 -I. -I/usr/include/qt4/QtCore  -I/opt/pandora/include -I/opt/hdf5-1.8.19/include/ -I/usr/include/qt4/QtGui -I/usr/include/qt4 -I. -Iuis -I../include -I../include/analysis -I/usr/include/qwt -I/usr/include/mpich2/ -I/usr/include/mpich -I/usr/include/GL -I/usr/include/qt4/QtOpenGL -I/usr/include/qt4 -I/usr/include/IL -I/usr/local/hdf5/include -I/usr/local/qwt-6.0.0/include/ -I. -I.
+INCPATH       = -I/usr/share/qt4/mkspecs/linux-g++-64 -I. -I/usr/include/qt4/QtCore  -I/${PANDORAPATH}/include -I/opt/hdf5-1.8.19/include/ -I/usr/include/qt4/QtGui -I/usr/include/qt4 -I. -Iuis -I../include -I../include/analysis -I/usr/include/qwt -I/usr/include/mpich2/ -I/usr/include/mpich -I/usr/include/GL -I/usr/include/qt4/QtOpenGL -I/usr/include/qt4 -I/usr/include/IL -I/usr/local/hdf5/include -I/usr/local/qwt-6.0.0/include/ -I. -I.
 LINK          = g++
 LFLAGS        = -m64 -Wl,-O1
-LIBS          = $(SUBLIBS)  -L../lib/ -L/usr/lib/x86_64-linux-gnu -L/opt/hdf5-1.8.19/lib/ -L/opt/pandora/lib -lpandora -fopenmp -Llib/ -L/usr/local/qwt-6.0.0/lib/ -L/usr/local/hdf5/lib/ -lqwt -lhdf5 -lGL -lGLU -lQtOpenGL -lIL -ltinyxml -lboost_filesystem -lboost_system -lQtGui -lQtCore -lpthread 
+LIBS          = $(SUBLIBS)  -L../lib/ -L/usr/lib/x86_64-linux-gnu -L/opt/hdf5-1.8.19/lib/ -L/${PANDORAPATH}/lib -lpandora -fopenmp -Llib/ -L/usr/local/qwt-6.0.0/lib/ -L/usr/local/hdf5/lib/ -lqwt -lhdf5 -lGL -lGLU -lQtOpenGL -lIL -ltinyxml -lboost_filesystem -lboost_system -lQtGui -lQtCore -lpthread 
 AR            = ar cqs
 RANLIB        = 
 QMAKE         = /usr/lib/x86_64-linux-gnu/qt4/bin/qmake

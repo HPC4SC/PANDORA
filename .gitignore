@@ -52,6 +52,7 @@ build_py/
 bin/generateMpi.pyc
 bin/mpiCode.py
 build/
+install/
 
 *.dot
 *.tmp
