@@ -2,7 +2,7 @@
 This tutorial will explain how to install Pandora framework, using CMAKE
 
 ### Requirements
-You will need a PC with GNU/Linux installed. The tutorial will explain how to install Pandora on Ubunt, but any other distribution would work (probably with additional effort related to looking for the correct packages and versions)
+You will need a PC with GNU/Linux installed. You may use the Docker image at genajim/pandora. The tutorial will explain how to install Pandora on Ubuntu, but any other distribution would work (probably with additional effort related to looking for the correct packages and versions)
 
 ### Dependences
 
@@ -59,12 +59,12 @@ To compile and install Pandora we need some libraries and programs to do so, thi
 	$ sudo make install
 	```
 
-	4. And finally we have to help cmake find the new gdal libraries. Add these lines to the end of the ~/.bashrc file and reload it:
+	4. And finally we have to help cmake find the new gdal libraries. Add these lines to the end of the /etc/environment file and reload it:
 
 	```bash
 	$ export GDAL_ROOT=/opt/gdal-1.10.1
 	$ export LD_LIBRARY_PATH=${GDAL_ROOT}/lib/:${LD_LIBRARY_PATH}
-	$ source ~/.bashrc
+	$ source /etc/environment
 	```
 	
 - Then we have to return to the home directory to install HDF5
@@ -101,12 +101,12 @@ cd ~/
 	$ sudo make install
 	```
 
-	5. And finally we have to help cmake find the new hdf5 libraries. Add these lines to the end of the ~/.bashrc file and reload it::
+	5. And finally we have to help cmake find the new hdf5 libraries. Add these lines to the end of the /etc/environment file and reload it::
 
 	```bash
 	$ export HDF5_ROOT=/opt/hdf5-1.8.19
 	$ export LD_LIBRARY_PATH=${HDF5_ROOT}/lib/:${LD_LIBRARY_PATH}
-	$ source ~/.bashrc
+	$ source /etc/environment
 	```
 
 Return to the home directory using the same command we used before
@@ -153,7 +153,7 @@ Now that we have all the dependencies installed let's go and compile Pandora its
 
 	```bash
 	$ mkdir build
-	$ mkdir ../install
+	$ mkdir install
 	```
 	
 	5. After that we need to configure, compile and install Pandora. The values in bold for debug and edebug parameters are the ones by default if nothing is specified.
@@ -165,14 +165,14 @@ Now that we have all the dependencies installed let's go and compile Pandora its
 	$ sudo make install
 	```
 	
-	6. Now we need to export Pandora's libraries. Add these lines to the end of the ~/.bashrc file and reload it:
+	6. Now we need to export Pandora's libraries. Add these lines to the end of the /etc/environment file and reload it:
 
 	```bash
 	$ export PANDORAPATH=/root/pandora/install
 	$ export PATH=${PANDORAPATH}/bin:${PATH}
 	$ export PYTHONPATH=${PANDORAPATH}/bin:${PYTHONPATH}
 	$ export LD_LIBRARY_PATH=${PANDORAPATH}/lib:${LD_LIBRARY_PATH}
-	$ source ~/.bashrc
+	$ source /etc/environment
 	```
 	
 	7. Finally we need to install scons in order to compile the simulations:
