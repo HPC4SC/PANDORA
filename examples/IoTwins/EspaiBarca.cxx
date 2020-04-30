@@ -54,6 +54,10 @@ namespace Examples {
                 addAgent(agent);
                 int spawnIndex = Engine::GeneralState::statistics().getUniformDistValue(0,_spawnPoints.size() - 1);
                 Engine::Point2D<int> spawn = _spawnPoints[spawnIndex];
+                while (spawn.distance(finalTarget) < 50) {
+                    spawnIndex = Engine::GeneralState::statistics().getUniformDistValue(0,_spawnPoints.size() - 1);
+                    spawn = _spawnPoints[spawnIndex];
+                }
                 agent->setPosition(spawn);
                 log_INFO(logName.str(), getWallTime() << " new agent: " << agent);
             }

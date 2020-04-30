@@ -40,6 +40,8 @@ namespace Examples {
 
         int _provFollow;
 
+        int _heading;
+
     public:
 
         Person(const std::string &id, const int &vision, const int &velocity, const int &age, const bool &tourist,
@@ -74,11 +76,29 @@ namespace Examples {
 
         bool haveVisited(Engine::Point2D<int> newPosition);
 
-        void setGroup(const int &group);
+        int getHeading();
 
-        void setTarget(const Engine::Point2D<int> &target);
+        void setGroup(const int& group);
+
+        void setTarget(const Engine::Point2D<int>& target);
 
         void addVisited(Engine::Point2D<int> newPosition);
+
+        void setHeading(const int& heading);
+
+        void initialHeading();
+
+        void correctHeading();
+
+        void turnHeadingLeft();
+
+        void turnHeadingRight();
+
+        bool mustTurnLeft(const int& newHeading);
+
+        bool mustTurnRight(const int& newHeading);
+
+        void printVisited();
 
         ////////////////////////////////////////////////
         // This code has been automatically generated //

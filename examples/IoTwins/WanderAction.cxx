@@ -12,7 +12,7 @@ namespace Examples {
         Person &person = dynamic_cast<Person&>(agent);
         if(world->checkPosition(newPosition)) {
             agent.setPosition(newPosition);
-            std::cout << "I'm " << agent.getId() << " and I wander to "  << newPosition << " and my finalTarget is " << person.getFinalTarget() << std::endl;
+            std::cout << "I'm " << agent.getId() << " and I wander to "  << newPosition << " and my finalTarget is "  << person.getFinalTarget() << " the distance to the target is: "  << newPosition.distance(person.getFinalTarget()) << std::endl;
         }
     }
 
