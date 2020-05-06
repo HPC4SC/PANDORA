@@ -1,4 +1,4 @@
-# Logging with pandora
+# Logging with Pandora
 
 ## 1. Presentation  
 The logging system of Pandora allows the developer of new simulations to verify that the written source code is working correctly. It has been designed to be as simple and efficient as possible, without cluttering your program with additional calls.
@@ -8,10 +8,10 @@ These are some additional features provided by the system:
 - Possibility to use several different log files.
 - Message generation is built on STL streams.
 
-In this tutorial we will explore in turns the multiple ways to log informations within pandora. We start by a very simple program that does not log any information. You will notice that this program does not contain any informations specific to pandora (World, Config, Agent, Raster ...). This is because in this tutorial we will only explore the aspects relative to the logging of information. 
+In this tutorial we will explore in turns the multiple ways to log informations within Pandora. We start by a very simple program that does not log any information. You will notice that this program does not contain any informations specific to Pandora (World, Config, Agent, Raster ...). This is because in this tutorial we will only explore the aspects relative to the logging of information. 
 
-## 2. Compilation of the engine (PANDORA) in not-debug, debug or extreme debug modes
-If PANDORA also contains debug directives (log_DEBUG(...) & log_EDEBUG(...)), and you need to register that logs for your executions, you need to compile PANDORA itself in one mode or another. To do so, we just need to refer to the [Compile and Install (using CMAKE) section](00_installing_cmake.md), 'Compile Pandora' section. The command is:
+## 2. Compilation of the engine (Pandora) in not-debug, debug or extreme debug modes
+If Pandora also contains debug directives (log_DEBUG(...) & log_EDEBUG(...)), and you need to register that logs for your executions, you need to compile Pandora itself in one mode or another. To do so, we just need to refer to the [Compile and Install (using CMAKE) section](00_installing_cmake.md), 'Compile Pandora' section. The command is:
 
 ```bash
 cmake debug=[true|**false**] -D edebug=[true|**false**] -DCMAKE_INSTALL_PREFIX=/${PANDORAPATH} ../
