@@ -1,7 +1,7 @@
 /*
  * Copyright ( c ) 2014
  * COMPUTER APPLICATIONS IN SCIENCE & ENGINEERING
- * BARCELONA SUPERCOMPUTING CENTRE - CENTRO NACIONAL DE SUPERCOMPUTACIÓN
+ * BARCELONA SUPERCOMPUTING CENTRE - CENTRO NACIONAL DE SUPERCOMPUTACI-N
  * http://www.bsc.es
 
  * This file is part of Pandora Library. This library is free software;
@@ -76,7 +76,7 @@ namespace Engine {
 
     void SpacePartition::stablishBoundaries() {
         // position of world related to the complete set of computer nodes
-        int worldsPerRow = sqrt(_numTasks); //canviar numTasks a más de 1. Mirar para que se usa numTasks = numberOfWorlds
+        int worldsPerRow = sqrt(_numTasks); //canviar numTasks a m-s de 1. Mirar para que se usa numTasks = numberOfWorlds
         _worldPos = getPositionFromId(_id);
 
         for (int x = _worldPos._x - 1; x <= _worldPos._x + 1; x++) {
@@ -585,7 +585,7 @@ namespace Engine {
                 while (it != _overlapAgents.end()) {
                     Agent *agent = it->get();
                     if (agent->isType(itType->first)) {
-                        // si l'agent no està en zona que s'ha d'actualitzar, continuar
+                        // si l'agent no est- en zona que s'ha d'actualitzar, continuar
                         if (overlapZone.contains((*it)->getPosition() - _boundaries._origin)) {
                             log_DEBUG(logName.str(),
                                       getWallTime() << " step: " << _world->getCurrentStep() << " in section index: "
