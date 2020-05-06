@@ -37,7 +37,8 @@ cassandra/ui_TimeSeriesDialog.h
 cassandra/ui_TraitAnalysisSelection.h
 examples/randomWalkers/randomWalkers
 examples/sugarScape/sugarScape
-examples/sugarScape_escalabe/sugarScape_escalable
+examples/sugarScape_escalable/sugarScape_escalable
+examples/stupidModel/stupidModel
 src/pyPandora/pyBindings.os
 utils/MpiStubCode.os
 # Temporal folders

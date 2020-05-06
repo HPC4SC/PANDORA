@@ -1,7 +1,7 @@
  /*
  * Copyright ( c ) 2012
  * COMPUTER APPLICATIONS IN SCIENCE & ENGINEERING
- * BARCELONA SUPERCOMPUTING CENTRE - CENTRO NACIONAL DE SUPERCOMPUTACIÓN
+ * BARCELONA SUPERCOMPUTING CENTRE - CENTRO NACIONAL DE SUPERCOMPUTACI-N
  * http://www.bsc.es
 
  * This file is part of Pandora Library. This library is free software;
@@ -70,6 +70,10 @@ namespace Engine
 
     void World::initialize( int argc, char *argv[] )
     {
+        int seed = _config->getSeed();
+        if (_config->getSeed() == -1) seed = Statistics::getNewSeed();
+        Engine::GeneralState::statistics().setSeed(seed);
+
         _scheduler->init( argc, argv );
 
         createRasters( );
