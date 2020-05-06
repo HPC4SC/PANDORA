@@ -1,4 +1,4 @@
-# Logging with Pandora
+# Logging in Pandora & gdbgui
 
 ## 1. Presentation  
 The logging system of Pandora allows the developer of new simulations to verify that the written source code is working correctly. It has been designed to be as simple and efficient as possible, without cluttering your program with additional calls.
@@ -56,10 +56,12 @@ $ end of main
 ```
 
 ## 4. First logs  
+
 To log information there are three possible calls, depending on the level at which you want to receive the log:
-	- log_INFO -> This level of messages will always be written
-	- log_DEBUG -> Debug logs are written. A compiling option will have to be use to activate this function. This will be explain in the following.
-	- log_EDEBUG -> Extreme Debug logs are useful if you want to verify extensively a particular section of your code. Similarly to debug a compiling option will be used.
+
+- log_INFO -> This level of messages will always be written
+- log_DEBUG -> Debug logs are written. A compiling option will have to be use to activate this function. This will be explain in the following.
+- log_EDEBUG -> Extreme Debug logs are useful if you want to verify extensively a particular section of your code. Similarly to debug a compiling option will be used.
 
 All the calls receive two parameters: the name of the file where the message will be stored, at the content of the it. You can combine different levels at the same file. For example:
 
@@ -132,4 +134,25 @@ You can now observe in test.log that the first info message is present as well a
 
 [Next - Analysis your results (python)](04_pyanalysis.md)
 Or [Next - Analysis your results (C++)](05_analysis.md)
-p
+
+
+## gdbgui
+
+[gdbgui](https://www.gdbgui.com) is a tool based on gdb for (GNU/Linux debugger). It provides a nice GUI environment to debug our models and Pandora itself.
+
+It is written in python and upload in the corresponding repositories. To [install it](https://www.gdbgui.com/installation/):
+
+```bash
+$ pip3 install gdbgui
+```
+
+If pip3 is not installed, you can get it by doing:
+
+```bash
+$ pip3 install python3-pip
+```
+
+Now, you should go to your model folder and do ` $ gdbgui -r {modelBinary}`. Then open your web browser. You just need to connect to the indicated URL. 
+
+The best way to manage gdbgui is with the keyboard, mainly using the right, up and down arrows and r to start the program and c to continue until next breakpoint. Last, you can state these breakpoints graphically with your mouse. We do not recommend to use the leftmost file navigator panel, since it crashes sometimes, starting to swap due to some sort of bug.
+

@@ -2,7 +2,7 @@
 /*
  * Copyright ( c ) 2012
  * COMPUTER APPLICATIONS IN SCIENCE & ENGINEERING
- * BARCELONA SUPERCOMPUTING CENTRE - CENTRO NACIONAL DE SUPERCOMPUTACIÓN
+ * BARCELONA SUPERCOMPUTING CENTRE - CENTRO NACIONAL DE SUPERCOMPUTACI-N
  * http://www.bsc.es
 
  * This file is part of Pandora Library. This library is free software;
@@ -45,6 +45,7 @@ protected:
     int _numSteps; //! Number of time steps of the simulation.
     int _serializeResolution; //! Number of steps to execute before serializing the state of the simulation.
     std::string _configFile; //! XML config file ( if it exists ).
+    int _seed; //! Seed to be used for the RNG (Statistics class).
     
     /**
      * @brief Finds an element in a config file.
@@ -109,7 +110,19 @@ public:
         return stream << "Config( " << c._resultsFile << ", " << c._numSteps << " )";
     }
 
+    /**
+     * @brief Get the _size object.
+     * 
+     * @return const Size<int>& 
+     */
     const Size<int> & getSize( ) const;
+    
+    /**
+     * @brief Get the _seed object.
+     * 
+     * @return const int& 
+     */
+    const int& getSeed() const;
 
     /**
      * @brief Get the _numSteps object.
