@@ -14,8 +14,8 @@ int main(int argc, char *argv[])
 		if(argc>2)
 		{
 			throw Engine::Exception("USAGE: sugarScape [config file]");
-		}		
-	
+		}
+
 		std::string fileName("config.xml");
 		if(argc!=1)
 		{

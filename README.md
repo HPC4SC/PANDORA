@@ -22,8 +22,9 @@ Tutorial:
 03. [Compile and Install (using CMAKE)](docs/tutorials/00_installing_cmake.md)
 04. [Getting Started with pyPandora (python)](docs/tutorials/01_getting_started_pyPandora.md) 
 05. [Getting Started with Pandora (C++)](docs/tutorials/02_getting_started_pandora.md) 
-06. [Pandora's loggin system](docs/tutorials/03_logging_system.md) 
+06. [Pandora's logging system & gdbgui](docs/tutorials/03_logging_system.md) 
 07. [Analysis pandora's output (python)](docs/tutorials/04_pyanalysis.md) 
-08. [Analysis pandora's output (C++)](docs/tutorials/05_analysis.md) 
+08. [Analysis pandora's output (C++)](docs/tutorials/05_analysis.md)
+09. [Marenostrum deployment and scripting](docs/tutorials/06_marenostrum.md)
 
 

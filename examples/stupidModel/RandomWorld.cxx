@@ -9,6 +9,7 @@
 #include <GeneralState.hxx>
 #include <Scheduler.hxx>
 #include <Logger.hxx>
+#include <RNGNormal.hxx>
 
 namespace Examples  
 {
@@ -31,11 +32,13 @@ void RandomWorld::createAgents() {
 	logName << "agents_" << getId();
     const RandomWorldConfig & randomConfig = (const RandomWorldConfig&)getConfig();
     // the bugs are created with the in values of the config file
+
+	Engine::RNGNormal rngNormal(randomConfig.getSeed(), (double) randomConfig._initialBugSizeMean, (double) randomConfig._initialBugSizeSD);
 	for (int i = 0; i < randomConfig._numBugs; i++) {
 		if ((i%getNumTasks()) == getId()) {
 			std::ostringstream oss;
 			oss << "Bug_" << i;
-			float size = Engine::GeneralState::statistics().getNormalDistValue((float)randomConfig._initialBugSizeMean,randomConfig._initialBugSizeSD);
+			double size = rngNormal.draw();
 			if (size < 0.0) size = 0.0; // checks that the in value of size is correct
 			Bug * bug = new Bug(oss.str(),randomConfig._bugMaxConsumptionRate,(int)size);
 			addAgent(bug);
