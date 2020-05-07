@@ -3,6 +3,7 @@
 #include <RandomWorldConfig.hxx>
 #include <Exception.hxx>
 #include <Config.hxx>
+#include <RNGNormal.hxx>
 
 #include <iostream>
 #include <cstdlib>

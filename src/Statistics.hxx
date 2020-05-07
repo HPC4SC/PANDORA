@@ -2,7 +2,7 @@
 /*
  * Copyright (c) 2012
  * COMPUTER APPLICATIONS IN SCIENCE & ENGINEERING
- * BARCELONA SUPERCOMPUTING CENTRE - CENTRO NACIONAL DE SUPERCOMPUTACIÓN
+ * BARCELONA SUPERCOMPUTING CENTRE - CENTRO NACIONAL DE SUPERCOMPUTACI-N
  * http://www.bsc.es
 
  * This file is part of Pandora Library. This library is free software; 
@@ -37,10 +37,11 @@ private:
 	typedef boost::mt19937 RandomEngine;
 	typedef boost::variate_generator<boost::mt19937&,boost::gamma_distribution<> >  TypeGenerator;
 
+	uint64_t _seed;
+
 	RandomEngine _randomGenerator; //! Random number generator.
 	static const int _distributionSize = 100000;
 
-	
 	boost::uniform_int<> _randomNumbers; //! General random indexs.
 	mutable boost::variate_generator< RandomEngine, boost::uniform_int<> > _nextRandomNumber;
 
@@ -49,13 +50,15 @@ private:
 	// TODO fix expo and normal distributions!
 	std::vector<float> _exponentialDistribution; //! Exponential distribution.
 	
+	std::vector<float> _normalDistribution; //! Normal distribution.
+
+	std::map< std::string, boost::variate_generator< RandomEngine, boost::normal_distribution<> > > _normalGeneratorsMap;
+	
 	/**
 	 * @brief Geretaes a exponential distribution.
 	 * 
 	 */
 	void generateExponentialDistribution();
-
-	std::vector<float> _normalDistribution; //! Normal distribution.
 	
 	/**
 	 * @brief Geretaes a normal distribution.
@@ -71,6 +74,8 @@ public:
 	 * 
 	 */
 	Statistics();
+
+	void setSeed(uint64_t seed);
 
 	/**
 	 * @brief Get an exponential distribution value.
@@ -89,15 +94,6 @@ public:
 	 * @return float 
 	 */
 	float getNormalDistValueMinMax( float min, float max ) const;
-
-	/**
-	 * @brief Get a normal distribution value.
-	 * 
-	 * @param mean Mean value.
-	 * @param sd Standerd deviation.
-	 * @return float 
-	 */
-	float getNormalDistValue( float mean, float sd );
 
 	/**
 	 * @brief Return a random number following a power law distribution 
@@ -130,7 +126,7 @@ public:
 	 * 
 	 * @return uint64_t 
 	 */
-	uint64_t getNewSeed();
+	static uint64_t getNewSeed();
 
 	/**
 	 * @brief Adds a new beta distribution.

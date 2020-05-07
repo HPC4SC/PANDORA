@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2012
  * COMPUTER APPLICATIONS IN SCIENCE & ENGINEERING
- * BARCELONA SUPERCOMPUTING CENTRE - CENTRO NACIONAL DE SUPERCOMPUTACIÓN
+ * BARCELONA SUPERCOMPUTING CENTRE - CENTRO NACIONAL DE SUPERCOMPUTACI-N
  * http://www.bsc.es
  *
  * This file is part of Cassandra.
@@ -84,11 +84,11 @@ AgentConfigurator::AgentConfigurator( QWidget * parent, const std::string & type
 
 
 	/*
-	//!Declaració de la finestra amb les formes
+	//!Declaraci- de la finestra amb les formes
 	QWidget * shapeChooser = new QWidget;
 
 	//FINESTRA PRINCIPAL
-	//!Modifiquem característiques de la finestra principal
+	//!Modifiquem caracter-stiques de la finestra principal
 	setWindowTitle("Select shape and color");
 	resize(500, 100);
 	move(250, 250);
@@ -98,7 +98,7 @@ AgentConfigurator::AgentConfigurator( QWidget * parent, const std::string & type
 	QPushButton*buttonConfirmMain = new QPushButton("Accept");
 	QPushButton*buttonCancelMain = new QPushButton("Cancel");
 	
-	//!S'enllaça cada botó a la señal y al procès que ha d'executar
+	//!S'enlla-a cada bot- a la se-al y al proc-s que ha d'executar
 	connect(buttonColors, SIGNAL(clicked()), this, SLOT(selectColor()));
 	connect(buttonShapes, SIGNAL(clicked()), shapeChooser, SLOT(show()));
 	connect(buttonConfirmMain, SIGNAL(clicked()), this, SLOT(closeConfirm()));
@@ -118,7 +118,7 @@ AgentConfigurator::AgentConfigurator( QWidget * parent, const std::string & type
 
 	/*
 	//FINESTRA DE FORMES
-	//!Modifiquem característiques de la finestra de formes dels agents
+	//!Modifiquem caracter-stiques de la finestra de formes dels agents
 	shapeChooser->setWindowTitle("Select shape");
 	shapeChooser->resize(100, 100);
 	shapeChooser->move(250, 250);
