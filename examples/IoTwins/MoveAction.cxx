@@ -11,23 +11,30 @@ namespace Examples {
 
     MoveAction::~MoveAction() {}
 
-    void MoveAction::execute(Engine::Agent&agent) {
+    void MoveAction::execute(Engine::Agent& agent) {
         //std::cout << "I'm " << agent.getId() <<  " I'm in: "  << agent.getPosition() << std::endl;
         Engine::World *world = agent.getWorld();
         Person &person = dynamic_cast<Person&>(agent);
-        Engine::Point2D<int> newPosition = selectNextPosition(agent,world); //minDist A*-ish
+        Engine::Point2D<int> currentTarget;
+        if (person.getTarget().isEqual(Engine::Point2D<int>(-1,-1))) {
+            currentTarget = person.getFinalTarget();
+        }
+        else currentTarget = person.getTarget();
+        //std::cout << "I'm " << agent.getId() << " and my currentTarget is: " << currentTarget << " and my position is: " << person.getPosition() << std::endl;
+        Engine::Point2D<int> newPosition = selectNextPosition(agent,world,currentTarget); //minDist A*-ish
+        //std::cout << "newPosition is: " << newPosition << std::endl;
         if(world->checkPosition(newPosition)) {
             agent.setPosition(newPosition);
             person.addVisited(newPosition);
-            person.printVisited();
+            //person.printVisited();
             std::cout << "I'm " << agent.getId() << " I'm heading to " << person.getHeading() <<  " and I move to "  << newPosition << " and my finalTarget is " << person.getFinalTarget() << " the distance to the target is: " << newPosition.distance(person.getFinalTarget()) << std::endl;
         }
     }
 
-    Engine::Point2D<int> MoveAction::selectNextPosition(Engine::Agent &agent, Engine::World *world) {
+    Engine::Point2D<int> MoveAction::selectNextPosition(Engine::Agent& agent, Engine::World *world, Engine::Point2D<int>& currentTarget) {
         // pair es el punt i la distancia al finalTarget
         //std::cout << "I'm going to select position" << std::endl;
-        std::vector<std::pair<Engine::Point2D<int>, int>> positionsInReach = lookAround(agent,world);
+        std::vector<std::pair<Engine::Point2D<int>, int>> positionsInReach = lookAround(agent,world,currentTarget);
         Person &person = dynamic_cast<Person&>(agent);
         if(positionsInReach.size() > 0) {
             int betterPositionIndex = 0;
@@ -43,19 +50,22 @@ namespace Examples {
                 }
             }
             Engine::Point2D<int> newPosition = positionsInReach[betterPositionIndex].first;
+            //std::cout << "The better position is: " << newPosition << std::endl;
             if (newPosition.isEqual(agent.getPosition())) {
                 newPosition = positionsInReach[Engine::GeneralState::statistics().getUniformDistValue(0,positionsInReach.size() -1)].first;
                 //std::cout << "I selected " << newPosition << " at random" << std::endl;
             }
             return newPosition;
         }
+        //std::cout << "No positions in reach" << std::endl;
+        return person.getPosition();
         //if (Engine::GeneralState::statistics().getUniformDistValue(0,1) == 1) person.turnHeadingLeft();
         //else person.turnHeadingRight();
-        selectNextPosition(agent, world);
+        //selectNextPosition(agent, world);
     }
 
     std::vector<std::pair<Engine::Point2D<int>, int>> MoveAction::lookAround(Engine::Agent &agent,
-            Engine::World *world) {
+            Engine::World *world, Engine::Point2D<int>& currentTarget) {
        // std::cout << "I'm going to look around" << std::endl;
         std::vector<std::pair<Engine::Point2D<int>, int>> positionsInReach;
         Person &person = dynamic_cast<Person&>(agent);
@@ -75,7 +85,7 @@ namespace Examples {
                         break;
                     }
                     if (world->getStaticRaster("buildings").getValue(point) == 1) {
-                        std::pair<Engine::Point2D<int>, int> newPoint(point,assignPriority(point,agent,world));
+                        std::pair<Engine::Point2D<int>, int> newPoint(point,assignPriority(point,agent,world,currentTarget));
                         positionsInReach.push_back(newPoint);
                     }
                 //}
@@ -85,12 +95,12 @@ namespace Examples {
         return positionsInReach;
     }
 
-    int MoveAction::assignPriority(Engine::Point2D<int> point, Engine::Agent &agent, Engine::World *world) {
+    int MoveAction::assignPriority(Engine::Point2D<int> point, Engine::Agent &agent, Engine::World *world, Engine::Point2D<int>& currentTarget) {
         Person &person = dynamic_cast<Person&>(agent);
-        int priority = int(point.distance(person.getFinalTarget()));
-        //if (nearAgent(point,agent,world)) priority += 100 * 0.01;
-        //if (nearWall(point,agent,world) and not targetNearWall(agent,world)) priority += 1;
-        //if (tooFarFromAgent(point,agent,world)) priority +=1;
+        int priority = int(point.distance(currentTarget));
+        if (nearAgent(point,agent,world)) priority += 100 * 0.2;
+        if (nearWall(point,agent,world) and not targetNearWall(agent,world)) priority += 100 * 0.2;
+        if (tooFarFromAgent(point,agent,world)) priority += 100 * 0.2;
         return priority;
     }
 
@@ -127,7 +137,7 @@ namespace Examples {
         return false;
     }
 
-    bool MoveAction::targetNearWall(Engine::Agent &agent, Engine::World *world) {
+    bool MoveAction::targetNearWall(Engine::Agent& agent, Engine::World *world) {
         int firstI, firstJ, lastI, lastJ;
         firstI = firstJ = lastI = lastJ = 0;
         Person &person = dynamic_cast<Person&>(agent);

@@ -10,6 +10,7 @@ namespace Examples {
         _mapRoute = getParamStr("inputData", "map");
         _entrancesRoute = getParamStr("inputData", "entrances");
         _finalTargetsRoute = getParamStr("inputData", "finalTargets");
+        _targetsRoute = getParamStr("inputData", "targets");
         _numAgents = getParamInt("inputData", "numAgents");
         _minAgentVision = getParamInt("agentData", "minVision");
         _maxAgentVision = getParamInt("agentData", "maxVision");

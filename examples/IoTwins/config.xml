@@ -1,11 +1,11 @@
 <?xml version="1.0" ?>
 <config>
     <output resultsFile="data/espaiBarca.h5" logsDir="./logs"/>
-    <numSteps value="1500" serializeResolution="1"/>
+    <numSteps value="2000" serializeResolution="1"/>
     <size width="970" height="970"/>
-    <inputData map="resources/bitmaps/buildings2.bmp" entrances="resources/bitmaps/noPartit/entrances.bmp"
-               finalTargets="resources/bitmaps/noPartit/entrances.bmp" numAgents="100"/>
-    <agentData minVision="2" maxVision="3" minVelocity="1" maxVelocity="1" minAge="0" maxAge="80" porvTourist="0.5"
+    <inputData map="resources/bitmaps/buildings1.1.bmp" entrances="resources/bitmaps/noPartit/entrances.bmp"
+               finalTargets="resources/bitmaps/noPartit/entrances.bmp" targets="resources/bitmaps/noPartit/targets3.bmp" numAgents="100"/>
+    <agentData minVision="2" maxVision="5" minVelocity="1" maxVelocity="1" minAge="0" maxAge="80" porvTourist="0.5"
                minWallDistance = "0" maxWallDistance = "1" minAgentDistance = "0" maxAgentDistance = "1"
-               maxDistanceBAgents = "10" provFollow = "0"/>
+               maxDistanceBAgents = "10" provFollow = "40"/>
 </config>

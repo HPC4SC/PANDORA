@@ -7,6 +7,7 @@ namespace Examples {
     WanderAction::~WanderAction() {}
 
     void WanderAction::execute(Engine::Agent &agent) {
+        //std::cout << "I'm going to wander now" << std::endl;
         Engine::World *world = agent.getWorld();
         Engine::Point2D<int> newPosition = selectNextPosition(agent,world);
         Person &person = dynamic_cast<Person&>(agent);
