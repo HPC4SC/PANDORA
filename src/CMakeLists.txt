@@ -10,6 +10,7 @@ set( PANDORA_FILES
      MpiFactory.cxx
      OpenMPSingleNode.cxx
      RasterLoader.cxx
+     RNGNormal.cxx
      SequentialSerializer.cxx
      Serializer.cxx
      ShpLoader.cxx

@@ -30,7 +30,7 @@ for (Rectangle::iterator it = boundaries.cbegin(); it != boundaries.cend(); ++it
 }
 
 # alternate 4: c++11 style:
-O, en c++11, encara més maco :o):
+O, en c++11, encara m-s maco :o):
 for (auto point:boundaries) {
 
 }
