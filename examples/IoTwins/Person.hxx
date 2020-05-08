@@ -45,7 +45,7 @@ namespace Examples {
     public:
 
         Person(const std::string &id, const int &vision, const int &velocity, const int &age, const bool &tourist,
-               const Engine::Point2D<int> finalTarget, const int &wallDistance, const int &agentDistance,
+               const Engine::Point2D<int>& finalTarget, const Engine::Point2D<int>& target, const int &wallDistance, const int &agentDistance,
                const int &maxDistanceBAgents, const int &provFollow);
 
         virtual ~Person();
@@ -99,6 +99,8 @@ namespace Examples {
         bool mustTurnRight(const int& newHeading);
 
         void printVisited();
+
+        void updateKnowledge();
 
         ////////////////////////////////////////////////
         // This code has been automatically generated //

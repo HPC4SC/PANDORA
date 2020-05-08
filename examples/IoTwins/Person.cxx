@@ -9,10 +9,10 @@
 namespace Examples {
 
     Person::Person(const std::string &id, const int &vision, const int &velocity, const int &age, const bool &tourist,
-                   const Engine::Point2D<int> finalTarget, const int &wallDistance, const int &agentDistance,
+                   const Engine::Point2D<int>& finalTarget, const Engine::Point2D<int>& target, const int &wallDistance, const int &agentDistance,
                    const int &maxDistanceBAgents, const int &provFollow)
             : Agent(id), _vision(vision), _velocity(velocity), _age(age), _isTourist(tourist),
-            _finalTarget(finalTarget), _wallDistance(wallDistance),_agentDistance(agentDistance),
+            _finalTarget(finalTarget), _target(target), _wallDistance(wallDistance),_agentDistance(agentDistance),
             _distanceBAgents(maxDistanceBAgents), _provFollow(provFollow), _heading(-1) {}
 
     Person::~Person() {}
@@ -500,6 +500,20 @@ namespace Examples {
         std::cout << "I have visited: ";
         for (int i = 0; i < _visitedPositions.size(); i++) std::cout << _visitedPositions[i] << " ";
         std::cout << std::endl;
+    }
+
+    void Person::updateKnowledge() {
+        //std::cout << "I'm " << _id << " going to updare my knowledge, my _position is: " << _position << std::endl;
+        if (_target.isEqual(Engine::Point2D<int>(-1,-1))) { 
+            for (int i = _position._x - _vision; i < _position._x + _vision; i++) {
+                for (int j = _position._y - _vision; j < _position._y + _vision; j++) {
+                    if (this->getWorld()->getStaticRaster("targets").getValue(Engine::Point2D<int>(i,j)) == 0 and _target.isEqual(Engine::Point2D<int>(-1,-1))) {
+                        _target = Engine::Point2D<int>(i,j);
+                    }
+                }
+            }
+        }
+        if (_position.isEqual(_target)) _target = Engine::Point2D<int>(-1,-1);
     }
 
 }

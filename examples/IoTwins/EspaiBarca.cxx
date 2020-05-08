@@ -19,6 +19,7 @@ namespace Examples {
         registerStaticRaster("buildings", true, 0);
         registerStaticRaster("entrances", true, 1);
         registerStaticRaster("finalTargets", true, 2);
+        registerStaticRaster("targets", true, 3);
         // 0 building 1 street
         Engine::GeneralState::rasterLoader().fillGDALRaster(getStaticRaster("buildings"), espaiConfig._mapRoute,
                 getBoundaries());
@@ -28,6 +29,8 @@ namespace Examples {
         // 0 valid finalTarget 1 noTarget
         Engine::GeneralState::rasterLoader().fillGDALRaster(getStaticRaster("finalTargets"),
                 espaiConfig._finalTargetsRoute, getBoundaries());
+        
+        Engine::GeneralState::rasterLoader().fillGDALRaster(getStaticRaster("targets"), espaiConfig._targetsRoute, getBoundaries());
         setupValidRasterPoints();
     }
 
@@ -46,10 +49,10 @@ namespace Examples {
                 oss << "Person_" << _lastId;
                 int vision, age, velocity, wallDistance, agentDistance, maxDistanceBAgents, provFollow;
                 bool tourist;
-                Engine::Point2D<int> finalTarget;
-                defineAgent(espaiConfig, vision, velocity, age, tourist, finalTarget, wallDistance, agentDistance,
+                Engine::Point2D<int> finalTarget, target;
+                defineAgent(espaiConfig, vision, velocity, age, tourist, finalTarget, target, wallDistance, agentDistance,
                         maxDistanceBAgents, provFollow);
-                Person *agent = new Person(oss.str(),vision,velocity,age,tourist,finalTarget,wallDistance,agentDistance,
+                Person *agent = new Person(oss.str(),vision,velocity,age,tourist,finalTarget,target,wallDistance,agentDistance,
                         maxDistanceBAgents,provFollow);
                 addAgent(agent);
                 int spawnIndex = Engine::GeneralState::statistics().getUniformDistValue(0,_spawnPoints.size() - 1);
@@ -83,9 +86,9 @@ namespace Examples {
         log_INFO(logName.str(), getWallTime() << " finished step: " << _step);
     }
 
-    void EspaiBarca::defineAgent(const EspaiConfig &espaiConfig, int &vision, int &velocity, int &age, bool &tourist,
-                                 Engine::Point2D<int> &finalTarget, int &wallDistance, int &agentDistance,
-                                 int &maxDistanceBAgents, int &provFollow) {
+    void EspaiBarca::defineAgent(const EspaiConfig& espaiConfig, int& vision, int& velocity, int& age, bool& tourist,
+                                 Engine::Point2D<int>& finalTarget, Engine::Point2D<int>& target, int& wallDistance, int& agentDistance,
+                                 int& maxDistanceBAgents, int& provFollow) {
         vision = Engine::GeneralState::statistics().getUniformDistValue(espaiConfig._minAgentVision,
                                                                         espaiConfig._maxAgentVision);
         velocity = Engine::GeneralState::statistics().getUniformDistValue(espaiConfig._minAgentVelocity,
@@ -94,6 +97,7 @@ namespace Examples {
                                                                      espaiConfig._maxAgentAge);
         tourist = Engine::GeneralState::statistics().getUniformDistValue(0, 100) > espaiConfig._provTourist;
         finalTarget = _finalTargets[Engine::GeneralState::statistics().getUniformDistValue(0, _finalTargets.size() - 1)];
+        target = Engine::Point2D<int>(-1,-1);
         wallDistance = Engine::GeneralState::statistics().getUniformDistValue(espaiConfig._minWallDistance,
                                                                            espaiConfig._maxWallDistance);
         agentDistance = Engine::GeneralState::statistics().getUniformDistValue(espaiConfig._minAgentDistance,
@@ -108,6 +112,7 @@ namespace Examples {
                 Engine::Point2D<int> candidate = Engine::Point2D<int>(i,j);
                 if (getStaticRaster("entrances").getValue(candidate) == 0) _spawnPoints.push_back(candidate);
                 if (getStaticRaster("finalTargets").getValue(candidate) == 0) _finalTargets.push_back(candidate);
+                if (getStaticRaster("targets").getValue(candidate) == 0) _targets.push_back(candidate);
             }
         }
     }
