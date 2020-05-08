@@ -7,8 +7,13 @@
 #include <iostream>
 #include <cstdlib>
 
+#include <Logger.hxx>
+
+
 int main(int argc, char *argv[])
 {
+	std::cout << "sugarScape main starting" << std::endl;
+
 	try
 	{	
 		if(argc>2)

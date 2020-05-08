@@ -1,7 +1,24 @@
 cmake_minimum_required (VERSION 3.1)
 project( Pandora )
 
-set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -DGDAL_VERSION_1 -DTIXML_USE_STL -g" )
+if (NOT debug)          # If variable not passed to cmake (-D debug=[true|false])
+    set(debug false) 
+endif ()
+if (NOT edebug)         # If variable not passed to cmake (-D edebug=[true|false])
+    set(edebug false)
+endif ()
+
+message("MODE DEBUG: " ${debug} ". MODE EXTREME_DEBUG: " ${edebug})
+
+if (debug) 
+    if (edebug)
+        set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -DGDAL_VERSION_1 -DTIXML_USE_STL -g -DPANDORAEDEBUG" )
+    else ()
+        set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -DGDAL_VERSION_1 -DTIXML_USE_STL -g -DPANDORADEBUG" )
+    endif ()
+else ()
+    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -DGDAL_VERSION_1 -DTIXML_USE_STL -g" )
+endif()
 #  -Wl,-z,defs  -DPANDORADEBUG
 set( CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -g" )
 
@@ -53,7 +70,7 @@ include_directories( ${CMAKE_SOURCE_DIR}/tinyxml )
 add_subdirectory( src )
 add_subdirectory( utils )
 add_subdirectory( pyPandora )
-add_subdirectory( examples )
+#add_subdirectory( examples )
 add_subdirectory( bin )
 
 #get_cmake_property(_variableNames VARIABLES)

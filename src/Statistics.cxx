@@ -1,7 +1,7 @@
 /*
  * Copyright ( c ) 2012
  * COMPUTER APPLICATIONS IN SCIENCE & ENGINEERING
- * BARCELONA SUPERCOMPUTING CENTRE - CENTRO NACIONAL DE SUPERCOMPUTACIÓN
+ * BARCELONA SUPERCOMPUTING CENTRE - CENTRO NACIONAL DE SUPERCOMPUTACI-N
  * http://www.bsc.es
 
  * This file is part of Pandora Library. This library is free software;
@@ -30,10 +30,15 @@
 namespace Engine
 {
 
-Statistics::Statistics() :  _randomGenerator(getNewSeed()), _randomNumbers(0, _distributionSize-1), _nextRandomNumber(_randomGenerator,_randomNumbers), _next01Number(_randomGenerator)
+Statistics::Statistics() :  _randomGenerator(_seed), _randomNumbers(0, _distributionSize-1), _nextRandomNumber(_randomGenerator,_randomNumbers), _next01Number(_randomGenerator)
 {
 	generateExponentialDistribution();
 	generateNormalDistribution();
+}
+
+void Statistics::setSeed(uint64_t seed)
+{
+	_seed = seed;
 }
 
 void Statistics::generateExponentialDistribution()
@@ -128,14 +133,6 @@ float Statistics::getNormalDistValueMinMax( float min, float max ) const
 	value *= diff;
 	value += min;
 	return value;
-}
-
-float Statistics::getNormalDistValue( float mean, float sd )
-{
-    RandomEngine rng(getNewSeed());
-    boost::normal_distribution<> nd(mean, sd);
-    boost::variate_generator<RandomEngine, boost::normal_distribution<> > var_nor(rng, nd);
-    return var_nor();
 }
 
 int Statistics::getUniformDistValue( int min, int max ) const

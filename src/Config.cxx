@@ -2,7 +2,7 @@
 /*
  * Copyright ( c ) 2012
  * COMPUTER APPLICATIONS IN SCIENCE & ENGINEERING
- * BARCELONA SUPERCOMPUTING CENTRE - CENTRO NACIONAL DE SUPERCOMPUTACIÓN
+ * BARCELONA SUPERCOMPUTING CENTRE - CENTRO NACIONAL DE SUPERCOMPUTACI-N
  * http://www.bsc.es
 
  * This file is part of Pandora Library. This library is free software;
@@ -91,6 +91,8 @@ void Config::loadBaseParams( )
 
     _size._width = getParamInt( "size", "width" );
     _size._height = getParamInt( "size", "height" );
+
+    _seed = getParamInt("seed", "value");
 }
 
 void Config::loadFile( )
@@ -200,6 +202,11 @@ TiXmlElement * Config::findElement( const std::string & elementPath )
 const Size<int> & Config::getSize( ) const
 {
     return _size;
+}
+
+const int& Config::getSeed() const
+{
+    return _seed;
 }
 
 } // namespace Engine
