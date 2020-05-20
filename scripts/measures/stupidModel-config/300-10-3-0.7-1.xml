@@ -1,0 +1,10 @@
+<?xml version="1.0" ?>
+<config>  
+	<!-- Global simulation parameters -->
+	<output resultsFile="./data/stupidModel.h5" logsDir="./logs"/>
+	<numSteps value="200" serializeResolution="1"/>
+	<size width="100" height="100"/>
+	<seed value="1234"/>
+	<Bugs numBugs="300" maxFoodConsumption="10" initialBugSizeMean="3" initialBugSizeSD="0.7"/>
+	<Raster maxFoodProduction = "1"/>
+</config>
