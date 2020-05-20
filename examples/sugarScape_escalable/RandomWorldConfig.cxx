@@ -13,7 +13,15 @@ RandomWorldConfig::~RandomWorldConfig()
 }
 
 void RandomWorldConfig::loadParams() {
-	_numAgents = getParamInt ( "Agents", "numAgents");
+	_numAgents = getParamInt("inputData", "numAgents");
+    _minWealth = getParamInt("inputData", "minWealth");
+    _maxWealth = getParamInt("inputData", "maxWealth");
+    _minVision = getParamInt("inputData", "minVision");
+    _maxVision = getParamInt("inputData", "maxVision");
+    _minMr = getParamInt("inputData", "minMr");
+    _maxMr = getParamInt("inputData", "maxMr");
+    _minMAge = getParamInt("inputData", "minMAge");
+    _maxMAge = getParamInt("inputData", "maxMAge");
 }
 
 	

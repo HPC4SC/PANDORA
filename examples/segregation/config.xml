@@ -2,6 +2,7 @@
 <config>  
 	<output resultsFile="./data/segregation.h5" logsDir="./logs"/>
 	<numSteps value="30" serializeResolution="1"/>
+	<seed value="1234"/>
 	<size width="50" height="50"/>
 	<!-- friendlyPercentage of neighbor cells with friends required to not move -->
 	<!-- density of occupied cells -->
