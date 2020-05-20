@@ -3,6 +3,7 @@
 	<!-- Global simulation parameters -->
 	<output resultsFile="./data/sugarScape.h5" logsDir="./logs"/>
 	<numSteps value="300" serializeResolution="1"/>
+	<seed value="1234"/>
 	<size width="50" height="50"/>
 	<seed value="1234"/>
 	<inputData numAgents="250" minWealth="5" maxWealth="25" minVision="1" maxVision="6"
