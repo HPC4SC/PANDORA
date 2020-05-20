@@ -1,0 +1,9 @@
+<?xml version="1.0" ?>
+<config>  
+	<!-- Global simulation parameters -->
+	<output resultsFile="./data/Flocking.h5" logsDir="./logs"/>
+	<numSteps value="300" serializeResolution="1"/>
+	<seed value="1234"/>
+	<size width="70" height="70"/>
+	<Birds numBirds="300" velocity="1" sigth="9" mindist = "1" max_A_turn = "5.00" max_C_turn = "3.00" max_S_turn = "1.50"/>
+</config>
