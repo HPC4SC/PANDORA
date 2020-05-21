@@ -8,25 +8,37 @@ namespace Examples
 {
 
 class RandomWorldConfig : public Engine::Config
-{	
-	int _numAgents;
-    int _minWealth;
-    int _maxWealth;
-    int _minVision;
-    int _maxVision;
-    int _minMr;
-    int _maxMr;
-    int _minMAge;
-    int _maxMAge;
+{
+    private:
+    
+        int _numAgents;
+        int _minWealth;
+        int _maxWealth;
+        int _minVision;
+        int _maxVision;
+        int _minMr;
+        int _maxMr;
+        int _minMAge;
+        int _maxMAge;
 	
-public:
-    // creates a RandomWorldConfig instance
-	RandomWorldConfig( const std::string & xmlFile );
-	// destyroys a RandomWorldConifg instance
-	virtual ~RandomWorldConfig();
-	void loadParams();
+    public:
+        // creates a RandomWorldConfig instance
+        RandomWorldConfig( const std::string & xmlFile );
+        // destyroys a RandomWorldConifg instance
+        virtual ~RandomWorldConfig();
+        void loadParams();
 
-	friend class RandomWorld;
+        const int& getNumAgents() const { return _numAgents; }
+        const int& getMinWealth() const { return _minWealth; }
+        const int& getMaxWealth() const { return _maxWealth; }
+        const int& getMinVision() const { return _minVision; }
+        const int& getMaxVision() const { return _maxVision; }
+        const int& getMinMr() const { return _minMr; }
+        const int& getMaxMr() const { return _maxMr; }
+        const int& getMinMAge() const { return _minMAge; }
+        const int& getMaxMAge() const { return _maxMAge; }
+
+    friend class RandomWorld;
 };
 
 } // namespace Examples
