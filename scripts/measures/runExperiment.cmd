@@ -14,10 +14,10 @@ inputParams="$3"
 
 inputConfigFileName="./$modelName-config/$inputParams.xml"
 
-mv ../examples/$modelName/config.xml ../examples/$modelName/config-backup.xml
-cp $inputConfigFileName ../examples/$modelName/config.xml
+mv ~/PANDORA/examples/$modelName/config.xml ~/PANDORA/examples/$modelName/config-backup.xml
+cp $inputConfigFileName ~/PANDORA/examples/$modelName/config.xml
 
-cd ../examples/$modelName
+cd ~/PANDORA/examples/$modelName
 ./$modelName > output.txt &
 
 systemPageSize=$(getconf PAGESIZE)
