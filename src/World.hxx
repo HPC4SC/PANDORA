@@ -108,6 +108,13 @@ public:
     void initialize( int argc = 0, char *argv[] = 0 );
     
     /**
+     * @brief Set randomness for the std::random_shuffle method, which shuffles the agents execution in each step of the simulation.
+     * 
+     * @param seed uint64_t
+     */
+    void setRandomShuffleSeed(uint64_t seed);
+
+    /**
      * @brief Runs the simulation. Performs each step and stores the states. Requires calling 'init' method a-priori.
      * 
      */
@@ -341,27 +348,37 @@ public:
      * it is the method where agents are created and addAgents must be called.
      * 
      */
-    virtual void createAgents( ){ };
+    virtual void createAgents( )
+    {
+    }
    
     /**
      * @brief To be defined in the subclass. Create the raster maps used in the simulation.
      * 
      */
-    virtual void createRasters( ){ }
+    virtual void createRasters( )
+    {
+    }
     
     /**
      * @brief Get the Config object.
      * 
      * @return const Config&
      */
-    const Config & getConfig( ) const { return *_config; }
+    const Config & getConfig( ) const 
+    {
+        return *_config;
+    }
 
     /**
      * @brief Get the value of the _step attribute.
      * 
      * @return int 
      */
-    int getCurrentTimeStep( ) const { return _step; }
+    int getCurrentTimeStep( ) const 
+    { 
+        return _step;
+    }
 
     /**
      * @brief Time from initialization step to the moment the method is executed.
@@ -387,28 +404,40 @@ public:
      * 
      * @return AgentsList::iterator 
      */
-    AgentsList::iterator beginAgents( ) { return _agents.begin( ); }
+    AgentsList::iterator beginAgents( ) 
+    {
+        return _agents.begin( );
+    }
     
     /**
      * @brief Returns the iteratior pointing to the last Agent in the _agents vector.
      * 
      * @return AgentsList::iterator 
      */
-    AgentsList::iterator endAgents( ) { return _agents.end( ); }
+    AgentsList::iterator endAgents( ) 
+    {
+        return _agents.end( );
+    }
     
     /**
      * @brief Get the Number Of Rasters.
      * 
      * @return size_t
      */
-    size_t getNumberOfRasters( ) const { return _rasters.size( ); }
+    size_t getNumberOfRasters( ) const 
+    {
+        return _rasters.size( );
+    }
 
     /**
      * @brief Get the Number Of Agents.
      * 
      * @return size_t.
      */
-    size_t getNumberOfAgents( ) const { return _agents.size( ); }
+    size_t getNumberOfAgents( ) const
+    {
+        return _agents.size( );
+    }
     
     /**
      * @brief Get the number of agents of the specified type.
@@ -423,7 +452,10 @@ public:
      * 
      * @param it pointed Agent to be removed.
      */
-    void eraseAgent( AgentsList::iterator & it ) { _agents.erase( it ); }
+    void eraseAgent( AgentsList::iterator & it ) 
+    { 
+        _agents.erase( it ); 
+    }
 
     /**
      * @brief Removes the specified agent from the simulation.

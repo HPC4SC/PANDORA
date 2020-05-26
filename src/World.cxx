@@ -70,10 +70,13 @@ namespace Engine
 
     void World::initialize( int argc, char *argv[] )
     {
+        // Set randomness
         int seed = _config->getSeed();
         if (_config->getSeed() == -1) seed = Statistics::getNewSeed();
-        Engine::GeneralState::statistics().setSeed(seed);
 
+        Engine::GeneralState::statistics().setSeed(seed);
+        setRandomShuffleSeed(seed);
+        
         _scheduler->init( argc, argv );
 
         createRasters( );
@@ -82,6 +85,9 @@ namespace Engine
         _scheduler->initData( );
     }
 
+    void World::setRandomShuffleSeed(uint64_t seed) {
+        std::srand(seed);
+    }
 
     void World::updateRasterToMaxValues( const std::string & key )
     {
@@ -436,20 +442,56 @@ namespace Engine
     }
 
 
-    const int & World::getId( ) const { return _scheduler->getId( ); }
-    const int & World::getNumTasks( ) const { return _scheduler->getNumTasks( ); }
-    const Rectangle<int> & World::getBoundaries( ) const{ return _scheduler->getBoundaries( ); }
+    const int & World::getId( ) const 
+    { 
+        return _scheduler->getId( ); 
+    }
+
+    const int & World::getNumTasks( ) const
+    {
+        return _scheduler->getNumTasks( );
+    }
+
+    const Rectangle<int> & World::getBoundaries( ) const
+    { 
+        return _scheduler->getBoundaries( ); 
+    }
+
     void World::removeAgent( std::shared_ptr<Agent> agentPtr )
     {
         Agent * agent = agentPtr.get( );
         _scheduler->removeAgent( agent );
     }
 
-    void World::removeAgent( Agent * agent ) { _scheduler->removeAgent( agent ); }
-    Agent * World::getAgent( const std::string & id ) { return _scheduler->getAgent( id ); }
-    AgentsVector World::getAgent( const Point2D<int> & position, const std::string & type ) { return _scheduler->getAgent( position, type ); }
-    void World::addStringAttribute( const std::string & type, const std::string & key, const std::string & value ) { _scheduler->addStringAttribute( type, key, value );}
-    void World::addIntAttribute( const std::string & type, const std::string & key, int value ) { _scheduler->addIntAttribute( type, key, value ); }
-    void World::addFloatAttribute( const std::string & type, const std::string & key, float value ) { _scheduler->addFloatAttribute( type, key, value ); }
+    void World::removeAgent( Agent * agent ) 
+    { 
+        _scheduler->removeAgent( agent ); 
+    }
+
+    Agent * World::getAgent( const std::string & id ) 
+    {
+        return _scheduler->getAgent( id ); 
+    }
+
+    AgentsVector World::getAgent( const Point2D<int> & position, const std::string & type ) 
+    { 
+        return _scheduler->getAgent( position, type ); 
+    }
+
+    void World::addStringAttribute( const std::string & type, const std::string & key, const std::string & value )
+    { 
+        _scheduler->addStringAttribute( type, key, value );
+    }
+
+    void World::addIntAttribute( const std::string & type, const std::string & key, int value ) 
+    { 
+        _scheduler->addIntAttribute( type, key, value );
+    }
+
+    void World::addFloatAttribute( const std::string & type, const std::string & key, float value ) 
+    { 
+        _scheduler->addFloatAttribute( type, key, value ); 
+    }
+    
 } // namespace Engine
 
