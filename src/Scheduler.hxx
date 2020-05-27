@@ -75,14 +75,22 @@ namespace Engine
          * 
          */
         Scheduler( ) : _id( 0 ), _numTasks( 1 ), _world( 0 ) { }
-        
+
+        /**
+         * @brief Destroy the Scheduler object
+         * 
+         */
+        virtual ~Scheduler( ) {}
+
         /**
          * @brief Set the World object to the current scheduler
          * 
          * @param world pointer to the world currently used in the simulation
          */
-        void setWorld( World * world ) { _world = world;}
-        virtual ~Scheduler( ) {}
+        void setWorld( World * world ) 
+        {
+            _world = world;
+        }
 
         /**
          * @brief Any initializing procedure BEFORE creating agents/rasters ( i.e. init communications and define boundaries for parallel nodes ). Must be implemented in child.
@@ -159,7 +167,9 @@ namespace Engine
          * @param agent Pointer of teh selected Agent.
          * @param executedAgent True if the Agent has been executed, false otherwise.
          */
-        virtual void agentAdded( AgentPtr agent, bool executedAgent ){};
+        virtual void agentAdded( AgentPtr agent, bool executedAgent )
+        {
+        }
 
         /**
          * @brief removes the necessary agents form the simulation.

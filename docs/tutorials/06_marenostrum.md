@@ -59,7 +59,7 @@ $ docker run    -v /var/run/docker.sock:/var/run/docker.sock \
                 {DockerHub_image}
 ```
 
-, where the {DockerHub_image} is something like genajim/pandora.
+, where the {DockerHub_image} should be something like genajim/pandora.
 
 The resulting image has been saved in /tmp/test/. Now you can upload it to MN4 by sftp.
 
@@ -73,7 +73,7 @@ $ module load singularity
 $ singularity shell genajim_pandora.sif
 ```
 
-From here on, the compilation steps are exactly the same ones than those used when compiling in local ([Compile and Install (using CMAKE)](00_installing_cmake.md)). The only difference is that you should add the following environment variables in the ~/.bashrc file in your MN profile (it is shared with the Singularity image):
+Now, check that the environment variables for the deployment are correct. If not, you should add the following lines in the ~/.bashrc file:
 
 ```bash
 export LD_LIBRARY_PATH=""
@@ -91,11 +91,15 @@ export HDF5_ROOT=/opt/hdf5-1.8.19
 export LD_LIBRARY_PATH=${HDF5_ROOT}/lib/:${LD_LIBRARY_PATH}
 ```
 
-At last, load ~/.bashrc:
+And then load ~/.bashrc:
 
 ```bash
 $ source ~/.bashrc
 ```
+
+**IMPORTANT!** Consider that the ~/.bashrc file is shared between the Singularity image and your MN profile.
+
+From here on, the compilation steps are exactly the same ones than those used when compiling in local ([Compile and Install (using CMAKE)](00_installing_cmake.md)). 
 
 ### Creating scripts
 
