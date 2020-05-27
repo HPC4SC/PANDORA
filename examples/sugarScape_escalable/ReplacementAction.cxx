@@ -1,5 +1,6 @@
 #include <ReplacementAction.hxx>
 
+#include <RandomWorldConfig.hxx>	
 #include <World.hxx>
 #include <RandomAgent.hxx>
 #include <GeneralState.hxx>
@@ -23,13 +24,17 @@ void ReplacementAction::execute( Engine::Agent & agent )
 	if ((randomAgent.getCurrentAge() > randomAgent.getMaxAge()) or (randomAgent.getWealth() < 0)) {
 		Engine::World * world = agent.getWorld();
 		std::string childId = agent.getId() + "_child";
+		
 		// removes the agent form the simulation 
 		agent.remove();
+
 		// and creates anotherone with random attributes and position
-		int childWealth =  Engine::GeneralState::statistics().getUniformDistValue(5,25);
-		int childVision =  Engine::GeneralState::statistics().getUniformDistValue(1,6);
-		int childMetabolicRate =  Engine::GeneralState::statistics().getUniformDistValue(1,4);
-		int childMaxAge =  Engine::GeneralState::statistics().getUniformDistValue(60,100);
+		const RandomWorldConfig& randomConfig = (const RandomWorldConfig&) world->getConfig();
+		int childWealth =  Engine::GeneralState::statistics().getUniformDistValue(randomConfig.getMinWealth(),randomConfig.getMaxWealth());
+		int childVision =  Engine::GeneralState::statistics().getUniformDistValue(randomConfig.getMinVision(),randomConfig.getMaxVision());
+		int childMetabolicRate =  Engine::GeneralState::statistics().getUniformDistValue(randomConfig.getMinMr(),randomConfig.getMaxMr());
+		int childMaxAge =  Engine::GeneralState::statistics().getUniformDistValue(randomConfig.getMinMAge(),randomConfig.getMaxMAge());
+
 		RandomAgent * child = new RandomAgent(childId,childWealth,childVision,childMetabolicRate,0,childMaxAge);
 		world->addAgent(child);
 		child->setRandomPosition();
