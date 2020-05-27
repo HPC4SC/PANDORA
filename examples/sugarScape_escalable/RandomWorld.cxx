@@ -92,10 +92,10 @@ void RandomWorld::createAgents()
 		if((i%getNumTasks())==getId()) {
 			std::ostringstream oss;
 			oss << "RandomAgent_" << i;
-			int wealth =  Engine::GeneralState::statistics().getUniformDistValue(5,25);
-			int vision =  Engine::GeneralState::statistics().getUniformDistValue(1,6);
-			int metabolicRate =  Engine::GeneralState::statistics().getUniformDistValue(1,4);
-			int maxAge =  Engine::GeneralState::statistics().getUniformDistValue(60,100);
+			int wealth =  Engine::GeneralState::statistics().getUniformDistValue(randomConfig._minWealth,randomConfig._maxWealth);
+			int vision =  Engine::GeneralState::statistics().getUniformDistValue(randomConfig._minVision,randomConfig._maxVision);
+			int metabolicRate =  Engine::GeneralState::statistics().getUniformDistValue(randomConfig._minMr,randomConfig._maxMr);
+			int maxAge =  Engine::GeneralState::statistics().getUniformDistValue(randomConfig._minMAge,randomConfig._maxMAge);
 			RandomAgent * agent = new RandomAgent(oss.str(),wealth,vision,metabolicRate,0,maxAge);
 			addAgent(agent);
 			agent->setRandomPosition();

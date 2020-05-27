@@ -160,7 +160,7 @@ Now that we have all the dependencies installed let's go and compile Pandora its
 
 	```bash
 	$ cd build
-	$ cmake debug=[true|**false**] -D edebug=[true|**false**] -DCMAKE_INSTALL_PREFIX=/${PANDORAPATH} ../
+	$ cmake -D debug=[true|**false**] -D edebug=[true|**false**] -D CMAKE_INSTALL_PREFIX=/${PANDORAPATH} ../
 	$ make
 	$ sudo make install
 	```
