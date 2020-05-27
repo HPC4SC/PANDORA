@@ -42,11 +42,19 @@ namespace Examples {
 
         int _heading;
 
+        int _interest;
+
+        int _interestDecrease;
+
+        std::vector<Engine::Point2D<int>> _visitedInterestPoints; 
+
+        int _timeSpent;
+
     public:
 
-        Person(const std::string &id, const int &vision, const int &velocity, const int &age, const bool &tourist,
-               const Engine::Point2D<int>& finalTarget, const Engine::Point2D<int>& target, const int &wallDistance, const int &agentDistance,
-               const int &maxDistanceBAgents, const int &provFollow);
+        Person(const std::string& id, const int& vision, const int& velocity, const int& age, const bool& tourist,
+               const Engine::Point2D<int>& finalTarget, const Engine::Point2D<int>& target, const int& wallDistance, const int& agentDistance,
+               const int& maxDistanceBAgents, const int& provFollow, const int& interest, const int& interestDecrease);
 
         virtual ~Person();
 
@@ -101,6 +109,16 @@ namespace Examples {
         void printVisited();
 
         void updateKnowledge();
+
+        bool visitedInterestPoint(const Engine::Point2D<int>& candidate);
+
+        void increaseTimeCount();
+
+        void registerAttributes();
+
+        void serialize();
+
+        int getTimeSpent();
 
         ////////////////////////////////////////////////
         // This code has been automatically generated //

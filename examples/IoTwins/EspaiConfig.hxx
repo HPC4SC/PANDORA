@@ -7,42 +7,35 @@ namespace Examples {
 
     class EspaiConfig : public Engine::Config
             {
-
         std::string _mapRoute;
-
         std::string _entrancesRoute;
-
         std::string _finalTargetsRoute;
-
         std::string _targetsRoute;
 
         int _numAgents;
 
         int _minAgentVision;
-
         int _maxAgentVision;
-
         int _minAgentVelocity;
-
         int _maxAgentVelocity;
-
         int _minAgentAge;
-
         int _maxAgentAge;
-
         float _provTourist;
-
         int _minWallDistance;
-
         int _minAgentDistance;
-
         int _maxWallDistance;
-
         int _maxAgentDistance;
-
         int _maxDistanceBAgents;
-
         int _provFollow;
+        
+        float _Calpha;
+        float _Cbeta;
+        float _Cdelta;
+        float _Csigma;
+        float _Ualpha;
+        float _Ubeta;
+        float _Udelta;
+        float _Usigma;
 
     public:
 
@@ -53,6 +46,22 @@ namespace Examples {
         void loadParams();
 
         friend class EspaiBarca;
+
+        float getCostAlpha() const;
+
+        float getCostBeta() const;
+
+        float getCostDelta() const;
+
+        float getCostSigma() const;
+
+        float getUtilityAlpha() const;
+
+        float getUtilityBeta() const;
+
+        float getUtilityDelta() const;
+
+        float getUtilitySigma() const;
 
     };
 

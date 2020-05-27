@@ -1,5 +1,6 @@
 #include <MoveAction.hxx>
 #include <Person.hxx>
+#include <EspaiConfig.hxx>
 #include <GeneralState.hxx>
 #include <DynamicRaster.hxx>
 #include <vector>
@@ -95,12 +96,13 @@ namespace Examples {
         return positionsInReach;
     }
 
-    int MoveAction::assignPriority(Engine::Point2D<int> point, Engine::Agent &agent, Engine::World *world, Engine::Point2D<int>& currentTarget) {
-        Person &person = dynamic_cast<Person&>(agent);
-        int priority = int(point.distance(currentTarget));
-        if (nearAgent(point,agent,world)) priority += 100 * 0.2;
-        if (nearWall(point,agent,world) and not targetNearWall(agent,world)) priority += 100 * 0.2;
-        if (tooFarFromAgent(point,agent,world)) priority += 100 * 0.2;
+    int MoveAction::assignPriority(Engine::Point2D<int> point, Engine::Agent& agent, Engine::World* world, Engine::Point2D<int>& currentTarget) {
+        Person& person = dynamic_cast<Person&>(agent);
+        const EspaiConfig& config = (const EspaiConfig &) world->getConfig();
+        int priority = int(point.distance(currentTarget)) * config.getCostAlpha();
+        if (nearAgent(point,agent,world)) priority += 100 * config.getCostBeta();
+        if (nearWall(point,agent,world) and not targetNearWall(agent,world)) priority += 100 * config.getCostDelta();
+        if (tooFarFromAgent(point,agent,world)) priority += 100 * config.getCostSigma();
         return priority;
     }
 

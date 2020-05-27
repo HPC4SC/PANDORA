@@ -27,7 +27,15 @@ namespace Examples {
         void defineLoopBounds(int &firstI,int &firstJ, int &lastI, int &lastJ, const int &posX, const int &posY,
                                             const int &capability, Engine::World *world);
 
-        int nearPeople(Engine::Point2D<int> point, Engine::Agent &agent, Engine::World *world);
+        int calculateUtility(Engine::Point2D<int> point, Engine::Agent& agent, Engine::World* world);
+
+        int nearPeople(Engine::Agent &agent, Engine::World *world);
+
+        bool nearWall(const Engine::Point2D<int> point, Engine::Agent &agent, Engine::World *world);
+
+        bool nearAgent(const Engine::Point2D<int> point, Engine::Agent &agent, Engine::World *world);
+
+        bool tooFarFromAgent(const Engine::Point2D<int> point, Engine::Agent &agent, Engine::World *world);
 
         std::string describe() const;
     };

@@ -1,5 +1,6 @@
 #include <WanderAction.hxx>
 #include <GeneralState.hxx>
+#include <EspaiConfig.hxx>
 
 namespace Examples {
     WanderAction::WanderAction() {}
@@ -25,9 +26,9 @@ namespace Examples {
         defineLoopBounds(firstI,firstJ,lastI,lastJ,person.getPosition()._x,person.getPosition()._y,person.getVelocity(),world);
         for (int i = firstI; i <= lastI; i++) {
             for (int j = firstJ; j <= lastJ; j++) {
-                if (i != j) {
-                    Engine::Point2D<int> point = Engine::Point2D<int>(i,j);
-                    std::pair<Engine::Point2D<int>, int> newPoint(point,nearPeople(point,agent,world));
+                Engine::Point2D<int> point = Engine::Point2D<int>(i,j);
+                if (i != j and world->getStaticRaster("buildings").getValue(point) == 1) {
+                    std::pair<Engine::Point2D<int>, int> newPoint(point,calculateUtility(point,agent,world));
                     positionsInReach.push_back(newPoint);
                 }
             }
@@ -43,11 +44,53 @@ namespace Examples {
         return nextPosition;
     }
 
-    int WanderAction::nearPeople(Engine::Point2D<int> point, Engine::Agent &agent, Engine::World *world) {
+    int WanderAction::calculateUtility(Engine::Point2D<int> point, Engine::Agent& agent, Engine::World* world) {
+        const EspaiConfig& config = (const EspaiConfig &) world->getConfig();
+        int utility = nearPeople(agent,world) * config.getUtilityAlpha();
+        if (nearAgent(point,agent,world)) utility += 100 * config.getUtilityBeta();
+        if (nearWall(point,agent,world)) utility += 100 * config.getUtilityDelta();
+        if (tooFarFromAgent(point,agent,world)) utility += 100 * config.getUtilitySigma();
+        return utility;
+    }
+
+    int WanderAction::nearPeople(Engine::Agent &agent, Engine::World *world) {
         Person &person = dynamic_cast<Person&>(agent);
         Engine::Agent * p_agent = world-> getAgent(agent.getId());
         Engine::AgentsVector neighbours = agent.getWorld()->getNeighbours(p_agent,person.getVision());
         return neighbours.size();
+    }
+
+    bool WanderAction::nearWall(const Engine::Point2D<int> point, Engine::Agent &agent, Engine::World *world) {
+        int firstI, firstJ, lastI, lastJ;
+        firstI = firstJ = lastI = lastJ = 0;
+        Person &person = dynamic_cast<Person&>(agent);
+        defineLoopBounds(firstI,firstJ,lastI,lastJ,point._x,point._y,person.getWallDistance(),world);
+        for (int i = firstI; i <= lastI; i++) {
+            for (int j = firstJ; j <= lastJ; j++) {
+                Engine::Point2D<int> newPoint = Engine::Point2D<int>(i,j);
+                if (point.distance(newPoint) <= person.getWallDistance() and
+                    world->getStaticRaster("buildings").getValue(newPoint) == 0) return false;
+            }
+        }
+        return true;
+    }
+
+    bool WanderAction::nearAgent(const Engine::Point2D<int> point, Engine::Agent &agent, Engine::World *world) {
+        Engine::Agent * p_agent = world->getAgent(agent.getId());
+        Person &person = dynamic_cast<Person&>(agent);
+        Engine::AgentsVector neighbours = world->getNeighbours(p_agent,person.getAgentDistance());
+        for (int i = 0; i < neighbours.size(); i++) {
+            if (point.distance(neighbours[i]->getPosition()) <= person.getAgentDistance()) return false;
+        }
+        return true;
+    }
+
+    bool WanderAction::tooFarFromAgent(const Engine::Point2D<int> point, Engine::Agent &agent, Engine::World *world) {
+        Engine::Agent * p_agent = world->getAgent(agent.getId());
+        Person &person = dynamic_cast<Person&>(agent);
+        Engine::AgentsVector neighbours = world->getNeighbours(p_agent,person.getMaxDistanceBetweenAgents());
+        if (neighbours.empty()) return true;
+        return false;
     }
 
     void WanderAction::defineLoopBounds(int &firstI,int &firstJ, int &lastI, int &lastJ, const int &posX, const int &posY,

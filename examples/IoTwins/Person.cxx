@@ -8,12 +8,13 @@
 
 namespace Examples {
 
-    Person::Person(const std::string &id, const int &vision, const int &velocity, const int &age, const bool &tourist,
-                   const Engine::Point2D<int>& finalTarget, const Engine::Point2D<int>& target, const int &wallDistance, const int &agentDistance,
-                   const int &maxDistanceBAgents, const int &provFollow)
+    Person::Person(const std::string& id, const int& vision, const int& velocity, const int& age, const bool& tourist,
+                   const Engine::Point2D<int>& finalTarget, const Engine::Point2D<int>& target, const int& wallDistance, const int& agentDistance,
+                   const int& maxDistanceBAgents, const int& provFollow, const int& interest, const int& interestDecrease)
             : Agent(id), _vision(vision), _velocity(velocity), _age(age), _isTourist(tourist),
             _finalTarget(finalTarget), _target(target), _wallDistance(wallDistance),_agentDistance(agentDistance),
-            _distanceBAgents(maxDistanceBAgents), _provFollow(provFollow), _heading(-1) {}
+            _distanceBAgents(maxDistanceBAgents), _provFollow(provFollow), _heading(-1), _interest(interest), _interestDecrease(interestDecrease),
+            _timeSpent(0) {}
 
     Person::~Person() {}
 
@@ -21,12 +22,16 @@ namespace Examples {
         if (_finalTarget == this->getPosition()) {
             _actions.push_back(new LeaveAction());
         }
+        else if (_target == this->getPosition() and _interest > 0) {
+            if (Engine::GeneralState::statistics().getUniformDistValue(0,100) < 70) _actions.push_back(new WanderAction);
+            else _actions.push_back(new DoNothingAction);
+            _interest -= _interestDecrease;
+            _visitedInterestPoints.push_back(_target);
+        }
         else {
             if (Engine::GeneralState::statistics().getUniformDistValue(0,100) < _provFollow) {
                 _actions.push_back(new WanderAction());
             } else {
-                if (_heading == -1) initialHeading();
-                else correctHeading();
                 _actions.push_back(new MoveAction());
             }
         }
@@ -212,288 +217,11 @@ namespace Examples {
     }
 
     bool Person::mustTurnLeft(const int& newHeading) {
-        /*switch(newHeading) {
-            case 0:
-                switch(_heading) {
-                    case 0:
-                        return false;
-                        break;
-                    case 1:
-                        return true;
-                        break;
-                    case 2:
-                        return true;
-                        break;
-                    case 3:
-                        return false;
-                        break;
-                    case 4:
-                        return true;
-                        break;
-                    case 5:
-                        return false;
-                        break;
-                    case 6:
-                        return false;
-                        break;
-                    case 7:
-                        if (Engine::GeneralState::statistics().getUniformDistValue(0,1) == 0) return true;
-                        return false;
-                        break;
-                }
-                break;
-            case 1:
-                switch(_heading) {
-                    case 0:
-                        return false;
-                        break;
-                    case 1:
-                        return false;
-                        break;
-                    case 2:
-                        return true;
-                        break;
-                    case 3:
-                        return false;
-                        break;
-                    case 4:
-                        return true;
-                        break;
-                    case 5:
-                        return false;
-                        break;
-                    case 6:
-                        if (Engine::GeneralState::statistics().getUniformDistValue(0,1) == 0) return true;
-                        return false;
-                        break;
-                    case 7:
-                        return true;
-                        break;
-                }
-                break;
-            case 2:
-            switch(_heading) {
-                    case 0:
-                        return false;
-                        break;
-                    case 1:
-                        return false;
-                        break;
-                    case 2:
-                        return false;
-                        break;
-                    case 3:
-                        return false;
-                        break;
-                    case 4:
-                        return true;
-                        break;
-                    case 5:
-                        if (Engine::GeneralState::statistics().getUniformDistValue(0,1) == 0) return true;
-                        return false;
-                        break;
-                    case 6:
-                        return true;
-                        break;
-                    case 7:
-                        return true;
-                        break;
-                }
-                break;
-            case 3:
-                switch(_heading) {
-                    case 0:
-                        return true;
-                        break;
-                    case 1:
-                        return true;
-                        break;
-                    case 2:
-                        return true;
-                        break;
-                    case 3:
-                        return false;
-                        break;
-                    case 4:
-                        if (Engine::GeneralState::statistics().getUniformDistValue(0,1) == 0) return true;
-                        return false;
-                        break;
-                    case 5:
-                        return false;
-                        break;
-                    case 6:
-                        return false;
-                        break;
-                    case 7:
-                        return false;
-                        break;
-                }
-                break;
-            case 4:
-                switch(_heading) {
-                    case 0:
-                        return false;
-                        break;
-                    case 1:
-                        return false;
-                        break;
-                    case 2:
-                        return false;
-                        break;
-                    case 3:
-                        if (Engine::GeneralState::statistics().getUniformDistValue(0,1) == 0) return true;
-                        return false;
-                        break;
-                    case 4:
-                        return false;
-                        break;
-                    case 5:
-                        return true;
-                        break;
-                    case 6:
-                        return true;
-                        break;
-                    case 7:
-                        return true;
-                        break;
-                }
-                break;
-            case 5:
-                switch(_heading) {
-                    case 0:
-                        return true;
-                        break;
-                    case 1:
-                        return true;
-                        break;
-                    case 2:
-                        if (Engine::GeneralState::statistics().getUniformDistValue(0,1) == 0) return true;
-                        return false;
-                        break;
-                    case 3:
-                        return true;
-                        break;
-                    case 4:
-                        return false;
-                        break;
-                    case 5:
-                        return false;
-                        break;
-                    case 6:
-                        return false;
-                        break;
-                    case 7:
-                        return false;
-                        break;
-                }
-                break;
-            case 6:
-                switch(_heading) {
-                    case 0:
-                        return true;
-                        break;
-                    case 1:
-                        if (Engine::GeneralState::statistics().getUniformDistValue(0,1) == 0) return true;
-                        return false;
-                        break;
-                    case 2:
-                        return false;
-                        break;
-                    case 3:
-                        return true;
-                        break;
-                    case 4:
-                        return false;
-                        break;
-                    case 5:
-                        return true;
-                        break;
-                    case 6:
-                        return false;
-                        break;
-                    case 7:
-                        return false;
-                        break;
-                }
-                break;
-            case 7:
-                switch(_heading) {
-                    case 0:
-                        if (Engine::GeneralState::statistics().getUniformDistValue(0,1) == 0) return true;
-                        return false;
-                        break;
-                    case 1:
-                        false;
-                        break;
-                    case 2:
-                        return false;
-                        break;
-                    case 3:
-                        return true;
-                        break;
-                    case 4:
-                        return false;
-                        break;
-                    case 5:
-                        return true;
-                        break;
-                    case 6:
-                        return true;
-                        break;
-                    case 7:
-                        return false;
-                        break;
-                }
-                break;
-        }*/
+        
     }
 
     bool Person::mustTurnRight(const int& newHeading) {
-        /*switch(newHeading) {
-            case 0:
-                switch(_heading) {
-                    case 0:
-                        return false;
-                        break;
-                    case 1:
-                        return true;
-                        break;
-                    case 2:
-                        return true;
-                        break;
-                    case 3:
-                        return false;
-                        break;
-                    case 4:
-                        return true;
-                        break;
-                    case 5:
-                        return false;
-                        break;
-                    case 6:
-                        return false;
-                        break;
-                    case 7:
-                        if (Engine::GeneralState::statistics.getUniformDistValue(0,1) == 0) return true;
-                        return false;
-                        break;
-                }
-                break;
-            case 1:
-                break;
-            case 2:
-                break;
-            case 3:
-                break;
-            case 4:
-                break;
-            case 5:
-                break;
-            case 6:
-                break;
-            case 7:
-                break;
-        }*/
+        
     }
 
     void Person::printVisited() {
@@ -503,17 +231,43 @@ namespace Examples {
     }
 
     void Person::updateKnowledge() {
-        //std::cout << "I'm " << _id << " going to updare my knowledge, my _position is: " << _position << std::endl;
+        std::cout << "I'm " << _id << " going to updare my knowledge, my _position is: " << _position << " and my time spent is: " << _timeSpent << std::endl;
+        increaseTimeCount();
         if (_target.isEqual(Engine::Point2D<int>(-1,-1))) { 
             for (int i = _position._x - _vision; i < _position._x + _vision; i++) {
                 for (int j = _position._y - _vision; j < _position._y + _vision; j++) {
-                    if (this->getWorld()->getStaticRaster("targets").getValue(Engine::Point2D<int>(i,j)) == 0 and _target.isEqual(Engine::Point2D<int>(-1,-1))) {
-                        _target = Engine::Point2D<int>(i,j);
+                    Engine::Point2D<int> candidate = Engine::Point2D<int>(i,j);
+                    if (this->getWorld()->getStaticRaster("targets").getValue(candidate) == 0 and not visitedInterestPoint(candidate)) {
+                        _target = candidate;
                     }
                 }
             }
         }
         if (_position.isEqual(_target)) _target = Engine::Point2D<int>(-1,-1);
+    }
+
+    void Person::registerAttributes() {
+        registerIntAttribute("timeSpent");
+    }
+
+    void Person::serialize() {
+        serializeAttribute("timeSpent", _timeSpent);
+    }
+
+    bool Person::visitedInterestPoint(const Engine::Point2D<int>& candidate) {
+        for (int i = 0; i < _visitedInterestPoints.size();  i++) {
+            if (candidate.isEqual(_visitedInterestPoints[i])) return true;
+            if (candidate.distance(_visitedInterestPoints[i]) < 70) return true;
+        }
+        return false;
+    }
+
+    void Person::increaseTimeCount() {
+        _timeSpent += 1;
+    }
+
+    int Person::getTimeSpent() {
+        return _timeSpent;
     }
 
 }

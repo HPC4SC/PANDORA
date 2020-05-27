@@ -32,8 +32,11 @@ def read_agents(agent_route):
         return steps_dfs
 
 def print_agents(steps_dfs):
-    camera = Camera(plt.figure())
-    sns.set()
+    img = plt.imread("../resources/bitmaps/buildings1.1.png")
+    fig, ax = plt.subplots()
+
+    camera = Camera(fig)
+
     points = []
     x = []
     y = []
@@ -42,6 +45,7 @@ def print_agents(steps_dfs):
         y.append(df['y'])
         points.append((x,y))
     for i in range(len(points)):
+        ax.imshow(img)
         plt.xlim(0,970)
         plt.ylim(970,0)
         plt.scatter(x[i],y[i],s=0.15)

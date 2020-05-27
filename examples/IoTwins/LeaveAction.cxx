@@ -9,8 +9,8 @@ namespace Examples {
     LeaveAction::~LeaveAction() {}
 
     void LeaveAction::execute(Engine::Agent &agent) {
-        std::cout << "I'm " << agent.getId() << " and I no longer exist" << std::endl;
         Person & person = (Person&)agent;
+        std::cout << "I'm " << agent.getId() << " and I no longer exist. My time spent is: " << person.getTimeSpent() << std::endl;
         agent.remove();
     }
 

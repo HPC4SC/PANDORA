@@ -47,20 +47,21 @@ namespace Examples {
                 _lastId += 1;
                 std::ostringstream oss;
                 oss << "Person_" << _lastId;
-                int vision, age, velocity, wallDistance, agentDistance, maxDistanceBAgents, provFollow;
+                int vision, age, velocity, wallDistance, agentDistance, maxDistanceBAgents, provFollow, interest, interestDecrease;
                 bool tourist;
                 Engine::Point2D<int> finalTarget, target;
                 defineAgent(espaiConfig, vision, velocity, age, tourist, finalTarget, target, wallDistance, agentDistance,
-                        maxDistanceBAgents, provFollow);
+                        maxDistanceBAgents, provFollow, interest, interestDecrease);
                 Person *agent = new Person(oss.str(),vision,velocity,age,tourist,finalTarget,target,wallDistance,agentDistance,
-                        maxDistanceBAgents,provFollow);
+                        maxDistanceBAgents,provFollow,interest,interestDecrease);
                 addAgent(agent);
                 int spawnIndex = Engine::GeneralState::statistics().getUniformDistValue(0,_spawnPoints.size() - 1);
                 Engine::Point2D<int> spawn = _spawnPoints[spawnIndex];
-                while (spawn.distance(finalTarget) < 50) {
+                while (spawn.distance(finalTarget) < 80) {
                     spawnIndex = Engine::GeneralState::statistics().getUniformDistValue(0,_spawnPoints.size() - 1);
                     spawn = _spawnPoints[spawnIndex];
                 }
+                std::cout << "I spawn at: " << spawn << " and my final target is: " << finalTarget << std::endl;
                 agent->setPosition(spawn);
                 log_INFO(logName.str(), getWallTime() << " new agent: " << agent);
             }
@@ -88,7 +89,7 @@ namespace Examples {
 
     void EspaiBarca::defineAgent(const EspaiConfig& espaiConfig, int& vision, int& velocity, int& age, bool& tourist,
                                  Engine::Point2D<int>& finalTarget, Engine::Point2D<int>& target, int& wallDistance, int& agentDistance,
-                                 int& maxDistanceBAgents, int& provFollow) {
+                                 int& maxDistanceBAgents, int& provFollow, int& interest, int& interestDecrease) {
         vision = Engine::GeneralState::statistics().getUniformDistValue(espaiConfig._minAgentVision,
                                                                         espaiConfig._maxAgentVision);
         velocity = Engine::GeneralState::statistics().getUniformDistValue(espaiConfig._minAgentVelocity,
@@ -104,6 +105,8 @@ namespace Examples {
                                                                             espaiConfig._maxAgentDistance);
         maxDistanceBAgents = espaiConfig._maxDistanceBAgents;
         provFollow = espaiConfig._provFollow;
+        interest = Engine::GeneralState::statistics().getUniformDistValue(0,100);
+        interestDecrease = Engine::GeneralState::statistics().getUniformDistValue(1,25);
     }
 
     void EspaiBarca::setupValidRasterPoints() {
