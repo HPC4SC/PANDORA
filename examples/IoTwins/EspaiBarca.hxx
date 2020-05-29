@@ -23,8 +23,14 @@ namespace Examples {
         void createAgents();
 
         void defineAgent(const EspaiConfig& espaiConfig, int& vision, int& velocity, int& age, bool& tourist,
-                         Engine::Point2D<int>& finalTarget, Engine::Point2D<int>& target, int& wallDistance, int& agentDistance,
-                         int& maxDistanceBAgents, int& provFollow, int& interest, int& interestDecrease);
+                        Engine::Point2D<int>& finalTarget, Engine::Point2D<int>& target, int& wallDistance, int& agentDistance,
+                        int& maxDistanceBAgents, int& provFollow, int& interest, int& interestDecrease);
+
+        void defineTourist(const EspaiConfig& espaiConfig, int& vision, int& velocity, int& age, int& wallDistance, int& agentDistance,
+                        int& maxDistanceBAgents, int& provFollow, int& interest, int& interestDecrease);
+
+        void definePerson(const EspaiConfig& espaiConfig, int& vision, int& velocity, int& age, int& wallDistance, int& agentDistance,
+                        int& maxDistanceBAgents, int& provFollow, int& interest, int& interestDecrease);
 
         void step();
 

@@ -90,15 +90,21 @@ namespace Examples {
     void EspaiBarca::defineAgent(const EspaiConfig& espaiConfig, int& vision, int& velocity, int& age, bool& tourist,
                                  Engine::Point2D<int>& finalTarget, Engine::Point2D<int>& target, int& wallDistance, int& agentDistance,
                                  int& maxDistanceBAgents, int& provFollow, int& interest, int& interestDecrease) {
+        tourist = Engine::GeneralState::statistics().getUniformDistValue(0, 100) > espaiConfig._provTourist;
+        if (tourist) defineTourist(espaiConfig,vision,velocity,age,wallDistance,agentDistance,maxDistanceBAgents,provFollow,interest,interestDecrease);
+        else definePerson(espaiConfig,vision,velocity,age,wallDistance,agentDistance,maxDistanceBAgents,provFollow,interest,interestDecrease);
+        finalTarget = _finalTargets[Engine::GeneralState::statistics().getUniformDistValue(0, _finalTargets.size() - 1)];
+        target = Engine::Point2D<int>(-1,-1);
+    }
+
+    void EspaiBarca::defineTourist(const EspaiConfig& espaiConfig, int& vision, int& velocity, int& age, int& wallDistance, int& agentDistance,
+                        int& maxDistanceBAgents, int& provFollow, int& interest, int& interestDecrease) {
         vision = Engine::GeneralState::statistics().getUniformDistValue(espaiConfig._minAgentVision,
                                                                         espaiConfig._maxAgentVision);
         velocity = Engine::GeneralState::statistics().getUniformDistValue(espaiConfig._minAgentVelocity,
                                                                           espaiConfig._maxAgentVelocity);
         age = Engine::GeneralState::statistics().getUniformDistValue(espaiConfig._minAgentAge,
                                                                      espaiConfig._maxAgentAge);
-        tourist = Engine::GeneralState::statistics().getUniformDistValue(0, 100) > espaiConfig._provTourist;
-        finalTarget = _finalTargets[Engine::GeneralState::statistics().getUniformDistValue(0, _finalTargets.size() - 1)];
-        target = Engine::Point2D<int>(-1,-1);
         wallDistance = Engine::GeneralState::statistics().getUniformDistValue(espaiConfig._minWallDistance,
                                                                            espaiConfig._maxWallDistance);
         agentDistance = Engine::GeneralState::statistics().getUniformDistValue(espaiConfig._minAgentDistance,
@@ -107,6 +113,24 @@ namespace Examples {
         provFollow = espaiConfig._provFollow;
         interest = Engine::GeneralState::statistics().getUniformDistValue(0,100);
         interestDecrease = Engine::GeneralState::statistics().getUniformDistValue(1,25);
+    }
+
+    void EspaiBarca::definePerson(const EspaiConfig& espaiConfig, int& vision, int& velocity, int& age, int& wallDistance, int& agentDistance,
+                        int& maxDistanceBAgents, int& provFollow, int& interest, int& interestDecrease) {
+        vision = Engine::GeneralState::statistics().getUniformDistValue(espaiConfig._minAgentVision,
+                                                                        espaiConfig._maxAgentVision);
+        velocity = Engine::GeneralState::statistics().getUniformDistValue(espaiConfig._minAgentVelocity,
+                                                                          espaiConfig._maxAgentVelocity);
+        age = Engine::GeneralState::statistics().getUniformDistValue(espaiConfig._minAgentAge,
+                                                                     espaiConfig._maxAgentAge);
+        wallDistance = Engine::GeneralState::statistics().getUniformDistValue(espaiConfig._minWallDistance,
+                                                                           espaiConfig._maxWallDistance);
+        agentDistance = Engine::GeneralState::statistics().getUniformDistValue(espaiConfig._minAgentDistance,
+                                                                            espaiConfig._maxAgentDistance);
+        maxDistanceBAgents = espaiConfig._maxDistanceBAgents;
+        provFollow = espaiConfig._provFollow * (Engine::GeneralState::statistics().getUniformDistValue(0,40) * 0.01);
+        interest = Engine::GeneralState::statistics().getUniformDistValue(10,80);
+        interestDecrease = Engine::GeneralState::statistics().getUniformDistValue(1,40);
     }
 
     void EspaiBarca::setupValidRasterPoints() {
