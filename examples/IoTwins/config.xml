@@ -10,5 +10,5 @@
     <agentData minVision="2" maxVision="5" minVelocity="1" maxVelocity="1" minAge="0" maxAge="80" porvTourist="0.5"
                minWallDistance = "0" maxWallDistance = "1" minAgentDistance = "0" maxAgentDistance = "1"
                maxDistanceBAgents = "10" provFollow = "40"/>
-     <coeficients Calpha="1" Cbeta="1" Cdelta="1" Csigma="1" Ualpha="1" Ubeta="1" Udelta="1" Usigma="1"/>
+     <coefficients Calpha="1" Cbeta="1" Cdelta="1" Csigma="1" Ualpha="1" Ubeta="1" Udelta="1" Usigma="1"/>
 </config>
