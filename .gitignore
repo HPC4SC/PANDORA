@@ -60,5 +60,6 @@ install/
 /docs/doxygen/html/
 /docs/doxygen/latex/
 /.vscode/
+*.png
 
 examples/sugarScape_escalable/output.txt
