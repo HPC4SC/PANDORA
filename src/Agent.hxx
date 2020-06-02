@@ -51,6 +51,8 @@ namespace Engine
         Point2D<int> _position; //! Position of the agent, in global coordinates.
         World * _world; //! Pointer to the world that owns this agent.
 
+        std::list<Action*> _actions; //! list of actions to be executed by the Agent.
+
         /**
          * @brief used in child class. Serializes a float attribute.
          * 
@@ -75,7 +77,6 @@ namespace Engine
          */
         void serializeAttribute( const std::string & name, const std::string & value );
 
-        std::list<Action*> _actions; //! list of actions to be executed by the Agent.
     public:
 
         /**
@@ -334,6 +335,12 @@ namespace Engine
          * @param newType new type of the Agent.
          */
         void changeType( const std::string & newType );
+
+
+        void pauseParallelization();
+
+        void resumeParallelization();
+
     };
 } // namespace Engine
 #endif //__Agent_hxx__

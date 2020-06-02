@@ -31,23 +31,24 @@ namespace Engine
 
     class Action
     {
-    public:
-        Action( );
-        virtual ~Action( );
-        
-        /**
-         * @brief Code that will be run by the agent. Must be implemented in child class.
-         * 
-         * @param agent Agent that will perform the Action.
-         */
-        virtual void execute( Agent & agent ) = 0;
 
-        /**
-         * @brief Describes the type of Action executed. implemented in child class.
-         * 
-         * @return std::string 
-         */
-        virtual std::string describe( ) const;
+        public:
+            Action( );
+            virtual ~Action( );
+            
+            /**
+             * @brief Code that will be run by the agent. Must be implemented in child class.
+             * 
+             * @param agent Agent that will perform the Action.
+             */
+            virtual void execute( Agent & agent ) = 0;
+
+            /**
+             * @brief Describes the type of Action executed. implemented in child class.
+             * 
+             * @return std::string 
+             */
+            virtual std::string describe( ) const;
     };
 } // namespace Engine
 #endif // __Action_hxx__

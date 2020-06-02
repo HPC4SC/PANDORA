@@ -29,6 +29,7 @@
 #include <vector>
 #include <Scheduler.hxx>
 #include <boost/timer/timer.hpp>
+#include <omp.h>
 
 namespace Engine
 {
@@ -45,6 +46,9 @@ private:
     SequentialSerializer _serializer; //! Instance of the simulation's SequentialSerializer.
     AgentsList _removedAgents; //! List of agents that are removed during a time step, and need to be erased by the end of the time step.
 
+    bool _executeAgentsActionsInParallel; //! Initialized to False by default in the init() method.
+    omp_lock_t _ompLock;
+
     /**
      * @brief returns the iterator inside World::_agents with _id = id; in case it is not found returns _agents.end( ).
      * 
@@ -57,8 +61,9 @@ public:
     /**
      * @brief Construct a new OpenMPSingleNode object. And creates the corresponding serializer.
      * 
+     * @param executeActionsInParallel Indicates whether to parallelize the agents' execution of actions or not.
      */
-    OpenMPSingleNode( );
+    OpenMPSingleNode();
 
     /**
      * @brief Destroy the OpenMPSingle Node object.
@@ -79,7 +84,7 @@ public:
      * @param argv Not used.
      */
     void init( int argc, char *argv[] );
-    
+
     /**
      * @brief Initialize data processes after creation of agents and rasters.
      * 
@@ -240,6 +245,25 @@ public:
      * @return int 
      */
     int getMaxValue( const DynamicRaster & raster, const Point2D<int> & position ) const;
+
+    /**
+     * @brief [PARALLELISM FUNCTION] Set the executeAgentsActionsInParallel member
+     * 
+     * @param executeAgentsActionsInParallel 
+     */
+    void setParallelism(bool executeAgentsActionsInParallel);
+
+    /**
+     * @brief [PARALLELISM FUNCTION] Pause all the threads but the one calling this function.
+     * 
+     */
+    void pauseParallelization();
+
+    /**
+     * @brief [PARALLELISM FUNCTION] Resume the threads that were locked in the pauseParallelization() method.
+     * 
+     */
+    void resumeParallelization();
 
 //    friend class Serializer;
 };

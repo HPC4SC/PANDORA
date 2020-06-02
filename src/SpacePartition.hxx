@@ -531,6 +531,12 @@ namespace Engine
          * @return AgentsList::const_iterator 
          */
         AgentsList::const_iterator endOverlapAgents( ) const{ return _overlapAgents.end( ); }
+
+        void setParallelism(bool executeAgentsActionsInParallel) {}
+
+        void pauseParallelization() {}
+
+        void resumeParallelization() {}
     };
 } // namespace Engine
 #endif // __SpacePartition_hxx__
