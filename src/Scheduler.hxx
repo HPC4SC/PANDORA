@@ -297,6 +297,25 @@ namespace Engine
          * @return int 
          */
         virtual int getMaxValue( const DynamicRaster & raster, const Point2D<int> & position ) const = 0;
+
+        /**
+         * @brief OpenMP call. Implemented only in the OpenMPSingleNode scheduler.
+         * 
+         * @param executeAgentsActionsInParallel 
+         */
+        virtual void setParallelism(bool executeAgentsActionsInParallel) = 0;
+
+        /**
+         * @brief OpenMP call. Implemented only in the OpenMPSingleNode scheduler.
+         * 
+         */
+        virtual void pauseParallelization() = 0;
+
+        /**
+         * @brief OpenMP call. Implemented only in the OpenMPSingleNode scheduler.
+         * 
+         */
+        virtual void resumeParallelization() = 0;
     };
 } // namespace Engine
 #endif // __Scheduler_hxx__

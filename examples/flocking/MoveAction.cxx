@@ -9,6 +9,12 @@
 #include <cmath>
 #include <string>
 
+
+#include <omp.h>
+#include <thread>
+#include <chrono>
+
+
 namespace Examples {
 
 MoveAction::MoveAction() {}
@@ -16,18 +22,40 @@ MoveAction::MoveAction() {}
 MoveAction::~MoveAction() {}
 
 void MoveAction::execute( Engine::Agent & agent ) {
+
+	// const int threadID = omp_get_thread_num();
+	// const int numThreads = omp_get_num_threads();
+
+	// std::cout << "[ThreadID = " << threadID << "] Threads before changingWorld() call: " << numThreads << std::endl;
+	// agent.getWorld()->changingWorld();
+
+	// std::cout << "[ThreadID = " << threadID << "] Threads after changingWorld() call: " << numThreads << std::endl;
+	// std::cout << "[ThreadID = " << threadID << "] SLEEPINGGGGGGGGGGGGGGGGGGGGG" << std::endl;
+	// std::this_thread::sleep_for(std::chrono::seconds(1));
+
+	// agent.getWorld()->worldChanged();
+
+	// std::cout << "[ThreadID = " << threadID << "] SLEPINGGGGGGGGGGGGGGGGGGGGGG DONE" << std::endl;
+	// std::this_thread::sleep_for(std::chrono::seconds(2));
+	// abort();
+
+
+
 	Engine::World * world = agent.getWorld();
 	Bird & birdAgent = (Bird&)agent;
 
 	// look around
-	Engine::Agent * p_agent = agent.getWorld()-> getAgent(agent.getId());
+	Engine::Agent * p_agent = agent.getWorld()->getAgent(agent.getId());
 	Engine::AgentsVector flockmates = agent.getWorld()->getNeighbours(p_agent,birdAgent.getSigth(),"Bird");
+
 	// change heading
 	if (! flockmates.empty()) correctHeading(birdAgent,flockmates);
+
 	// go forward velocity cells in the heading direction
 	Engine::Point2D<int> newPosition = agent.getPosition();
 	int agentVelocity = birdAgent.getVelocity();
 	advanceForward(newPosition,agentVelocity,birdAgent);
+
 	// checks if the position is occupied
 	if(world->checkPosition(newPosition)) {
 		agent.setPosition(newPosition);
@@ -40,7 +68,7 @@ std::string MoveAction::describe() const {
 
 void MoveAction::correctHeading(Bird & birdAgent, const Engine::AgentsVector & flockmates) {
 	float nearestHeading;
-	// checks wich of the turns must the bird execute
+	// checks which of the turns must the bird execute
 	if (distNearestFlockmate(birdAgent,flockmates,nearestHeading) < birdAgent.getMindist()) {
 		MoveAction::separate(birdAgent,nearestHeading);
 	}

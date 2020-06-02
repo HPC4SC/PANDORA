@@ -516,6 +516,22 @@ public:
     void addFloatAttribute( const std::string & type, const std::string & key, float value );
 
     /**
+	 * @brief Factory method for distributed Scheduler based on spatial distribution of a simulation.
+	 * 
+	 * @param overlap Number of depth of the overlap zone.
+	 * @param finalize If true will call MPI_Finalize at the end of run ( default behavior ).
+	 * @return Scheduler* 
+	 */
+    static Scheduler * useSpacePartition( int overlap = 1, bool finalize = true );
+    
+    /**
+	 * @brief Factory method for sequential Scheduler without any non-shared communication mechanism, apt for being executed in a single computer.
+	 * 
+	 * @return Scheduler* 
+	 */
+    static Scheduler * useOpenMPSingleNode( );
+
+    /**
      * @brief Get the identifier of the world.
      * 
      * @return const int& 
@@ -563,22 +579,26 @@ public:
         return false;*/
         return bool(_rasters.at( index ));
     }
-
-    /**
-	 * @brief Factory method for distributed Scheduler based on spatial distribution of a simulation.
-	 * 
-	 * @param overlap Number of depth of the overlap zone.
-	 * @param finalize If true will call MPI_Finalize at the end of run ( default behavior ).
-	 * @return Scheduler* 
-	 */
-    static Scheduler * useSpacePartition( int overlap = 1, bool finalize = true );
     
     /**
-	 * @brief Factory method for sequential Scheduler without any non-shared communication mechanism, apt for being executed in a single computer.
-	 * 
-	 * @return Scheduler* 
-	 */
-    static Scheduler * useOpenMPSingleNode( );
+     * @brief [PARALLELISM FUNCTION] Set whether the agents' actions should be run in parallel or not. If it does, parallelism locks are required to be used in the model.
+     * 
+     * @param executeAgentsActionsInParallel bool
+     */
+    void setParallelism(bool executeAgentsActionsInParallel);
+
+    /**
+     * @brief [PARALLELISM FUNCTION] Indicates that the world is going to be changed, so it is necessary to pause the execution of all the threads but the one calling this function.
+     * 
+     */
+    void changingWorld();
+
+    /**
+     * @brief [PARALLELISM FUNCTION] Indicates that the world has already been changed, so the paused threads execution can be resumed.
+     * 
+     */
+    void worldChanged();
+
 };
 
 } // namespace Engine

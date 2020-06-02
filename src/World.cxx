@@ -441,7 +441,6 @@ namespace Engine
         return new OpenMPSingleNode( );
     }
 
-
     const int & World::getId( ) const 
     { 
         return _scheduler->getId( ); 
@@ -492,6 +491,20 @@ namespace Engine
     { 
         _scheduler->addFloatAttribute( type, key, value ); 
     }
-    
+
+    void World::setParallelism(bool executeAgentsActionsInParallel) {
+        _scheduler->setParallelism(executeAgentsActionsInParallel);
+    }
+
+    void World::changingWorld()
+    {
+        _scheduler->pauseParallelization();
+    }
+
+    void World::worldChanged()
+    {
+        _scheduler->resumeParallelization();
+    }
+
 } // namespace Engine
 
