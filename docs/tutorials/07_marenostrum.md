@@ -14,13 +14,14 @@ When dealing with Pandora framework, just 3 tools are needed to interact with Ma
 To connect to MN4 by means of ssh, just open a Linux terminal and update ssh:
 
 ```bash
- $ sudo apt update
- $ sudo apt install ssh
+$ sudo apt update
+$ sudo apt install ssh
 ```
 
 Then, type:
+
 ```bash
- $ ssh bsc{userID}@mn1.bsc.es
+$ ssh bsc{userID}@mn1.bsc.es
 ```
 
 , where {userID} should be something like 21473. It should be provided to you by an email from support@bsc.es once you ask for access.
