@@ -7,6 +7,7 @@
 #include <Size.hxx>
 #include <Scheduler.hxx>
 #include <Logger.hxx>
+#include <Counter.hxx>
 
 namespace Examples {
 
@@ -42,6 +43,8 @@ namespace Examples {
         int maxAgents = espaiConfig._numAgents - static_cast<int>(this->getNumberOfAgents());
         int agentsToCreate = Engine::GeneralState::statistics().getUniformDistValue(0,6); //TODO canviar distribucio
 
+        if (this->getCurrentStep() == 0) setupCounters(espaiConfig);
+
         for (int i = 0; i < agentsToCreate and _lastId < espaiConfig._numAgents; i++) {
             if ((i % getNumTasks()) == getId()) {
                 _lastId += 1;
@@ -52,9 +55,9 @@ namespace Examples {
                 Engine::Point2D<int> finalTarget, target;
                 defineAgent(espaiConfig, vision, velocity, age, tourist, finalTarget, target, wallDistance, agentDistance,
                         maxDistanceBAgents, provFollow, interest, interestDecrease);
-                Person *agent = new Person(oss.str(),vision,velocity,age,tourist,finalTarget,target,wallDistance,agentDistance,
+                Person *person = new Person(oss.str(),vision,velocity,age,tourist,finalTarget,target,wallDistance,agentDistance,
                         maxDistanceBAgents,provFollow,interest,interestDecrease);
-                addAgent(agent);
+                addAgent(person);
                 int spawnIndex = Engine::GeneralState::statistics().getUniformDistValue(0,_spawnPoints.size() - 1);
                 Engine::Point2D<int> spawn = _spawnPoints[spawnIndex];
                 while (spawn.distance(finalTarget) < 80) {
@@ -62,8 +65,8 @@ namespace Examples {
                     spawn = _spawnPoints[spawnIndex];
                 }
                 std::cout << "I spawn at: " << spawn << " and my final target is: " << finalTarget << std::endl;
-                agent->setPosition(spawn);
-                log_INFO(logName.str(), getWallTime() << " new agent: " << agent);
+                person->setPosition(spawn);
+                log_INFO(logName.str(), getWallTime() << " new agent: " << person);
             }
         }
     }
@@ -142,6 +145,30 @@ namespace Examples {
                 if (getStaticRaster("targets").getValue(candidate) == 0) _targets.push_back(candidate);
             }
         }
+    }
+
+    void EspaiBarca::setupCounters(const EspaiConfig& espaiConfig) {
+        std::vector<Engine::Point2D<int>> setedUpPoints;
+        setedUpPoints.push_back(_targets[0]);
+        for (int j = 1; j < _targets.size(); j++) {
+            Engine::Point2D<int> candidate = _targets[j];
+            if (not candidateTooClose(candidate,setedUpPoints) and setedUpPoints.size() < 7) setedUpPoints.push_back(candidate);
+        }
+        for (int i = 0; i < setedUpPoints.size(); i++) {
+            std::cout << "setedUpPoints: " << setedUpPoints[i] << std::endl;
+            std::ostringstream oss;
+            oss << "Counter_" << i;
+            Counter *counter = new Counter(oss.str());
+            addAgent(counter);
+            counter->setPosition(setedUpPoints[i]);
+        }
+    }
+
+    bool EspaiBarca::candidateTooClose(const Engine::Point2D<int>& candidate, const std::vector<Engine::Point2D<int>>& setedUpPoints) {
+        for (int i = 0; i < setedUpPoints.size(); i++) {
+            if (candidate.distance(setedUpPoints[i]) < 10) return true;
+        }
+        return false;
     }
 
 }

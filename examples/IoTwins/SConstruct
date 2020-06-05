@@ -5,13 +5,13 @@
 ##### please fill with information about your model ##
 ######################################################
 
-nameProgram = 'espaiBarca'
+nameProgram = 'IoTwin'
 
-agents = ['Person']
-namespaceAgents = ['Examples']
+agents = ['Person', 'Counter']
+namespaceAgents = ['Examples', 'Examples']
 world = 'EspaiBarca'
 
-srcFiles = Split('main.cxx  EspaiBarca.cxx EspaiConfig.cxx Person.cxx MoveAction.cxx DoNothingAction.cxx LeaveAction.cxx WanderAction.cxx')
+srcFiles = Split('main.cxx  EspaiBarca.cxx EspaiConfig.cxx Person.cxx Counter.cxx MoveAction.cxx DoNothingAction.cxx LeaveAction.cxx WanderAction.cxx')
 
 ###################################################
 ########## END OF CUSTOM INFORMATION  #############

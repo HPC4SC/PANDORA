@@ -22,7 +22,7 @@ namespace Examples {
         if (_finalTarget == this->getPosition()) {
             _actions.push_back(new LeaveAction());
         }
-        else if (_target == this->getPosition() and _interest > 0) {
+        else if (targetInSight() and _interest > 0) {
             if (Engine::GeneralState::statistics().getUniformDistValue(0,100) < 70) _actions.push_back(new WanderAction);
             else _actions.push_back(new DoNothingAction);
             _interest -= _interestDecrease;
@@ -233,6 +233,7 @@ namespace Examples {
     void Person::updateKnowledge() {
         std::cout << "I'm " << _id << " going to updare my knowledge, my _position is: " << _position << " and my time spent is: " << _timeSpent << std::endl;
         increaseTimeCount();
+        checkIfInAglomeration();
         if (_target.isEqual(Engine::Point2D<int>(-1,-1))) { 
             for (int i = _position._x - _vision; i < _position._x + _vision; i++) {
                 for (int j = _position._y - _vision; j < _position._y + _vision; j++) {
@@ -268,6 +269,15 @@ namespace Examples {
 
     int Person::getTimeSpent() {
         return _timeSpent;
+    }
+
+    void Person::checkIfInAglomeration() {
+        
+    }
+
+    bool Person::targetInSight() {
+        if (_target.distance(this->getPosition()) < _vision) return true;
+        return false;
     }
 
 }

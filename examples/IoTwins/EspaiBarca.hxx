@@ -36,6 +36,10 @@ namespace Examples {
 
         void setupValidRasterPoints();
 
+        void setupCounters(const EspaiConfig& espaiConfig);
+
+        bool candidateTooClose(const Engine::Point2D<int>& candidate, const std::vector<Engine::Point2D<int>>& setedUpPoints);
+
     public:
 
         EspaiBarca(EspaiConfig *config, Engine::Scheduler *scheduler = 0);

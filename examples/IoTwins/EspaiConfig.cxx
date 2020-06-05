@@ -28,14 +28,14 @@ namespace Examples {
         _maxDistanceBAgents = getParamInt("agentData", "maxDistanceBAgents");
         _provFollow = getParamInt("agentData", "provFollow");
 
-        _Calpha = getParamFloat("coeficients", "Calpha");
-        _Cbeta = getParamFloat("coeficients", "Cbeta");
-        _Cdelta = getParamFloat("coeficients", "Cdelta");
-        _Csigma = getParamFloat("coeficients", "Csigma");
-        _Ualpha = getParamFloat("coeficients", "Ualpha");
-        _Ubeta = getParamFloat("coeficients", "Ubeta");
-        _Udelta = getParamFloat("coeficients", "Udelta");
-        _Usigma = getParamFloat("coeficients", "Usigma");
+        _Calpha = getParamFloat("coefficients", "Calpha");
+        _Cbeta = getParamFloat("coefficients", "Cbeta");
+        _Cdelta = getParamFloat("coefficients", "Cdelta");
+        _Csigma = getParamFloat("coefficients", "Csigma");
+        _Ualpha = getParamFloat("coefficients", "Ualpha");
+        _Ubeta = getParamFloat("coefficients", "Ubeta");
+        _Udelta = getParamFloat("coefficients", "Udelta");
+        _Usigma = getParamFloat("coefficients", "Usigma");
     }
 
     float EspaiConfig::getCostAlpha() const {
