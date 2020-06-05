@@ -32,7 +32,7 @@ def read_agents(agent_route):
         return steps_dfs
 
 def print_agents(steps_dfs):
-    img = plt.imread("../resources/bitmaps/buildings1.1.png")
+    img = plt.imread("../resources/bitmaps/buildings2.png")
     fig, ax = plt.subplots()
 
     camera = Camera(fig)

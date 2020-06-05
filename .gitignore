@@ -20,6 +20,7 @@ pandora/build_py/
 *mpiCode*
 *.png
 *.bmp
+*htm
 
 .sconf_temp/
 bin/cassandra
@@ -66,3 +67,4 @@ install/
 
 examples/sugarScape_escalable/output.txt
 examples/IoTwins/out.txt
+examples/IoTwins/IoTwin

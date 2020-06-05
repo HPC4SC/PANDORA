@@ -5,9 +5,9 @@
     <seed value="1234"/>
     <size width="970" height="970"/>
     <inputData numAgents="100"/>
-    <topology map="resources/bitmaps/buildings1.1.bmp" entrances="resources/bitmaps/noPartit/entrances.bmp" 
-            finalTargets="resources/bitmaps/noPartit/entrances.bmp" targets="resources/bitmaps/noPartit/targets3.bmp"/>
-    <agentData minVision="2" maxVision="5" minVelocity="1" maxVelocity="1" minAge="0" maxAge="80" porvTourist="0.5"
+    <topology map="resources/bitmaps/buildings2.bmp" entrances="resources/bitmaps/noPartit/entrances.bmp" 
+            finalTargets="resources/bitmaps/noPartit/entrances_and_museum.bmp" targets="resources/bitmaps/noPartit/targets3.bmp"/>
+    <agentData minVision="5" maxVision="7" minVelocity="1" maxVelocity="1" minAge="0" maxAge="80" porvTourist="0.5"
                minWallDistance = "0" maxWallDistance = "1" minAgentDistance = "0" maxAgentDistance = "1"
                maxDistanceBAgents = "10" provFollow = "40"/>
      <coefficients Calpha="1" Cbeta="1" Cdelta="1" Csigma="1" Ualpha="1" Ubeta="1" Udelta="1" Usigma="1"/>
