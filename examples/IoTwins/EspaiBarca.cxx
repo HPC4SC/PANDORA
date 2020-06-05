@@ -152,7 +152,7 @@ namespace Examples {
         setedUpPoints.push_back(_targets[0]);
         for (int j = 1; j < _targets.size(); j++) {
             Engine::Point2D<int> candidate = _targets[j];
-            if (not candidateTooClose(candidate,setedUpPoints) and setedUpPoints.size() < 7) setedUpPoints.push_back(candidate);
+            if (not candidateTooClose(candidate,setedUpPoints) and setedUpPoints.size() < espaiConfig._numCounters) setedUpPoints.push_back(candidate);
         }
         for (int i = 0; i < setedUpPoints.size(); i++) {
             std::cout << "setedUpPoints: " << setedUpPoints[i] << std::endl;

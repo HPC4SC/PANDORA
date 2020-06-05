@@ -13,6 +13,7 @@ namespace Examples {
         _targetsRoute = getParamStr("topology", "targets");
 
         _numAgents = getParamInt("inputData", "numAgents");
+        _numCounters = getParamInt("inputData", "numCounters");
 
         _minAgentVision = getParamInt("agentData", "minVision");
         _maxAgentVision = getParamInt("agentData", "maxVision");

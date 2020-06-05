@@ -13,6 +13,7 @@ namespace Examples {
         std::string _targetsRoute;
 
         int _numAgents;
+        int _numCounters;
 
         int _minAgentVision;
         int _maxAgentVision;
