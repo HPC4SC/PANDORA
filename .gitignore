@@ -18,6 +18,8 @@ pandora/build_py/
 *.h5
 *moc_**
 *mpiCode*
+*.png
+*.bmp
 
 .sconf_temp/
 bin/cassandra
@@ -60,6 +62,7 @@ install/
 /docs/doxygen/html/
 /docs/doxygen/latex/
 /.vscode/
-*.png
+
 
 examples/sugarScape_escalable/output.txt
+examples/IoTwins/out.txt
