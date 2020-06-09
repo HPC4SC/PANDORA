@@ -43,7 +43,10 @@ namespace Examples {
         int maxAgents = espaiConfig._numAgents - static_cast<int>(this->getNumberOfAgents());
         int agentsToCreate = Engine::GeneralState::statistics().getUniformDistValue(0,6); //TODO canviar distribucio
 
-        if (this->getCurrentStep() == 0) setupCounters(espaiConfig);
+        if (not _countersSettedUp) {
+            setupCounters(espaiConfig);
+            _countersSettedUp = true;
+        }
 
         for (int i = 0; i < agentsToCreate and _lastId < espaiConfig._numAgents; i++) {
             if ((i % getNumTasks()) == getId()) {
@@ -60,7 +63,7 @@ namespace Examples {
                 addAgent(person);
                 int spawnIndex = Engine::GeneralState::statistics().getUniformDistValue(0,_spawnPoints.size() - 1);
                 Engine::Point2D<int> spawn = _spawnPoints[spawnIndex];
-                while (spawn.distance(finalTarget) < 80) {
+                while (spawn.distance(finalTarget) < 50) {
                     spawnIndex = Engine::GeneralState::statistics().getUniformDistValue(0,_spawnPoints.size() - 1);
                     spawn = _spawnPoints[spawnIndex];
                 }
@@ -155,7 +158,6 @@ namespace Examples {
             if (not candidateTooClose(candidate,setedUpPoints) and setedUpPoints.size() < espaiConfig._numCounters) setedUpPoints.push_back(candidate);
         }
         for (int i = 0; i < setedUpPoints.size(); i++) {
-            std::cout << "setedUpPoints: " << setedUpPoints[i] << std::endl;
             std::ostringstream oss;
             oss << "Counter_" << i;
             Counter *counter = new Counter(oss.str());

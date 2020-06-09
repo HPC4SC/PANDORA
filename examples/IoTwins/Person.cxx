@@ -233,7 +233,6 @@ namespace Examples {
     void Person::updateKnowledge() {
         std::cout << "I'm " << _id << " going to updare my knowledge, my _position is: " << _position << " and my time spent is: " << _timeSpent << std::endl;
         increaseTimeCount();
-        checkIfInAglomeration();
         if (_target.isEqual(Engine::Point2D<int>(-1,-1))) { 
             for (int i = _position._x - _vision; i < _position._x + _vision; i++) {
                 for (int j = _position._y - _vision; j < _position._y + _vision; j++) {
@@ -269,10 +268,6 @@ namespace Examples {
 
     int Person::getTimeSpent() {
         return _timeSpent;
-    }
-
-    void Person::checkIfInAglomeration() {
-        
     }
 
     bool Person::targetInSight() {

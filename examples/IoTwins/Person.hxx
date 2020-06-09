@@ -122,8 +122,6 @@ namespace Examples {
 
         int getTimeSpent();
 
-        void checkIfInAglomeration();
-
         bool targetInSight();
 
         ////////////////////////////////////////////////

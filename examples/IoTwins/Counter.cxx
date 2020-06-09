@@ -7,8 +7,7 @@ namespace Examples {
     Counter::~Counter() {}
 
     void Counter::updateKnowledge() {
-        _agentCount += this->getWorld()->countNeighbours(this,1); //TODO especificar radi
-        std::cout << "agentCount is: " << _agentCount << std::endl;
+        _agentCount += this->getWorld()->countNeighbours(this,1); 
     }
 
     void Counter::registerAttributes() {

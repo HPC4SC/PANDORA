@@ -100,9 +100,10 @@ namespace Examples {
         Person& person = dynamic_cast<Person&>(agent);
         const EspaiConfig& config = (const EspaiConfig &) world->getConfig();
         int priority = int(point.distance(currentTarget)) * config.getCostAlpha();
-        if (nearAgent(point,agent,world)) priority += 100 * config.getCostBeta();
-        if (nearWall(point,agent,world) and not targetNearWall(agent,world)) priority += 100 * config.getCostDelta();
-        if (tooFarFromAgent(point,agent,world)) priority += 100 * config.getCostSigma();
+        int iniPrio = priority;
+        if (nearAgent(point,agent,world)) priority += int(iniPrio * config.getCostBeta());
+        if (nearWall(point,agent,world) and not targetNearWall(agent,world)) priority += int(iniPrio * config.getCostDelta());
+        if (tooFarFromAgent(point,agent,world)) priority += int(iniPrio * config.getCostSigma());
         return priority;
     }
 

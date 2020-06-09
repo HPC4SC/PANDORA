@@ -16,6 +16,8 @@ namespace Examples {
 
         std::vector<Engine::Point2D<int>> _targets;
 
+        bool _countersSettedUp = false;
+
         int _lastId = 0;
 
         void createRasters();
