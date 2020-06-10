@@ -46,9 +46,6 @@ private:
     SequentialSerializer _serializer; //! Instance of the simulation's SequentialSerializer.
     AgentsList _removedAgents; //! List of agents that are removed during a time step, and need to be erased by the end of the time step.
 
-    bool _executeAgentsActionsInParallel; //! Initialized to False by default in the init() method.
-    omp_lock_t _ompLock;
-
     /**
      * @brief returns the iterator inside World::_agents with _id = id; in case it is not found returns _agents.end( ).
      * 
@@ -247,23 +244,16 @@ public:
     int getMaxValue( const DynamicRaster & raster, const Point2D<int> & position ) const;
 
     /**
-     * @brief [PARALLELISM FUNCTION] Set the executeAgentsActionsInParallel member
+     * @brief [Only implemented in MPI scheduler] DOES NOTHING
      * 
-     * @param executeAgentsActionsInParallel 
      */
-    void setParallelism(bool executeAgentsActionsInParallel);
+    void divideSpace() {}
 
     /**
-     * @brief [PARALLELISM FUNCTION] Pause all the threads but the one calling this function.
+     * @brief [Only implemented in MPI scheduler] DOES NOTHING 
      * 
      */
-    void pauseParallelization();
-
-    /**
-     * @brief [PARALLELISM FUNCTION] Resume the threads that were locked in the pauseParallelization() method.
-     * 
-     */
-    void resumeParallelization();
+    void sendSpaces() {}
 
 //    friend class Serializer;
 };

@@ -516,6 +516,13 @@ public:
     void addFloatAttribute( const std::string & type, const std::string & key, float value );
 
     /**
+     * @brief Factory method for distributed Scheduler based on dynamic spatial distribution with load balancing implementation.
+     * 
+     * @return Scheduler* 
+     */
+    static Scheduler* useOpenMPIMultiNode();
+
+    /**
 	 * @brief Factory method for distributed Scheduler based on spatial distribution of a simulation.
 	 * 
 	 * @param overlap Number of depth of the overlap zone.
@@ -581,11 +588,12 @@ public:
     }
     
     /**
-     * @brief [PARALLELISM FUNCTION] Set whether the agents' actions should be run in parallel or not. If it does, parallelism locks are required to be used in the model.
+     * @brief [OpenMP] Set whether the agents' actions should be run in parallel or not. If executeActionsInParallel = true, control locks are REQUIRED to be used in the model!
      * 
-     * @param executeAgentsActionsInParallel bool
+     * @param updateKnowledgeInParallel bool
+     * @param executeActionsInParallel bool
      */
-    void setParallelism(bool executeAgentsActionsInParallel);
+    void setParallelism(bool updateKnowledgeInParallel, bool executeActionsInParallel);
 
     /**
      * @brief [PARALLELISM FUNCTION] Indicates that the world is going to be changed, so it is necessary to pause the execution of all the threads but the one calling this function.

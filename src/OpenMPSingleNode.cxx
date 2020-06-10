@@ -41,7 +41,8 @@ namespace Engine
     {
         _timer.start( );
 
-        _executeAgentsActionsInParallel = false;
+        _updateKnowledgeInParallel = false;
+        _executeActionsInParallel = false;
         omp_init_lock(&_ompLock);
 
         _boundaries._origin = Point2D<int>( 0, 0 );
@@ -71,8 +72,7 @@ namespace Engine
         std::random_shuffle( agentsToExecute.begin( ), agentsToExecute.end( ) );
 
     #ifndef PANDORAEDEBUG
-        // shared memory distibution for read-only planning actions, disabled for extreme debug
-        #pragma omp parallel for schedule(guided)
+        #pragma omp parallel for schedule(dynamic) if(_updateKnowledgeInParallel)
     #endif
         for ( size_t i=0; i<agentsToExecute.size( ); i++ )
         {
@@ -80,8 +80,9 @@ namespace Engine
             agent->updateKnowledge( );
             agent->selectActions( );
         }
-
-        #pragma omp parallel for schedule(guided) if(_executeAgentsActionsInParallel)
+    #ifndef PANDORAEDEBUG
+        #pragma omp parallel for schedule(dynamic) if(_executeActionsInParallel)
+    #endif
         for ( size_t i=0; i<agentsToExecute.size( ); i++ )
         {
             Agent * agent = agentsToExecute[i].get( );
@@ -242,22 +243,6 @@ namespace Engine
     {
         return raster.getMaxValue( position );
     }
-
-    void OpenMPSingleNode::setParallelism(bool executeAgentsActionsInParallel)
-    {
-        _executeAgentsActionsInParallel = executeAgentsActionsInParallel;
-    }
-
-    void OpenMPSingleNode::pauseParallelization()
-    {
-        omp_set_lock(&_ompLock);
-    }
-
-    void OpenMPSingleNode::resumeParallelization()
-    {
-        omp_unset_lock(&_ompLock);
-    }
-    
 
 } // namespace Engine
 

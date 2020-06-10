@@ -56,6 +56,8 @@ namespace Engine
     {
 
     protected:
+        int _numTasks; //! Number of tasks executing the simulation.
+
         Serializer _serializer; //! Serializer instance.
 
         Point2D<int> _localRasterSize; //! Raster size of the current world.
@@ -316,6 +318,7 @@ namespace Engine
          * @param finalize If true the simulation will finalize if a MPI fault occurs, otherwise the simulation will continue.
          */
         SpacePartition( const int & overlap, bool finalize );
+        
         virtual ~SpacePartition( );
 
         /**
