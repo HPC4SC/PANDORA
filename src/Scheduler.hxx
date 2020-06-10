@@ -13,9 +13,12 @@ namespace Engine
     {
     protected:
         int                     _id; //! Identifier of the Scheduler.
-        int                     _numTasks; //! Number of tasks executing the simulations.
         Engine::Rectangle<int>  _boundaries; //! Limits of the simulation space.
         World                  *_world; //! Pointer to the World of the simulation
+
+        bool _updateKnowledgeInParallel;
+        bool _executeActionsInParallel; //! Initialized to False by default in the init() method.
+        omp_lock_t _ompLock;
 
         /**
          * @brief This method returns a list with the list of agents in euclidean distance radius of position. If include center is false, position is not checked.
@@ -74,7 +77,7 @@ namespace Engine
          * @brief Construct a new Scheduler object created by default.
          * 
          */
-        Scheduler( ) : _id( 0 ), _numTasks( 1 ), _world( 0 ) { }
+        Scheduler( ) : _id( 0 ), _world( 0 ) { }
 
         /**
          * @brief Destroy the Scheduler object
@@ -138,13 +141,6 @@ namespace Engine
          * @return const int& 
          */
         const int & getId( ) const { return _id; }
-
-        /**
-         * @brief Gets _numTasks, will always be 1 unless the execution is distributed in some way.
-         * 
-         * @return const int& 
-         */
-        const int & getNumTasks( ) const { return _numTasks; }
         
         /**
          * @brief Get the Wall Time of the simulatio. Must be implemented in the children.
@@ -299,23 +295,47 @@ namespace Engine
         virtual int getMaxValue( const DynamicRaster & raster, const Point2D<int> & position ) const = 0;
 
         /**
-         * @brief OpenMP call. Implemented only in the OpenMPSingleNode scheduler.
+         * @brief [Only implemented in MPI scheduler]
          * 
-         * @param executeAgentsActionsInParallel 
          */
-        virtual void setParallelism(bool executeAgentsActionsInParallel) = 0;
+        virtual void divideSpace() = 0;
 
         /**
-         * @brief OpenMP call. Implemented only in the OpenMPSingleNode scheduler.
+         * @brief [Only implemented in MPI scheduler]
          * 
          */
-        virtual void pauseParallelization() = 0;
+        virtual void sendSpaces() = 0;
 
         /**
-         * @brief OpenMP call. Implemented only in the OpenMPSingleNode scheduler.
+         * @brief [OpenMP] Method to enable/disable the OpenMP paralellism.
+         * 
+         * @param updateKnowledgeInParallel bool
+         * @param executeActionsInParallel bool
+         */
+        void setParallelism(bool updateKnowledgeInParallel, bool executeActionsInParallel) 
+        {
+            _updateKnowledgeInParallel = updateKnowledgeInParallel;
+            _executeActionsInParallel = executeActionsInParallel; 
+        }
+
+        /**
+         * @brief [OpenMP] Pause all the threads but the one calling this function.
          * 
          */
-        virtual void resumeParallelization() = 0;
+        void pauseParallelization() 
+        { 
+            omp_set_lock(&_ompLock);
+        }
+
+        /**
+         * @brief [OpenMP] Resume the threads that were locked in the pauseParallelization() method.
+         * 
+         */
+        void resumeParallelization()
+        {
+            omp_unset_lock(&_ompLock);
+        }
+
     };
 } // namespace Engine
 #endif // __Scheduler_hxx__

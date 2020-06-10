@@ -23,6 +23,7 @@
 #include <Agent.hxx>
 #include <Exception.hxx>
 #include <Scheduler.hxx>
+#include <OpenMPIMultiNode.hxx>
 #include <SpacePartition.hxx>
 #include <OpenMPSingleNode.hxx>
 
@@ -79,13 +80,23 @@ namespace Engine
         
         _scheduler->init( argc, argv );
 
-        createRasters( );
-        createAgents( );
+        if (_scheduler->getId() == 0) 
+        {
+            createRasters( );
+            createAgents( );
 
+            _scheduler->divideSpace();
+        }
+        else 
+        {
+            // wait for the the master to send the corresponding agents
+        }
+        
         _scheduler->initData( );
     }
 
-    void World::setRandomShuffleSeed(uint64_t seed) {
+    void World::setRandomShuffleSeed(uint64_t seed) 
+    {
         std::srand(seed);
     }
 
@@ -430,6 +441,10 @@ namespace Engine
         throw Exception( oss.str( ) );
     }
 
+    Scheduler* World::useOpenMPIMultiNode()
+    {
+        return new OpenMPIMultiNode();
+    }
 
     Scheduler * World::useSpacePartition( int overlap, bool finalize )
     {
@@ -492,8 +507,8 @@ namespace Engine
         _scheduler->addFloatAttribute( type, key, value ); 
     }
 
-    void World::setParallelism(bool executeAgentsActionsInParallel) {
-        _scheduler->setParallelism(executeAgentsActionsInParallel);
+    void World::setParallelism(bool updateKnowledgeInParallel, bool executeActionsInParallel) {
+        _scheduler->setParallelism(updateKnowledgeInParallel, executeActionsInParallel);
     }
 
     void World::changingWorld()

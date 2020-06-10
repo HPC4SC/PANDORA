@@ -22,30 +22,12 @@ MoveAction::MoveAction() {}
 MoveAction::~MoveAction() {}
 
 void MoveAction::execute( Engine::Agent & agent ) {
-
-	// const int threadID = omp_get_thread_num();
-	// const int numThreads = omp_get_num_threads();
-
-	// std::cout << "[ThreadID = " << threadID << "] Threads before changingWorld() call: " << numThreads << std::endl;
-	// agent.getWorld()->changingWorld();
-
-	// std::cout << "[ThreadID = " << threadID << "] Threads after changingWorld() call: " << numThreads << std::endl;
-	// std::cout << "[ThreadID = " << threadID << "] SLEEPINGGGGGGGGGGGGGGGGGGGGG" << std::endl;
-	// std::this_thread::sleep_for(std::chrono::seconds(1));
-
-	// agent.getWorld()->worldChanged();
-
-	// std::cout << "[ThreadID = " << threadID << "] SLEPINGGGGGGGGGGGGGGGGGGGGGG DONE" << std::endl;
-	// std::this_thread::sleep_for(std::chrono::seconds(2));
-	// abort();
-
-
-
 	Engine::World * world = agent.getWorld();
 	Bird & birdAgent = (Bird&)agent;
 
 	// look around
 	Engine::Agent * p_agent = agent.getWorld()->getAgent(agent.getId());
+
 	Engine::AgentsVector flockmates = agent.getWorld()->getNeighbours(p_agent,birdAgent.getSigth(),"Bird");
 
 	// change heading
@@ -57,9 +39,11 @@ void MoveAction::execute( Engine::Agent & agent ) {
 	advanceForward(newPosition,agentVelocity,birdAgent);
 
 	// checks if the position is occupied
+	agent.getWorld()->changingWorld();
 	if(world->checkPosition(newPosition)) {
 		agent.setPosition(newPosition);
 	}
+	agent.getWorld()->worldChanged();
 }
 
 std::string MoveAction::describe() const {
