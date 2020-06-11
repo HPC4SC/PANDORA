@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+<config>
+    <output resultsFile="./scripts/experimentation/results/1-1-001-001-1-1-001-001/1-1-001-001-1-1-001-001.h5" logsDir="./logs"/>
+    <numSteps value="2000" serializeResolution="1"/>
+    <seed value="4"/>
+    <size width="970" height="970"/>
+    <inputData numAgents="100" numCounters="7"/>
+    <topology map="resources/bitmaps/buildings2.bmp" entrances="resources/bitmaps/noPartit/entrances.bmp" 
+            finalTargets="resources/bitmaps/noPartit/entrances_and_museum.bmp" targets="resources/bitmaps/noPartit/targets5.bmp"/>
+    <agentData minVision="5" maxVision="10" minVelocity="1" maxVelocity="1" minAge="0" maxAge="80" porvTourist="0.8"
+               minWallDistance = "0" maxWallDistance = "1" minAgentDistance = "1" maxAgentDistance = "2"
+               maxDistanceBAgents = "10" provFollow = "70"/>
+     <coefficients Calpha="1" Cbeta="1" Cdelta="0.8" Csigma="0.01" Ualpha="1" Ubeta="1" Udelta="0.01" Usigma="0.01"/>
+</config>
+ 
