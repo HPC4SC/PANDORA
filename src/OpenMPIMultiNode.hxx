@@ -34,23 +34,39 @@ namespace Engine
         protected:
 
             int _numberOfMPITasks;
+            double _totalAgentsWeight;
 
             template <typename T>
             struct node {
                 T value;
-                bool isLeaf;
                 node* left;
                 node* right;
             };
 
-            node* _root;
+            node<Rectangle<int>>* _root;
             
             /**
-             * @brief It inserts a new node 
+             * @brief Initialize the tree starting at _root.
              * 
+             */
+            void initTree();
+
+            /**
+             * @brief Return the number of current leaf nodes in tree 'node'.
+             * 
+             * @param node node<Rectangle<int>>*
+             * @return int 
+             */
+            int numberOfLeafs(node<Rectangle<int>>* node);
+
+            /**
+             * @brief It inserts a new node, with value 'rectangle', from 'treeNode'. It justs looks whether left or right is NULL (in this order) and insert the new node there. It is not recursive!
+             * 
+             * @param rectangle Rectangle<int>
+             * @param treeNode node<Rectangle<int>>*
              * @return node* 
              */
-            node* insertNode();
+            node* insertNode(const Rectangle<int>& rectangle, node<Rectangle<int>>* treeNode);
 
             /**
              * @brief It destroys the whole tree starting at 'leaf'.
@@ -58,6 +74,49 @@ namespace Engine
              * @param leaf node*
              */
             void destroyTree(node* leaf);
+
+            /**
+             * @brief Gets the weight of the 'agent'.
+             * 
+             * @param agent Agent
+             * @return double
+             */
+            double getAgentWeight(const Agent& agent);
+
+            /**
+             * @brief Gets the total weight of the agents in 'agentsVector'.
+             * 
+             * @param agentsVector AgentsVector
+             * @return double
+             */
+            double getAgentsWeight(const AgentsVector& agentsVector);
+
+            /**
+             * @brief Get an Agents list which are in 'position'
+             * 
+             * @param position Point2D<int>
+             * @param type string
+             * @return AgentsVector 
+             */
+            AgentsVector getAgentsInPosition(const Point2D<int>& position, const std::string& type = "all");
+
+            /**
+             * @brief Get the total agents weight that appear in cell <row, column>
+             * 
+             * @param row const int&
+             * @param column const int&
+             * @return double 
+             */
+            double getAgentsWeightFromCell(const int& row, const int& column);
+
+            /**
+             * @brief Creates an uneven partitioning of the Rectangle<int> in 'treeNode' (->value) based on the 'totalWeight' an the current position of the agents in the _world.
+             * 
+             * @param treeNode node<Rectangle<int>>*
+             * @param totalWeight const double&
+             * @param currentDepth const int&
+             */
+            void divideSpaceRecursive(node<Rectangle<int>>* treeNode, const double& totalWeight, const int& currentDepth);
 
         public:
 
