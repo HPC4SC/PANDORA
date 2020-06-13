@@ -92,6 +92,8 @@ namespace Examples {
 
         void setTarget(const Engine::Point2D<int>& target);
 
+        void setFinalTarget(const Engine::Point2D<int>& finalTarget);
+
         void addVisited(Engine::Point2D<int> newPosition);
 
         void setHeading(const int& heading);

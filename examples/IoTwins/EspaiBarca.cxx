@@ -21,6 +21,10 @@ namespace Examples {
         registerStaticRaster("entrances", true, 1);
         registerStaticRaster("finalTargets", true, 2);
         registerStaticRaster("targets", true, 3);
+        registerStaticRaster("counters", true, 4);
+        registerStaticRaster("museum", true, 5);
+        registerStaticRaster("acces9", true, 6);
+        registerStaticRaster("acces15", true, 7);
         // 0 building 1 street
         Engine::GeneralState::rasterLoader().fillGDALRaster(getStaticRaster("buildings"), espaiConfig._mapRoute,
                 getBoundaries());
@@ -32,6 +36,11 @@ namespace Examples {
                 espaiConfig._finalTargetsRoute, getBoundaries());
         
         Engine::GeneralState::rasterLoader().fillGDALRaster(getStaticRaster("targets"), espaiConfig._targetsRoute, getBoundaries());
+
+        Engine::GeneralState::rasterLoader().fillGDALRaster(getStaticRaster("counters"), espaiConfig._countersRoute, getBoundaries());
+        Engine::GeneralState::rasterLoader().fillGDALRaster(getStaticRaster("museum"), espaiConfig._museumRoute, getBoundaries());
+        Engine::GeneralState::rasterLoader().fillGDALRaster(getStaticRaster("acces9"), espaiConfig._acces9Route, getBoundaries());
+        Engine::GeneralState::rasterLoader().fillGDALRaster(getStaticRaster("acces15"), espaiConfig._acces15Route, getBoundaries());
         setupValidRasterPoints();
     }
 
@@ -40,37 +49,55 @@ namespace Examples {
         logName << "agents_" << getId();
 
         const EspaiConfig &espaiConfig = (const EspaiConfig &) getConfig();
-        int maxAgents = espaiConfig._numAgents - static_cast<int>(this->getNumberOfAgents());
-        int agentsToCreate = Engine::GeneralState::statistics().getUniformDistValue(0,6); //TODO canviar distribucio
 
         if (not _countersSettedUp) {
             setupCounters(espaiConfig);
             _countersSettedUp = true;
         }
 
-        for (int i = 0; i < agentsToCreate and _lastId < espaiConfig._numAgents; i++) {
-            if ((i % getNumTasks()) == getId()) {
-                _lastId += 1;
-                std::ostringstream oss;
-                oss << "Person_" << _lastId;
-                int vision, age, velocity, wallDistance, agentDistance, maxDistanceBAgents, provFollow, interest, interestDecrease;
-                bool tourist;
-                Engine::Point2D<int> finalTarget, target;
-                defineAgent(espaiConfig, vision, velocity, age, tourist, finalTarget, target, wallDistance, agentDistance,
-                        maxDistanceBAgents, provFollow, interest, interestDecrease);
-                Person *person = new Person(oss.str(),vision,velocity,age,tourist,finalTarget,target,wallDistance,agentDistance,
-                        maxDistanceBAgents,provFollow,interest,interestDecrease);
-                addAgent(person);
-                int spawnIndex = Engine::GeneralState::statistics().getUniformDistValue(0,_spawnPoints.size() - 1);
-                Engine::Point2D<int> spawn = _spawnPoints[spawnIndex];
+        if (not _createdDistributions) {
+            createDistributions(espaiConfig);
+            _createdDistributions = true;
+        }
+
+        int agentsToCreate_9 = _normalAcces9.draw();
+        int agentsToCreate_15 = _normalAcces15.draw();
+
+        int agentsToCreate = agentsToCreate_9 + agentsToCreate_15;
+
+        for(int i = 0; i < agentsToCreate and _lastId < espaiConfig._numAgents; i++) { 
+            _lastId += 1;
+            std::ostringstream oss;
+            oss << "Person_" << _lastId;
+            int vision, age, velocity, wallDistance, agentDistance, maxDistanceBAgents, provFollow, interest, interestDecrease;
+            bool tourist;
+            Engine::Point2D<int> finalTarget, target, spawn;
+            defineAgent(espaiConfig, vision, velocity, age, tourist, finalTarget, target, wallDistance, agentDistance,
+                    maxDistanceBAgents, provFollow, interest, interestDecrease);
+            Person *person = new Person(oss.str(),vision,velocity,age,tourist,finalTarget,target,wallDistance,agentDistance,
+                    maxDistanceBAgents,provFollow,interest,interestDecrease);
+            addAgent(person);
+            if (agentsToCreate_9 > 0) {
+                int spawnIndex = Engine::GeneralState::statistics().getUniformDistValue(0,_acces9.size() - 1);
+                spawn = _acces9[spawnIndex];
                 while (spawn.distance(finalTarget) < 50) {
-                    spawnIndex = Engine::GeneralState::statistics().getUniformDistValue(0,_spawnPoints.size() - 1);
-                    spawn = _spawnPoints[spawnIndex];
+                    finalTarget = _acces15[Engine::GeneralState::statistics().getUniformDistValue(0,_acces15.size())];
                 }
-                std::cout << "I spawn at: " << spawn << " and my final target is: " << finalTarget << std::endl;
-                person->setPosition(spawn);
-                log_INFO(logName.str(), getWallTime() << " new agent: " << person);
+                person->setFinalTarget(finalTarget);
+                agentsToCreate_9--;
             }
+            else if (agentsToCreate_15 > 0) {
+                int spawnIndex = Engine::GeneralState::statistics().getUniformDistValue(0,_acces15.size() - 1);
+                spawn = _acces15[spawnIndex];
+                while (spawn.distance(finalTarget) < 50) {
+                    finalTarget = _acces9[Engine::GeneralState::statistics().getUniformDistValue(0,_acces9.size())];
+                }
+                person->setFinalTarget(finalTarget);
+                agentsToCreate_15--;
+            }
+            std::cout << "I spawn at: " << spawn << " and my final target is: " << finalTarget << std::endl;
+            person->setPosition(spawn);
+            log_INFO(logName.str(), getWallTime() << " new agent: " << person);
         }
     }
 
@@ -99,7 +126,10 @@ namespace Examples {
         tourist = Engine::GeneralState::statistics().getUniformDistValue(0, 100) > espaiConfig._provTourist;
         if (tourist) defineTourist(espaiConfig,vision,velocity,age,wallDistance,agentDistance,maxDistanceBAgents,provFollow,interest,interestDecrease);
         else definePerson(espaiConfig,vision,velocity,age,wallDistance,agentDistance,maxDistanceBAgents,provFollow,interest,interestDecrease);
-        finalTarget = _finalTargets[Engine::GeneralState::statistics().getUniformDistValue(0, _finalTargets.size() - 1)];
+        if (Engine::GeneralState::statistics().getUniformDistValue(0, 100) <= espaiConfig._provMuseum) {
+            finalTarget = _museum[Engine::GeneralState::statistics().getUniformDistValue(0,_museum.size()-1)];
+        }
+        else finalTarget = _finalTargets[Engine::GeneralState::statistics().getUniformDistValue(0, _finalTargets.size() - 1)];
         target = Engine::Point2D<int>(-1,-1);
     }
 
@@ -146,15 +176,19 @@ namespace Examples {
                 if (getStaticRaster("entrances").getValue(candidate) == 0) _spawnPoints.push_back(candidate);
                 if (getStaticRaster("finalTargets").getValue(candidate) == 0) _finalTargets.push_back(candidate);
                 if (getStaticRaster("targets").getValue(candidate) == 0) _targets.push_back(candidate);
+                if (getStaticRaster("counters").getValue(candidate) == 0) _counters.push_back(candidate);
+                if (getStaticRaster("museum").getValue(candidate) == 0) _museum.push_back(candidate);
+                if (getStaticRaster("acces9").getValue(candidate) == 0) _acces9.push_back(candidate);
+                if (getStaticRaster("acces15").getValue(candidate) == 0) _acces15.push_back(candidate);
             }
         }
     }
 
     void EspaiBarca::setupCounters(const EspaiConfig& espaiConfig) {
         std::vector<Engine::Point2D<int>> setedUpPoints;
-        setedUpPoints.push_back(_targets[0]);
-        for (int j = 1; j < _targets.size(); j++) {
-            Engine::Point2D<int> candidate = _targets[j];
+        setedUpPoints.push_back(_counters[0]);
+        for (int j = 1; j < _counters.size(); j++) {
+            Engine::Point2D<int> candidate = _counters[j];
             if (not candidateTooClose(candidate,setedUpPoints) and setedUpPoints.size() < espaiConfig._numCounters) setedUpPoints.push_back(candidate);
         }
         for (int i = 0; i < setedUpPoints.size(); i++) {
@@ -171,6 +205,11 @@ namespace Examples {
             if (candidate.distance(setedUpPoints[i]) < 10) return true;
         }
         return false;
+    }
+
+    void EspaiBarca::createDistributions(const EspaiConfig& espaiConfig) {
+        _normalAcces9 = Engine::RNGNormal(espaiConfig.getSeed(), (double) espaiConfig._entrance9M, (double) espaiConfig._entrance9SD);
+        _normalAcces15 = Engine::RNGNormal(espaiConfig.getSeed(), (double) espaiConfig._entrance15M, (double) espaiConfig._entrance15SD);
     }
 
 }

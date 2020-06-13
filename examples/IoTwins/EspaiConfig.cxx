@@ -11,6 +11,10 @@ namespace Examples {
         _entrancesRoute = getParamStr("topology", "entrances");
         _finalTargetsRoute = getParamStr("topology", "finalTargets");
         _targetsRoute = getParamStr("topology", "targets");
+        _countersRoute = getParamStr("topology","counters");
+        _museumRoute = getParamStr("topology","museum");
+        _acces9Route = getParamStr("topology","acces9");
+        _acces15Route = getParamStr("topology","acces15");
 
         _numAgents = getParamInt("inputData", "numAgents");
         _numCounters = getParamInt("inputData", "numCounters");
@@ -28,6 +32,7 @@ namespace Examples {
         _maxAgentDistance = getParamInt("agentData", "minAgentDistance");
         _maxDistanceBAgents = getParamInt("agentData", "maxDistanceBAgents");
         _provFollow = getParamInt("agentData", "provFollow");
+        _provMuseum = getParamInt("agentData", "provMuseum");
 
         _Calpha = getParamFloat("coefficients", "Calpha");
         _Cbeta = getParamFloat("coefficients", "Cbeta");
@@ -37,6 +42,11 @@ namespace Examples {
         _Ubeta = getParamFloat("coefficients", "Ubeta");
         _Udelta = getParamFloat("coefficients", "Udelta");
         _Usigma = getParamFloat("coefficients", "Usigma");
+
+        _entrance9SD = getParamFloat("statistics", "entrance9SD");
+        _entrance9M = getParamFloat("statistics", "entrance9M");
+        _entrance15SD = getParamFloat("statistics", "entrance15SD");
+        _entrance15M = getParamFloat("statistics", "entrance15M");
     }
 
     float EspaiConfig::getCostAlpha() const {

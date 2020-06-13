@@ -106,6 +106,10 @@ namespace Examples {
         _target = target;
     }
 
+    void Person::setFinalTarget(const Engine::Point2D<int>& finalTarget) {
+        _finalTarget = finalTarget;
+    }
+
     void Person::addVisited(Engine::Point2D<int> newPosition) {
         if(_visitedPositions.size() < 540) _visitedPositions.push_back(newPosition);
         else {

@@ -11,6 +11,10 @@ namespace Examples {
         std::string _entrancesRoute;
         std::string _finalTargetsRoute;
         std::string _targetsRoute;
+        std::string _countersRoute;
+        std::string _museumRoute;
+        std::string _acces9Route;
+        std::string _acces15Route;
 
         int _numAgents;
         int _numCounters;
@@ -28,6 +32,7 @@ namespace Examples {
         int _maxAgentDistance;
         int _maxDistanceBAgents;
         int _provFollow;
+        int _provMuseum;
         
         float _Calpha;
         float _Cbeta;
@@ -37,6 +42,11 @@ namespace Examples {
         float _Ubeta;
         float _Udelta;
         float _Usigma;
+
+        float _entrance9SD;
+        float _entrance9M;
+        float _entrance15SD;
+        float _entrance15M;
 
     public:
 

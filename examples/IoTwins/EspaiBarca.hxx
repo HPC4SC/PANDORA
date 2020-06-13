@@ -2,6 +2,7 @@
 #define __EspaiBarca_hxx
 
 #include <World.hxx>
+#include <RNGNormal.hxx>
 
 namespace Examples {
 
@@ -12,13 +13,27 @@ namespace Examples {
 
         std::vector<Engine::Point2D<int>> _spawnPoints;
 
+        std::vector<Engine::Point2D<int>> _acces9;
+
+        std::vector<Engine::Point2D<int>> _acces15;
+
         std::vector<Engine::Point2D<int>> _finalTargets;
 
         std::vector<Engine::Point2D<int>> _targets;
 
+        std::vector<Engine::Point2D<int>> _counters;
+
+        std::vector<Engine::Point2D<int>> _museum;
+
         bool _countersSettedUp = false;
 
+        bool _createdDistributions = false;
+
         int _lastId = 0;
+
+        Engine::RNGNormal _normalAcces9 = Engine::RNGNormal(0,0,0);
+
+        Engine::RNGNormal _normalAcces15 = Engine::RNGNormal(0,0,0);
 
         void createRasters();
 
@@ -41,6 +56,8 @@ namespace Examples {
         void setupCounters(const EspaiConfig& espaiConfig);
 
         bool candidateTooClose(const Engine::Point2D<int>& candidate, const std::vector<Engine::Point2D<int>>& setedUpPoints);
+
+        void createDistributions(const EspaiConfig& espaiConfig);
 
     public:
 

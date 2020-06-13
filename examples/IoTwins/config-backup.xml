@@ -1,15 +1,18 @@
 <?xml version="1.0" ?>
 <config>
     <output resultsFile="./scripts/experimentation/results/1-1-001-001-1-1-001-001/1-1-001-001-1-1-001-001.h5" logsDir="./logs"/>
-    <numSteps value="2000" serializeResolution="1"/>
+    <numSteps value="3600" serializeResolution="1"/>
     <seed value="4"/>
     <size width="970" height="970"/>
-    <inputData numAgents="100" numCounters="7"/>
+    <inputData numAgents="1000" numCounters="3"/>
     <topology map="resources/bitmaps/buildings2.bmp" entrances="resources/bitmaps/noPartit/entrances.bmp" 
-            finalTargets="resources/bitmaps/noPartit/entrances_and_museum.bmp" targets="resources/bitmaps/noPartit/targets5.bmp"/>
+            finalTargets="resources/bitmaps/noPartit/entrances.bmp" targets="resources/bitmaps/noPartit/targets5.bmp"
+            counters="resources/bitmaps/noPartit/counters.bmp" museum="resources/bitmaps/noPartit/museum.bmp"
+            acces9="resources/bitmaps/noPartit/acces9.bmp" acces15="resources/bitmaps/noPartit/acces15.bmp"/>
     <agentData minVision="5" maxVision="10" minVelocity="1" maxVelocity="1" minAge="0" maxAge="80" porvTourist="0.8"
                minWallDistance = "0" maxWallDistance = "1" minAgentDistance = "1" maxAgentDistance = "2"
-               maxDistanceBAgents = "10" provFollow = "70"/>
+               maxDistanceBAgents = "10" provFollow = "50" provMuseum="31"/>
      <coefficients Calpha="1" Cbeta="1" Cdelta="0.8" Csigma="0.01" Ualpha="1" Ubeta="1" Udelta="0.01" Usigma="0.01"/>
+     <statistics entrance9SD="88.17" entrance9M="175" entrance15SD="18.406" entrance15M="50.222"/>
 </config>
  
