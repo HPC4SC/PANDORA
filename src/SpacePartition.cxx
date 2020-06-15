@@ -27,9 +27,9 @@
 #include <Config.hxx>
 
 namespace Engine {
-    SpacePartition::SpacePartition(const int &overlap, bool finalize) : _numTasks(1), _serializer(*this), 
-                                                                        _worldPos(-1, -1), _overlap(overlap),
-                                                                        _finalize(finalize), _initialTime(0.0f) 
+    SpacePartition::SpacePartition(const int &overlap, bool finalize) : _serializer(*this), _worldPos(-1, -1),
+                                                                        _overlap(overlap), _finalize(finalize), 
+                                                                        _initialTime(0.0f) 
     {
     }
 

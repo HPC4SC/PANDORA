@@ -29,7 +29,6 @@
 #include <vector>
 #include <Scheduler.hxx>
 #include <boost/timer/timer.hpp>
-#include <omp.h>
 
 namespace Engine
 {
@@ -58,7 +57,6 @@ public:
     /**
      * @brief Construct a new OpenMPSingleNode object. And creates the corresponding serializer.
      * 
-     * @param executeActionsInParallel Indicates whether to parallelize the agents' execution of actions or not.
      */
     OpenMPSingleNode();
 
@@ -242,18 +240,6 @@ public:
      * @return int 
      */
     int getMaxValue( const DynamicRaster & raster, const Point2D<int> & position ) const;
-
-    /**
-     * @brief [Only implemented in MPI scheduler] DOES NOTHING
-     * 
-     */
-    void divideSpace() {}
-
-    /**
-     * @brief [Only implemented in MPI scheduler] DOES NOTHING 
-     * 
-     */
-    void sendSpaces() {}
 
 //    friend class Serializer;
 };

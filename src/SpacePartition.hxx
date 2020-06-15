@@ -56,8 +56,6 @@ namespace Engine
     {
 
     protected:
-        int _numTasks; //! Number of tasks executing the simulation.
-
         Serializer _serializer; //! Serializer instance.
 
         Point2D<int> _localRasterSize; //! Raster size of the current world.
@@ -535,11 +533,6 @@ namespace Engine
          */
         AgentsList::const_iterator endOverlapAgents( ) const{ return _overlapAgents.end( ); }
 
-        void setParallelism(bool executeAgentsActionsInParallel) {}
-
-        void pauseParallelization() {}
-
-        void resumeParallelization() {}
     };
 } // namespace Engine
 #endif // __SpacePartition_hxx__
