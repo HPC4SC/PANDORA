@@ -50,8 +50,6 @@ namespace Examples {
 
         int _timeSpent;
 
-        int _inAglomeration;
-
     public:
 
         Person(const std::string& id, const int& vision, const int& velocity, const int& age, const bool& tourist,

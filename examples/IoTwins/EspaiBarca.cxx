@@ -60,8 +60,11 @@ namespace Examples {
             _createdDistributions = true;
         }
 
-        int agentsToCreate_9 = _normalAcces9.draw();
-        int agentsToCreate_15 = _normalAcces15.draw();
+        //int agentsToCreate_9 = _distrAcces9.draw();
+        //int agentsToCreate_15 = _distrAcces15.draw();
+
+        int agentsToCreate_9 = _entradesAcces9[_creationIndex];
+        int agentsToCreate_15 = _entradesAcces15[_creationIndex];
 
         int agentsToCreate = agentsToCreate_9 + agentsToCreate_15;
 
@@ -93,12 +96,14 @@ namespace Examples {
                     finalTarget = _acces9[Engine::GeneralState::statistics().getUniformDistValue(0,_acces9.size())];
                 }
                 person->setFinalTarget(finalTarget);
+                if (finalTargetisMuseum(finalTarget)) person->setTarget(_counters[Engine::GeneralState::statistics().getUniformDistValue(0,_counters.size() - 1)]);
                 agentsToCreate_15--;
             }
             std::cout << "I spawn at: " << spawn << " and my final target is: " << finalTarget << std::endl;
             person->setPosition(spawn);
             log_INFO(logName.str(), getWallTime() << " new agent: " << person);
         }
+        _creationIndex++;
     }
 
     void EspaiBarca::step() {
@@ -111,7 +116,10 @@ namespace Examples {
             _scheduler->serializeAgents(_step);
             log_DEBUG(logName.str(), getWallTime() << " step: " << step_ << " serialization done");
         }
-        createAgents();
+        if (_step%900 == 0 and not _firstCreation) {
+            createAgents();
+        }
+        _firstCreation = false;
 
         log_DEBUG(logName.str(), getWallTime() << " step: " << _step << " has executed step enviroment");
         std::cout <<  "Inici step: " << _step << std::endl;
@@ -208,8 +216,15 @@ namespace Examples {
     }
 
     void EspaiBarca::createDistributions(const EspaiConfig& espaiConfig) {
-        _normalAcces9 = Engine::RNGNormal(espaiConfig.getSeed(), (double) espaiConfig._entrance9M, (double) espaiConfig._entrance9SD);
-        _normalAcces15 = Engine::RNGNormal(espaiConfig.getSeed(), (double) espaiConfig._entrance15M, (double) espaiConfig._entrance15SD);
+        _distrAcces9 = Engine::RNGNormal(espaiConfig.getSeed(), (double) espaiConfig._entrance9M, (double) espaiConfig._entrance9SD);
+        _distrAcces15 = Engine::RNGNormal(espaiConfig.getSeed(), (double) espaiConfig._entrance15M, (double) espaiConfig._entrance15SD);
+    }
+
+    bool EspaiBarca::finalTargetisMuseum(const Engine::Point2D<int> finalTarget) {
+        for (int i = 0; i < _museum.size(); i++) {
+            if (finalTarget == _museum[i]) return true;
+        } 
+        return false;
     }
 
 }

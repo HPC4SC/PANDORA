@@ -4,7 +4,7 @@
     <numSteps value="3600" serializeResolution="1"/>
     <seed value="4"/>
     <size width="970" height="970"/>
-    <inputData numAgents="100" numCounters="3"/>
+    <inputData numAgents="1000" numCounters="3"/>
     <topology map="resources/bitmaps/buildings2.bmp" entrances="resources/bitmaps/noPartit/entrances.bmp" 
             finalTargets="resources/bitmaps/noPartit/entrances.bmp" targets="resources/bitmaps/noPartit/targets5.bmp"
             counters="resources/bitmaps/noPartit/counters.bmp" museum="resources/bitmaps/noPartit/museum.bmp"
