@@ -4,6 +4,8 @@
 #include <iostream>
 #include <Agent.hxx>
 
+#include <omp.h>
+
 namespace Engine
 {
     /** Scheduler is the base class to create simulation schedulers that control the flow of World and Agents execution
@@ -13,6 +15,7 @@ namespace Engine
     {
     protected:
         int                     _id; //! Identifier of the Scheduler.
+        int                     _numTasks; //! Number of MPI tasks executing the simulation
         Engine::Rectangle<int>  _boundaries; //! Limits of the simulation space.
         World                  *_world; //! Pointer to the World of the simulation
 
@@ -77,7 +80,7 @@ namespace Engine
          * @brief Construct a new Scheduler object created by default.
          * 
          */
-        Scheduler( ) : _id( 0 ), _world( 0 ) { }
+        Scheduler( ) : _id( 0 ), _numTasks(1), _world( 0 ) { }
 
         /**
          * @brief Destroy the Scheduler object
@@ -142,6 +145,13 @@ namespace Engine
          */
         const int & getId( ) const { return _id; }
         
+        /**
+         * @brief Gets _numTasks, will always be 1 unless the execution is distributed in some way.
+         * 
+         * @return const int& 
+         */
+        const int & getNumTasks() const { return _numTasks; }
+
         /**
          * @brief Get the Wall Time of the simulatio. Must be implemented in the children.
          * 
@@ -298,13 +308,13 @@ namespace Engine
          * @brief [Only implemented in MPI scheduler]
          * 
          */
-        virtual void divideSpace() = 0;
+        virtual void divideSpace() {}
 
         /**
          * @brief [Only implemented in MPI scheduler]
          * 
          */
-        virtual void sendSpaces() = 0;
+        virtual void sendSpaces() {}
 
         /**
          * @brief [OpenMP] Method to enable/disable the OpenMP paralellism.

@@ -9,6 +9,7 @@ set( PANDORA_FILES
      LoggerBase.cxx
      MpiFactory.cxx
      OpenMPSingleNode.cxx
+     OpenMPIMultiNode.cxx
      RasterLoader.cxx
      RNGNormal.cxx
      SequentialSerializer.cxx

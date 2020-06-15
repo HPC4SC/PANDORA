@@ -152,6 +152,10 @@ If pip3 is not installed, you can get it by doing:
 $ pip3 install python3-pip
 ```
 
+Both the Engine and the corresponding Model to be debugged should be compiled with the -g option. So be sure that
+- 1) you add the options `debug=true` in the cmake instruction for the **Engine compilation**, and
+- 2) also the `debug=true` when executing the scons directive **to compile the Model**.
+
 Now, you should go to your model folder and do ` $ gdbgui -r {modelBinary}`. Then open your web browser. You just need to connect to the indicated URL. 
 
 The best way to manage gdbgui is with the keyboard, mainly using the right, up and down arrows and r to start the program and c to continue until next breakpoint. Last, you can state these breakpoints graphically with your mouse. We do not recommend to use the leftmost file navigator panel, since it crashes sometimes, starting to swap due to some sort of bug.

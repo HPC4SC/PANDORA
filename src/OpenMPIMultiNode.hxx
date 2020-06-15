@@ -22,19 +22,20 @@
 #ifndef __OpenMPIMultiNode_hxx__
 #define __OpenMPIMultiNode_hxx__
 
-#include <mpi.h>
 #include <World.hxx>
 #include <Scheduler.hxx>
+#include <Serializer.hxx>
+
+#include <mpi.h>
 
 namespace Engine
 {
 
-    class OpenMPIMultiNode :  public Scheduler
+    class OpenMPIMultiNode : public Scheduler
     {
         protected:
 
-            int _numberOfMPITasks;
-            double _totalAgentsWeight;
+            //Serializer _serializer; //! Serializer instance.
 
             template <typename T>
             struct node {
@@ -66,14 +67,14 @@ namespace Engine
              * @param treeNode node<Rectangle<int>>*
              * @return node* 
              */
-            node* insertNode(const Rectangle<int>& rectangle, node<Rectangle<int>>* treeNode);
+            node<Rectangle<int>>* insertNode(const Rectangle<int>& rectangle, node<Rectangle<int>>* treeNode);
 
             /**
              * @brief It destroys the whole tree starting at 'leaf'.
              * 
              * @param leaf node*
              */
-            void destroyTree(node* leaf);
+            void destroyTree(node<Rectangle<int>>* leaf);
 
             /**
              * @brief Gets the weight of the 'agent'.
@@ -144,13 +145,42 @@ namespace Engine
              * @brief It creates the binary tree () representing the partitions of the world for each of the MPI tasks.
              * 
              */
-            void divideSpace();
+            void divideSpace() override;
 
             /**
              * @brief It sends the created spaces to the rest of MPI processes.
              * 
              */
-            void sendSpaces();
+            void sendSpaces() override;
+
+
+            void initData() {}
+            void executeAgents() {}
+            void finish() {}
+            
+            Point2D<int> getRandomPosition() const 
+            {
+
+
+            }
+
+            double getWallTime() const {}
+            size_t getNumberOfTypedAgents( const std::string & type ) const {}
+            void removeAgents() {}
+            void removeAgent(Agent* agent) {}
+            Agent* getAgent(const std::string& id) {}
+            AgentsVector getAgent(const Point2D<int>& position, const std::string& type = "all") {}
+            int countNeighbours(Agent* target, const double& radius, const std::string& type) {}
+            AgentsVector getNeighbours(Agent* target, const double& radius, const std::string& type) {}
+            void addStringAttribute( const std::string& type, const std::string& key, const std::string& value) {}
+            void addIntAttribute(const std::string& type, const std::string& key, int value) {}
+            void addFloatAttribute(const std::string & type, const std::string& key, float value) {}
+            void serializeAgents(const int& step) {}
+            void serializeRasters(const int& step) {}
+            void setValue(DynamicRaster& raster, const Point2D<int>& position, int value) {}
+            int getValue(const DynamicRaster& raster, const Point2D<int>& position) const {}
+            void setMaxValue(DynamicRaster& raster, const Point2D<int>& position, int value) {}
+            int getMaxValue(const DynamicRaster& raster, const Point2D<int>& position) const {}
 
     };
 
