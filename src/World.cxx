@@ -86,6 +86,7 @@ namespace Engine
             createAgents( );
 
             _scheduler->divideSpace();
+            _scheduler->sendSpaces();
         }
         else 
         {

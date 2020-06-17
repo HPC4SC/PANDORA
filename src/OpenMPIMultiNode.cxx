@@ -21,6 +21,8 @@
 
 #include <OpenMPIMultiNode.hxx>
 
+#include <GeneralState.hxx>
+
 namespace Engine {
 
     // PUBLIC METHODS //
@@ -41,23 +43,20 @@ namespace Engine {
         MPI_Initialized(&alreadyInitialized);
         if (not alreadyInitialized) MPI_Init(&argc, &argv);
 
-        MPI_Comm_size(MPI_COMM_WORLD, &_numTasks);
+        //MPI_Comm_size(MPI_COMM_WORLD, &_numTasks);
         MPI_Comm_rank(MPI_COMM_WORLD, &_id);
 
         _updateKnowledgeInParallel = false;
         _executeActionsInParallel = false;
         omp_init_lock(&_ompLock);
 
-        // _boundaries._origin = Point2D<int>( 0, 0 );
-        // _boundaries._size = _world->getConfig( ).getSize( );
-        _boundaries = Rectangle<int>(_world->getConfig().getSize());
-
-        initTree();
+        stablishInitialBoundaries();
+        initializeTree();
     }
 
     void OpenMPIMultiNode::divideSpace()
     {
-        double totalAgentsWeight = (double) _world->getNumberOfAgents();   // This can be changed so a 'weight' for an agent can be anything. Here all agents weight the same: 1
+        double totalAgentsWeight = (double) _world->getNumberOfAgents();   // This can be changed so a weight for an agent can be anything. Here all agents weight the same: 1
         divideSpaceRecursive(_root, totalAgentsWeight, (int) std::ceil(std::log2(_numTasks)));
     }
 
@@ -66,9 +65,30 @@ namespace Engine {
 
     }
 
+    Point2D<int> OpenMPIMultiNode::getRandomPosition() const
+    {
+        return Engine::Point2D<int>(GeneralState::statistics().getUniformDistValue(_ownedArea.left(), _ownedArea.right()),
+                                    GeneralState::statistics().getUniformDistValue(_ownedArea.top(), _ownedArea.bottom()));
+    }
+
+    AgentsVector OpenMPIMultiNode::getAgent(const Point2D<int>& position, const std::string& type)
+    {
+        return getAgentsInPosition(position, type);
+        // + overlap agents?
+    }
+
     // PROTECTED METHODS //
 
-    void OpenMPIMultiNode::initTree() 
+    void OpenMPIMultiNode::stablishInitialBoundaries()
+    {
+        // _boundaries._origin = Point2D<int>( 0, 0 );
+        // _boundaries._size = _world->getConfig( ).getSize( );
+        _boundaries = Rectangle<int>(_world->getConfig().getSize());
+
+        _ownedArea = _boundaries;
+    }
+
+    void OpenMPIMultiNode::initializeTree() 
     {
         _root = new node<Rectangle<int>>;
         _root->value = Rectangle<int>(_world->getConfig().getSize());
@@ -149,14 +169,14 @@ namespace Engine {
         return getAgentsWeight(agentsVector);
     }
 
-    void OpenMPIMultiNode::divideSpaceRecursive(node<Rectangle<int>>* treeNode, const double& totalWeight, const int& currentDepth)
+    void OpenMPIMultiNode::divideSpaceRecursive(node<Rectangle<int>>* treeNode, const double& totalWeight, const int& currentHeight)
     {
-        if (currentDepth == 0 or numberOfLeafs(_root) == _numTasks) return;
+        if (currentHeight == 0 or numberOfLeafs(_root) == _numTasks) return;
 
         double leftChildTotalWeight = 0;
         bool stopExploration = false;
 
-        if (currentDepth % 2 == 0)      // Horizontal exploration: i = columns , j = rows
+        if (currentHeight % 2 == 0)      // Horizontal exploration: i = columns , j = rows
         {
             for (int i = treeNode->value.left(); i <= treeNode->value.right() and not stopExploration; ++i)
             {
@@ -172,16 +192,14 @@ namespace Engine {
                     node<Rectangle<int>>* leftChildNode = insertNode(leftRectangle, treeNode);
                     node<Rectangle<int>>* rightChildNode = insertNode(rightRectangle, treeNode);
 
-                    divideSpaceRecursive(leftChildNode, leftChildTotalWeight, currentDepth - 1);
-                    divideSpaceRecursive(rightChildNode, totalWeight - leftChildTotalWeight, currentDepth - 1);
+                    divideSpaceRecursive(leftChildNode, leftChildTotalWeight, currentHeight - 1);
+                    divideSpaceRecursive(rightChildNode, totalWeight - leftChildTotalWeight, currentHeight - 1);
                 }
-
-                leftChildTotalWeight = 0;
             }
         }
         else                            // Vertical exploration: i = rows , j = columns
         {
-            for (int i = treeNode->value.top(); i < treeNode->value.bottom(); ++i) 
+            for (int i = treeNode->value.top(); i < treeNode->value.bottom() and not stopExploration; ++i) 
             {
                 for (int j = treeNode->value.left(); j < treeNode->value.right(); ++j)
                     leftChildTotalWeight += getAgentsWeightFromCell(i, j);
@@ -190,18 +208,18 @@ namespace Engine {
                 {
                     stopExploration = true;
 
-                    Rectangle<int> topRectangle(treeNode->value.left(), treeNode->value.top(), treeNode->value.top(), i);
+                    Rectangle<int> topRectangle(treeNode->value.left(), treeNode->value.top(), treeNode->value.right(), i);
                     Rectangle<int> bottomRectangle(treeNode->value.left(), i + 1, treeNode->value.right(), treeNode->value.bottom());
                     node<Rectangle<int>>* leftChildNode = insertNode(topRectangle, treeNode);
                     node<Rectangle<int>>* rightChildNode = insertNode(bottomRectangle, treeNode);
 
-                    divideSpaceRecursive(leftChildNode, leftChildTotalWeight, currentDepth - 1);
-                    divideSpaceRecursive(rightChildNode, totalWeight - leftChildTotalWeight, currentDepth - 1);
+                    divideSpaceRecursive(leftChildNode, leftChildTotalWeight, currentHeight - 1);
+                    divideSpaceRecursive(rightChildNode, totalWeight - leftChildTotalWeight, currentHeight - 1);
                 }
-
-                leftChildTotalWeight = 0;
             }
         }
     }
+
+
 
 } // namespace Engine
