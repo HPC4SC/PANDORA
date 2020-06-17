@@ -23,14 +23,12 @@ void RandomWorld::createAgents() {
 	 */
     const RandomWorldConfig & randomConfig = (const RandomWorldConfig&)getConfig();
 	for(int i=0; i<randomConfig._numBirds; i++) {
-		if((i%getNumTasks())==getId()){
-			std::ostringstream oss;
-			oss << "Bird_" << i;
-			Bird * agent = new Bird(oss.str(),randomConfig._agentVelocity,randomConfig._agentSigth,randomConfig._agentMindist,randomConfig._agentMaxATrun,randomConfig._agentMaxCTrun,randomConfig._agentMaxSTrun);
-			addAgent(agent);
-			agent->setRandomPosition();
-	        log_INFO(logName.str(), getWallTime() << " new agent: " << agent);
-		}
+		std::ostringstream oss;
+		oss << "Bird_" << i;
+		Bird * agent = new Bird(oss.str(),randomConfig._agentVelocity,randomConfig._agentSigth,randomConfig._agentMindist,randomConfig._agentMaxATrun,randomConfig._agentMaxCTrun,randomConfig._agentMaxSTrun);
+		addAgent(agent);
+		agent->setRandomPosition();
+		log_INFO(logName.str(), getWallTime() << " new agent: " << agent);
 	}
 }
 

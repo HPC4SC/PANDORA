@@ -1,8 +1,18 @@
 #!/bin/bash
 
+if [ $# -lt 1 ]; then
+  echo "Usage: $0 debug"
+  echo "* debug: debug=true to compile with option -g."
+  exit 0
+fi
+
+debugMode=""
+if [ $1 == "debug=true" ]; then
+  debugMode="-D debug=true"
+fi
+
 cd ~/PANDORA/
-rm -rf ~/PANDORA/build/ ~/PANDORA/install/
-mkdir build/ install/
+rm -rf build/* install/*
 
 cd build/
-cmake -D CMAKE_INSTALL_PREFIX=$PANDORAPATH ../
+cmake $debugMode -D CMAKE_INSTALL_PREFIX=$PANDORAPATH ../

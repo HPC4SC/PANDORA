@@ -35,8 +35,6 @@ namespace Engine
     {
         protected:
 
-            //Serializer _serializer; //! Serializer instance.
-
             template <typename T>
             struct node {
                 T value;
@@ -44,13 +42,24 @@ namespace Engine
                 node* right;
             };
 
-            node<Rectangle<int>>* _root;
+            node<Rectangle<int>>* _root;                    //! Tree used for the uneven partitioning of the space in _numTasks nodes.
             
+            //Serializer _serializer;                       //! Serializer instance.
+            Rectangle<int> _ownedAreaWithOuterOverlaps;     //! Area of this node with    outer (other nodes) overlaps.
+            Rectangle<int> _ownedArea;                      //! Area of this node with    inner (this node)   overlaps.
+            Rectangle<int> _ownedAreaWithoutInnerOverlap;   //! Area of this node without inner (this node)   overlaps.
+
+            /**
+             * @brief Used just to initially stablish the _boundaries and the _ownedArea members, needed to let the model to first create the agents.
+             * 
+             */
+            void stablishInitialBoundaries();
+
             /**
              * @brief Initialize the tree starting at _root.
              * 
              */
-            void initTree();
+            void initializeTree();
 
             /**
              * @brief Return the number of current leaf nodes in tree 'node'.
@@ -117,7 +126,7 @@ namespace Engine
              * @param totalWeight const double&
              * @param currentDepth const int&
              */
-            void divideSpaceRecursive(node<Rectangle<int>>* treeNode, const double& totalWeight, const int& currentDepth);
+            void divideSpaceRecursive(node<Rectangle<int>>* treeNode, const double& totalWeight, const int& maxDepth);
 
         public:
 
@@ -157,19 +166,29 @@ namespace Engine
             void initData() {}
             void executeAgents() {}
             void finish() {}
-            
-            Point2D<int> getRandomPosition() const 
-            {
 
-
-            }
+            /**
+             * @brief Get a random Point2D within the area owned by this node/scheduler
+             * 
+             * @return Point2D<int> 
+             */
+            Point2D<int> getRandomPosition() const;
 
             double getWallTime() const {}
             size_t getNumberOfTypedAgents( const std::string & type ) const {}
             void removeAgents() {}
             void removeAgent(Agent* agent) {}
             Agent* getAgent(const std::string& id) {}
-            AgentsVector getAgent(const Point2D<int>& position, const std::string& type = "all") {}
+
+            /**
+             * @brief Get the Agent object
+             * 
+             * @param position 
+             * @param type 
+             * @return AgentsVector 
+             */
+            AgentsVector getAgent(const Point2D<int>& position, const std::string& type = "all");
+
             int countNeighbours(Agent* target, const double& radius, const std::string& type) {}
             AgentsVector getNeighbours(Agent* target, const double& radius, const std::string& type) {}
             void addStringAttribute( const std::string& type, const std::string& key, const std::string& value) {}
