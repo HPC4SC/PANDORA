@@ -62,6 +62,33 @@ namespace Engine
             void initializeTree();
 
             /**
+             * @brief Recursively return the number of nodes of the tree starting at 'node' at level 'desiredDepth'.
+             * 
+             * @param node node<Rectangle<int>>*
+             * @param desiredDepth const int&
+             * @param currentDepth int
+             * @return int 
+             */
+            int numberOfNodesAtDepthRecursive(node<Rectangle<int>>* node, const int& desiredDepth, int currentDepth);
+
+            /**
+             * @brief Return the number of nodes of the tree starting at 'node' at level 'desiredDepth'
+             * 
+             * @param node node<Rectangle<int>>*
+             * @param desiredDepth const int&
+             * @return int 
+             */
+            int numberOfNodesAtDepth(node<Rectangle<int>>* node, const int& desiredDepth);
+
+            /**
+             * @brief Check whether a 'x' is a power of 2 or not
+             * 
+             * @param x const int&
+             * @return bool
+             */
+            bool isPowerOf2(const int& x);
+
+            /**
              * @brief Return the number of current leaf nodes in tree 'node'.
              * 
              * @param node node<Rectangle<int>>*
@@ -70,9 +97,17 @@ namespace Engine
             int numberOfLeafs(node<Rectangle<int>>* node);
 
             /**
+             * @brief Return whether the tree should still procreate or not.
+             * 
+             * @param currentHeight const int&
+             * @return bool
+             */
+            bool stopProcreating(const int& currentHeight);
+
+            /**
              * @brief It inserts a new node, with value 'rectangle', from 'treeNode'. It justs looks whether left or right is NULL (in this order) and insert the new node there. It is not recursive!
              * 
-             * @param rectangle Rectangle<int>
+             * @param rectangle const Rectangle<int>&
              * @param treeNode node<Rectangle<int>>*
              * @return node* 
              */
@@ -81,14 +116,14 @@ namespace Engine
             /**
              * @brief It destroys the whole tree starting at 'leaf'.
              * 
-             * @param leaf node*
+             * @param leaf node<Rectangle<int>>*
              */
             void destroyTree(node<Rectangle<int>>* leaf);
 
             /**
              * @brief Gets the weight of the 'agent'.
              * 
-             * @param agent Agent
+             * @param agent const Agent&
              * @return double
              */
             double getAgentWeight(const Agent& agent);
@@ -96,7 +131,7 @@ namespace Engine
             /**
              * @brief Gets the total weight of the agents in 'agentsVector'.
              * 
-             * @param agentsVector AgentsVector
+             * @param agentsVector const AgentsVector&
              * @return double
              */
             double getAgentsWeight(const AgentsVector& agentsVector);
@@ -104,8 +139,8 @@ namespace Engine
             /**
              * @brief Get an Agents list which are in 'position'
              * 
-             * @param position Point2D<int>
-             * @param type string
+             * @param position const Point2D<int>&
+             * @param type const string&
              * @return AgentsVector 
              */
             AgentsVector getAgentsInPosition(const Point2D<int>& position, const std::string& type = "all");
@@ -183,8 +218,8 @@ namespace Engine
             /**
              * @brief Get the Agent object
              * 
-             * @param position 
-             * @param type 
+             * @param position const Point2D<int>&
+             * @param type const std::string&
              * @return AgentsVector 
              */
             AgentsVector getAgent(const Point2D<int>& position, const std::string& type = "all");
