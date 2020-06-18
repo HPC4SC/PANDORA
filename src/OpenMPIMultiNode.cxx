@@ -23,6 +23,8 @@
 
 #include <GeneralState.hxx>
 
+#include <math.h>
+
 namespace Engine {
 
     // PUBLIC METHODS //
@@ -62,7 +64,15 @@ namespace Engine {
 
     void OpenMPIMultiNode::sendSpaces()
     {
-
+        // int a = numberOfLeafs(_root);
+        // int b = numberOfNodesAtDepth(_root, 0);
+        // int c = numberOfNodesAtDepth(_root, 1);
+        // int d = numberOfNodesAtDepth(_root, 2);
+        // int e = numberOfNodesAtDepth(_root, 3);
+        // int f = numberOfNodesAtDepth(_root, 4);
+        // int g = numberOfNodesAtDepth(_root, 5);
+        // int h = numberOfNodesAtDepth(_root, 6);
+        // int i = numberOfNodesAtDepth(_root, 7);
     }
 
     Point2D<int> OpenMPIMultiNode::getRandomPosition() const
@@ -96,11 +106,45 @@ namespace Engine {
         _root->right = NULL;
     }
 
+    int OpenMPIMultiNode::numberOfNodesAtDepthRecursive(node<Rectangle<int>>* node, const int& desiredDepth, int currentDepth) 
+    {
+        if (node == NULL) return 0;
+        if (desiredDepth == currentDepth) return 1;
+        return numberOfNodesAtDepthRecursive(node->left, desiredDepth, currentDepth + 1) + numberOfNodesAtDepthRecursive(node->right, desiredDepth, currentDepth + 1);
+    }
+
+    int OpenMPIMultiNode::numberOfNodesAtDepth(node<Rectangle<int>>* node, const int& desiredDepth)
+    {
+        return numberOfNodesAtDepthRecursive(node, desiredDepth, 0);
+    }
+
+    bool OpenMPIMultiNode::isPowerOf2(const int& x)
+    {
+        return x > 0 and not (x & (x - 1));
+    }
+
     int OpenMPIMultiNode::numberOfLeafs(node<Rectangle<int>>* node)
     {
         if (node == NULL) return 0;
         if (node->left == NULL and node->right == NULL) return 1;
         return numberOfLeafs(node->left) + numberOfLeafs(node->right);
+    }
+
+    bool OpenMPIMultiNode::stopProcreating(const int& currentHeight)
+    {
+        bool condition1 = currentHeight == 0;
+        bool condition2 = numberOfLeafs(_root) == _numTasks;
+
+        bool condition3 = false;
+        if (not isPowerOf2(_numTasks))
+        {
+            int numberOfNodesNeededAtLowestLevel = 2*(_numTasks - std::pow(2, std::floor(std::log2(_numTasks))));
+            int lowestLevel = std::ceil(std::log2(_numTasks));
+            bool isLowestLevelAlreadyFull = numberOfNodesNeededAtLowestLevel == numberOfNodesAtDepth(_root, lowestLevel);
+            condition3 = currentHeight == 1 and isLowestLevelAlreadyFull;
+        }
+
+        return condition1 or condition2 or condition3;
     }
 
     OpenMPIMultiNode::node<Rectangle<int>>* OpenMPIMultiNode::insertNode(const Rectangle<int>& rectangle, node<Rectangle<int>>* treeNode)
@@ -171,7 +215,7 @@ namespace Engine {
 
     void OpenMPIMultiNode::divideSpaceRecursive(node<Rectangle<int>>* treeNode, const double& totalWeight, const int& currentHeight)
     {
-        if (currentHeight == 0 or numberOfLeafs(_root) == _numTasks) return;
+        if (stopProcreating(currentHeight)) return;
 
         double leftChildTotalWeight = 0;
         bool stopExploration = false;
