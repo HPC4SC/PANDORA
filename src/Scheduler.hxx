@@ -14,14 +14,15 @@ namespace Engine
     class Scheduler
     {
     protected:
-        int                     _id; //! Identifier of the Scheduler.
-        int                     _numTasks; //! Number of MPI tasks executing the simulation
-        Engine::Rectangle<int>  _boundaries; //! Limits of the simulation space.
-        World                  *_world; //! Pointer to the World of the simulation
+        int                     _id;            //! Identifier of the Scheduler.
+        int                     _numTasks;      //! Number of MPI tasks executing the simulation
+        Engine::Rectangle<int>  _boundaries;    //! Limits of the simulation space.
+        World                  *_world;         //! Pointer to the World of the simulation
 
-        bool _updateKnowledgeInParallel;
-        bool _executeActionsInParallel; //! Initialized to False by default in the init() method.
-        omp_lock_t _ompLock;
+        bool _updateKnowledgeInParallel;        //! 
+        bool _executeActionsInParallel;         //! Initialized to False by default in the init() method.
+        omp_lock_t _ompLock;                    //! Lock object of OpenMP management
+        int _overlapSize;                       //! [Only for MPI scheduler] Overlap size in number of cells, defined for partition rectangles.
 
         /**
          * @brief This method returns a list with the list of agents in euclidean distance radius of position. If include center is false, position is not checked.
@@ -80,7 +81,7 @@ namespace Engine
          * @brief Construct a new Scheduler object created by default.
          * 
          */
-        Scheduler( ) : _id( 0 ), _numTasks(4), _world( 0 ) { }
+        Scheduler( ) : _id( 0 ), _numTasks(37), _world( 0 ) { }
 
         /**
          * @brief Destroy the Scheduler object
@@ -332,19 +333,20 @@ namespace Engine
          * @brief [OpenMP] Pause all the threads but the one calling this function.
          * 
          */
-        void pauseParallelization() 
-        { 
-            omp_set_lock(&_ompLock);
-        }
+        void pauseParallelization() { omp_set_lock(&_ompLock); }
 
         /**
          * @brief [OpenMP] Resume the threads that were locked in the pauseParallelization() method.
          * 
          */
-        void resumeParallelization()
-        {
-            omp_unset_lock(&_ompLock);
-        }
+        void resumeParallelization() { omp_unset_lock(&_ompLock); }
+
+        /**
+         * @brief Set the _overlapSize member.
+         * 
+         * @param overlapSize int
+         */
+        void setOverlapSize(int overlapSize) { _overlapSize = overlapSize; }
 
     };
 } // namespace Engine

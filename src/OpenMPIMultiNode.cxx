@@ -58,8 +58,8 @@ namespace Engine {
 
     void OpenMPIMultiNode::divideSpace()
     {
-        double totalAgentsWeight = (double) _world->getNumberOfAgents();   // This can be changed so a weight for an agent can be anything. Here all agents weight the same: 1
-        divideSpaceRecursive(_root, totalAgentsWeight, (int) std::ceil(std::log2(_numTasks)));
+        divideSpaceRecursively(_root, getAllAgentsWeight(), (int) std::ceil(std::log2(_numTasks)));
+        createNodesInformationToSend();
     }
 
     void OpenMPIMultiNode::sendSpaces()
@@ -88,6 +88,17 @@ namespace Engine {
     }
 
     // PROTECTED METHODS //
+
+    std::vector<std::string> OpenMPIMultiNode::splitStringByDelimiter(const std::string& s, const char& delimiter)
+    {
+        std::vector<std::string> result;
+
+        std::stringstream ss(s);
+        std::string token;
+        while (std::getline(ss, token, delimiter)) result.push_back(token);
+
+        return result;
+    }
 
     void OpenMPIMultiNode::stablishInitialBoundaries()
     {
@@ -138,7 +149,7 @@ namespace Engine {
         bool condition3 = false;
         if (not isPowerOf2(_numTasks))
         {
-            int numberOfNodesNeededAtLowestLevel = 2*(_numTasks - std::pow(2, std::floor(std::log2(_numTasks))));
+            int numberOfNodesNeededAtLowestLevel = 2 * (_numTasks - std::pow(2, std::floor(std::log2(_numTasks))));
             int lowestLevel = std::ceil(std::log2(_numTasks));
             bool isLowestLevelAlreadyFull = numberOfNodesNeededAtLowestLevel == numberOfNodesAtDepth(_root, lowestLevel);
             condition3 = currentHeight == 1 and isLowestLevelAlreadyFull;
@@ -194,6 +205,14 @@ namespace Engine {
         return totalWeight;
     }
 
+    double OpenMPIMultiNode::getAllAgentsWeight()
+    {
+        double totalWeight = 0;
+        for (AgentsList::iterator it = _world->beginAgents(); it != _world->endAgents(); ++it)
+            totalWeight += getAgentWeight(*it->get());
+        return totalWeight;
+    }
+
     AgentsVector OpenMPIMultiNode::getAgentsInPosition(const Point2D<int>& position, const std::string& type)
     {
         AgentsVector result;
@@ -213,14 +232,15 @@ namespace Engine {
         return getAgentsWeight(agentsVector);
     }
 
-    void OpenMPIMultiNode::divideSpaceRecursive(node<Rectangle<int>>* treeNode, const double& totalWeight, const int& currentHeight)
+    void OpenMPIMultiNode::divideSpaceRecursively(node<Rectangle<int>>* treeNode, const double& totalWeight, const int& currentHeight)
     {
         if (stopProcreating(currentHeight)) return;
 
         double leftChildTotalWeight = 0;
         bool stopExploration = false;
 
-        if (currentHeight % 2 == 0)      // Horizontal exploration: i = columns , j = rows
+        bool landscape = treeNode->value.getSize().getWidth() > treeNode->value.getSize().getHeight();
+        if (landscape)                  // Left->right exploration (vertical partitioning): i = columns , j = rows
         {
             for (int i = treeNode->value.left(); i <= treeNode->value.right() and not stopExploration; ++i)
             {
@@ -236,12 +256,12 @@ namespace Engine {
                     node<Rectangle<int>>* leftChildNode = insertNode(leftRectangle, treeNode);
                     node<Rectangle<int>>* rightChildNode = insertNode(rightRectangle, treeNode);
 
-                    divideSpaceRecursive(leftChildNode, leftChildTotalWeight, currentHeight - 1);
-                    divideSpaceRecursive(rightChildNode, totalWeight - leftChildTotalWeight, currentHeight - 1);
+                    divideSpaceRecursively(leftChildNode, leftChildTotalWeight, currentHeight - 1);
+                    divideSpaceRecursively(rightChildNode, totalWeight - leftChildTotalWeight, currentHeight - 1);
                 }
             }
         }
-        else                            // Vertical exploration: i = rows , j = columns
+        else                            // Top->bottom exploration (horizontal partitioning): i = rows , j = columns
         {
             for (int i = treeNode->value.top(); i < treeNode->value.bottom() and not stopExploration; ++i) 
             {
@@ -257,13 +277,65 @@ namespace Engine {
                     node<Rectangle<int>>* leftChildNode = insertNode(topRectangle, treeNode);
                     node<Rectangle<int>>* rightChildNode = insertNode(bottomRectangle, treeNode);
 
-                    divideSpaceRecursive(leftChildNode, leftChildTotalWeight, currentHeight - 1);
-                    divideSpaceRecursive(rightChildNode, totalWeight - leftChildTotalWeight, currentHeight - 1);
+                    divideSpaceRecursively(leftChildNode, leftChildTotalWeight, currentHeight - 1);
+                    divideSpaceRecursively(rightChildNode, totalWeight - leftChildTotalWeight, currentHeight - 1);
                 }
             }
         }
     }
 
+    void OpenMPIMultiNode::getPartitionsFromTree(node<Rectangle<int>>* node, std::vector<Rectangle<int>>& partitions)
+    {
+        if (node == NULL) return;
+        if (node->left == NULL and node->right == NULL) 
+        {
+            partitions.push_back(node->value);
+            return;
+        }
+        getPartitionsFromTree(node->left, partitions);
+        getPartitionsFromTree(node->right, partitions);
+    }
+
+    void OpenMPIMultiNode::addMPINodeInMapItIsNot(const std::vector<Rectangle<int>>& partitions, const int& neighbourIndex)
+    {
+        if (_mpiNodesMap.find(neighbourIndex) == _mpiNodesMap.end())
+        {
+            MPINode mpiNode;
+            mpiNode.ownedArea = partitions[neighbourIndex];
+            _mpiNodesMap[neighbourIndex] = mpiNode;
+        }
+    }
+
+    bool OpenMPIMultiNode::areTheyNeighbours(const Rectangle<int>& rectangleA, const Rectangle<int>& rectangleB)
+    {
+        
 
 
+
+        Rectangle<int> rectangleAWithOuterOverlap = rectangleA;
+        //rectangleAWithOuterOverlap.
+        return true;
+    }
+
+    void OpenMPIMultiNode::createNodesInformationToSend()
+    {
+        std::vector<Rectangle<int>> partitions;
+        getPartitionsFromTree(_root, partitions);
+
+        for (int i = 0; i < partitions.size(); ++i)
+        {
+            for (int j = i+1; j < partitions.size(); ++j)
+            {
+                addMPINodeInMapItIsNot(partitions, i);
+                addMPINodeInMapItIsNot(partitions, j);
+
+                if (areTheyNeighbours(partitions[i], partitions[j]))
+                {
+                    _mpiNodesMap[i].neighbours.push_back(j);
+                    _mpiNodesMap[j].neighbours.push_back(i);
+                }
+            }
+        }
+    }
+    
 } // namespace Engine

@@ -45,7 +45,8 @@ protected:
     int _numSteps; //! Number of time steps of the simulation.
     int _serializeResolution; //! Number of steps to execute before serializing the state of the simulation.
     std::string _configFile; //! XML config file ( if it exists ).
-    int _seed; //! Seed to be used for the RNG (Statistics class).
+    int _seed;          //! Seed to be used for the RNG (Statistics class).
+    int _overlapSize;   //! [Only for MPI scheduler] Overlap size in number of cells, defined for partition rectangles.
     
     /**
      * @brief Finds an element in a config file.
@@ -123,6 +124,13 @@ public:
      * @return const int& 
      */
     const int& getSeed() const;
+
+    /**
+     * @brief Gets the _overlapSize member.
+     * 
+     * @return const int& 
+     */
+    const int& getOverlapSize() const;
 
     /**
      * @brief Get the _numSteps object.

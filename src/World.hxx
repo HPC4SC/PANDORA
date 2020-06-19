@@ -516,7 +516,7 @@ public:
     void addFloatAttribute( const std::string & type, const std::string & key, float value );
 
     /**
-     * @brief Factory method for distributed Scheduler based on dynamic spatial distribution with load balancing implementation.
+     * @brief Factory method for distributed Scheduler based on uneven spatial distribution with dynamic load balancing implementation.
      * 
      * @return Scheduler* 
      */
