@@ -44,10 +44,27 @@ namespace Engine
 
             node<Rectangle<int>>* _root;                    //! Tree used for the uneven partitioning of the space in _numTasks nodes.
             
+            struct MPINode {
+                Rectangle<int> ownedArea;
+                std::list<int> neighbours;
+            };
+
+            std::map<int, MPINode> _mpiNodesMap;            //! Map<nodeId, nodeInformation> containing the leafs of _root, where the 'value' field is now the 'ownedArea', and the IDs of the neighbours are listed.
+
             //Serializer _serializer;                       //! Serializer instance.
+
             Rectangle<int> _ownedAreaWithOuterOverlaps;     //! Area of this node with    outer (other nodes) overlaps.
             Rectangle<int> _ownedArea;                      //! Area of this node with    inner (this node)   overlaps.
             Rectangle<int> _ownedAreaWithoutInnerOverlap;   //! Area of this node without inner (this node)   overlaps.
+
+            /**
+             * @brief Splits a string 's' by 'delimiter', appending the results into a vector.
+             * 
+             * @param s const std::string&
+             * @param delimiter const char&
+             * @return std::vector<std::string> 
+             */
+            std::vector<std::string> splitStringByDelimiter(const std::string& s, const char& delimiter);
 
             /**
              * @brief Used just to initially stablish the _boundaries and the _ownedArea members, needed to let the model to first create the agents.
@@ -137,6 +154,13 @@ namespace Engine
             double getAgentsWeight(const AgentsVector& agentsVector);
 
             /**
+             * @brief Get the weight of all the agents in the simulation.
+             * 
+             * @return double 
+             */
+            double getAllAgentsWeight();
+
+            /**
              * @brief Get an Agents list which are in 'position'
              * 
              * @param position const Point2D<int>&
@@ -161,12 +185,42 @@ namespace Engine
              * @param totalWeight const double&
              * @param currentDepth const int&
              */
-            void divideSpaceRecursive(node<Rectangle<int>>* treeNode, const double& totalWeight, const int& maxDepth);
+            void divideSpaceRecursively(node<Rectangle<int>>* treeNode, const double& totalWeight, const int& maxDepth);
+
+            /**
+             * @brief Get the created partitions in the leafs of the _root, leaving it in 'partitions'.
+             * 
+             * @param node node<Rectangle<int>>*
+             * @param partitions std::vector<Rectangle<int>>&
+             */
+            void getPartitionsFromTree(node<Rectangle<int>>* node, std::vector<Rectangle<int>>& partitions);
+
+            /**
+             * @brief Adds into the _mpiNodeMap the partition <nodeId, partitions[neighbourIndex]>.
+             * 
+             * @param partitions const std::vector<Rectangle<int>>&
+             * @param neighbourIndex const int&
+             */
+            void addMPINodeInMapItIsNot(const std::vector<Rectangle<int>>& partitions, const int& neighbourIndex);
+
+            /**
+             * @brief Check whether 'rectangleA' and 'rectangleB' are adjacent.
+             * 
+             * @param rectangleA const Rectangle<int>&
+             * @param rectangleB const Rectangle<int>&
+             */
+            bool areTheyNeighbours(const Rectangle<int>& rectangleA, const Rectangle<int>& rectangleB);
+
+            /**
+             * @brief Create all the information needed for the processing MPI nodes to properly be executed and communicate with the rest of the nodes.
+             * 
+             */
+            void createNodesInformationToSend();
 
         public:
 
             /**
-             * @brief Construct a new OpenMPIMultiNode object
+             * @brief Construct a new OpenMPIMultiNode object.
              * 
              */
             OpenMPIMultiNode();

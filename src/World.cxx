@@ -52,6 +52,7 @@ namespace Engine
             _scheduler = useOpenMPSingleNode( );
         }
         _scheduler->setWorld( this );
+        _scheduler->setOverlapSize(config->getOverlapSize());
     }
 
     World::~World( )

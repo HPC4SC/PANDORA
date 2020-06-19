@@ -93,6 +93,7 @@ void Config::loadBaseParams( )
     _size._height = getParamInt( "size", "height" );
 
     _seed = getParamInt("seed", "value");
+    _overlapSize = getParamInt("overlapSizeMPI", "value");
 }
 
 void Config::loadFile( )
@@ -207,6 +208,11 @@ const Size<int> & Config::getSize( ) const
 const int& Config::getSeed() const
 {
     return _seed;
+}
+
+const int& Config::getOverlapSize() const
+{
+    return _overlapSize;
 }
 
 } // namespace Engine
