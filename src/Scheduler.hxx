@@ -81,7 +81,7 @@ namespace Engine
          * @brief Construct a new Scheduler object created by default.
          * 
          */
-        Scheduler( ) : _id( 0 ), _numTasks(37), _world( 0 ) { }
+        Scheduler( ) : _id( 0 ), _numTasks(1), _world( 0 ) { }
 
         /**
          * @brief Destroy the Scheduler object

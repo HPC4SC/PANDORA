@@ -58,15 +58,6 @@ namespace Engine
             Rectangle<int> _ownedAreaWithoutInnerOverlap;   //! Area of this node without inner (this node)   overlaps.
 
             /**
-             * @brief Splits a string 's' by 'delimiter', appending the results into a vector.
-             * 
-             * @param s const std::string&
-             * @param delimiter const char&
-             * @return std::vector<std::string> 
-             */
-            std::vector<std::string> splitStringByDelimiter(const std::string& s, const char& delimiter);
-
-            /**
              * @brief Used just to initially stablish the _boundaries and the _ownedArea members, needed to let the model to first create the agents.
              * 
              */
@@ -86,7 +77,7 @@ namespace Engine
              * @param currentDepth int
              * @return int 
              */
-            int numberOfNodesAtDepthRecursive(node<Rectangle<int>>* node, const int& desiredDepth, int currentDepth);
+            int numberOfNodesAtDepthRecursive(node<Rectangle<int>>* node, const int& desiredDepth, int currentDepth) const;
 
             /**
              * @brief Return the number of nodes of the tree starting at 'node' at level 'desiredDepth'
@@ -95,7 +86,7 @@ namespace Engine
              * @param desiredDepth const int&
              * @return int 
              */
-            int numberOfNodesAtDepth(node<Rectangle<int>>* node, const int& desiredDepth);
+            int numberOfNodesAtDepth(node<Rectangle<int>>* node, const int& desiredDepth) const;
 
             /**
              * @brief Check whether a 'x' is a power of 2 or not
@@ -103,7 +94,7 @@ namespace Engine
              * @param x const int&
              * @return bool
              */
-            bool isPowerOf2(const int& x);
+            bool isPowerOf2(const int& x) const;
 
             /**
              * @brief Return the number of current leaf nodes in tree 'node'.
@@ -111,7 +102,7 @@ namespace Engine
              * @param node node<Rectangle<int>>*
              * @return int 
              */
-            int numberOfLeafs(node<Rectangle<int>>* node);
+            int numberOfLeafs(node<Rectangle<int>>* node) const;
 
             /**
              * @brief Return whether the tree should still procreate or not.
@@ -119,7 +110,7 @@ namespace Engine
              * @param currentHeight const int&
              * @return bool
              */
-            bool stopProcreating(const int& currentHeight);
+            bool stopProcreating(const int& currentHeight) const;
 
             /**
              * @brief It inserts a new node, with value 'rectangle', from 'treeNode'. It justs looks whether left or right is NULL (in this order) and insert the new node there. It is not recursive!
@@ -143,7 +134,7 @@ namespace Engine
              * @param agent const Agent&
              * @return double
              */
-            double getAgentWeight(const Agent& agent);
+            double getAgentWeight(const Agent& agent) const;
 
             /**
              * @brief Gets the total weight of the agents in 'agentsVector'.
@@ -151,14 +142,14 @@ namespace Engine
              * @param agentsVector const AgentsVector&
              * @return double
              */
-            double getAgentsWeight(const AgentsVector& agentsVector);
+            double getAgentsWeight(const AgentsVector& agentsVector) const;
 
             /**
              * @brief Get the weight of all the agents in the simulation.
              * 
              * @return double 
              */
-            double getAllAgentsWeight();
+            double getAllAgentsWeight() const;
 
             /**
              * @brief Get an Agents list which are in 'position'
@@ -167,7 +158,7 @@ namespace Engine
              * @param type const string&
              * @return AgentsVector 
              */
-            AgentsVector getAgentsInPosition(const Point2D<int>& position, const std::string& type = "all");
+            AgentsVector getAgentsInPosition(const Point2D<int>& position, const std::string& type = "all") const;
 
             /**
              * @brief Get the total agents weight that appear in cell <row, column>
@@ -176,10 +167,28 @@ namespace Engine
              * @param column const int&
              * @return double 
              */
-            double getAgentsWeightFromCell(const int& row, const int& column);
+            double getAgentsWeightFromCell(const int& row, const int& column) const;
 
             /**
-             * @brief Creates an uneven partitioning of the Rectangle<int> in 'treeNode' (->value) based on the 'totalWeight' an the current position of the agents in the _world.
+             * @brief Explore the space in 'treeNode' from left to right (vertical partitioning). j = rows, i = columns.
+             * 
+             * @param treeNode node<Rectangle<int>>*
+             * @param totalWeight const double& totalWeight
+             * @param currentHeight const int& currentHeight
+             */
+            void exploreHorizontallyAndKeepDividing(node<Rectangle<int>>* treeNode, const double& totalWeight, const int& currentHeight);
+
+            /**
+             * @brief Explore the space in 'treeNode' from top to bottom (horizontal partitioning). i = rows , j = columns.
+             * 
+             * @param treeNode node<Rectangle<int>>*
+             * @param totalWeight const double& totalWeight
+             * @param currentHeight const int& currentHeight
+             */
+            void exploreVerticallyAndKeepDividing(node<Rectangle<int>>* treeNode, const double& totalWeight, const int& currentHeight);
+
+            /**
+             * @brief Creates an uneven partitioning of the Rectangle<int> in 'treeNode' (->value) based on the 'totalWeight' and the current position of the agents in the _world.
              * 
              * @param treeNode node<Rectangle<int>>*
              * @param totalWeight const double&
@@ -193,7 +202,7 @@ namespace Engine
              * @param node node<Rectangle<int>>*
              * @param partitions std::vector<Rectangle<int>>&
              */
-            void getPartitionsFromTree(node<Rectangle<int>>* node, std::vector<Rectangle<int>>& partitions);
+            void getPartitionsFromTree(node<Rectangle<int>>* node, std::vector<Rectangle<int>>& partitions) const;
 
             /**
              * @brief Adds into the _mpiNodeMap the partition <nodeId, partitions[neighbourIndex]>.
@@ -204,12 +213,35 @@ namespace Engine
             void addMPINodeInMapItIsNot(const std::vector<Rectangle<int>>& partitions, const int& neighbourIndex);
 
             /**
+             * @brief Creates a rectangle like 'rectangle' expanded exactly 'expansion' cells in all directions (if possible).
+             * 
+             * @param rectangle const Rectangle<int>&
+             * @param expansion const int&
+             */
+            void expandRectangle(Rectangle<int>& rectangle, const int& expansion) const;
+
+            /**
+             * @brief Check whether 'rectangleA' and 'rectangleB' overlap.
+             * 
+             * @param rectangleA const Rectangle<int>&
+             * @param rectangleB const Rectangle<int>&
+             * @return bool
+             */
+            bool doOverlap(const Rectangle<int>& rectangleA, const Rectangle<int>& rectangleB) const;
+
+            /**
              * @brief Check whether 'rectangleA' and 'rectangleB' are adjacent.
              * 
              * @param rectangleA const Rectangle<int>&
              * @param rectangleB const Rectangle<int>&
              */
-            bool areTheyNeighbours(const Rectangle<int>& rectangleA, const Rectangle<int>& rectangleB);
+            bool areTheyNeighbours(const Rectangle<int>& rectangleA, const Rectangle<int>& rectangleB) const;
+
+            /**
+             * @brief Prints nodes partitioning and neighbours for each one.
+             * 
+             */
+            void printNodes() const;
 
             /**
              * @brief Create all the information needed for the processing MPI nodes to properly be executed and communicate with the rest of the nodes.
@@ -276,7 +308,7 @@ namespace Engine
              * @param type const std::string&
              * @return AgentsVector 
              */
-            AgentsVector getAgent(const Point2D<int>& position, const std::string& type = "all");
+            AgentsVector getAgent(const Point2D<int>& position, const std::string& type = "all") override;
 
             int countNeighbours(Agent* target, const double& radius, const std::string& type) {}
             AgentsVector getNeighbours(Agent* target, const double& radius, const std::string& type) {}

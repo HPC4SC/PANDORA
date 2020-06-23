@@ -53,24 +53,32 @@ namespace Engine
             }
 
             /**
-             * @brief Get the _width member.
+             * @brief Getter for the _width member.
              * 
              * @return const Type& 
              */
-            const Type& getWidth() const
-            {
-                return _width;
-            }
+            const Type& getWidth() const { return _width; }
 
             /**
-             * @brief Get the _height member.
+             * @brief Getter for the _height member.
              * 
              * @return const Type& 
              */
-            const Type& getHeight() const
-            {
-                return _height;
-            }
+            const Type& getHeight() const { return _height; }
+
+            /**
+             * @brief Setter for the _width member.
+             * 
+             * @return const Type& 
+             */
+            Type& getWidth() { return _width; }
+
+            /**
+             * @brief Setter for the _height member.
+             * 
+             * @return const Type& 
+             */
+            Type& getHeight() { return _height; }
 
             /**
              * @brief Clones the calling size.

@@ -85,14 +85,32 @@ namespace Engine
             }
 
             /**
-             * @brief Get the _size member.
+             * @brief Getter for the _origin member.
+             * 
+             * @return const Point2D<Type>& 
+             */
+            const Point2D<Type>& getOrigin() const { return _origin; }
+
+            /**
+             * @brief Getter for the _size member.
              * 
              * @return Size<Type> 
              */
-            const Size<Type>& getSize() const
-            {
-                return _size;
-            }
+            const Size<Type>& getSize() const { return _size; }
+
+            /**
+             * @brief Setter for the _origin member.
+             * 
+             * @return Point2D<Type>& 
+             */
+            Point2D<Type>& getOrigin() { return _origin; }
+
+            /**
+             * @brief Setter for the _size member.
+             * 
+             * @return const Size<Type>& 
+             */
+            Size<Type>& getSize() { return _size; }
 
             /**
              * @brief Returts if "point" is contained by the Rectangle.

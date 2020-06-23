@@ -12,7 +12,8 @@ if [ $1 == "debug=true" ]; then
 fi
 
 cd ~/PANDORA/
-rm -rf build/* install/*
+rm -rf build/ install/
+mkdir build/ install/
 
 cd build/
 cmake $debugMode -D CMAKE_INSTALL_PREFIX=$PANDORAPATH ../
