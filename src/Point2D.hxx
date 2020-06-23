@@ -59,24 +59,32 @@ namespace Engine
             }
 
             /**
-             * @brief Get the _x member.
+             * @brief Getter for the _x member.
              * 
              * @return const Type& 
              */
-            const Type& getX() const
-            {
-                return _x;
-            }
+            const Type& getX() const { return _x; }
 
             /**
-             * @brief Get the _y member.
+             * @brief Getter for the _y member.
              * 
              * @return const Type& 
              */
-            const Type& getY() const
-            {
-                return _y;
-            }
+            const Type& getY() const { return _y; }
+
+            /**
+             * @brief Setter for the _x member.
+             * 
+             * @return const Type& 
+             */
+            Type& getX() { return _x; }
+
+            /**
+             * @brief Setter for the _y member.
+             * 
+             * @return const Type& 
+             */
+            Type& getY() { return _y; }
 
             /**
              * @brief Clones the calling Point2D.
