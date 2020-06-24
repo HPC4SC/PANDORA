@@ -315,7 +315,20 @@ namespace Engine
          * @brief [Only implemented in MPI scheduler]
          * 
          */
-        virtual void sendSpaces() {}
+        virtual void distributeSpacesAmongNodes() {}
+
+        /**
+         * @brief [Only implemented in MPI scheduler]
+         * 
+         */
+        virtual void receiveSpaces() {}
+
+        /**
+         * @brief [Only implemented in MPI scheduler] Sets the _overlapSize member.
+         * 
+         * @param overlapSize int
+         */
+        void setOverlapSize(int overlapSize) { _overlapSize = overlapSize; }
 
         /**
          * @brief [OpenMP] Method to enable/disable the OpenMP paralellism.
@@ -340,13 +353,6 @@ namespace Engine
          * 
          */
         void resumeParallelization() { omp_unset_lock(&_ompLock); }
-
-        /**
-         * @brief Set the _overlapSize member.
-         * 
-         * @param overlapSize int
-         */
-        void setOverlapSize(int overlapSize) { _overlapSize = overlapSize; }
 
     };
 } // namespace Engine

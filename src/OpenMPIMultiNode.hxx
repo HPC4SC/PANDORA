@@ -35,6 +35,7 @@ namespace Engine
     {
         protected:
 
+            /** Base structures for space partitioning (node0 only) **/
             template <typename T>
             struct node {
                 T value;
@@ -42,20 +43,34 @@ namespace Engine
                 node* right;
             };
 
-            node<Rectangle<int>>* _root;                    //! Tree used for the uneven partitioning of the space in _numTasks nodes.
+            node<Rectangle<int>>* _root;                            //! Tree used for the uneven partitioning of the space in _numTasks nodes.
             
-            struct MPINode {
+            struct MPINodeToSend {
                 Rectangle<int> ownedArea;
-                std::list<int> neighbours;
+                std::vector<int> neighbours;
             };
 
-            std::map<int, MPINode> _mpiNodesMap;            //! Map<nodeId, nodeInformation> containing the leafs of _root, where the 'value' field is now the 'ownedArea', and the IDs of the neighbours are listed.
+            std::map<int, MPINodeToSend> _mpiNodesMapToSend;        //! Map<nodeId, nodeInformation> containing the leafs of _root, where the 'value' field is now the 'ownedArea', and the IDs of the neighbours are listed.
 
-            //Serializer _serializer;                       //! Serializer instance.
+            /** Node own structures (nodes0..n) **/
+            struct MPINode {
+                Rectangle<int> ownedAreaWithoutInnerOverlap;        //! Area of this node without inner (this node)   overlaps.
+                Rectangle<int> ownedArea;                           //! Area of this node with    inner (this node)   overlaps.
+                Rectangle<int> ownedAreaWithOuterOverlaps;          //! Area of this node with    outer (other nodes) overlaps.
+            };
 
-            Rectangle<int> _ownedAreaWithOuterOverlaps;     //! Area of this node with    outer (other nodes) overlaps.
-            Rectangle<int> _ownedArea;                      //! Area of this node with    inner (this node)   overlaps.
-            Rectangle<int> _ownedAreaWithoutInnerOverlap;   //! Area of this node without inner (this node)   overlaps.
+            MPINode _nodeSpace;                                     //! Areas of this node
+            std::map<int, MPINode> _neighbouringNodesSpaces;        //! Map<neighbouringNodeId, neighbouringNodeSpaces> containing the neighbours information for communication.
+
+            /** MPI Structures **/
+            struct Coordinates {
+                int top, left, bottom, right;
+            };
+            MPI_Datatype* _coordinatesDatatype;
+
+            //Serializer _serializer;                               //! Serializer instance.
+
+            /** METHODS TO CREATE THE PARTITIONS AND BASIC STRUCTURES FOR NODES **/
 
             /**
              * @brief Used just to initially stablish the _boundaries and the _ownedArea members, needed to let the model to first create the agents.
@@ -68,6 +83,49 @@ namespace Engine
              * 
              */
             void initializeTree();
+
+            /**
+             * @brief Registers the data structs to be send/received to/from the nodes.
+             * 
+             */
+            void registerMPIStructs();
+
+            /**
+             * @brief Fills the own structures with the information in 'mpiNodeInfo'.
+             * 
+             * @param mpiNodeInfo const MPINodeToSend&
+             */
+            void fillOwnStructures(const MPINodeToSend& mpiNodeInfo);
+
+            /**
+             * @brief It blocking sends the 'nodeCoordinates' to the corresponding 'nodeID'.
+             * 
+             * @param nodeID const int&
+             * @param nodeCoordinates const Rectangle<int>&
+             */
+            void sendOwnAreaToNode(const int& nodeID, const Rectangle<int>& nodeCoordinates);
+
+            /**
+             * @brief It blocking sends the 'neighbours' information to 'nodeID', gathering their coordinates from the _mpiNodesMapToSend member.
+             * 
+             * @param nodeID const int&
+             * @param neighbours const std::vector<int>&
+             */
+            void sendNeighboursToNode(const int& nodeID, const std::vector<int>& neighbours);
+
+            /**
+             * @brief It blocking receives the own node coordinates from the master node with ID 'masterNodeID'.
+             * 
+             * @param masterNodeID const int&
+             */
+            void receiveOwnAreaFromNode(const int& masterNodeID);
+
+            /**
+             * @brief It blocking receives the 'neighbours' information from 'masterNodeID'.
+             * 
+             * @param masterNodeID const int&
+             */
+            void receiveNeighboursFromNode(const int& masterNodeID);
 
             /**
              * @brief Recursively return the number of nodes of the tree starting at 'node' at level 'desiredDepth'.
@@ -210,7 +268,7 @@ namespace Engine
              * @param partitions const std::vector<Rectangle<int>>&
              * @param neighbourIndex const int&
              */
-            void addMPINodeInMapItIsNot(const std::vector<Rectangle<int>>& partitions, const int& neighbourIndex);
+            void addMPINodeToSendInMapItIsNot(const std::vector<Rectangle<int>>& partitions, const int& neighbourIndex);
 
             /**
              * @brief Creates a rectangle like 'rectangle' expanded exactly 'expansion' cells in all directions (if possible).
@@ -249,6 +307,8 @@ namespace Engine
              */
             void createNodesInformationToSend();
 
+            /** METHODS TO RUN THE SIMULATION AND SEND/RECEIV AGENTS BETWEEN NODES **/
+
         public:
 
             /**
@@ -272,17 +332,22 @@ namespace Engine
             void init(int argc, char *argv[]);
 
             /**
-             * @brief It creates the binary tree () representing the partitions of the world for each of the MPI tasks.
+             * @brief It creates the binary tree '_root' representing the partitions of the world for each of the MPI tasks. Besides, it creates the nodes structs to be send to each one of the slaves.
              * 
              */
             void divideSpace() override;
 
             /**
-             * @brief It sends the created spaces to the rest of MPI processes.
+             * @brief It fills own structures for node 0 and sends the created spaces to the rest of MPI processes.
              * 
              */
-            void sendSpaces() override;
+            void distributeSpacesAmongNodes() override;
 
+            /**
+             * @brief It receives the created spaces from the MPI process 0.
+             * 
+             */
+            void receiveSpaces() override;
 
             void initData() {}
             void executeAgents() {}

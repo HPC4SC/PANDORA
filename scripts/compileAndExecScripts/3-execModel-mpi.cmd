@@ -8,12 +8,12 @@ if [ $# -lt 3 ]; then
   exit 0
 fi
 
-numberOfTasks=${2:-1}
+numberOfTasks=$2
 
 gdbguiMode=""
-if [ $2 == "debug=true" ]; then
+if [ $3 == "debug=true" ]; then
   gdbguiMode="gdbgui -r"
 fi
 
 cd ~/PANDORA/examples/"$1"/
-$gdbguiMode mpirun -n $numberOfTasks ./"$1"
+mpirun -n $numberOfTasks $gdbguiMode ./"$1"
