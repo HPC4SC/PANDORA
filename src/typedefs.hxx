@@ -30,6 +30,13 @@ enum MpiMessageType
     eModifiedAgent = 10
 };
 
+enum MpiMessageTypeSpaces
+{
+    eCoordinates = 1,
+    eNumNeighbours = 2,
+    eNeighbours = 3
+};
+
 
 } // namespace Engine
 

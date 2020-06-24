@@ -87,11 +87,11 @@ namespace Engine
             createAgents( );
 
             _scheduler->divideSpace();
-            _scheduler->sendSpaces();
+            _scheduler->distributeSpacesAmongNodes();
         }
         else 
         {
-            // wait for the the master to send the corresponding agents
+            _scheduler->receiveSpaces();
         }
         
         _scheduler->initData( );
