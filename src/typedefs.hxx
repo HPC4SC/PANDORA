@@ -34,7 +34,8 @@ enum MpiMessageTypeSpaces
 {
     eCoordinates = 1,
     eNumNeighbours = 2,
-    eNeighbours = 3
+    eNeighbourID = 3,
+    eCoordinatesNeighbour = 4
 };
 
 
