@@ -5,7 +5,7 @@
 	<numSteps value="300" serializeResolution="1"/>
 	<seed value="1234"/>
 	<size width="50" height="50"/>
-	<seed value="1234"/>
+	<overlapSizeMPI value="6"/>
 	<inputData numAgents="250" minWealth="5" maxWealth="25" minVision="1" maxVision="6"
 			   minMr="1" maxMr="4" minMAge="60" maxMAge="100"/>
 </config>

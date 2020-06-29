@@ -47,26 +47,26 @@ namespace Engine
             
             struct MPINodeToSend {
                 Rectangle<int> ownedArea;
-                std::vector<int> neighbours;
+                std::map<int, Rectangle<int>> neighbours;
             };
 
             std::map<int, MPINodeToSend> _mpiNodesMapToSend;        //! Map<nodeId, nodeInformation> containing the leafs of _root, where the 'value' field is now the 'ownedArea', and the IDs of the neighbours are listed.
-
-            /** Node own structures (nodes0..n) **/
-            struct MPINode {
-                Rectangle<int> ownedAreaWithoutInnerOverlap;        //! Area of this node without inner (this node)   overlaps.
-                Rectangle<int> ownedArea;                           //! Area of this node with    inner (this node)   overlaps.
-                Rectangle<int> ownedAreaWithOuterOverlaps;          //! Area of this node with    outer (other nodes) overlaps.
-            };
-
-            MPINode _nodeSpace;                                     //! Areas of this node
-            std::map<int, MPINode> _neighbouringNodesSpaces;        //! Map<neighbouringNodeId, neighbouringNodeSpaces> containing the neighbours information for communication.
 
             /** MPI Structures **/
             struct Coordinates {
                 int top, left, bottom, right;
             };
             MPI_Datatype* _coordinatesDatatype;
+
+            /** Node own structures (nodes0..n) **/
+            struct MPINode {
+                Rectangle<int> ownedAreaWithoutInnerOverlap;        //! Area of this node without inner (this node)   overlaps.
+                Rectangle<int> ownedArea;                           //! Area of this node with    inner (this node)   overlaps.
+                Rectangle<int> ownedAreaWithOuterOverlaps;          //! Area of this node with    outer (other nodes) overlaps.
+                std::map<int, MPINode*> neighbours;                 //! Map<neighbouringNodeId, neighbouringNodeSpaces> containing the neighbours information for communication.
+            };
+
+            MPINode _nodesSpace;                                    //! Areas of this node
 
             //Serializer _serializer;                               //! Serializer instance.
 
@@ -103,29 +103,29 @@ namespace Engine
              * @param nodeID const int&
              * @param nodeCoordinates const Rectangle<int>&
              */
-            void sendOwnAreaToNode(const int& nodeID, const Rectangle<int>& nodeCoordinates);
+            void sendOwnAreaToNode(const int& nodeID, const Rectangle<int>& nodeCoordinates) const;
 
             /**
              * @brief It blocking sends the 'neighbours' information to 'nodeID', gathering their coordinates from the _mpiNodesMapToSend member.
              * 
              * @param nodeID const int&
-             * @param neighbours const std::vector<int>&
+             * @param neighbours std::map<int, Rectangle<int>>&
              */
-            void sendNeighboursToNode(const int& nodeID, const std::vector<int>& neighbours);
+            void sendNeighboursToNode(const int& nodeID, const std::map<int, Rectangle<int>>& neighbours) const;
 
             /**
              * @brief It blocking receives the own node coordinates from the master node with ID 'masterNodeID'.
              * 
              * @param masterNodeID const int&
              */
-            void receiveOwnAreaFromNode(const int& masterNodeID);
+            void receiveOwnAreaFromNode(const int& masterNodeID, MPINodeToSend& mpiNodeInfo) const;
 
             /**
              * @brief It blocking receives the 'neighbours' information from 'masterNodeID'.
              * 
              * @param masterNodeID const int&
              */
-            void receiveNeighboursFromNode(const int& masterNodeID);
+            void receiveNeighboursFromNode(const int& masterNodeID, MPINodeToSend& mpiNodeInfo) const;
 
             /**
              * @brief Recursively return the number of nodes of the tree starting at 'node' at level 'desiredDepth'.
@@ -296,16 +296,22 @@ namespace Engine
             bool areTheyNeighbours(const Rectangle<int>& rectangleA, const Rectangle<int>& rectangleB) const;
 
             /**
-             * @brief Prints nodes partitioning and neighbours for each one.
-             * 
-             */
-            void printNodes() const;
-
-            /**
              * @brief Create all the information needed for the processing MPI nodes to properly be executed and communicate with the rest of the nodes.
              * 
              */
             void createNodesInformationToSend();
+
+            /**
+             * @brief Prints nodes partitioning and neighbours for each one.
+             * 
+             */
+            void printNodesBeforeMPI() const;
+
+            /**
+             * @brief Prints the nodes structure (ID + Coordinates) in _nodesSpace.
+             * 
+             */
+            void printOwnNodeStructureAfterMPI() const;
 
             /** METHODS TO RUN THE SIMULATION AND SEND/RECEIV AGENTS BETWEEN NODES **/
 
