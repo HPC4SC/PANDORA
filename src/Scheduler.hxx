@@ -315,13 +315,13 @@ namespace Engine
          * @brief [Only implemented in MPI scheduler]
          * 
          */
-        virtual void distributeSpacesAmongNodes() {}
+        virtual void sendSpacesAmongNodes() {}
 
         /**
          * @brief [Only implemented in MPI scheduler]
          * 
          */
-        virtual void receiveSpaces() {}
+        virtual void receiveSpacesFromMaster() {}
 
         /**
          * @brief [Only implemented in MPI scheduler] Sets the _overlapSize member.

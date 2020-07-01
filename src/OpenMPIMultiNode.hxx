@@ -35,7 +35,7 @@ namespace Engine
     {
         protected:
 
-            /** Base structures for space partitioning (node0 only) **/
+            /** Base structures for the space partitioning (node0 only) **/
             template <typename T>
             struct node {
                 T value;
@@ -50,13 +50,13 @@ namespace Engine
                 std::map<int, Rectangle<int>> neighbours;
             };
 
-            std::map<int, MPINodeToSend> _mpiNodesMapToSend;        //! Map<nodeId, nodeInformation> containing the leafs of _root, where the 'value' field is now the 'ownedArea', and the IDs of the neighbours are listed.
+            std::map<int, MPINodeToSend> _mpiNodesMapToSend;        //! Map<nodeId, nodeInformation> containing the leafs of _root, where the 'value' field is now the 'ownedArea', and the IDs of the 'neighbours' are mapped with their coordinates.
 
             /** MPI Structures **/
             struct Coordinates {
                 int top, left, bottom, right;
-            };
-            MPI_Datatype* _coordinatesDatatype;
+            };                                                      //! Struct used to parse in/out the to-be-send/received coordinates.
+            MPI_Datatype* _coordinatesDatatype;                     //! Own MPI Datatype used to send/receive the coordinates of a node.
 
             /** Node own structures (nodes0..n) **/
             struct MPINode {
@@ -66,11 +66,20 @@ namespace Engine
                 std::map<int, MPINode*> neighbours;                 //! Map<neighbouringNodeId, neighbouringNodeSpaces> containing the neighbours information for communication.
             };
 
-            MPINode _nodesSpace;                                    //! Areas of this node
+            MPINode _nodesSpace;                                    //! Areas of this node.
 
+            /** Other structures **/
+            double _initialTime;                                    //! Initial running time.
+            std::map<int, std::string> _logFileNames;               //! Names of the log files for each of the MPI processes.
             //Serializer _serializer;                               //! Serializer instance.
 
             /** METHODS TO CREATE THE PARTITIONS AND BASIC STRUCTURES FOR NODES **/
+
+            /**
+             * @brief Creates the names of the log files for each of the MPI processes, appending them in the _logFileNames member.
+             * 
+             */
+            void initLogFileNames();
 
             /**
              * @brief Used just to initially stablish the _boundaries and the _ownedArea members, needed to let the model to first create the agents.
@@ -89,6 +98,13 @@ namespace Engine
              * 
              */
             void registerMPIStructs();
+
+            /**
+             * @brief Generates and fills the 'mpiNode'.ownedAreaWithoutInnerOverlap and the 'mpiNode'.ownedAreaWithOuterOverlaps, based on the 'mpiNode'.ownedArea.
+             * 
+             * @param mpiNode MPINode&
+             */
+            void generateOverlapAreas(MPINode& mpiNode);
 
             /**
              * @brief Fills the own structures with the information in 'mpiNodeInfo'.
@@ -271,12 +287,14 @@ namespace Engine
             void addMPINodeToSendInMapItIsNot(const std::vector<Rectangle<int>>& partitions, const int& neighbourIndex);
 
             /**
-             * @brief Creates a rectangle like 'rectangle' expanded exactly 'expansion' cells in all directions (if possible).
+             * @brief Creates a rectangle like 'rectangle' expanded exactly 'expansion' cells in all directions (if possible). If 'contractInTheLimits' == false means that, if 'rectangle' is already in the limits of the simulation space ([_root->value.top(), _root->value.left()] or [_root->value.bottom(), _root->value.right()], then the resulting rectangle will NOT be expanded (even if 'expansion' < 0 == contraction). This is normally used only when 'expansion' < 0.
              * 
+             * @pre For contractions ('expansion' < 0), 'rectangle'.getSize().getWidth() and 'rectangle'.getSize().getHeight() should be > 2*'expansion'.
              * @param rectangle const Rectangle<int>&
              * @param expansion const int&
+             * @param noContractInTheLimits const bool&
              */
-            void expandRectangle(Rectangle<int>& rectangle, const int& expansion) const;
+            void expandRectangleConsideringLimits(Rectangle<int>& rectangle, const int& expansion, const bool& contractInTheLimits = true) const;
 
             /**
              * @brief Check whether 'rectangleA' and 'rectangleB' overlap.
@@ -292,6 +310,7 @@ namespace Engine
              * 
              * @param rectangleA const Rectangle<int>&
              * @param rectangleB const Rectangle<int>&
+             * @return bool
              */
             bool areTheyNeighbours(const Rectangle<int>& rectangleA, const Rectangle<int>& rectangleB) const;
 
@@ -300,6 +319,13 @@ namespace Engine
              * 
              */
             void createNodesInformationToSend();
+
+            /**
+             * @brief Check whether each of the created partitions fullfil the first condition of being their widths and heights > 2*_overlapSize.
+             * 
+             * @return bool
+             */
+            bool arePartitionsSuitable();
 
             /**
              * @brief Prints nodes partitioning and neighbours for each one.
@@ -347,13 +373,13 @@ namespace Engine
              * @brief It fills own structures for node 0 and sends the created spaces to the rest of MPI processes.
              * 
              */
-            void distributeSpacesAmongNodes() override;
+            void sendSpacesAmongNodes() override;
 
             /**
              * @brief It receives the created spaces from the MPI process 0.
              * 
              */
-            void receiveSpaces() override;
+            void receiveSpacesFromMaster() override;
 
             void initData() {}
             void executeAgents() {}
@@ -366,7 +392,13 @@ namespace Engine
              */
             Point2D<int> getRandomPosition() const;
 
-            double getWallTime() const {}
+            /**
+             * @brief Get the wall time for the MPI scheduler.
+             * 
+             * @return double 
+             */
+            double getWallTime() const;
+
             size_t getNumberOfTypedAgents( const std::string & type ) const {}
             void removeAgents() {}
             void removeAgent(Agent* agent) {}

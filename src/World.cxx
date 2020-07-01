@@ -72,7 +72,6 @@ namespace Engine
 
     void World::initialize( int argc, char *argv[] )
     {
-        // Set randomness
         int seed = _config->getSeed();
         if (_config->getSeed() == -1) seed = Statistics::getNewSeed();
 
@@ -87,13 +86,13 @@ namespace Engine
             createAgents( );
 
             _scheduler->divideSpace();
-            _scheduler->distributeSpacesAmongNodes();
+            _scheduler->sendSpacesAmongNodes();
         }
         else 
         {
-            _scheduler->receiveSpaces();
+            _scheduler->receiveSpacesFromMaster();
         }
-        
+
         _scheduler->initData( );
     }
 
