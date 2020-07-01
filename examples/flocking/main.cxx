@@ -6,6 +6,7 @@
 
 #include <iostream>
 #include <cstdlib>
+#include <unistd.h>
 
 int main(int argc, char *argv[]) 
 {
@@ -26,6 +27,8 @@ int main(int argc, char *argv[])
 		world.initialize(argc, argv);
 		world.setParallelism(true, false);
 		world.run();
+
+		usleep(1000000);
 	}
 	catch( std::exception & exceptionThrown ) 
 	{
