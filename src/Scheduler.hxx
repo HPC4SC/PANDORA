@@ -108,7 +108,7 @@ namespace Engine
         virtual void init( int argc, char *argv[] ) = 0;
         
         /**
-         * @brief Initializing procedures AFTER creating agents/rasters ( i.e. send initial data to other nodes in parallel schedulers ). Must be implemented in child.
+         * @brief Initializing all the data needed (i.e. rasters, agents, send initial data to other nodes in parallel schedulers, etc.). Must be implemented in child.
          * 
          */
         virtual void initData( ) = 0;
@@ -140,12 +140,12 @@ namespace Engine
         virtual Point2D<int> getRandomPosition( ) const = 0;
 
         /**
-         * @brief Get the Id object. Id will always be 0 unless the execution is distributed in some way.
+         * @brief Gets the _id member. Id will always be 0 unless the execution is distributed in some way.
          * 
          * @return const int& 
          */
         const int & getId( ) const { return _id; }
-        
+
         /**
          * @brief Gets _numTasks, will always be 1 unless the execution is distributed in some way.
          * 
@@ -304,24 +304,6 @@ namespace Engine
          * @return int 
          */
         virtual int getMaxValue( const DynamicRaster & raster, const Point2D<int> & position ) const = 0;
-
-        /**
-         * @brief [Only implemented in MPI scheduler]
-         * 
-         */
-        virtual void divideSpace() {}
-
-        /**
-         * @brief [Only implemented in MPI scheduler]
-         * 
-         */
-        virtual void sendSpacesAmongNodes() {}
-
-        /**
-         * @brief [Only implemented in MPI scheduler]
-         * 
-         */
-        virtual void receiveSpacesFromMaster() {}
 
         /**
          * @brief [Only implemented in MPI scheduler] Sets the _overlapSize member.

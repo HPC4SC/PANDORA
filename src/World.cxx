@@ -80,19 +80,6 @@ namespace Engine
         
         _scheduler->init( argc, argv );
 
-        if (_scheduler->getId() == 0) 
-        {
-            createRasters( );
-            createAgents( );
-
-            _scheduler->divideSpace();
-            _scheduler->sendSpacesAmongNodes();
-        }
-        else 
-        {
-            _scheduler->receiveSpacesFromMaster();
-        }
-
         _scheduler->initData( );
     }
 

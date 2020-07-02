@@ -51,6 +51,11 @@ namespace Engine
         }
     }
 
+    MPI_Datatype* MpiFactory::getMPIType(std::string typeString)
+    {
+        return _types.at(typeString);
+    }
+
     MpiFactory::TypesMap::iterator MpiFactory::beginTypes( )
     {
         return _types.begin( );
