@@ -77,6 +77,14 @@ namespace Engine
         void cleanTypes( );
 
         /**
+         * @brief Gets the MPI_Datatype from an agent type (TypesMap[typeString])
+         * 
+         * @param typeString std::string
+         * @return MPIDatatype*
+         */
+        MPI_Datatype* getMPIType(std::string typeString);
+
+        /**
          * @brief Create a Default Package object
          * 
          * @param type Type of the package created.

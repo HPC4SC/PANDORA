@@ -44,21 +44,7 @@ namespace Engine
             };
 
             node<Rectangle<int>>* _root;                            //! Tree used for the uneven partitioning of the space in _numTasks nodes.
-            
-            struct MPINodeToSend {
-                Rectangle<int> ownedArea;
-                std::map<int, Rectangle<int>> neighbours;
-            };
 
-            std::map<int, MPINodeToSend> _mpiNodesMapToSend;        //! Map<nodeId, nodeInformation> containing the leafs of _root, where the 'value' field is now the 'ownedArea', and the IDs of the 'neighbours' are mapped with their coordinates.
-
-            /** MPI Structures **/
-            struct Coordinates {
-                int top, left, bottom, right;
-            };                                                      //! Struct used to parse in/out the to-be-send/received coordinates.
-            MPI_Datatype* _coordinatesDatatype;                     //! Own MPI Datatype used to send/receive the coordinates of a node.
-
-            /** Node own structures (nodes0..n) **/
             struct MPINode {
                 Rectangle<int> ownedAreaWithoutInnerOverlap;        //! Area of this node without inner (this node)   overlaps.
                 Rectangle<int> ownedArea;                           //! Area of this node with    inner (this node)   overlaps.
@@ -66,14 +52,46 @@ namespace Engine
                 std::map<int, MPINode*> neighbours;                 //! Map<neighbouringNodeId, neighbouringNodeSpaces> containing the neighbours information for communication.
             };
 
+            std::map<int, MPINode> _mpiNodesMapToSend;              //! Map<nodeId, nodeInformation> containing the leafs of _root, where the 'value' field is now the 'ownedArea', and the IDs of the 'neighbours' are mapped with their coordinates.
+
+            /** Node own structures (nodes0..n) **/
             MPINode _nodesSpace;                                    //! Areas of this node.
+
+            typedef std::map<std::string, std::map<int, AgentsList>> NeighbourhoodsMap;
+            NeighbourhoodsMap _neighbourhoods;                      //! <agentsType, <nodeID, agentsList>> with the neighbourhoods of agents, classified first by their types. Used to send/receive agents from master to the rest of the nodes.
+
+            /** MPI Structures **/
+            struct Coordinates {
+                int top, left, bottom, right;
+            };                                                      //! Struct used to parse in/out the to-be-send/received coordinates.
+            MPI_Datatype* _coordinatesDatatype;                     //! Own MPI Datatype used to send/receive the coordinates of a node.
+
+            int _masterNodeID;                                      //! ID of the master node. Used for communication.
 
             /** Other structures **/
             double _initialTime;                                    //! Initial running time.
             std::map<int, std::string> _logFileNames;               //! Names of the log files for each of the MPI processes.
-            //Serializer _serializer;                               //! Serializer instance.
+            //Serializer _serializer;                                 //! Serializer instance.
 
             /** METHODS TO CREATE THE PARTITIONS AND BASIC STRUCTURES FOR NODES **/
+
+            /**
+             * @brief It creates the binary tree '_root' representing the partitions of the world for each of the MPI tasks. Besides, it creates the nodes structs to be send to each one of the slaves.
+             * 
+             */
+            void divideSpace();
+
+            /**
+             * @brief It fills own structures for _masterNodeID and sends the created spaces to the rest of MPI processes.
+             * 
+             */
+            void sendSpacesToNodes();
+
+            /**
+             * @brief It receives the created spaces from the MPI master node identified by 'masterNodeID'.
+             * 
+             */
+            void receiveSpacesFromNode(const int& masterNodeID);
 
             /**
              * @brief Creates the names of the log files for each of the MPI processes, appending them in the _logFileNames member.
@@ -111,7 +129,7 @@ namespace Engine
              * 
              * @param mpiNodeInfo const MPINodeToSend&
              */
-            void fillOwnStructures(const MPINodeToSend& mpiNodeInfo);
+            void fillOwnStructures(const MPINode& mpiNodeInfo);
 
             /**
              * @brief It blocking sends the 'nodeCoordinates' to the corresponding 'nodeID'.
@@ -127,21 +145,78 @@ namespace Engine
              * @param nodeID const int&
              * @param neighbours std::map<int, Rectangle<int>>&
              */
-            void sendNeighboursToNode(const int& nodeID, const std::map<int, Rectangle<int>>& neighbours) const;
+            void sendNeighboursToNode(const int& nodeID, const std::map<int, MPINode*>& neighbours) const;
 
             /**
              * @brief It blocking receives the own node coordinates from the master node with ID 'masterNodeID'.
              * 
              * @param masterNodeID const int&
              */
-            void receiveOwnAreaFromNode(const int& masterNodeID, MPINodeToSend& mpiNodeInfo) const;
+            void receiveOwnAreaFromNode(const int& masterNodeID, MPINode& mpiNodeInfo) const;
 
             /**
              * @brief It blocking receives the 'neighbours' information from 'masterNodeID'.
              * 
              * @param masterNodeID const int&
              */
-            void receiveNeighboursFromNode(const int& masterNodeID, MPINodeToSend& mpiNodeInfo) const;
+            void receiveNeighboursFromNode(const int& masterNodeID, MPINode& mpiNodeInfo) const;
+
+            /**
+             * @brief Gets the ID of the nodes that should take care of 'agent', leaving them in the 'agentNodes'.
+             * 
+             * @param agent const Agent&
+             * @param agentNodes std::list<int>&
+             */
+            void getBelongingNodesOfAgent(const Agent& agent, std::list<int>& agentNodes) const;
+
+            /**
+             * @brief Classify the agents of the simulation in their corresponding neighbourhoods.
+             * 
+             */
+            void createNeighbourhoods();
+
+            /**
+             * @brief Sends the agents in list 'agentsToSend' to 'currentNode'. All the sent agents are 'agentType'.
+             * 
+             * @param agentsToSend const AgentsList&
+             * @param currentNode const inst&
+             * @param agentType const std::string&
+             */
+            void sendAgentsToNodeByType(const AgentsList& agentsToSend, const int& currentNode, cons std::string& agentType);
+
+            /**
+             * @brief Keeps all the agents in the list 'agentsToKeep'. All the remaining agents of the simulation are discarded!
+             * 
+             * @param _masterNodeID const int&
+             * @param agentsToKeepconst AgentsList& 
+             */
+            void keepAgentsInNode(const int& _masterNodeID, const AgentsList& agentsToKeep);
+
+            /**
+             * @brief Sends the agents corresponding to each node from _masterNodeID to all of the other nodes. Agents belonging to _masterNodeID are kept in the master node, the rest are discarded.
+             * 
+             */
+            void sendAgentsToNodes();
+
+            /**
+             * @brief Sends the rasters corresponding to each node from _masterNodeID to all of the other nodes.
+             * 
+             */
+            void sendRastersToNodes();
+
+            /**
+             * @brief From the 'masterNodeID', it receives the agents that should consider for its assigned space.
+             * 
+             * @param masterNodeID const int&
+             */
+            void receiveAgentsFromNode(const int& masterNodeID);
+
+            /**
+             * @brief From the 'masterNodeID', it receives the rasters that should consider for its assigned space.
+             * 
+             * @param masterNodeID 
+             */
+            void receiveRastersFromNode(const int& masterNodeID);
 
             /**
              * @brief Recursively return the number of nodes of the tree starting at 'node' at level 'desiredDepth'.
@@ -339,6 +414,12 @@ namespace Engine
              */
             void printOwnNodeStructureAfterMPI() const;
 
+            /**
+             * @brief Prints the neighbourhoods (agents belonging to nodes).
+             * 
+             */
+            void printNeighbourhoodsPerTypes() const;
+
             /** METHODS TO RUN THE SIMULATION AND SEND/RECEIV AGENTS BETWEEN NODES **/
 
         public:
@@ -364,24 +445,11 @@ namespace Engine
             void init(int argc, char *argv[]);
 
             /**
-             * @brief It creates the binary tree '_root' representing the partitions of the world for each of the MPI tasks. Besides, it creates the nodes structs to be send to each one of the slaves.
+             * @brief Calls the creation of rasters and agents (in child) and initialize all the the data processes (MPI structures & partition of the space into nodes).
              * 
              */
-            void divideSpace() override;
+            void initData();
 
-            /**
-             * @brief It fills own structures for node 0 and sends the created spaces to the rest of MPI processes.
-             * 
-             */
-            void sendSpacesAmongNodes() override;
-
-            /**
-             * @brief It receives the created spaces from the MPI process 0.
-             * 
-             */
-            void receiveSpacesFromMaster() override;
-
-            void initData() {}
             void executeAgents() {}
             void finish() {}
 

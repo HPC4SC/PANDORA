@@ -51,6 +51,9 @@ namespace Engine
 
     void OpenMPSingleNode::initData( )
     {
+        _world->createRasters();
+        _world->createAgents();
+
         // serializer init
         _serializer.init( *_world );
         std::stringstream logName;
