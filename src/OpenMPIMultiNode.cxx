@@ -31,13 +31,12 @@ namespace Engine {
 
     /** PUBLIC METHODS **/
 
-    OpenMPIMultiNode::OpenMPIMultiNode() : _root(NULL), _initialTime(0.0f), _masterNodeID(0)
+    OpenMPIMultiNode::OpenMPIMultiNode() : _initialTime(0.0f), _masterNodeID(0)
     {
     }
 
     OpenMPIMultiNode::~OpenMPIMultiNode()
     {
-        destroyTree(_root);
     }
 
     void OpenMPIMultiNode::init(int argc, char *argv[]) 
@@ -58,8 +57,10 @@ namespace Engine {
         omp_init_lock(&_ompLock);
 
         stablishInitialBoundaries();
-        initializeTree();
         registerMPIStructs();
+
+        _tree = new LoadBalanceTree();
+        _tree->initializeTreeAndSetData(_world, _numTasks);
     }
 
     void OpenMPIMultiNode::initData() 
@@ -71,18 +72,18 @@ namespace Engine {
             _world->createRasters();
             _world->createAgents();
 
-            divideSpace();
-            sendSpacesToNodes();
+            divideSpace();                          printNodesBeforeMPI();
+            sendSpacesToNodes();                    printOwnNodeStructureAfterMPI();
 
-            createNeighbourhoods();
-            sendAgentsToNodes();
+            createNeighbouringAgents();             printNeighbouringAgentsPerTypes();
+            sendAgentsToNodes();                    printNodeAgents();
 
             sendRastersToNodes();
         }
         else 
         {
-            receiveSpacesFromNode(_masterNodeID);
-            receiveAgentsFromNode(_masterNodeID);
+            receiveSpacesFromNode(_masterNodeID);   printOwnNodeStructureAfterMPI();
+            receiveAgentsFromNode(_masterNodeID);   printNodeAgents();
             receiveRastersFromNode(_masterNodeID);
         }
 
@@ -102,7 +103,7 @@ namespace Engine {
 
     AgentsVector OpenMPIMultiNode::getAgent(const Point2D<int>& position, const std::string& type)
     {
-        return getAgentsInPosition(position, type);
+        return _tree->getAgentsInPosition(position, type);
         // + overlap agents?
     }
 
@@ -110,7 +111,7 @@ namespace Engine {
 
     void OpenMPIMultiNode::divideSpace()
     {
-        divideSpaceRecursively(_root, getAllAgentsWeight(), (int) std::ceil(std::log2(_numTasks)));
+        _tree->divideSpace();
         createNodesInformationToSend();
 
         if (not arePartitionsSuitable()) {
@@ -130,7 +131,6 @@ namespace Engine {
                 sendNeighboursToNode(it->first, it->second.neighbours);
             }
         }
-        printOwnNodeStructureAfterMPI();
     }
 
     void OpenMPIMultiNode::receiveSpacesFromNode(const int& masterNodeID)
@@ -139,8 +139,6 @@ namespace Engine {
         receiveOwnAreaFromNode(masterNodeID, mpiNode);
         receiveNeighboursFromNode(masterNodeID, mpiNode);
         fillOwnStructures(mpiNode);
-
-        printOwnNodeStructureAfterMPI();
     }
 
     void OpenMPIMultiNode::initLogFileNames()
@@ -158,14 +156,6 @@ namespace Engine {
         _boundaries = Rectangle<int>(_world->getConfig().getSize());
 
         _nodesSpace.ownedArea = _boundaries;
-    }
-
-    void OpenMPIMultiNode::initializeTree() 
-    {
-        _root = new node<Rectangle<int>>;
-        _root->value = Rectangle<int>(_world->getConfig().getSize());
-        _root->left = NULL;
-        _root->right = NULL;
     }
 
     void OpenMPIMultiNode::registerMPIStructs()
@@ -264,7 +254,7 @@ namespace Engine {
         }
     }
 
-    void OpenMPIMultiNode::createNeighbourhoods()
+    void OpenMPIMultiNode::createNeighbouringAgents()
     {
         int nodeID;
         std::string typeString;
@@ -272,7 +262,7 @@ namespace Engine {
         for (MpiFactory::TypesMap::const_iterator itType = MpiFactory::instance()->beginTypes(); itType != MpiFactory::instance()->endTypes(); ++itType)
         {
             typeString = itType->first;
-            if (_neighbourhoods.find(typeString) == _neighbourhoods.end()) _neighbourhoods[typeString] = std::map<int, AgentsList>();
+            if (_neighbouringAgents.find(typeString) == _neighbouringAgents.end()) _neighbouringAgents[typeString] = std::map<int, AgentsList>();
 
             for (AgentsList::const_iterator itAgent = _world->beginAgents(); itAgent != _world->endAgents(); ++itAgent)
             {
@@ -284,19 +274,23 @@ namespace Engine {
                     for (std::list<int>::const_iterator itNodes = belongingNodes.begin(); itNodes != belongingNodes.end(); ++itNodes)
                     {
                         nodeID = *itNodes;
-                        if (_neighbourhoods.at(typeString).find(nodeID) == _neighbourhoods.at(typeString).end())
-                            _neighbourhoods.at(typeString)[nodeID] = AgentsList();
-                        _neighbourhoods.at(typeString).at(nodeID).push_back(agent);
+                        if (_neighbouringAgents.at(typeString).find(nodeID) == _neighbouringAgents.at(typeString).end())
+                            _neighbouringAgents.at(typeString)[nodeID] = AgentsList();
+                        _neighbouringAgents.at(typeString).at(nodeID).push_back(agent);
                     }
                 }
             }
         }
-
-        printNeighbourhoodsPerTypes();
     }
 
-    void OpenMPIMultiNode::sendAgentsToNodeByType(const AgentsList& agentsToSend, const int& currentNode, cons std::string& agentType)
+    void OpenMPIMultiNode::sendAgentsToNodeByType(const AgentsList& agentsToSend, const int& currentNode, const std::string& agentType)
     {
+        int agentsTypeID = MpiFactory::instance()->getIDFromTypeName(agentType);
+        MPI_Send(&agentsTypeID, 1, MPI_INTEGER, currentNode, eTypeID, MPI_COMM_WORLD);
+
+        int numberOfAgentsToSend = agentsToSend.size();
+        MPI_Send(&numberOfAgentsToSend, 1, MPI_INTEGER, currentNode, eNumAgents, MPI_COMM_WORLD);
+
         MPI_Datatype* agentTypeMPI = MpiFactory::instance()->getMPIType(agentType);
         for (AgentsList::const_iterator itAgent = agentsToSend.begin(); itAgent != agentsToSend.end(); ++itAgent)
         {
@@ -310,7 +304,7 @@ namespace Engine {
 
     void OpenMPIMultiNode::keepAgentsInNode(const int& _masterNodeID, const AgentsList& agentsToKeep)
     {
-        
+
     }
 
     void OpenMPIMultiNode::sendAgentsToNodes()
@@ -322,7 +316,7 @@ namespace Engine {
         
         AgentsList agentsToKeepInMasterNode;
 
-        for (NeighbourhoodsMap::const_iterator itType = _neighbourhoods.begin(); itType != _neighbourhoods.end(); ++itType)
+        for (NeighbouringAgentsMap::const_iterator itType = _neighbouringAgents.begin(); itType != _neighbouringAgents.end(); ++itType)
         {
             currentType = itType->first;
             agentsInNodes = itType->second;
@@ -332,10 +326,10 @@ namespace Engine {
                 currentNode = itNode->first;
                 agentsToSend = itNode->second;
 
-                if (currentNode == _masterNodeID) 
-                    agentsToKeepInMasterNode.push_back(agentsToSend);
+                if (currentNode == _masterNodeID)
+                    agentsToKeepInMasterNode.insert(agentsToKeepInMasterNode.end(), agentsToSend.begin(), agentsToSend.end());
                 else
-                    sendAgentsToNodeByType(agentsToSend, currentNode, agentType);
+                    sendAgentsToNodeByType(agentsToSend, currentNode, currentType);
             }
         }
 
@@ -347,212 +341,35 @@ namespace Engine {
         
     }
 
+    void OpenMPIMultiNode::addAgentToNodeStructures(Agent& agent)
+    {
+
+    }
+
     void OpenMPIMultiNode::receiveAgentsFromNode(const int& masterNodeID)
     {
-        // int numberOfAgents;
-        // MPI_Recv(&numberOfAgents, 1, MPI_INTEGER, masterNodeID, eNumAgents, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        int agentsTypeID;
+        MPI_Recv(&agentsTypeID, 1, MPI_INTEGER, masterNodeID, eTypeID, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        std::string agentsTypeName = MpiFactory::instance()->getNameFromTypeID(agentsTypeID);
+        MPI_Datatype* agentType = MpiFactory::instance()->getMPIType(agentsTypeName);
 
-        // for (i = 0; i < numberOfAgents; ++i)
-        // {
-        //     void* package = MpiFactory::instance()->createDefaultPackage(itType->first);
-        //     MPI_Recv(package, 1, *agentType, neighborsToUpdate[i], eAgent, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-        //     Agent* agent = MpiFactory::instance()->createAndFillAgent(itType->first, package);
-        //     free(package);
-        // }
+        int numberOfAgentsToReceive;
+        MPI_Recv(&numberOfAgentsToReceive, 1, MPI_INTEGER, masterNodeID, eNumAgents, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+        for (int i = 0; i < numberOfAgentsToReceive; ++i)
+        {
+            void* package = MpiFactory::instance()->createDefaultPackage(agentsTypeName);
+            MPI_Recv(package, 1, *agentType, masterNodeID, eAgent, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            Agent* agent = MpiFactory::instance()->createAndFillAgent(agentsTypeName, package);
+            free(package);
+
+            addAgentToNodeStructures(*agent);
+        }
     }
     
     void OpenMPIMultiNode::receiveRastersFromNode(const int& masterNodeID)
     {
 
-    }
-
-
-    int OpenMPIMultiNode::numberOfNodesAtDepthRecursive(node<Rectangle<int>>* node, const int& desiredDepth, int currentDepth) const
-    {
-        if (node == NULL) return 0;
-        if (desiredDepth == currentDepth) return 1;
-        return numberOfNodesAtDepthRecursive(node->left, desiredDepth, currentDepth + 1) + numberOfNodesAtDepthRecursive(node->right, desiredDepth, currentDepth + 1);
-    }
-
-    int OpenMPIMultiNode::numberOfNodesAtDepth(node<Rectangle<int>>* node, const int& desiredDepth) const
-    {
-        return numberOfNodesAtDepthRecursive(node, desiredDepth, 0);
-    }
-
-    bool OpenMPIMultiNode::isPowerOf2(const int& x) const
-    {
-        return x > 0 and not (x & (x - 1));
-    }
-
-    int OpenMPIMultiNode::numberOfLeafs(node<Rectangle<int>>* node) const
-    {
-        if (node == NULL) return 0;
-        if (node->left == NULL and node->right == NULL) return 1;
-        return numberOfLeafs(node->left) + numberOfLeafs(node->right);
-    }
-
-    bool OpenMPIMultiNode::stopProcreating(const int& currentHeight) const
-    {
-        bool condition1 = currentHeight == 0;
-        bool condition2 = numberOfLeafs(_root) == _numTasks;
-
-        bool condition3 = false;
-        if (not isPowerOf2(_numTasks))
-        {
-            int numberOfNodesNeededAtLowestLevel = 2 * (_numTasks - std::pow(2, std::floor(std::log2(_numTasks))));
-            int lowestLevel = std::ceil(std::log2(_numTasks));
-            bool isLowestLevelAlreadyFull = numberOfNodesNeededAtLowestLevel == numberOfNodesAtDepth(_root, lowestLevel);
-            condition3 = currentHeight == 1 and isLowestLevelAlreadyFull;
-        }
-
-        return condition1 or condition2 or condition3;
-    }
-
-    OpenMPIMultiNode::node<Rectangle<int>>* OpenMPIMultiNode::insertNode(const Rectangle<int>& rectangle, node<Rectangle<int>>* treeNode)
-    {
-        if (treeNode->left == NULL)
-        {
-            treeNode->left = new node<Rectangle<int>>;
-            treeNode->left->value = rectangle;
-            treeNode->left->left = NULL;
-            treeNode->left->right = NULL;
-
-            return treeNode->left;
-        }
-        else if (treeNode->right == NULL)
-        {
-            treeNode->right = new node<Rectangle<int>>;
-            treeNode->right->value = rectangle;
-            treeNode->right->left = NULL;
-            treeNode->right->right = NULL;
-
-            return treeNode->right;
-        }
-    }
-
-    void OpenMPIMultiNode::destroyTree(node<Rectangle<int>>* leaf)
-    {
-        if (leaf != NULL) 
-        {
-            destroyTree(leaf->left);
-            destroyTree(leaf->right);
-            delete leaf;
-        }
-    }
-
-    double OpenMPIMultiNode::getAgentWeight(const Agent& agent) const
-    {
-        // Make a map<agentsId, agentsWeight> for more complex implementations
-        return 1;  // Simplest implementation
-    }
-
-    double OpenMPIMultiNode::getAgentsWeight(const AgentsVector& agentsVector) const
-    {
-        double totalWeight = 0;
-        for (int i = 0; i < agentsVector.size(); ++i) {
-            totalWeight += getAgentWeight(*agentsVector[i]);
-        }
-        return totalWeight;
-    }
-
-    double OpenMPIMultiNode::getAllAgentsWeight() const
-    {
-        double totalWeight = 0;
-        for (AgentsList::iterator it = _world->beginAgents(); it != _world->endAgents(); ++it)
-            totalWeight += getAgentWeight(*it->get());
-        return totalWeight;
-    }
-
-    AgentsVector OpenMPIMultiNode::getAgentsInPosition(const Point2D<int>& position, const std::string& type) const
-    {
-        AgentsVector result;
-        for (AgentsList::iterator it = _world->beginAgents(); it != _world->endAgents(); ++it)
-        {
-            AgentPtr agent = *it;
-            if (agent->getPosition().isEqual(position) and (type.compare("all") == 0 or agent->isType(type)))
-                result.push_back(agent);
-        }
-        return result;
-    }
-
-    double OpenMPIMultiNode::getAgentsWeightFromCell(const int& row, const int& column) const
-    {
-        Point2D<int> position(row, column);
-        AgentsVector agentsVector = getAgentsInPosition(position);
-        return getAgentsWeight(agentsVector);
-    }
-
-    void OpenMPIMultiNode::exploreHorizontallyAndKeepDividing(node<Rectangle<int>>* treeNode, const double& totalWeight, const int& currentHeight)
-    {
-        double leftChildTotalWeight = 0;
-        bool stopExploration = false;
-
-        for (int i = treeNode->value.left(); i <= treeNode->value.right() and not stopExploration; ++i)
-        {
-            for (int j = treeNode->value.top(); j <= treeNode->value.bottom(); ++j) 
-                leftChildTotalWeight += getAgentsWeightFromCell(j, i);
-
-            if (leftChildTotalWeight >= totalWeight / 2)
-            {
-                stopExploration = true;
-
-                Rectangle<int> leftRectangle(treeNode->value.left(), treeNode->value.top(), i, treeNode->value.bottom());
-                Rectangle<int> rightRectangle(i + 1, treeNode->value.top(), treeNode->value.right(), treeNode->value.bottom());
-                node<Rectangle<int>>* leftChildNode = insertNode(leftRectangle, treeNode);
-                node<Rectangle<int>>* rightChildNode = insertNode(rightRectangle, treeNode);
-
-                divideSpaceRecursively(leftChildNode, leftChildTotalWeight, currentHeight - 1);
-                divideSpaceRecursively(rightChildNode, totalWeight - leftChildTotalWeight, currentHeight - 1);
-            }
-        }
-    }
-
-    void OpenMPIMultiNode::exploreVerticallyAndKeepDividing(node<Rectangle<int>>* treeNode, const double& totalWeight, const int& currentHeight)
-    {
-        double leftChildTotalWeight = 0;
-        bool stopExploration = false;
-
-        for (int i = treeNode->value.top(); i < treeNode->value.bottom() and not stopExploration; ++i) 
-        {
-            for (int j = treeNode->value.left(); j < treeNode->value.right(); ++j)
-                leftChildTotalWeight += getAgentsWeightFromCell(i, j);
-
-            if (leftChildTotalWeight >= totalWeight / 2)
-            {
-                stopExploration = true;
-
-                Rectangle<int> topRectangle(treeNode->value.left(), treeNode->value.top(), treeNode->value.right(), i);
-                Rectangle<int> bottomRectangle(treeNode->value.left(), i + 1, treeNode->value.right(), treeNode->value.bottom());
-                node<Rectangle<int>>* leftChildNode = insertNode(topRectangle, treeNode);
-                node<Rectangle<int>>* rightChildNode = insertNode(bottomRectangle, treeNode);
-
-                divideSpaceRecursively(leftChildNode, leftChildTotalWeight, currentHeight - 1);
-                divideSpaceRecursively(rightChildNode, totalWeight - leftChildTotalWeight, currentHeight - 1);
-            }
-        }
-    }
-
-    void OpenMPIMultiNode::divideSpaceRecursively(node<Rectangle<int>>* treeNode, const double& totalWeight, const int& currentHeight)
-    {
-        if (stopProcreating(currentHeight)) return;
-
-        bool landscape = treeNode->value.getSize().getWidth() > treeNode->value.getSize().getHeight();
-        if (landscape)
-            exploreHorizontallyAndKeepDividing(treeNode, totalWeight, currentHeight);
-        else
-            exploreVerticallyAndKeepDividing(treeNode, totalWeight, currentHeight);
-    }
-
-    void OpenMPIMultiNode::getPartitionsFromTree(node<Rectangle<int>>* node, std::vector<Rectangle<int>>& partitions) const
-    {
-        if (node == NULL) return;
-        if (node->left == NULL and node->right == NULL) 
-        {
-            partitions.push_back(node->value);
-            return;
-        }
-        getPartitionsFromTree(node->left, partitions);
-        getPartitionsFromTree(node->right, partitions);
     }
 
     void OpenMPIMultiNode::addMPINodeToSendInMapItIsNot(const std::vector<Rectangle<int>>& partitions, const int& neighbourIndex)
@@ -569,8 +386,8 @@ namespace Engine {
 
     void OpenMPIMultiNode::expandRectangleConsideringLimits(Rectangle<int>& rectangle, const int& expansion, const bool& contractInTheLimits) const
     {
-        int topDifferenceAgainstLimits = rectangle.top() - _root->value.top();
-        int leftDifferenceAgainstLimits = rectangle.left() - _root->value.left();
+        int topDifferenceAgainstLimits = rectangle.top() - _tree->getTree()->value.top();
+        int leftDifferenceAgainstLimits = rectangle.left() - _tree->getTree()->value.left();
 
         int topMovement = std::min(topDifferenceAgainstLimits, expansion);
         if (not contractInTheLimits and topDifferenceAgainstLimits == 0) topMovement = 0;
@@ -581,11 +398,11 @@ namespace Engine {
         rectangle.getOrigin().getY() -= topMovement;
         rectangle.getOrigin().getX() -= leftMovement;
 
-        if (rectangle.bottom() > _root->value.bottom()) rectangle.getSize().getHeight() -= rectangle.bottom() - _root->value.bottom();
-        if (rectangle.right() > _root->value.right()) rectangle.getSize().getWidth() -= rectangle.right() - _root->value.right();
+        if (rectangle.bottom() > _tree->getTree()->value.bottom()) rectangle.getSize().getHeight() -= rectangle.bottom() - _tree->getTree()->value.bottom();
+        if (rectangle.right() > _tree->getTree()->value.right()) rectangle.getSize().getWidth() -= rectangle.right() - _tree->getTree()->value.right();
 
-        int bottomDifferenceAgainstLimits = _root->value.bottom() - rectangle.bottom();
-        int rightDifferenceAgainstLimits = _root->value.right() - rectangle.right();
+        int bottomDifferenceAgainstLimits = _tree->getTree()->value.bottom() - rectangle.bottom();
+        int rightDifferenceAgainstLimits = _tree->getTree()->value.right() - rectangle.right();
 
         int heightMovement = std::min(bottomDifferenceAgainstLimits, expansion + topMovement);
         if (not contractInTheLimits and bottomDifferenceAgainstLimits == 0) heightMovement = 0;
@@ -618,7 +435,7 @@ namespace Engine {
     void OpenMPIMultiNode::createNodesInformationToSend()
     {
         std::vector<Rectangle<int>> partitions;
-        getPartitionsFromTree(_root, partitions);
+        _tree->getPartitionsFromTree(partitions);
 
         for (int i = 0; i < partitions.size(); ++i)
         {
@@ -638,8 +455,6 @@ namespace Engine {
                 }
             }
         }
-
-        printNodesBeforeMPI();
     }
 
     bool OpenMPIMultiNode::arePartitionsSuitable()
@@ -675,7 +490,6 @@ namespace Engine {
     {
         std::stringstream ss;
         ss << "TS = " << getWallTime() << ":" << std::endl;
-        ss << "Process #" << getId() << ":" << std::endl;
         ss << "ownedAreaWithoutInnerOverlap: " << _nodesSpace.ownedAreaWithoutInnerOverlap << std::endl;
         ss << "ownedArea: " << _nodesSpace.ownedArea << std::endl;
         ss << "ownedAreaWithOuterOverlaps: " << _nodesSpace.ownedAreaWithOuterOverlaps << std::endl;
@@ -688,17 +502,17 @@ namespace Engine {
         log_DEBUG(_logFileNames.at(getId()), ss.str());
     }
 
-    void OpenMPIMultiNode::printNeighbourhoodsPerTypes() const
+    void OpenMPIMultiNode::printNeighbouringAgentsPerTypes() const
     {
         std::stringstream ss;
-        ss << "_neighbourhoods: " << std::endl;
-        for (NeighbourhoodsMap::const_iterator it = _neighbourhoods.begin(); it != _neighbourhoods.end(); ++it)
+        ss << "_neighbouringAgents: " << std::endl;
+        for (NeighbouringAgentsMap::const_iterator it = _neighbouringAgents.begin(); it != _neighbouringAgents.end(); ++it)
         {
             ss << "Type: " << it->first << std::endl;
             for (std::map<int, AgentsList>::const_iterator it2 = it->second.begin(); it2 != it->second.end(); ++it2) 
             {
                 ss << "\tNode: " << it2->first << std::endl;
-                ss << "\t";
+                ss << "\t  ";
                 for (AgentsList::const_iterator it3 = it2->second.begin(); it3 != it2->second.end(); ++it3)
                 {
                     ss << it3->get()->getId() << ", ";
@@ -707,7 +521,17 @@ namespace Engine {
             }
             ss << std::endl;
         }
-        std::cout << ss.str();
+        log_DEBUG(_logFileNames.at(getId()), ss.str());
     }
     
+    void OpenMPIMultiNode::printNodeAgents() const
+    {
+        std::stringstream ss;
+        ss << "TS = " << getWallTime() << ":" << std::endl;
+
+
+
+        log_DEBUG(_logFileNames.at(getId()), ss.str());
+    }
+
 } // namespace Engine
