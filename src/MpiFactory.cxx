@@ -65,4 +65,15 @@ namespace Engine
     {
         return _types.end( );
     }
+
+    int MpiFactory::getIDFromTypeName(const std::string& typeName) const
+    {
+        return _typesMapNameToID.at(typeName);
+    }
+
+    std::string MpiFactory::getNameFromTypeID(const int& typeID) const
+    {
+        return _typesMapIDToName.at(typeID);
+    }
+
 } // namespace Engine

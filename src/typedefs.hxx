@@ -27,7 +27,9 @@ enum MpiMessageType
     eVectorAttribute = 7,
     eSizeVector = 8,
     eNumModifiedAgents = 9,
-    eModifiedAgent = 10
+    eModifiedAgent = 10,
+
+    eTypeID = 11
 };
 
 enum MpiMessageTypeSpaces

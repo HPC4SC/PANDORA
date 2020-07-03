@@ -24,26 +24,21 @@
 
 #include <World.hxx>
 #include <Scheduler.hxx>
-#include <Serializer.hxx>
+#include <LoadBalanceTree.hxx>
 
 #include <mpi.h>
 
 namespace Engine
 {
 
+    class LoadBalanceTree;
+
     class OpenMPIMultiNode : public Scheduler
     {
         protected:
 
-            /** Base structures for the space partitioning (node0 only) **/
-            template <typename T>
-            struct node {
-                T value;
-                node* left;
-                node* right;
-            };
-
-            node<Rectangle<int>>* _root;                            //! Tree used for the uneven partitioning of the space in _numTasks nodes.
+            /** Base data structures for the space partitioning (master node only) **/
+            LoadBalanceTree* _tree;
 
             struct MPINode {
                 Rectangle<int> ownedAreaWithoutInnerOverlap;        //! Area of this node without inner (this node)   overlaps.
@@ -52,15 +47,15 @@ namespace Engine
                 std::map<int, MPINode*> neighbours;                 //! Map<neighbouringNodeId, neighbouringNodeSpaces> containing the neighbours information for communication.
             };
 
-            std::map<int, MPINode> _mpiNodesMapToSend;              //! Map<nodeId, nodeInformation> containing the leafs of _root, where the 'value' field is now the 'ownedArea', and the IDs of the 'neighbours' are mapped with their coordinates.
+            std::map<int, MPINode> _mpiNodesMapToSend;              //! Map<nodeId, nodeInformation> containing the leafs of _tree, where the 'value' field is now the 'ownedArea', and the IDs of the 'neighbours' are mapped with their coordinates.
 
-            /** Node own structures (nodes0..n) **/
+            typedef std::map<std::string, std::map<int, AgentsList>> NeighbouringAgentsMap;
+            NeighbouringAgentsMap _neighbouringAgents;              //! <agentsType, <nodeID, agentsList>> with the neighbouring agents, classified first by their types. Used to send/receive agents from master to the rest of the nodes.
+
+            /** Node own data structures (nodes0..n) **/
             MPINode _nodesSpace;                                    //! Areas of this node.
 
-            typedef std::map<std::string, std::map<int, AgentsList>> NeighbourhoodsMap;
-            NeighbourhoodsMap _neighbourhoods;                      //! <agentsType, <nodeID, agentsList>> with the neighbourhoods of agents, classified first by their types. Used to send/receive agents from master to the rest of the nodes.
-
-            /** MPI Structures **/
+            /** MPI Data Structures **/
             struct Coordinates {
                 int top, left, bottom, right;
             };                                                      //! Struct used to parse in/out the to-be-send/received coordinates.
@@ -72,8 +67,6 @@ namespace Engine
             double _initialTime;                                    //! Initial running time.
             std::map<int, std::string> _logFileNames;               //! Names of the log files for each of the MPI processes.
             //Serializer _serializer;                                 //! Serializer instance.
-
-            /** METHODS TO CREATE THE PARTITIONS AND BASIC STRUCTURES FOR NODES **/
 
             /**
              * @brief It creates the binary tree '_root' representing the partitions of the world for each of the MPI tasks. Besides, it creates the nodes structs to be send to each one of the slaves.
@@ -104,12 +97,6 @@ namespace Engine
              * 
              */
             void stablishInitialBoundaries();
-
-            /**
-             * @brief Initialize the tree starting at _root.
-             * 
-             */
-            void initializeTree();
 
             /**
              * @brief Registers the data structs to be send/received to/from the nodes.
@@ -170,10 +157,10 @@ namespace Engine
             void getBelongingNodesOfAgent(const Agent& agent, std::list<int>& agentNodes) const;
 
             /**
-             * @brief Classify the agents of the simulation in their corresponding neighbourhoods.
+             * @brief Classify the agents of the simulation in their corresponding neighbourhood (node).
              * 
              */
-            void createNeighbourhoods();
+            void createNeighbouringAgents();
 
             /**
              * @brief Sends the agents in list 'agentsToSend' to 'currentNode'. All the sent agents are 'agentType'.
@@ -182,7 +169,7 @@ namespace Engine
              * @param currentNode const inst&
              * @param agentType const std::string&
              */
-            void sendAgentsToNodeByType(const AgentsList& agentsToSend, const int& currentNode, cons std::string& agentType);
+            void sendAgentsToNodeByType(const AgentsList& agentsToSend, const int& currentNode, const std::string& agentType);
 
             /**
              * @brief Keeps all the agents in the list 'agentsToKeep'. All the remaining agents of the simulation are discarded!
@@ -205,6 +192,13 @@ namespace Engine
             void sendRastersToNodes();
 
             /**
+             * @brief Add the 'agent' to this node data structures, looking whether it needs to take care of it or it is a ghost agent.
+             * 
+             * @param agent Agent&
+             */
+            void addAgentToNodeStructures(Agent& agent);
+
+            /**
              * @brief From the 'masterNodeID', it receives the agents that should consider for its assigned space.
              * 
              * @param masterNodeID const int&
@@ -217,142 +211,7 @@ namespace Engine
              * @param masterNodeID 
              */
             void receiveRastersFromNode(const int& masterNodeID);
-
-            /**
-             * @brief Recursively return the number of nodes of the tree starting at 'node' at level 'desiredDepth'.
-             * 
-             * @param node node<Rectangle<int>>*
-             * @param desiredDepth const int&
-             * @param currentDepth int
-             * @return int 
-             */
-            int numberOfNodesAtDepthRecursive(node<Rectangle<int>>* node, const int& desiredDepth, int currentDepth) const;
-
-            /**
-             * @brief Return the number of nodes of the tree starting at 'node' at level 'desiredDepth'
-             * 
-             * @param node node<Rectangle<int>>*
-             * @param desiredDepth const int&
-             * @return int 
-             */
-            int numberOfNodesAtDepth(node<Rectangle<int>>* node, const int& desiredDepth) const;
-
-            /**
-             * @brief Check whether a 'x' is a power of 2 or not
-             * 
-             * @param x const int&
-             * @return bool
-             */
-            bool isPowerOf2(const int& x) const;
-
-            /**
-             * @brief Return the number of current leaf nodes in tree 'node'.
-             * 
-             * @param node node<Rectangle<int>>*
-             * @return int 
-             */
-            int numberOfLeafs(node<Rectangle<int>>* node) const;
-
-            /**
-             * @brief Return whether the tree should still procreate or not.
-             * 
-             * @param currentHeight const int&
-             * @return bool
-             */
-            bool stopProcreating(const int& currentHeight) const;
-
-            /**
-             * @brief It inserts a new node, with value 'rectangle', from 'treeNode'. It justs looks whether left or right is NULL (in this order) and insert the new node there. It is not recursive!
-             * 
-             * @param rectangle const Rectangle<int>&
-             * @param treeNode node<Rectangle<int>>*
-             * @return node* 
-             */
-            node<Rectangle<int>>* insertNode(const Rectangle<int>& rectangle, node<Rectangle<int>>* treeNode);
-
-            /**
-             * @brief It destroys the whole tree starting at 'leaf'.
-             * 
-             * @param leaf node<Rectangle<int>>*
-             */
-            void destroyTree(node<Rectangle<int>>* leaf);
-
-            /**
-             * @brief Gets the weight of the 'agent'.
-             * 
-             * @param agent const Agent&
-             * @return double
-             */
-            double getAgentWeight(const Agent& agent) const;
-
-            /**
-             * @brief Gets the total weight of the agents in 'agentsVector'.
-             * 
-             * @param agentsVector const AgentsVector&
-             * @return double
-             */
-            double getAgentsWeight(const AgentsVector& agentsVector) const;
-
-            /**
-             * @brief Get the weight of all the agents in the simulation.
-             * 
-             * @return double 
-             */
-            double getAllAgentsWeight() const;
-
-            /**
-             * @brief Get an Agents list which are in 'position'
-             * 
-             * @param position const Point2D<int>&
-             * @param type const string&
-             * @return AgentsVector 
-             */
-            AgentsVector getAgentsInPosition(const Point2D<int>& position, const std::string& type = "all") const;
-
-            /**
-             * @brief Get the total agents weight that appear in cell <row, column>
-             * 
-             * @param row const int&
-             * @param column const int&
-             * @return double 
-             */
-            double getAgentsWeightFromCell(const int& row, const int& column) const;
-
-            /**
-             * @brief Explore the space in 'treeNode' from left to right (vertical partitioning). j = rows, i = columns.
-             * 
-             * @param treeNode node<Rectangle<int>>*
-             * @param totalWeight const double& totalWeight
-             * @param currentHeight const int& currentHeight
-             */
-            void exploreHorizontallyAndKeepDividing(node<Rectangle<int>>* treeNode, const double& totalWeight, const int& currentHeight);
-
-            /**
-             * @brief Explore the space in 'treeNode' from top to bottom (horizontal partitioning). i = rows , j = columns.
-             * 
-             * @param treeNode node<Rectangle<int>>*
-             * @param totalWeight const double& totalWeight
-             * @param currentHeight const int& currentHeight
-             */
-            void exploreVerticallyAndKeepDividing(node<Rectangle<int>>* treeNode, const double& totalWeight, const int& currentHeight);
-
-            /**
-             * @brief Creates an uneven partitioning of the Rectangle<int> in 'treeNode' (->value) based on the 'totalWeight' and the current position of the agents in the _world.
-             * 
-             * @param treeNode node<Rectangle<int>>*
-             * @param totalWeight const double&
-             * @param currentDepth const int&
-             */
-            void divideSpaceRecursively(node<Rectangle<int>>* treeNode, const double& totalWeight, const int& maxDepth);
-
-            /**
-             * @brief Get the created partitions in the leafs of the _root, leaving it in 'partitions'.
-             * 
-             * @param node node<Rectangle<int>>*
-             * @param partitions std::vector<Rectangle<int>>&
-             */
-            void getPartitionsFromTree(node<Rectangle<int>>* node, std::vector<Rectangle<int>>& partitions) const;
-
+            
             /**
              * @brief Adds into the _mpiNodeMap the partition <nodeId, partitions[neighbourIndex]>.
              * 
@@ -402,6 +261,8 @@ namespace Engine
              */
             bool arePartitionsSuitable();
 
+            /** DEBUGGING METHODS **/
+
             /**
              * @brief Prints nodes partitioning and neighbours for each one.
              * 
@@ -418,9 +279,13 @@ namespace Engine
              * @brief Prints the neighbourhoods (agents belonging to nodes).
              * 
              */
-            void printNeighbourhoodsPerTypes() const;
+            void printNeighbouringAgentsPerTypes() const;
 
-            /** METHODS TO RUN THE SIMULATION AND SEND/RECEIV AGENTS BETWEEN NODES **/
+            /**
+             * @brief Prints the agents for the current node executing this method.
+             * 
+             */
+            void printNodeAgents() const;
 
         public:
 
@@ -431,7 +296,7 @@ namespace Engine
             OpenMPIMultiNode();
 
             /**
-             * @brief Destroy the OpenMPIMultiNode object
+             * @brief Destroy the OpenMPIMultiNode object.
              * 
              */
             virtual ~OpenMPIMultiNode();
@@ -497,4 +362,4 @@ namespace Engine
 
 } // namespace Engine
 
-#endif // __SpacePartition_hxx__
+#endif // __OpenMPIMultiNode_hxx__

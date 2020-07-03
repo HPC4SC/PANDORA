@@ -7,6 +7,8 @@ def writeRegisterTypes(f, listAgents):
     f.write('{\n')
     for i, agent in enumerate(listAgents):
         f.write('\t_types.insert( std::make_pair( "' + agent + '", create' + agent + 'Type()));\n')
+        f.write('\t_typesMapNameToID.insert( std::make_pair( "' + agent + '", ' + str(i) + '));\n')
+        f.write('\t_typesMapIDToName.insert( std::make_pair( ' + str(i) + ', "' + agent + '"));\n')
     f.write('}\n')
     f.write('\n')
 
