@@ -10,6 +10,7 @@ set( PANDORA_FILES
      MpiFactory.cxx
      OpenMPSingleNode.cxx
      LoadBalanceTree.cxx
+     OpenMPIMultiNodeLogs.cxx
      OpenMPIMultiNode.cxx
      RasterLoader.cxx
      RNGNormal.cxx

@@ -56,9 +56,9 @@ protected:
 
     Scheduler * _scheduler; //! Pointer to the scheduler of the world.
 
-protected:
     std::map<std::string, int> _rasterNames; //! <rasterName, rasterIndex in _rasters>.
-    std::vector<StaticRaster * > _rasters; //! Rasters of the simularions.
+    std::map<int, std::string> _rasterIDsToNames; //! <rasterIndex, rasterName>
+    std::vector<StaticRaster * > _rasters; //! Rasters of the simulations.
     std::vector<bool> _dynamicRasters; //! True if the raster is dynamic, false the raster is static.
     std::vector<bool> _serializeRasters; //! True if the raster must be serialized, false otherwise.
 
@@ -263,6 +263,14 @@ public:
     bool checkPosition( const Point2D<int> & newPosition ) const;
 
     /**
+     * @brief Gets the name of the raster from its ID (index).
+     * 
+     * @param id const int&
+     * @return std::string 
+     */
+    std::string getRasterNameFromID(const int& id) const;
+
+    /**
      * @brief Sets the value of raster "key" to value "value" in global position "position".
      * 
      * @param key Name of the raster.
@@ -400,6 +408,16 @@ public:
     const Rectangle<int> & getBoundaries( ) const;
 
     /**
+     * @brief Get the _agents member.
+     * 
+     * @return AgentsList* 
+     */
+    AgentsList getAgentsList()
+    {
+        return _agents;
+    }
+
+    /**
      * @brief Returns the iteratior pointing to the first Agent in the _agents vector.
      * 
      * @return AgentsList::iterator 
@@ -455,6 +473,16 @@ public:
     void eraseAgent( AgentsList::iterator & it ) 
     { 
         _agents.erase( it ); 
+    }
+
+    /**
+     * @brief Erases the Agent pointed by 'it' from the _agents member.
+     * 
+     * @param it AgentsList::const_iterator&
+     */
+    void eraseAgent(AgentsList::const_iterator& it) 
+    { 
+        _agents.erase(it); 
     }
 
     /**
@@ -579,12 +607,7 @@ public:
      */
     bool rasterExists( size_t index )
     {
-        /*if ( _rasters.at( index ))
-        {
-            return true;
-        }
-        return false;*/
-        return bool(_rasters.at( index ));
+        return bool(_rasters.at(index));
     }
     
     /**

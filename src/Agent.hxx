@@ -210,9 +210,48 @@ namespace Engine
          */
         void setRandomPosition( );
 
-        friend std::ostream& operator << ( std::ostream &os, const Agent&  agent ) { return agent.print( os ); } //! Prints a representation of the state to the given stream.
-        friend std::ostream& operator << ( std::ostream &os, const Agent*  agent ) { return agent->print( os ); } //! Prints a representation of the state to the given stream.
-        virtual std::ostream& print( std::ostream& os ) const; //! Prints a representation of the state to the given stream.
+        /**
+         * @brief Prints a representation of the state to the given stream.
+         * 
+         * @param os std::ostream &
+         * @param agent const Agent&
+         * @return std::ostream& 
+         */
+        friend std::ostream& operator << ( std::ostream &os, const Agent&  agent ) 
+        { 
+            return agent.print( os ); 
+        }
+
+        /**
+         * @brief Prints a representation of the state to the given stream.
+         * 
+         * @param os std::ostream &
+         * @param agent const Agent*
+         * @return std::ostream& 
+         */
+        friend std::ostream& operator << ( std::ostream &os, const Agent*  agent )
+        {
+            return agent->print( os );
+        }
+
+        /**
+         * @brief Checks whether the _id member of 'this' object is equal to the one passed by parameter ('agent').
+         * 
+         * @param agent Const Agent&
+         * @return bool
+         */
+        bool isEqual(const Agent& agent) const
+        {
+            return _id == agent.getId();
+        }
+
+        /**
+         * @brief Prints a representation of the state to the given stream.
+         * 
+         * @param os std::ostream &
+         * @return std::ostream& 
+         */
+        virtual std::ostream& print( std::ostream& os ) const;
 
         /**
          * @brief this function returns true if the type of the agent is the one passed by reference.

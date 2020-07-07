@@ -43,7 +43,7 @@ namespace Engine
             node<Rectangle<int>>* _root;            //! Tree used for the uneven partitioning of the space in _numTasks nodes.
 
             World* _world;                          //! Pointer to the World of the simulation
-            int _numTasks;                          //! Number of tasks in which the simulation should be split.
+            int _numPartitions;                     //! Number of tasks in which the simulation should be split.
 
             /**
              * @brief Initialize the tree starting at _root.
@@ -197,7 +197,7 @@ namespace Engine
              * @param world World*
              * @param numTasks const int&
              */
-            void initializeTreeAndSetData(World* world, const int& numTasks);
+            void initializeTreeAndSetData(World* world, const int& numPartitions);
 
             /**
              * @brief Makes a load balanced partition of the space, filling _root.
