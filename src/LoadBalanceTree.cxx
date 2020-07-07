@@ -30,7 +30,7 @@ namespace Engine {
 
     /** PUBLIC METHODS **/
 
-    LoadBalanceTree::LoadBalanceTree() : _root(NULL), _world(0), _numTasks(1)
+    LoadBalanceTree::LoadBalanceTree() : _root(NULL), _world(0), _numPartitions(1)
     {
     }
 
@@ -39,16 +39,16 @@ namespace Engine {
         destroyTree(_root);
     }
 
-    void LoadBalanceTree::initializeTreeAndSetData(World* world, const int& numTasks)
+    void LoadBalanceTree::initializeTreeAndSetData(World* world, const int& numPartitions)
     {
         _world = world;
-        _numTasks = numTasks;
+        _numPartitions = numPartitions;
         initializeTree();
     }
 
     void LoadBalanceTree::divideSpace()
     {
-        divideSpaceRecursively(_root, getAllAgentsWeight(), (int) std::ceil(std::log2(_numTasks)));
+        divideSpaceRecursively(_root, getAllAgentsWeight(), (int) std::ceil(std::log2(_numPartitions)));
     }
 
     LoadBalanceTree::node<Rectangle<int>>* LoadBalanceTree::getTree()
@@ -110,13 +110,13 @@ namespace Engine {
     bool LoadBalanceTree::stopProcreating(const int& currentHeight) const
     {
         bool condition1 = currentHeight == 0;
-        bool condition2 = numberOfLeafs(_root) == _numTasks;
+        bool condition2 = numberOfLeafs(_root) == _numPartitions;
 
         bool condition3 = false;
-        if (not isPowerOf2(_numTasks))
+        if (not isPowerOf2(_numPartitions))
         {
-            int numberOfNodesNeededAtLowestLevel = 2 * (_numTasks - std::pow(2, std::floor(std::log2(_numTasks))));
-            int lowestLevel = std::ceil(std::log2(_numTasks));
+            int numberOfNodesNeededAtLowestLevel = 2 * (_numPartitions - std::pow(2, std::floor(std::log2(_numPartitions))));
+            int lowestLevel = std::ceil(std::log2(_numPartitions));
             bool isLowestLevelAlreadyFull = numberOfNodesNeededAtLowestLevel == numberOfNodesAtDepth(_root, lowestLevel);
             condition3 = currentHeight == 1 and isLowestLevelAlreadyFull;
         }

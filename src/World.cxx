@@ -199,6 +199,7 @@ namespace Engine
             _serializeRasters.resize( index+1 );
         }
         _rasterNames.insert( make_pair( key, index ));
+        _rasterIDsToNames.insert(make_pair(index, key));
         _dynamicRasters.at( index ) = true;
         if ( _rasters.at( index ))
         {
@@ -229,6 +230,7 @@ namespace Engine
             _serializeRasters.resize( index+1 );
         }
         _rasterNames.insert( make_pair( key, index ));
+        _rasterIDsToNames.insert(make_pair(index, key));
         if ( _rasters.at( index ))
         {
             delete _rasters.at( index );
@@ -324,6 +326,11 @@ namespace Engine
     DynamicRaster & World::getDynamicRaster( const std::string & key ) {
         // @see http://stackoverflow.com/a/123995
         return const_cast<DynamicRaster &>( static_cast<const World&>( *this ).getDynamicRaster( key ) );
+    }
+
+    std::string World::getRasterNameFromID(const int& id) const
+    {
+        return _rasterIDsToNames.at(id);
     }
 
     void World::setValue( const std::string & key, const Point2D<int> & position, int value )

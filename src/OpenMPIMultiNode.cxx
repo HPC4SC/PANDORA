@@ -23,7 +23,6 @@
 
 #include <GeneralState.hxx>
 #include <MpiFactory.hxx>
-#include <Logger.hxx>
 
 #include <math.h>
 
@@ -31,7 +30,7 @@ namespace Engine {
 
     /** PUBLIC METHODS **/
 
-    OpenMPIMultiNode::OpenMPIMultiNode() : _initialTime(0.0f), _masterNodeID(0)
+    OpenMPIMultiNode::OpenMPIMultiNode() : _initialTime(0.0f), _masterNodeID(0), _assignLoadToMasterNode(true)
     {
     }
 
@@ -60,40 +59,52 @@ namespace Engine {
         registerMPIStructs();
 
         _tree = new LoadBalanceTree();
-        _tree->initializeTreeAndSetData(_world, _numTasks);
+        _tree->initializeTreeAndSetData(_world, _numTasks - int(not _assignLoadToMasterNode));
     }
 
     void OpenMPIMultiNode::initData() 
     {
         MpiFactory::instance()->registerTypes();
 
-        if (getId() == 0) 
+        if (getId() == _masterNodeID) 
         {
             _world->createRasters();
             _world->createAgents();
 
-            divideSpace();                          printNodesBeforeMPI();
+            divideSpace();                          printPartitionsBeforeMPI();
             sendSpacesToNodes();                    printOwnNodeStructureAfterMPI();
 
             createNeighbouringAgents();             printNeighbouringAgentsPerTypes();
             sendAgentsToNodes();                    printNodeAgents();
 
-            sendRastersToNodes();
+            sendRastersToNodes();                   printNodeRasters();
         }
         else 
         {
             receiveSpacesFromNode(_masterNodeID);   printOwnNodeStructureAfterMPI();
             receiveAgentsFromNode(_masterNodeID);   printNodeAgents();
-            receiveRastersFromNode(_masterNodeID);
+            receiveRastersFromNode(_masterNodeID);  printNodeRasters();
         }
+
+        MPI_Barrier(MPI_COMM_WORLD);
 
         //_serializer.init(*_world);
     }
 
+    void OpenMPIMultiNode::setMasterNode(const int& masterNode)
+    {
+        _masterNodeID = masterNode;
+    }
+
+    void OpenMPIMultiNode::assignLoadToMasterNode(const bool& loadToMasterNode)
+    {
+        _assignLoadToMasterNode = loadToMasterNode;
+    }
+
     Point2D<int> OpenMPIMultiNode::getRandomPosition() const
     {
-        return Engine::Point2D<int>(GeneralState::statistics().getUniformDistValue(_nodesSpace.ownedArea.left(), _nodesSpace.ownedArea.right()),
-                                    GeneralState::statistics().getUniformDistValue(_nodesSpace.ownedArea.top(), _nodesSpace.ownedArea.bottom()));
+        return Engine::Point2D<int>(GeneralState::statistics().getUniformDistValue(_nodeSpace.ownedArea.left(), _nodeSpace.ownedArea.right()),
+                                    GeneralState::statistics().getUniformDistValue(_nodeSpace.ownedArea.top(), _nodeSpace.ownedArea.bottom()));
     }
 
     double OpenMPIMultiNode::getWallTime() const 
@@ -109,6 +120,31 @@ namespace Engine {
 
     /** PROTECTED METHODS **/
 
+    void OpenMPIMultiNode::initLogFileNames()
+    {
+        for (int i = 0; i < _numTasks; ++i)
+        {
+            std::stringstream ss;
+            ss << "MPIProcess_" << i << "_log.txt";
+            _logFileNames[i] = ss.str();
+        }
+        _schedulerLogs = new OpenMPIMultiNodeLogs();
+    }
+
+    void OpenMPIMultiNode::stablishInitialBoundaries()
+    {
+        _boundaries = Rectangle<int>(_world->getConfig().getSize());
+
+        _nodeSpace.ownedArea = _boundaries;
+    }
+
+    void OpenMPIMultiNode::registerMPIStructs()
+    {
+        _coordinatesDatatype = new MPI_Datatype;
+        MPI_Type_contiguous(4, MPI_INT, _coordinatesDatatype);
+        MPI_Type_commit(_coordinatesDatatype);
+    }
+
     void OpenMPIMultiNode::divideSpace()
     {
         _tree->divideSpace();
@@ -122,13 +158,17 @@ namespace Engine {
 
     void OpenMPIMultiNode::sendSpacesToNodes()
     {
+        int nodeID;
         for (std::map<int, MPINode>::const_iterator it = _mpiNodesMapToSend.begin(); it != _mpiNodesMapToSend.end(); ++it)
         {
-            if (it->first == _masterNodeID) fillOwnStructures(it->second);
+            nodeID = it->first;
+            if (not _assignLoadToMasterNode and nodeID >= _masterNodeID) nodeID += 1;
+
+            if (_assignLoadToMasterNode and nodeID == _masterNodeID) fillOwnStructures(it->second);
             else 
             {
-                sendOwnAreaToNode(it->first, it->second.ownedArea);
-                sendNeighboursToNode(it->first, it->second.neighbours);
+                sendOwnAreaToNode(nodeID, it->second.ownedArea);
+                sendNeighboursToNode(nodeID, it->second.neighbours);
             }
         }
     }
@@ -139,30 +179,6 @@ namespace Engine {
         receiveOwnAreaFromNode(masterNodeID, mpiNode);
         receiveNeighboursFromNode(masterNodeID, mpiNode);
         fillOwnStructures(mpiNode);
-    }
-
-    void OpenMPIMultiNode::initLogFileNames()
-    {
-        for (int i = 0; i < _numTasks; ++i)
-        {
-            std::stringstream ss;
-            ss << "MPIProcess_" << i << "_log.txt";
-            _logFileNames[i] = ss.str();
-        }
-    }
-
-    void OpenMPIMultiNode::stablishInitialBoundaries()
-    {
-        _boundaries = Rectangle<int>(_world->getConfig().getSize());
-
-        _nodesSpace.ownedArea = _boundaries;
-    }
-
-    void OpenMPIMultiNode::registerMPIStructs()
-    {
-        _coordinatesDatatype = new MPI_Datatype;
-        MPI_Type_contiguous(4, MPI_INT, _coordinatesDatatype);
-        MPI_Type_commit(_coordinatesDatatype);
     }
 
     void OpenMPIMultiNode::generateOverlapAreas(MPINode& mpiNode)
@@ -176,14 +192,14 @@ namespace Engine {
 
     void OpenMPIMultiNode::fillOwnStructures(const MPINode& mpiNodeInfo)
     {
-        _nodesSpace.ownedArea = mpiNodeInfo.ownedArea;
-        generateOverlapAreas(_nodesSpace);
+        _nodeSpace.ownedArea = mpiNodeInfo.ownedArea;
+        generateOverlapAreas(_nodeSpace);
 
         for (std::map<int, MPINode*>::const_iterator it = mpiNodeInfo.neighbours.begin(); it != mpiNodeInfo.neighbours.end(); ++it)
         {
-            _nodesSpace.neighbours[it->first] = new MPINode;
-            _nodesSpace.neighbours[it->first]->ownedArea = it->second->ownedArea;
-            generateOverlapAreas(*(_nodesSpace.neighbours[it->first]));
+            _nodeSpace.neighbours[it->first] = new MPINode;
+            _nodeSpace.neighbours[it->first]->ownedArea = it->second->ownedArea;
+            generateOverlapAreas(*(_nodeSpace.neighbours[it->first]));
         }
 
     }
@@ -250,6 +266,8 @@ namespace Engine {
         for (std::map<int, MPINode>::const_iterator it = _mpiNodesMapToSend.begin(); it != _mpiNodesMapToSend.end(); ++it)
         {
             nodeID = it->first;
+            if (not _assignLoadToMasterNode and nodeID >= _masterNodeID) nodeID += 1;
+
             if (it->second.ownedAreaWithOuterOverlaps.contains(agent.getPosition())) agentNodes.push_back(nodeID);
         }
     }
@@ -302,9 +320,41 @@ namespace Engine {
         }
     }
 
-    void OpenMPIMultiNode::keepAgentsInNode(const int& _masterNodeID, const AgentsList& agentsToKeep)
+    bool OpenMPIMultiNode::isAgentInList(const Agent& agent, const AgentsList& agentsList) const
     {
+        for (AgentsList::const_iterator it = agentsList.begin(); it != agentsList.end(); ++it)
+        {
+            Agent* agentFromList = it->get();
+            if (agent.isEqual(*agentFromList)) return true;
+        }
+        return false;
+    }
 
+    AgentsList::const_iterator OpenMPIMultiNode::getAgentInWorldFromID(const std::string& agentID) const
+    {
+        for (AgentsList::const_iterator it = _world->beginAgents(); it != _world->endAgents(); ++it) 
+        {
+            if (it->get()->getId().compare(agentID) == 0) return it;
+        }
+        return _world->endAgents();
+    }
+
+    void OpenMPIMultiNode::keepAgentsInNode(const AgentsList& agentsToKeep)
+    {
+        std::list<std::string> agentIDsToRemove;
+
+        for (AgentsList::const_iterator it = _world->beginAgents(); it != _world->endAgents(); ++it)
+        {
+            Agent* currentAgent = it->get();
+            if (not isAgentInList(*currentAgent, agentsToKeep)) agentIDsToRemove.push_back(currentAgent->getId());
+        }
+
+        for (std::list<std::string>::const_iterator it = agentIDsToRemove.begin(); it != agentIDsToRemove.end(); ++it)
+        {
+            std::string agentID = *it;
+            AgentsList::const_iterator agentIt = getAgentInWorldFromID(agentID);
+            _world->eraseAgent(agentIt);
+        }
     }
 
     void OpenMPIMultiNode::sendAgentsToNodes()
@@ -326,24 +376,19 @@ namespace Engine {
                 currentNode = itNode->first;
                 agentsToSend = itNode->second;
 
-                if (currentNode == _masterNodeID)
+                if (_assignLoadToMasterNode and currentNode == _masterNodeID)
                     agentsToKeepInMasterNode.insert(agentsToKeepInMasterNode.end(), agentsToSend.begin(), agentsToSend.end());
                 else
                     sendAgentsToNodeByType(agentsToSend, currentNode, currentType);
             }
         }
 
-        keepAgentsInNode(_masterNodeID, agentsToKeepInMasterNode);
+        keepAgentsInNode(agentsToKeepInMasterNode);
     }
 
     void OpenMPIMultiNode::sendRastersToNodes()
     {
         
-    }
-
-    void OpenMPIMultiNode::addAgentToNodeStructures(Agent& agent)
-    {
-
     }
 
     void OpenMPIMultiNode::receiveAgentsFromNode(const int& masterNodeID)
@@ -363,7 +408,7 @@ namespace Engine {
             Agent* agent = MpiFactory::instance()->createAndFillAgent(agentsTypeName, package);
             free(package);
 
-            addAgentToNodeStructures(*agent);
+            _world->addAgent(agent, false);
         }
     }
     
@@ -468,70 +513,31 @@ namespace Engine {
         return true;
     }
 
-    void OpenMPIMultiNode::printNodesBeforeMPI() const
-    {
-        std::stringstream ss;
-        ss << "TS = " << getWallTime() << ":" << std::endl;
-        ss << "Overlap size: " << _overlapSize << std::endl;
-        for (std::map<int, MPINode>::const_iterator it = _mpiNodesMapToSend.begin(); it != _mpiNodesMapToSend.end(); ++it) 
-        {
-            ss << "ID: " << it->first << "\tCoordinates: " << it->second.ownedArea << std::endl;
-            for (std::map<int, MPINode*>::const_iterator it2 = it->second.neighbours.begin(); it2 != it->second.neighbours.end(); ++it2)
-            {
-                ss << "\tNeighbour " << it2->first << ": " << it2->second->ownedArea << std::endl;
-            }
-            ss << std::endl;
-        }
+    /** DEBUGGING METHODS **/
 
-        log_DEBUG(_logFileNames.at(getId()), ss.str());
+    void OpenMPIMultiNode::printPartitionsBeforeMPI() const
+    {
+        _schedulerLogs->printPartitionsBeforeMPI(*this);
     }
 
     void OpenMPIMultiNode::printOwnNodeStructureAfterMPI() const
     {
-        std::stringstream ss;
-        ss << "TS = " << getWallTime() << ":" << std::endl;
-        ss << "ownedAreaWithoutInnerOverlap: " << _nodesSpace.ownedAreaWithoutInnerOverlap << std::endl;
-        ss << "ownedArea: " << _nodesSpace.ownedArea << std::endl;
-        ss << "ownedAreaWithOuterOverlaps: " << _nodesSpace.ownedAreaWithOuterOverlaps << std::endl;
-        for (std::map<int, MPINode*>::const_iterator it = _nodesSpace.neighbours.begin(); it != _nodesSpace.neighbours.end(); ++it)
-        {
-            ss << "NeighbourID: " << it->first << "\tCoordinates: " << it->second->ownedArea << std::endl;
-        }
-        ss << std::endl;
-
-        log_DEBUG(_logFileNames.at(getId()), ss.str());
+        _schedulerLogs->printOwnNodeStructureAfterMPI(*this);
     }
 
     void OpenMPIMultiNode::printNeighbouringAgentsPerTypes() const
     {
-        std::stringstream ss;
-        ss << "_neighbouringAgents: " << std::endl;
-        for (NeighbouringAgentsMap::const_iterator it = _neighbouringAgents.begin(); it != _neighbouringAgents.end(); ++it)
-        {
-            ss << "Type: " << it->first << std::endl;
-            for (std::map<int, AgentsList>::const_iterator it2 = it->second.begin(); it2 != it->second.end(); ++it2) 
-            {
-                ss << "\tNode: " << it2->first << std::endl;
-                ss << "\t  ";
-                for (AgentsList::const_iterator it3 = it2->second.begin(); it3 != it2->second.end(); ++it3)
-                {
-                    ss << it3->get()->getId() << ", ";
-                }
-                ss << std::endl;
-            }
-            ss << std::endl;
-        }
-        log_DEBUG(_logFileNames.at(getId()), ss.str());
+        _schedulerLogs->printNeighbouringAgentsPerTypes(*this);
     }
     
     void OpenMPIMultiNode::printNodeAgents() const
     {
-        std::stringstream ss;
-        ss << "TS = " << getWallTime() << ":" << std::endl;
+        _schedulerLogs->printNodeAgents(*this);
+    }
 
-
-
-        log_DEBUG(_logFileNames.at(getId()), ss.str());
+    void OpenMPIMultiNode::printNodeRasters() const
+    {
+        _schedulerLogs->printNodeRasters(*this);
     }
 
 } // namespace Engine

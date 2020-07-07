@@ -32,5 +32,17 @@ void RandomWorld::createAgents() {
 	}
 }
 
+void RandomWorld::createRasters()
+{
+	registerStaticRaster("population", true, 1);
+	Engine::GeneralState::rasterLoader().fillGDALRaster(getStaticRaster("population"), "resources/population30x30.tiff", getBoundaries());
+
+	registerDynamicRaster("humans", true, 2);
+	getDynamicRaster("humans").setInitValues(0, std::numeric_limits<int>::max(), 0);
+	
+	registerDynamicRaster("zombies", true, 3);
+	getDynamicRaster("zombies").setInitValues(0, std::numeric_limits<int>::max(), 1);
+}
+
 } // namespace Examples
 
