@@ -448,6 +448,51 @@ public:
     }
 
     /**
+     * @brief Gets the number of existing rasters.
+     * 
+     * @return size_t 
+     */
+    size_t getNumberOfExistingRasters() const
+    {
+        size_t result = 0;
+        for (size_t i = 0; i < _rasters.size(); ++i)
+        {
+            if (rasterExists(i)) result += 1;
+        }
+        return result;
+    }
+
+    /**
+     * @brief Get the Number Of Static Rasters.
+     * 
+     * @return size_t 
+     */
+    size_t getNumberOfStaticRasters() const
+    {
+        size_t result = 0;
+        for (size_t i = 0; i < _rasters.size(); ++i)
+        {
+            if (rasterExists(i) and not isRasterDynamic(i)) result += 1;
+        }
+        return result;
+    }
+
+    /**
+     * @brief Get the Number Of Dynamic Rasters.
+     * 
+     * @return size_t 
+     */
+    size_t getNumberOfDynamicRasters() const
+    {
+        size_t result = 0;
+        for (size_t i = 0; i < _rasters.size(); ++i)
+        {
+            if (rasterExists(i) and isRasterDynamic(i)) result += 1;
+        }
+        return result;
+    }
+
+    /**
      * @brief Get the Number Of Agents.
      * 
      * @return size_t.
@@ -596,7 +641,7 @@ public:
      * @return true 
      * @return false 
      */
-    bool isRasterDynamic( size_t index ) { return _dynamicRasters.at( index ); }
+    bool isRasterDynamic( size_t index ) const { return _dynamicRasters.at( index ); }
     
     /**
      * @brief Returns if the raster in index 'index' exists.
@@ -605,7 +650,7 @@ public:
      * @return true 
      * @return false 
      */
-    bool rasterExists( size_t index )
+    bool rasterExists( size_t index ) const
     {
         return bool(_rasters.at(index));
     }

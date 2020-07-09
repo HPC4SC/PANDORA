@@ -37,6 +37,8 @@ namespace Engine
 
             std::string getRasterValues(const DynamicRaster& raster, const OpenMPIMultiNode& schedulerInstance) const;
 
+            std::map<int, std::string> _logFileNames;               //! Names of the log files for each of the MPI processes.
+
         public:
 
             /**
@@ -52,32 +54,44 @@ namespace Engine
             virtual ~OpenMPIMultiNodeLogs();
 
             /**
+             * @brief Initializes the logs in which the processes are going to write.
+             * 
+             * @param schedulerInstance const OpenMPIMultiNode&
+             */
+            void initLogFileNames(const OpenMPIMultiNode& schedulerInstance);
+
+            /**
              * @brief Prints nodes partitioning and neighbours for each one.
              * 
+             * @param schedulerInstance const OpenMPIMultiNode&
              */
             void printPartitionsBeforeMPI(const OpenMPIMultiNode& schedulerInstance) const;
 
             /**
              * @brief Prints the nodes structure (ID + Coordinates) in _nodesSpace.
              * 
+             * @param schedulerInstance const OpenMPIMultiNode&
              */
             void printOwnNodeStructureAfterMPI(const OpenMPIMultiNode& schedulerInstance) const;
 
             /**
              * @brief Prints the neighbourhoods (agents belonging to nodes).
              * 
+             * @param schedulerInstance const OpenMPIMultiNode&
              */
             void printNeighbouringAgentsPerTypes(const OpenMPIMultiNode& schedulerInstance) const;
 
             /**
              * @brief Prints the agents for the current node executing this method.
              * 
+             * @param schedulerInstance const OpenMPIMultiNode&
              */
             void printNodeAgents(const OpenMPIMultiNode& schedulerInstance) const;
 
             /**
              * @brief Prints the rasters for the current node executing this method.
              * 
+             * @param schedulerInstance const OpenMPIMultiNode&
              */
             void printNodeRasters(const OpenMPIMultiNode& schedulerInstance) const;
 

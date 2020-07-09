@@ -205,7 +205,7 @@ namespace Engine
         {
             delete _rasters.at( index );
         }
-        _rasters.at( index ) = new DynamicRaster( );
+        _rasters.at( index ) = new DynamicRaster( index, key, serialize );
         _rasters.at( index )->resize( _scheduler->getBoundaries( )._size );
         _serializeRasters.at( index ) = serialize;
     }
@@ -235,7 +235,7 @@ namespace Engine
         {
             delete _rasters.at( index );
         }
-        _rasters.at( index ) = new StaticRaster( );
+        _rasters.at( index ) = new StaticRaster( index, key, serialize );
         _rasters.at( index )->resize( _scheduler->getBoundaries( )._size );
 
         _dynamicRasters.at( index ) = false;

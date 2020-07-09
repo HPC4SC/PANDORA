@@ -20,6 +20,21 @@ enum MpiMessageType
 {
     eNumAgents = 1,
     eAgent = 2,
+    eAgentTypeID = 11,
+    eNumberOfStaticRasters = 12,
+    eNumberOfDynamicRasters = 13,
+    eStaticRasterID = 14,
+    eStaticRasterName = 15,
+    eStaticRasterSerialize = 16,
+    eStaticRasterFileName = 17,
+    eDynamiRasterID = 18,
+    eDynamicRasterName = 19,
+    eDynamicRasterSerialize = 20,
+    eDynamicRasterMinValue = 21,
+    eDynamicRasterMaxValue = 22,
+    eDynamicRasterDefaultValue = 23,
+
+
     eNumGhostAgents = 3,
     eGhostAgent = 4,
     eRasterData = 5,
@@ -27,9 +42,7 @@ enum MpiMessageType
     eVectorAttribute = 7,
     eSizeVector = 8,
     eNumModifiedAgents = 9,
-    eModifiedAgent = 10,
-
-    eTypeID = 11
+    eModifiedAgent = 10
 };
 
 enum MpiMessageTypeSpaces
