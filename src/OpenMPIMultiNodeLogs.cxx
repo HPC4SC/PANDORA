@@ -35,6 +35,16 @@ namespace Engine {
     {
     }
 
+    void OpenMPIMultiNodeLogs::initLogFileNames(const OpenMPIMultiNode& schedulerInstance)
+    {
+        for (int i = 0; i < schedulerInstance._numTasks; ++i)
+        {
+            std::stringstream ss;
+            ss << "MPIProcess_" << i << "";
+            _logFileNames[i] = ss.str();
+        }
+    }
+
     void OpenMPIMultiNodeLogs::printPartitionsBeforeMPI(const OpenMPIMultiNode& schedulerInstance) const
     {
         std::stringstream ss;
@@ -53,7 +63,7 @@ namespace Engine {
             ss << std::endl;
         }
 
-        log_DEBUG(schedulerInstance._logFileNames.at(schedulerInstance.getId()), ss.str());
+        log_DEBUG(_logFileNames.at(schedulerInstance.getId()), ss.str());
     }
 
     void OpenMPIMultiNodeLogs::printOwnNodeStructureAfterMPI(const OpenMPIMultiNode& schedulerInstance) const
@@ -70,7 +80,7 @@ namespace Engine {
         }
         ss << std::endl;
 
-        log_DEBUG(schedulerInstance._logFileNames.at(schedulerInstance.getId()), ss.str());
+        log_DEBUG(_logFileNames.at(schedulerInstance.getId()), ss.str());
     }
 
     void OpenMPIMultiNodeLogs::printNeighbouringAgentsPerTypes(const OpenMPIMultiNode& schedulerInstance) const
@@ -93,7 +103,7 @@ namespace Engine {
             ss << std::endl;
         }
 
-        log_DEBUG(schedulerInstance._logFileNames.at(schedulerInstance.getId()), ss.str());
+        log_DEBUG(_logFileNames.at(schedulerInstance.getId()), ss.str());
     }
     
     void OpenMPIMultiNodeLogs::printNodeAgents(const OpenMPIMultiNode& schedulerInstance) const
@@ -107,7 +117,7 @@ namespace Engine {
         }
         ss << std::endl;
 
-        log_DEBUG(schedulerInstance._logFileNames.at(schedulerInstance.getId()), ss.str());
+        log_DEBUG(_logFileNames.at(schedulerInstance.getId()), ss.str());
     }
 
     void OpenMPIMultiNodeLogs::printNodeRasters(const OpenMPIMultiNode& schedulerInstance) const
@@ -140,7 +150,7 @@ namespace Engine {
         }
 
         ss << std::endl;
-        log_DEBUG(schedulerInstance._logFileNames.at(schedulerInstance.getId()), ss.str());
+        log_DEBUG(_logFileNames.at(schedulerInstance.getId()), ss.str());
     }
 
     /** PROTECTED METHODS **/

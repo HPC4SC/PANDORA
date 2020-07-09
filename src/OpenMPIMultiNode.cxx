@@ -25,10 +25,11 @@
 #include <MpiFactory.hxx>
 
 #include <math.h>
+#include <string>
 
 namespace Engine {
 
-    /** PUBLIC METHODS **/
+    /** INITIALIZATION PUBLIC METHODS **/
 
     OpenMPIMultiNode::OpenMPIMultiNode() : _initialTime(0.0f), _masterNodeID(0), _assignLoadToMasterNode(true)
     {
@@ -36,6 +37,16 @@ namespace Engine {
 
     OpenMPIMultiNode::~OpenMPIMultiNode()
     {
+    }
+
+    void OpenMPIMultiNode::setMasterNode(const int& masterNode)
+    {
+        _masterNodeID = masterNode;
+    }
+
+    void OpenMPIMultiNode::assignLoadToMasterNode(const bool& loadToMasterNode)
+    {
+        _assignLoadToMasterNode = loadToMasterNode;
     }
 
     void OpenMPIMultiNode::init(int argc, char *argv[]) 
@@ -91,44 +102,12 @@ namespace Engine {
         //_serializer.init(*_world);
     }
 
-    void OpenMPIMultiNode::setMasterNode(const int& masterNode)
-    {
-        _masterNodeID = masterNode;
-    }
-
-    void OpenMPIMultiNode::assignLoadToMasterNode(const bool& loadToMasterNode)
-    {
-        _assignLoadToMasterNode = loadToMasterNode;
-    }
-
-    Point2D<int> OpenMPIMultiNode::getRandomPosition() const
-    {
-        return Engine::Point2D<int>(GeneralState::statistics().getUniformDistValue(_nodeSpace.ownedArea.left(), _nodeSpace.ownedArea.right()),
-                                    GeneralState::statistics().getUniformDistValue(_nodeSpace.ownedArea.top(), _nodeSpace.ownedArea.bottom()));
-    }
-
-    double OpenMPIMultiNode::getWallTime() const 
-    {
-        return MPI_Wtime() - _initialTime;
-    }
-
-    AgentsVector OpenMPIMultiNode::getAgent(const Point2D<int>& position, const std::string& type)
-    {
-        return _tree->getAgentsInPosition(position, type);
-        // + overlap agents?
-    }
-
-    /** PROTECTED METHODS **/
+    /** INITIALIZATION PROTECTED METHODS **/
 
     void OpenMPIMultiNode::initLogFileNames()
     {
-        for (int i = 0; i < _numTasks; ++i)
-        {
-            std::stringstream ss;
-            ss << "MPIProcess_" << i << "_log.txt";
-            _logFileNames[i] = ss.str();
-        }
         _schedulerLogs = new OpenMPIMultiNodeLogs();
+        _schedulerLogs->initLogFileNames(*this);
     }
 
     void OpenMPIMultiNode::stablishInitialBoundaries()
@@ -159,7 +138,7 @@ namespace Engine {
     void OpenMPIMultiNode::sendSpacesToNodes()
     {
         int nodeID;
-        for (std::map<int, MPINode>::const_iterator it = _mpiNodesMapToSend.begin(); it != _mpiNodesMapToSend.end(); ++it)
+        for (MPINodesMap::const_iterator it = _mpiNodesMapToSend.begin(); it != _mpiNodesMapToSend.end(); ++it)
         {
             nodeID = it->first;
             if (not _assignLoadToMasterNode and nodeID >= _masterNodeID) nodeID += 1;
@@ -263,7 +242,7 @@ namespace Engine {
     {
         int nodeID;
 
-        for (std::map<int, MPINode>::const_iterator it = _mpiNodesMapToSend.begin(); it != _mpiNodesMapToSend.end(); ++it)
+        for (MPINodesMap::const_iterator it = _mpiNodesMapToSend.begin(); it != _mpiNodesMapToSend.end(); ++it)
         {
             nodeID = it->first;
             if (not _assignLoadToMasterNode and nodeID >= _masterNodeID) nodeID += 1;
@@ -304,7 +283,7 @@ namespace Engine {
     void OpenMPIMultiNode::sendAgentsToNodeByType(const AgentsList& agentsToSend, const int& currentNode, const std::string& agentType)
     {
         int agentsTypeID = MpiFactory::instance()->getIDFromTypeName(agentType);
-        MPI_Send(&agentsTypeID, 1, MPI_INTEGER, currentNode, eTypeID, MPI_COMM_WORLD);
+        MPI_Send(&agentsTypeID, 1, MPI_INTEGER, currentNode, eAgentTypeID, MPI_COMM_WORLD);
 
         int numberOfAgentsToSend = agentsToSend.size();
         MPI_Send(&numberOfAgentsToSend, 1, MPI_INTEGER, currentNode, eNumAgents, MPI_COMM_WORLD);
@@ -386,15 +365,10 @@ namespace Engine {
         keepAgentsInNode(agentsToKeepInMasterNode);
     }
 
-    void OpenMPIMultiNode::sendRastersToNodes()
-    {
-        
-    }
-
     void OpenMPIMultiNode::receiveAgentsFromNode(const int& masterNodeID)
     {
         int agentsTypeID;
-        MPI_Recv(&agentsTypeID, 1, MPI_INTEGER, masterNodeID, eTypeID, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        MPI_Recv(&agentsTypeID, 1, MPI_INTEGER, masterNodeID, eAgentTypeID, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
         std::string agentsTypeName = MpiFactory::instance()->getNameFromTypeID(agentsTypeID);
         MPI_Datatype* agentType = MpiFactory::instance()->getMPIType(agentsTypeName);
 
@@ -411,10 +385,129 @@ namespace Engine {
             _world->addAgent(agent, false);
         }
     }
-    
+
+    void OpenMPIMultiNode::sendRasterBaseInfoToNode(const DynamicRaster& raster, const int& nodeID) const
+    {
+        int rasterID = raster.getID();
+        std::string rasterName = raster.getName();
+        bool rasterSerialize = raster.getSerialize();
+        
+        MPI_Send(&rasterID, 1, MPI_INTEGER, nodeID, eStaticRasterID, MPI_COMM_WORLD);
+        MPI_Send(rasterName.c_str(), rasterName.size(), MPI_CHAR, nodeID, eStaticRasterName, MPI_COMM_WORLD);
+        MPI_Send(&rasterSerialize, 1, MPI_INTEGER, nodeID, eStaticRasterSerialize, MPI_COMM_WORLD);
+    }
+
+    void OpenMPIMultiNode::sendRasterFileNameToNode(const DynamicRaster& raster, const int& nodeID) const
+    {
+        std::string rasterFileName = raster.getFileName();
+        MPI_Send(rasterFileName.c_str(), rasterFileName.size(), MPI_CHAR, nodeID, eStaticRasterFileName, MPI_COMM_WORLD);
+    }
+
+    void OpenMPIMultiNode::sendRasterDynamicInfoToNode(const DynamicRaster& raster, const int& nodeID) const
+    {
+        int minValue = raster.getMinValue();
+        int maxValue = raster.getMaxValue();
+        int defaultValue = raster.getDefaultValue();
+
+        MPI_Send(&minValue, 1, MPI_INTEGER, nodeID, eDynamicRasterMinValue, MPI_COMM_WORLD);
+        MPI_Send(&maxValue, 1, MPI_INTEGER, nodeID, eDynamicRasterMaxValue, MPI_COMM_WORLD);
+        MPI_Send(&defaultValue, 1, MPI_INTEGER, nodeID, eDynamicRasterDefaultValue, MPI_COMM_WORLD);
+    }
+
+    void OpenMPIMultiNode::sendRastersToNodes() const
+    {
+        for (MPINodesMap::const_iterator it = _mpiNodesMapToSend.begin(); it != _mpiNodesMapToSend.end(); ++it)
+        {
+            int nodeID = it->first;
+            if (nodeID != _masterNodeID)
+            {
+                if (not _assignLoadToMasterNode and nodeID >= _masterNodeID) nodeID += 1;
+
+                int numberOfStaticRasters = _world->getNumberOfStaticRasters();
+                MPI_Send(&numberOfStaticRasters, 1, MPI_INTEGER, nodeID, eNumberOfStaticRasters, MPI_COMM_WORLD);
+                for (int i = 0; i < _world->getNumberOfRasters(); ++i)
+                {
+                    if (_world->rasterExists(i) and not _world->isRasterDynamic(i))
+                    {
+                        DynamicRaster* raster = static_cast<DynamicRaster*>(&(_world->getStaticRaster(i)));
+                        sendRasterBaseInfoToNode(*raster, nodeID);
+                        sendRasterFileNameToNode(*raster, nodeID);
+                    }
+                }
+
+                int numberOfDynamicRasters = _world->getNumberOfDynamicRasters();
+                MPI_Send(&numberOfDynamicRasters, 1, MPI_INTEGER, nodeID, eNumberOfDynamicRasters, MPI_COMM_WORLD);
+                for (int i = 0; i < _world->getNumberOfRasters(); ++i)
+                {
+                    if (_world->rasterExists(i) and _world->isRasterDynamic(i))
+                    {
+                        DynamicRaster raster = _world->getDynamicRaster(i);
+                        sendRasterBaseInfoToNode(raster, nodeID);
+                        sendRasterDynamicInfoToNode(raster, nodeID);
+                    }
+                }
+            }
+        }
+    }
+
+    std::string OpenMPIMultiNode::receiveStringFromNode(const int& nodeID, const int& tag) const
+    {
+        MPI_Status mpiStatus;
+        int numberOfCharacters;
+
+        MPI_Probe(nodeID, tag, MPI_COMM_WORLD, &mpiStatus);
+        MPI_Get_count(&mpiStatus, MPI_CHAR, &numberOfCharacters);
+
+        char rasterName[numberOfCharacters];
+        MPI_Recv(rasterName, numberOfCharacters, MPI_CHAR, nodeID, tag, MPI_COMM_WORLD, &mpiStatus);
+
+        std::string rasterNameStr = std::string(rasterName);
+        return rasterNameStr.substr(0, numberOfCharacters);
+    }
+
+    void OpenMPIMultiNode::receiveRasterBaseInfo(const int& masterNodeID, int& rasterID, std::string& rasterName, bool& rasterSerialize) const
+    {
+        MPI_Recv(&rasterID, 1, MPI_INTEGER, masterNodeID, eStaticRasterID, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        rasterName = receiveStringFromNode(masterNodeID, eStaticRasterName);
+        MPI_Recv(&rasterSerialize, 1, MPI_INTEGER, masterNodeID, eStaticRasterSerialize, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    }
+
+    void OpenMPIMultiNode::receiveRasterDynamicInfo(const int& masterNodeID, int& minValue, int& maxValue, int& defaultValue) const
+    {
+        MPI_Recv(&minValue, 1, MPI_INTEGER, masterNodeID, eDynamicRasterMinValue, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        MPI_Recv(&maxValue, 1, MPI_INTEGER, masterNodeID, eDynamicRasterMaxValue, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        MPI_Recv(&defaultValue, 1, MPI_INTEGER, masterNodeID, eDynamicRasterDefaultValue, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    }
+
     void OpenMPIMultiNode::receiveRastersFromNode(const int& masterNodeID)
     {
+        int rasterID;
+        std::string rasterName;
+        bool rasterSerialize;
+        std::string rasterFileName;
+        int rasterMinValue, rasterMaxValue, rasterDefaultValue;
 
+        int numberOfStaticRastersToReceive;
+        MPI_Recv(&numberOfStaticRastersToReceive, 1, MPI_INTEGER, masterNodeID, eNumberOfStaticRasters, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        for (int i = 0; i < numberOfStaticRastersToReceive; ++i)
+        {
+            receiveRasterBaseInfo(masterNodeID, rasterID, rasterName, rasterSerialize);
+            rasterFileName = receiveStringFromNode(masterNodeID, eStaticRasterFileName);
+            
+            _world->registerStaticRaster(rasterName, rasterSerialize, rasterID);
+	        Engine::GeneralState::rasterLoader().fillGDALRaster(_world->getStaticRaster(rasterName), rasterFileName, _world->getBoundaries());
+        }
+
+        int numberOfDynamicRastersToReceive;
+        MPI_Recv(&numberOfDynamicRastersToReceive, 1, MPI_INTEGER, masterNodeID, eNumberOfDynamicRasters, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        for (int i = 0; i < numberOfDynamicRastersToReceive; ++i)
+        {
+            receiveRasterBaseInfo(masterNodeID, rasterID, rasterName, rasterSerialize);
+            receiveRasterDynamicInfo(masterNodeID, rasterMinValue, rasterMaxValue, rasterDefaultValue);
+            
+            _world->registerDynamicRaster(rasterName, rasterSerialize, rasterID);
+	        _world->getDynamicRaster(rasterName).setInitValues(rasterMinValue, rasterMaxValue, rasterDefaultValue);
+        }
     }
 
     void OpenMPIMultiNode::addMPINodeToSendInMapItIsNot(const std::vector<Rectangle<int>>& partitions, const int& neighbourIndex)
@@ -504,7 +597,7 @@ namespace Engine {
 
     bool OpenMPIMultiNode::arePartitionsSuitable()
     {
-        for (std::map<int, MPINode>::const_iterator it = _mpiNodesMapToSend.begin(); it != _mpiNodesMapToSend.end(); ++it)
+        for (MPINodesMap::const_iterator it = _mpiNodesMapToSend.begin(); it != _mpiNodesMapToSend.end(); ++it)
         {
             if (it->second.ownedArea.getSize().getWidth() <= 2 * _overlapSize or
                 it->second.ownedArea.getSize().getHeight() <= 2 * _overlapSize)
@@ -513,7 +606,7 @@ namespace Engine {
         return true;
     }
 
-    /** DEBUGGING METHODS **/
+    /** INITIALIZATION DEBUGGING METHODS **/
 
     void OpenMPIMultiNode::printPartitionsBeforeMPI() const
     {
@@ -538,6 +631,36 @@ namespace Engine {
     void OpenMPIMultiNode::printNodeRasters() const
     {
         _schedulerLogs->printNodeRasters(*this);
+    }
+
+    /** RUN PUBLIC METHODS (INHERIT) **/
+
+    void OpenMPIMultiNode::executeAgents()
+    {
+
+    }
+    
+    void OpenMPIMultiNode::finish() 
+    {
+        MpiFactory::instance()->cleanTypes();
+        MPI_Finalize();
+    }
+
+    Point2D<int> OpenMPIMultiNode::getRandomPosition() const
+    {
+        return Engine::Point2D<int>(GeneralState::statistics().getUniformDistValue(_nodeSpace.ownedArea.left(), _nodeSpace.ownedArea.right()),
+                                    GeneralState::statistics().getUniformDistValue(_nodeSpace.ownedArea.top(), _nodeSpace.ownedArea.bottom()));
+    }
+
+    double OpenMPIMultiNode::getWallTime() const 
+    {
+        return MPI_Wtime() - _initialTime;
+    }
+
+    AgentsVector OpenMPIMultiNode::getAgent(const Point2D<int>& position, const std::string& type)
+    {
+        return _tree->getAgentsInPosition(position, type);
+        // + overlap agents?
     }
 
 } // namespace Engine

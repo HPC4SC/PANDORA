@@ -44,9 +44,11 @@ namespace Engine
                 Rectangle<int> ownedArea;                           //! Area of this node with    inner (this node)   overlaps.
                 Rectangle<int> ownedAreaWithOuterOverlaps;          //! Area of this node with    outer (other nodes) overlaps.
                 std::map<int, MPINode*> neighbours;                 //! Map<neighbouringNodeId, neighbouringNodeSpaces> containing the neighbours information for communication.
+                std::map<int, Rectangle<int>> neighboursOverlap;    //! Map<neighbouringNodeId, neighbouringNodeOverlap>. Used for efficient agents and rasters communication.
             };
 
             typedef std::map<std::string, std::map<int, AgentsList>> NeighbouringAgentsMap;
+            typedef std::map<int, MPINode> MPINodesMap;
 
             friend class OpenMPIMultiNodeLogs;
 
@@ -55,29 +57,28 @@ namespace Engine
             /** Base data structures for the space partitioning (master node only) **/
             LoadBalanceTree* _tree;
 
-            std::map<int, MPINode> _mpiNodesMapToSend;              //! Map<nodeId, nodeInformation> containing the leafs of _tree, where the 'value' field is now the 'ownedArea', and the IDs of the 'neighbours' are mapped with their coordinates.
-
+            MPINodesMap _mpiNodesMapToSend;                         //! Map<nodeId, nodeInformation> containing the leafs of _tree, where the 'value' field is now the 'ownedArea', and the IDs of the 'neighbours' are mapped with their coordinates.
             NeighbouringAgentsMap _neighbouringAgents;              //! <agentsType, <nodeID, agentsList>> with the neighbouring agents, classified first by their types. Used to send/receive agents from master to the rest of the nodes.
 
             /** Node own data structures (nodes0..n) **/
-            MPINode _nodeSpace;                                    //! Areas of this node.
+            MPINode _nodeSpace;                                     //! Areas of this node.
 
             /** MPI Data Structures **/
+            int _masterNodeID;                                      //! ID of the master node. Used for communication.
+            bool _assignLoadToMasterNode;                           //! True if the master node also processes agents, false if it's only used for partitioning and communication.
+
             struct Coordinates {
                 int top, left, bottom, right;
             };                                                      //! Struct used to parse in/out the to-be-send/received coordinates.
             MPI_Datatype* _coordinatesDatatype;                     //! Own MPI Datatype used to send/receive the coordinates of a node.
 
-            int _masterNodeID;                                      //! ID of the master node. Used for communication.
-            bool _assignLoadToMasterNode;                           //! True if the master node also processes agents, false if it's only used for partitioning and communication.
-
             /** Other structures **/
-            double _initialTime;                                    //! Initial running time.
-
-            std::map<int, std::string> _logFileNames;               //! Names of the log files for each of the MPI processes.
             OpenMPIMultiNodeLogs* _schedulerLogs;
 
+            double _initialTime;                                    //! Initial running time.
             //Serializer _serializer;                                 //! Serializer instance.
+
+            /** INITIALIZATION PROTECTED METHODS **/
 
             /**
              * @brief Creates the names of the log files for each of the MPI processes, appending them in the _logFileNames member.
@@ -213,17 +214,68 @@ namespace Engine
             void sendAgentsToNodes();
 
             /**
-             * @brief Sends the rasters corresponding to each node from _masterNodeID to all of the other nodes.
-             * 
-             */
-            void sendRastersToNodes();
-
-            /**
              * @brief From the 'masterNodeID', it receives the agents that should consider for its assigned space.
              * 
              * @param masterNodeID const int&
              */
             void receiveAgentsFromNode(const int& masterNodeID);
+
+            /**
+             * @brief Sends the base data (StaticRaster info) of 'raster' to 'nodeID'. Intenteded to use only at the beginning of the simulation, when distributing load.
+             * 
+             * @param raster const DynamicRaster&
+             */
+            void sendRasterBaseInfoToNode(const DynamicRaster& raster, const int& nodeID) const;
+
+            /**
+             * @brief Sends the 'raster' fileName to 'nodeID'.
+             * 
+             * @param raster const DynamicRaster&
+             * @param nodeID const int&
+             */
+            void sendRasterFileNameToNode(const DynamicRaster& raster, const int& nodeID) const;
+
+            /**
+             * @brief Sends the dynamic information of 'raster' from the master node to all the rest of the nodes. Intenteded to use only at the beginning of the simulation, when distributing load.
+             * 
+             * @param raster const DynamicRaster&
+             */
+            void sendRasterDynamicInfoToNode(const DynamicRaster& raster, const int& nodeID) const;
+
+            /**
+             * @brief Sends the rasters corresponding to each node from _masterNodeID to all of the other nodes.
+             * 
+             */
+            void sendRastersToNodes() const;
+
+            /**
+             * @brief Receives the incoming data from 'node' identified by 'tag'.
+             * 
+             * @param nodeID const int&
+             * @param tag const int&
+             * @return std::string
+             */
+            std::string receiveStringFromNode(const int& nodeID, const int& tag) const;
+
+            /**
+             * @brief Receive the incoming static raster base info.
+             * 
+             * @param masterNodeID const int&
+             * @param rasterID int&
+             * @param rasterName std::string&
+             * @param rasterSerialize bool&
+             */
+            void receiveRasterBaseInfo(const int& masterNodeID, int& rasterID, std::string& rasterName, bool& rasterSerialize) const;
+
+            /**
+             * @brief Receive the incoming dynamic info of a raster.
+             * 
+             * @param masterNodeID const int& masterNodeID
+             * @param minValue int&
+             * @param maxValue int&
+             * @param defaultValue int&
+             */
+            void receiveRasterDynamicInfo(const int& masterNodeID, int& minValue, int& maxValue, int& defaultValue) const;
 
             /**
              * @brief From the 'masterNodeID', it receives the rasters that should consider for its assigned space.
@@ -281,7 +333,7 @@ namespace Engine
              */
             bool arePartitionsSuitable();
 
-            /** DEBUGGING METHODS **/
+            /** INITIALIZATION DEBUGGING METHODS **/
 
             /**
              * @brief Prints nodes partitioning and neighbours for each one.
@@ -315,6 +367,8 @@ namespace Engine
 
         public:
 
+            /** INITIALIZATION PUBLIC METHODS **/
+
             /**
              * @brief Construct a new OpenMPIMultiNode object.
              * 
@@ -326,20 +380,6 @@ namespace Engine
              * 
              */
             virtual ~OpenMPIMultiNode();
-
-            /**
-             * @brief Initializes everything needed before creation of agents and rasters. 
-             * 
-             * @param argc Not used.
-             * @param argv Not used.
-             */
-            void init(int argc, char *argv[]);
-
-            /**
-             * @brief Calls the creation of rasters and agents (in child) and initialize all the the data processes (MPI structures & partition of the space into nodes).
-             * 
-             */
-            void initData();
 
             /**
              * @brief Sets the master node ('_masterNodeID' member)
@@ -355,8 +395,33 @@ namespace Engine
              */
             void assignLoadToMasterNode(const bool& loadToMasterNode);
 
-            void executeAgents() {}
-            void finish() {}
+            /**
+             * @brief Initializes everything needed before creation of agents and rasters. 
+             * 
+             * @param argc Not used.
+             * @param argv Not used.
+             */
+            void init(int argc, char *argv[]);
+
+            /**
+             * @brief Calls the creation of rasters and agents (in child) and initialize all the the data processes (MPI structures & partition of the space into nodes).
+             * 
+             */
+            void initData();
+
+            /** RUN PUBLIC METHODS (INHERIT) **/
+
+            /**
+             * @brief Executes the agents and updates the world.
+             * 
+             */
+            void executeAgents();
+
+            /**
+             * @brief Executes needed after the simulation (e.g. finish communications for parallel nodes).
+             * 
+             */
+            void finish();
 
             /**
              * @brief Get a random Point2D within the area owned by this node/scheduler

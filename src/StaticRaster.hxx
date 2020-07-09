@@ -49,6 +49,14 @@ struct ColorEntry
 class StaticRaster
 {
 protected:
+
+    // Variables for raster creation (MPI mainly)
+    int _id;
+    std::string _name;
+    bool _serialize;
+    std::string _fileName;
+
+    // Class variables
     std::vector< std::vector<int> >_values; //! Matrix of values of the raster.
 
     int _minValue; //! Minimum value of the raster.
@@ -64,10 +72,54 @@ public:
     StaticRaster( );
 
     /**
+     * @brief Construct a new Static Raster object.
+     * 
+     * @param id const int&
+     * @param name const std::string&
+     * @param serialize const bool&
+     */
+    StaticRaster(const int& id, const std::string& name, const bool& serialize);
+
+    /**
      * @brief Destroy the Static Raster object
      * 
      */
     virtual ~StaticRaster( );
+
+    /**
+     * @brief Gets the _id (index in World) member.
+     * 
+     * @return int 
+     */
+    int getID() const;
+
+    /**
+     * @brief Gets the _name member.
+     * 
+     * @return std::string 
+     */
+    std::string getName() const;
+
+    /**
+     * @brief Get the _fileName member.
+     * 
+     * @return std::string 
+     */
+    std::string getFileName() const;
+
+    /**
+     * @brief Get the _serialize member.
+     * 
+     * @return bool
+     */
+    bool getSerialize() const;
+
+    /**
+     * @brief Set the _fileName member.
+     * 
+     * @param fileName Set the _fileName member.
+     */
+    void setFileName(const std::string& fileName);
 
     /**
      * @brief Equality operator between two rasters.

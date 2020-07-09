@@ -33,8 +33,40 @@ StaticRaster::StaticRaster( ) : _minValue( std::numeric_limits<int>::max( ) ), _
 {
 }
 
+StaticRaster::StaticRaster(const int& id, const std::string& name, const bool& serialize) : _minValue( std::numeric_limits<int>::max( ) ), _maxValue( std::numeric_limits<int>::min( ) ), _hasColorTable( false )
+{
+    _id = id;
+    _name = name;
+    _serialize = serialize;
+}
+
 StaticRaster::~StaticRaster( )
 {
+}
+
+int StaticRaster::getID() const
+{
+    return _id;
+}
+
+std::string StaticRaster::getName() const
+{
+    return _name;
+}
+
+std::string StaticRaster::getFileName() const
+{
+    return _fileName;
+}
+
+bool StaticRaster::getSerialize() const
+{
+    return _serialize;
+}
+
+void StaticRaster::setFileName(const std::string& fileName)
+{
+    _fileName = fileName;
 }
 
 bool StaticRaster::operator==( const StaticRaster& other ) const {
