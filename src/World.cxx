@@ -176,7 +176,8 @@ namespace Engine
 
     void World::stepRaster( const int & index  )
     {
-        ( (DynamicRaster* ) _rasters.at( index ))->updateRasterIncrement( );
+        // Only do this when incremental rasters¿?
+        //( (DynamicRaster* ) _rasters.at( index ))->updateRasterIncrement( ); 
     }
 
     void World::registerDynamicRaster( const std::string & key, const bool & serialize, int index )

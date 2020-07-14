@@ -97,6 +97,8 @@ namespace Engine {
             receiveRastersFromNode(_masterNodeID);  printNodeRasters();
         }
 
+        stablishBoundaries();
+
         MPI_Barrier(MPI_COMM_WORLD);
 
         //_serializer.init(*_world);
@@ -160,7 +162,7 @@ namespace Engine {
         fillOwnStructures(mpiNode);
     }
 
-    void OpenMPIMultiNode::generateOverlapAreas(MPINode& mpiNode)
+    void OpenMPIMultiNode::generateOverlapAreas(MPINode& mpiNode) const
     {
         mpiNode.ownedAreaWithOuterOverlaps = mpiNode.ownedArea;
         mpiNode.ownedAreaWithoutInnerOverlap = mpiNode.ownedArea;
@@ -169,18 +171,63 @@ namespace Engine {
         expandRectangleConsideringLimits(mpiNode.ownedAreaWithoutInnerOverlap, -_overlapSize, false);
     }
 
+    Rectangle<int> OpenMPIMultiNode::squeezeRectangle(const Rectangle<int>& rectangle, const int& squeezeTop, const int& squeezeBottom, const int& squeezeLeft, const int& squeezeRight) const
+    {
+        Rectangle<int> resultingRectangle = rectangle;
+
+        resultingRectangle.getOrigin().getY() += squeezeTop;
+        resultingRectangle.getSize().getHeight() -= (squeezeTop + squeezeBottom);
+
+        resultingRectangle.getOrigin().getX() += squeezeLeft;
+        resultingRectangle.getSize().getWidth() -= (squeezeLeft + squeezeRight);
+
+        return resultingRectangle;
+    }
+
+    void OpenMPIMultiNode::generateInnerSubOverlapAreas(MPINode& mpiNode) const
+    {
+        mpiNode.innerSubOverlaps[eTopCenter] =      squeezeRectangle(mpiNode.ownedArea, 0, mpiNode.ownedArea.getSize().getHeight() - _overlapSize, _overlapSize, _overlapSize);
+        mpiNode.innerSubOverlaps[eBottomCenter] =   squeezeRectangle(mpiNode.ownedArea, mpiNode.ownedArea.getSize().getHeight() - _overlapSize, 0, _overlapSize, _overlapSize);
+        mpiNode.innerSubOverlaps[eLeftCenter] =     squeezeRectangle(mpiNode.ownedArea, _overlapSize, _overlapSize, 0, mpiNode.ownedArea.getSize().getWidth() - _overlapSize);
+        mpiNode.innerSubOverlaps[eRightCenter] =    squeezeRectangle(mpiNode.ownedArea, _overlapSize, _overlapSize, mpiNode.ownedArea.getSize().getWidth() - _overlapSize, 0);
+
+        mpiNode.innerSubOverlaps[eTopLeft] =        squeezeRectangle(mpiNode.ownedArea, 0, mpiNode.ownedArea.getSize().getHeight() - _overlapSize, 0, mpiNode.ownedArea.getSize().getWidth() - _overlapSize);
+        mpiNode.innerSubOverlaps[eTopRight] =       squeezeRectangle(mpiNode.ownedArea, 0, mpiNode.ownedArea.getSize().getHeight() - _overlapSize, mpiNode.ownedArea.getSize().getWidth() - _overlapSize, 0);
+        mpiNode.innerSubOverlaps[eBottomLeft] =     squeezeRectangle(mpiNode.ownedArea, mpiNode.ownedArea.getSize().getHeight() - _overlapSize, 0, 0, mpiNode.ownedArea.getSize().getWidth() - _overlapSize);
+        mpiNode.innerSubOverlaps[eBottomRight] =    squeezeRectangle(mpiNode.ownedArea, mpiNode.ownedArea.getSize().getHeight() - _overlapSize, 0, mpiNode.ownedArea.getSize().getWidth() - _overlapSize, 0);
+    }
+
+    void OpenMPIMultiNode::generateInnerSubOverlapNeighbours(MPINode& mpiNode, const int& neighbourID, const MPINode& neighbourNode) const
+    {
+        Rectangle<int> neighbourArea = neighbourNode.ownedArea;
+
+        for (std::map<int, Rectangle<int>>::const_iterator it = mpiNode.innerSubOverlaps.begin(); it != mpiNode.innerSubOverlaps.end(); ++it)
+        {
+            int subOverlapID = it->first;
+            Rectangle<int> subOverlapArea = it->second;
+
+            if (mpiNode.innerSubOverlapsNeighbours.find(subOverlapID) == mpiNode.innerSubOverlapsNeighbours.end())
+                mpiNode.innerSubOverlapsNeighbours[subOverlapID] = std::list<int>();
+
+            if (areTheyNeighbours(subOverlapArea, neighbourArea))
+                mpiNode.innerSubOverlapsNeighbours.at(subOverlapID).push_back(neighbourID);
+        }
+    }
+
     void OpenMPIMultiNode::fillOwnStructures(const MPINode& mpiNodeInfo)
     {
         _nodeSpace.ownedArea = mpiNodeInfo.ownedArea;
         generateOverlapAreas(_nodeSpace);
+        generateInnerSubOverlapAreas(_nodeSpace);
 
         for (std::map<int, MPINode*>::const_iterator it = mpiNodeInfo.neighbours.begin(); it != mpiNodeInfo.neighbours.end(); ++it)
         {
             _nodeSpace.neighbours[it->first] = new MPINode;
             _nodeSpace.neighbours[it->first]->ownedArea = it->second->ownedArea;
             generateOverlapAreas(*(_nodeSpace.neighbours[it->first]));
-        }
 
+            generateInnerSubOverlapNeighbours(_nodeSpace, it->first, *(it->second));
+        }
     }
 
     void OpenMPIMultiNode::sendOwnAreaToNode(const int& nodeID, const Rectangle<int>& mpiNodeInfo) const
@@ -510,6 +557,11 @@ namespace Engine {
         }
     }
 
+    void OpenMPIMultiNode::stablishBoundaries()
+    {
+        _boundaries = _nodeSpace.ownedArea;
+    }
+
     void OpenMPIMultiNode::addMPINodeToSendInMapItIsNot(const std::vector<Rectangle<int>>& partitions, const int& neighbourIndex)
     {
         if (_mpiNodesMapToSend.find(neighbourIndex) == _mpiNodesMapToSend.end())
@@ -633,11 +685,129 @@ namespace Engine {
         _schedulerLogs->printNodeRasters(*this);
     }
 
+    void OpenMPIMultiNode::executeAgentsInInnerMostArea()
+    {
+        AgentsList agentsList;
+        executeAgentsInArea(_nodeSpace.ownedAreaWithoutInnerOverlap, agentsList);
+    }
+
+    void OpenMPIMultiNode::randomlyExecuteAgents(const AgentsList& agentsToExecute)
+    {
+        std::random_shuffle(agentsToExecute.begin(), agentsToExecute.end());
+
+        #pragma omp parallel for schedule(dynamic) if(_updateKnowledgeInParallel)
+        for (AgentsList::const_iterator it = agentsToExecute.begin(); it != agentsToExecute.end(); ++it)
+        {
+            Agent* agent = it->get();
+            agent->updateKnowledge();
+            agent->selectActions();
+        }
+
+        #pragma omp parallel for schedule(dynamic) if(_executeActionsInParallel)
+        for (AgentsList::const_iterator it = agentsToExecute.begin(); it != agentsToExecute.end(); ++it)
+        {
+            Agent* agent = it->get();
+            agent->executeActions();
+            agent->updateState();
+        }
+    }
+
+    void OpenMPIMultiNode::executeAgentsInArea(const Rectangle<int>& areaToExecute, AgentsList& agentsList)
+    {
+        for (AgentsList::const_iterator it = _world->beginAgents(); it != _world->endAgents(); ++it)
+        {
+            AgentPtr agentPtr = *it;
+            if (areaToExecute.contains(agentPtr->getPosition())) agentsList.push_back(agentPtr);
+        }
+        randomlyExecuteAgents(agentsList);
+    }
+
+    void OpenMPIMultiNode::sendGhostAgentsToNeighbours(const int& overlapAreaID, const AgentsList& agentsList)
+    {
+        for (AgentsList::const_iterator itAgent = agentsList.begin(); itAgent != agentsList.end(); ++itAgent)
+        {
+            Agent* agent = itAgent->get();
+
+            std::list<int> neighboursToSend = _nodeSpace.innerSubOverlapsNeighbours.at(overlapAreaID).;
+            for (std::list<int>::const_iterator itNeighbourNode = neighboursToSend.begin(); itNeighbourNode != neighboursToSend.end(); ++itNeighbourNode)
+            {
+                int neighbourNodeID = *itNeighbourNode;
+                Rectangle<int> neighbourNodeArea = _nodeSpace.neighbours.at(neighbourNodeID)->ownedAreaWithOuterOverlaps;
+
+                if (neighbourNodeArea.contains(agent->getPosition()))
+                {
+                    MPI_Datatype* agentTypeMPI = MpiFactory::instance()->getMPIType(agent->getType());
+                    void* agentPackage = agent->fillPackage();
+
+                    MpiRequest* mpiRequest = new MpiRequest;
+                    mpiRequest->package = agentPackage;
+
+                    MPI_Isend(agentPackage, 1, *agentTypeMPI, neighbourNodeID, eAgent, MPI_COMM_WORLD, &mpiRequest->request);
+
+                    _sendRequests.push_back(mpiRequest);
+                }
+            }
+        }
+    }
+
+    void OpenMPIMultiNode::receiveGhostAgents()
+    {
+        
+    }
+
+    void OpenMPIMultiNode::sendRastersToNeighbours()
+    {
+
+    }
+
+    void OpenMPIMultiNode::receiveRasters()
+    {
+
+    }
+
+    void OpenMPIMultiNode::waitForMessagesToFinish()
+    {
+        // free send requests
+        // free receive requests
+
+        // free(agentPackage); : packages should be in the MPIRequestStruct
+
+
+
+
+
+
+
+
+        MPI_Barrier(MPI_COMM_WORLD);
+    }
+
     /** RUN PUBLIC METHODS (INHERIT) **/
 
     void OpenMPIMultiNode::executeAgents()
     {
+        executeAgentsInInnerMostArea();
 
+        MPI_Barrier(MPI_COMM_WORLD);
+
+        for (std::map<int, Rectangle<int>>::const_iterator it = _nodeSpace.innerSubOverlaps.begin(); it != _nodeSpace.innerSubOverlaps.end(); ++it)
+        {
+            int overlapAreaID = it->first;
+            Rectangle<int> overlapArea = it->second;
+
+            AgentsList executedAgents;
+            executeAgentsInArea(overlapArea, executedAgents);
+
+            sendGhostAgentsToNeighbours(overlapAreaID, executedAgents);
+            MPI_Barrier();
+            receiveGhostAgents();
+
+            sendRastersToNeighbours();
+            MPI_Barrier();
+            receiveRasters();
+
+            waitForMessagesToFinishAndClearRequests();
+        }
     }
     
     void OpenMPIMultiNode::finish() 
