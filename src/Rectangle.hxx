@@ -194,7 +194,7 @@ namespace Engine
              */
             friend std::ostream & operator<<( std::ostream & stream, const Rectangle<Type> & rectangle )
             {
-                return stream << "top: " << rectangle.top() << " left: " << rectangle.left() << " bottom: " << rectangle.bottom()+1 << " right: " << rectangle.right()+1;
+                return stream << "left: " << rectangle.left() << " top: " << rectangle.top() << " right: " << rectangle.right()+1 << " bottom: " << rectangle.bottom()+1;
                 //return stream << "rect:" << rectangle._origin << "->" << Point2D<Type>( rectangle._origin._x+rectangle._size._width, rectangle._origin._y+rectangle._size._height ) - 1;
             }
 

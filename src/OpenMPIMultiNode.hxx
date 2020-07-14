@@ -40,11 +40,14 @@ namespace Engine
         public:
 
             struct MPINode {
-                Rectangle<int> ownedAreaWithoutInnerOverlap;        //! Area of this node without inner (this node)   overlaps.
-                Rectangle<int> ownedArea;                           //! Area of this node with    inner (this node)   overlaps.
-                Rectangle<int> ownedAreaWithOuterOverlaps;          //! Area of this node with    outer (other nodes) overlaps.
-                std::map<int, MPINode*> neighbours;                 //! Map<neighbouringNodeId, neighbouringNodeSpaces> containing the neighbours information for communication.
-                std::map<int, Rectangle<int>> neighboursOverlap;    //! Map<neighbouringNodeId, neighbouringNodeOverlap>. Used for efficient agents and rasters communication.
+                Rectangle<int> ownedAreaWithoutInnerOverlap;                //! Area of this node without inner (this node)   overlaps.
+                Rectangle<int> ownedArea;                                   //! Area of this node with    inner (this node)   overlaps.
+                Rectangle<int> ownedAreaWithOuterOverlaps;                  //! Area of this node with    outer (other nodes) overlaps.
+                std::map<int, MPINode*> neighbours;                         //! Map<neighbouringNodeId, neighbouringNodeSpaces> containing the neighbours information for communication.
+
+                std::map<int, Rectangle<int>> innerSubOverlaps;             //! Sub areas of the inner overlap (should be 8 in total). <subAreaID, area>, where subAreaID = Engine::SubOverlapType enum.
+                //std::map<int, Rectangle<int>> neighboursInnerOverlap;     //! Map<neighbouringNodeId, neighbouringNodeInnerOverlap>. Used for efficient agents and rasters communication.
+                std::map<int, std::list<int>> innerSubOverlapsNeighbours;   //! Map<neighbouringNodeId, neighbouringNodeOuterOverlap>. Used for efficient agents and rasters communication.
             };
 
             typedef std::map<std::string, std::map<int, AgentsList>> NeighbouringAgentsMap;
@@ -71,6 +74,13 @@ namespace Engine
                 int top, left, bottom, right;
             };                                                      //! Struct used to parse in/out the to-be-send/received coordinates.
             MPI_Datatype* _coordinatesDatatype;                     //! Own MPI Datatype used to send/receive the coordinates of a node.
+
+            struct MpiRequest {
+                void* package;
+                MPI_Request request;
+            };
+            std::list<MpiRequest*> _sendRequests;
+            std::list<MpiRequest*> _receiveRequests;
 
             /** Other structures **/
             OpenMPIMultiNodeLogs* _schedulerLogs;
@@ -113,6 +123,7 @@ namespace Engine
             /**
              * @brief It receives the created spaces from the MPI master node identified by 'masterNodeID'.
              * 
+             * @param const int&
              */
             void receiveSpacesFromNode(const int& masterNodeID);
 
@@ -121,12 +132,40 @@ namespace Engine
              * 
              * @param mpiNode MPINode&
              */
-            void generateOverlapAreas(MPINode& mpiNode);
+            void generateOverlapAreas(MPINode& mpiNode) const;
+
+            /**
+             * @brief Squeezes 'rectangle' in all four directions according to the parameters and returns it.
+             * 
+             * @param rectacgle const Rectangle<int>&
+             * @param squeezeTop const int&
+             * @param squeezeBottom const int&
+             * @param squeezeLeft const int&
+             * @param squeezeRight const int&
+             * @return Rectangle<int> 
+             */
+            Rectangle<int> squeezeRectangle(const Rectangle<int>& rectangle, const int& squeezeTop, const int& squeezeBottom, const int& squeezeLeft, const int& squeezeRight) const;
+
+            /**
+             * @brief Generate inner sub overlap areas for 'mpiNode'.
+             * 
+             * @param mpiNode MPINode&
+             */
+            void generateInnerSubOverlapAreas(MPINode& mpiNode) const;
+
+            /**
+             * @brief Fills up the 'mpiNode'.innerSubOverlapsNeighbours list with the neighbouring sub overlaps to 'neighbourNode'.
+             * 
+             * @param mpiNode MPINode&
+             * @param neighbourID const int&
+             * @param neighbourNode const MPINode&
+             */
+            void generateInnerSubOverlapNeighbours(MPINode& mpiNode, const int& neighbourID, const MPINode& neighbourNode) const;
 
             /**
              * @brief Fills the own structures with the information in 'mpiNodeInfo'.
              * 
-             * @param mpiNodeInfo const MPINodeToSend&
+             * @param mpiNodeInfo const MPINode&
              */
             void fillOwnStructures(const MPINode& mpiNodeInfo);
 
@@ -285,6 +324,12 @@ namespace Engine
             void receiveRastersFromNode(const int& masterNodeID);
 
             /**
+             * @brief Stablishes boundaries (_boundaries member) for the node calling this method.
+             * 
+             */
+            void stablishBoundaries();
+
+            /**
              * @brief Adds into the _mpiNodeMap the partition <nodeId, partitions[neighbourIndex]>.
              * 
              * @param partitions const std::vector<Rectangle<int>>&
@@ -365,6 +410,61 @@ namespace Engine
              */
             void printNodeRasters() const;
 
+            /** RUN PUBLIC METHODS (INHERIT) **/
+
+            /**
+             * @brief Executes agents in the calling node inner-most area (_nodeSpace.ownedAreaWithoutInnerOverlap).
+             * 
+             */
+            void executeAgentsInInnerMostArea();
+
+            /**
+             * @brief Shuffles all the agents in 'agentsToExecute' and then call their executing methods. It uses OpenMP in case it has been stated so.
+             * 
+             * @param agentsToExecute const AgentsList&
+             */
+            void randomlyExecuteAgents(const AgentsList& agentsToExecute);
+
+            /**
+             * @brief Gathers all the agents inside 'areaToExecute', executes them in random order and leave them up-to-date in 'agentsList'.
+             * 
+             * @param areaToExecute const Rectangle<int>&
+             * @param agentsList AgentsList&
+             */
+            void executeAgentsInArea(const Rectangle<int>& areaToExecute, AgentsList& agentsList);
+
+            /**
+             * @brief Non-blockingly sends the agents in 'agentsList' to the corresponding neighbours of the overlap area identified by 'overlapAreaID'.
+             * 
+             * @param overlapAreaID const int&
+             * @param agentsList const AgentsList&
+             */
+            void sendGhostAgentsToNeighbours(const int& overlapAreaID, const AgentsList& agentsList);
+
+            /**
+             * @brief Non-blockingly receives agents from the other nodes.
+             * 
+             */
+            void receiveGhostAgents();
+
+            /**
+             * @brief Non-blockingly sends rasters to the other nodes.
+             * 
+             */
+            void sendRastersToNeighbours();
+
+            /**
+             * @brief Non-blockingly receives rasters from the other nodes.
+             * 
+             */
+            void receiveRasters();
+
+            /**
+             * @brief Waits for the send/receive messages to complete and free the communication buffers (in _sendRequests & _receiveRequests).
+             * 
+             */
+            void waitForMessagesToFinish();
+
         public:
 
             /** INITIALIZATION PUBLIC METHODS **/
@@ -395,19 +495,21 @@ namespace Engine
              */
             void assignLoadToMasterNode(const bool& loadToMasterNode);
 
+            /** INITIALIZATION PUBLIC METHODS (INHERIT) **/
+
             /**
              * @brief Initializes everything needed before creation of agents and rasters. 
              * 
              * @param argc Not used.
              * @param argv Not used.
              */
-            void init(int argc, char *argv[]);
+            void init(int argc, char *argv[]) override;
 
             /**
              * @brief Calls the creation of rasters and agents (in child) and initialize all the the data processes (MPI structures & partition of the space into nodes).
              * 
              */
-            void initData();
+            void initData() override;
 
             /** RUN PUBLIC METHODS (INHERIT) **/
 
@@ -415,27 +517,27 @@ namespace Engine
              * @brief Executes the agents and updates the world.
              * 
              */
-            void executeAgents();
+            void executeAgents() override;
 
             /**
              * @brief Executes needed after the simulation (e.g. finish communications for parallel nodes).
              * 
              */
-            void finish();
+            void finish() override;
 
             /**
              * @brief Get a random Point2D within the area owned by this node/scheduler
              * 
              * @return Point2D<int> 
              */
-            Point2D<int> getRandomPosition() const;
+            Point2D<int> getRandomPosition() const override;
 
             /**
              * @brief Get the wall time for the MPI scheduler.
              * 
              * @return double 
              */
-            double getWallTime() const;
+            double getWallTime() const override;
 
             size_t getNumberOfTypedAgents( const std::string & type ) const {}
             void removeAgents() {}

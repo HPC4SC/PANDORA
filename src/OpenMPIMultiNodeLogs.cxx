@@ -80,6 +80,23 @@ namespace Engine {
         }
         ss << std::endl;
 
+        ss << "Inner sub overlaps: " << std::endl;
+        for (std::map<int, Rectangle<int>>::const_iterator it = schedulerInstance._nodeSpace.innerSubOverlaps.begin(); it != schedulerInstance._nodeSpace.innerSubOverlaps.end(); ++it)
+        {
+            ss << "Overlap type: " << it->first << " " << it->second << std::endl;
+        }
+        ss << std::endl;
+
+        ss << "Inner sub overlaps neighbours: " << std::endl;
+        for (std::map<int, std::list<int>>::const_iterator it = schedulerInstance._nodeSpace.innerSubOverlapsNeighbours.begin(); it != schedulerInstance._nodeSpace.innerSubOverlapsNeighbours.end(); ++it)
+        {
+            ss << "Neighbours for sub overlap " << it->first << ": ";
+            for (std::list<int>::const_iterator it2 = it->second.begin(); it2 != it->second.end(); ++it2)
+                ss << *it2 << ", ";
+            ss << std::endl;
+        }
+        ss << std::endl;
+
         log_DEBUG(_logFileNames.at(schedulerInstance.getId()), ss.str());
     }
 
