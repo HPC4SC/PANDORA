@@ -50,7 +50,7 @@ namespace Engine
                 std::map<int, std::list<int>> innerSubOverlapsNeighbours;   //! Map<neighbouringNodeId, neighbouringNodeOuterOverlap>. Used for efficient agents and rasters communication.
             };
 
-            typedef std::map<std::string, std::map<int, AgentsList>> NeighbouringAgentsMap;
+            typedef std::map<int, std::map<std::string, AgentsList>> NeighbouringAgentsMap;
             typedef std::map<int, MPINode> MPINodesMap;
 
             friend class OpenMPIMultiNodeLogs;
@@ -61,7 +61,7 @@ namespace Engine
             LoadBalanceTree* _tree;
 
             MPINodesMap _mpiNodesMapToSend;                         //! Map<nodeId, nodeInformation> containing the leafs of _tree, where the 'value' field is now the 'ownedArea', and the IDs of the 'neighbours' are mapped with their coordinates.
-            NeighbouringAgentsMap _neighbouringAgents;              //! <agentsType, <nodeID, agentsList>> with the neighbouring agents, classified first by their types. Used to send/receive agents from master to the rest of the nodes.
+            NeighbouringAgentsMap _neighbouringAgents;              //! <nodeID, <agentsType, agentsList>> with the neighbouring agents, classified first by their belonging nodes. Used to send/receive agents from master to the rest of the nodes.
 
             /** Node own data structures (nodes0..n) **/
             MPINode _nodeSpace;                                     //! Areas of this node.
@@ -77,10 +77,11 @@ namespace Engine
 
             struct MpiRequest {
                 void* package;
+                int requestType;
                 MPI_Request request;
             };
             std::list<MpiRequest*> _sendRequests;
-            std::list<MpiRequest*> _receiveRequests;
+            //std::list<MpiRequest*> _receiveRequests;
 
             /** Other structures **/
             OpenMPIMultiNodeLogs* _schedulerLogs;
@@ -220,7 +221,7 @@ namespace Engine
              * @param currentNode const inst&
              * @param agentType const std::string&
              */
-            void sendAgentsToNodeByType(const AgentsList& agentsToSend, const int& currentNode, const std::string& agentType);
+            void sendAgentsToNodeByType(const AgentsList& agentsToSend, const int& currentNode, const std::string& agentType) const;
 
             /**
              * @brief Check whether 'agent' is within the 'agentsList'
@@ -238,6 +239,13 @@ namespace Engine
              * @return AgentsList::const_iterator 
              */
             AgentsList::const_iterator getAgentInWorldFromID(const std::string& agentID) const;
+
+            /**
+             * @brief Removes agents in the node's _world, based on their IDs.
+             * 
+             * @param agentIDsToRemove const std::list<std::string>&
+             */
+            void removeAgentsFromID(const std::list<std::string>& agentIDsToRemove);
 
             /**
              * @brief Keeps all the agents in the list 'agentsToKeep'. All the remaining agents of the simulation are discarded!
@@ -421,31 +429,55 @@ namespace Engine
             /**
              * @brief Shuffles all the agents in 'agentsToExecute' and then call their executing methods. It uses OpenMP in case it has been stated so.
              * 
-             * @param agentsToExecute const AgentsList&
+             * @param agentsToExecute AgentsVector&
              */
-            void randomlyExecuteAgents(const AgentsList& agentsToExecute);
+            void randomlyExecuteAgents(AgentsVector& agentsToExecute);
 
             /**
              * @brief Gathers all the agents inside 'areaToExecute', executes them in random order and leave them up-to-date in 'agentsList'.
              * 
              * @param areaToExecute const Rectangle<int>&
-             * @param agentsList AgentsList&
+             * @param agentsVector AgentsVector&
              */
-            void executeAgentsInArea(const Rectangle<int>& areaToExecute, AgentsList& agentsList);
+            void executeAgentsInArea(const Rectangle<int>& areaToExecute, AgentsVector& agentsVector);
+
+            /**
+             * @brief Initializes the passed-by-reference map 'agentsByNode'.
+             * 
+             * @param agentsByNode std::map<int, std::list<Agent*>>&
+             */
+            void initializeAgentsToSend(std::map<int, std::list<Agent*>>& agentsByNode) const;
+
+            /**
+             * @brief Sends a non-blocking request of 'data' typed as 'mpiDataType, to 'destinationNode', tagged with 'tag'.
+             * 
+             * @param data void*
+             * @param mpiDatatype const MPI_Datatype&
+             * @param destinationNode const int&
+             * @param tag const int&
+             */
+            void sendDataRequestToNode(void* data, const MPI_Datatype& mpiDatatype, const int& destinationNode, const int& tag);
+
+            /**
+             * @brief Sends agents in 'agentsToSend'. The corresponding node is indicated in the key of the map.
+             * 
+             * @param agentsToSend const std::map<int, std::list<Agent*>>&
+             */
+            void sendGhostAgentsInMap(const std::map<int, std::list<Agent*>>& agentsByNode);
 
             /**
              * @brief Non-blockingly sends the agents in 'agentsList' to the corresponding neighbours of the overlap area identified by 'overlapAreaID'.
              * 
              * @param overlapAreaID const int&
-             * @param agentsList const AgentsList&
+             * @param agentsVector const AgentsVector&
              */
-            void sendGhostAgentsToNeighbours(const int& overlapAreaID, const AgentsList& agentsList);
+            void sendGhostAgentsToNeighbours(const int& overlapAreaID, const AgentsVector& agentsVector);
 
             /**
              * @brief Non-blockingly receives agents from the other nodes.
              * 
              */
-            void receiveGhostAgents();
+            void receiveGhostAgentsFromAllNodes();
 
             /**
              * @brief Non-blockingly sends rasters to the other nodes.
@@ -460,10 +492,10 @@ namespace Engine
             void receiveRasters();
 
             /**
-             * @brief Waits for the send/receive messages to complete and free the communication buffers (in _sendRequests & _receiveRequests).
+             * @brief Waits for the send/receive messages to complete and free the communication buffers (in _sendRequests).
              * 
              */
-            void waitForMessagesToFinish();
+            void waitForMessagesToFinishAndClearRequests();
 
         public:
 
