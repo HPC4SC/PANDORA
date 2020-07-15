@@ -18,39 +18,41 @@ namespace Engine
     //! List of Mpi messages sent by the scheduler
     enum MpiMessageType
     {
-        eNumAgents = 1,
-        eAgent = 2,
-        eAgentTypeID = 11,
-        eNumberOfStaticRasters = 12,
-        eNumberOfDynamicRasters = 13,
-        eStaticRasterID = 14,
-        eStaticRasterName = 15,
-        eStaticRasterSerialize = 16,
-        eStaticRasterFileName = 17,
-        eDynamiRasterID = 18,
-        eDynamicRasterName = 19,
-        eDynamicRasterSerialize = 20,
-        eDynamicRasterMinValue = 21,
-        eDynamicRasterMaxValue = 22,
-        eDynamicRasterDefaultValue = 23,
+        eCoordinates = 1,
+        eNumNeighbours = 2,
+        eNeighbourID = 3,
+        eCoordinatesNeighbour = 4,
+
+        eNumTypes = 10,
+        eNumAgents = 11,
+        eAgent = 12,
+        eAgentTypeID = 13,
+
+        eNumberOfStaticRasters = 20,
+        eNumberOfDynamicRasters = 21,
+        eStaticRasterID = 22,
+        eStaticRasterName = 23,
+        eStaticRasterSerialize = 24,
+        eStaticRasterFileName = 25,
+        eDynamiRasterID = 26,
+        eDynamicRasterName = 27,
+        eDynamicRasterSerialize = 28,
+        eDynamicRasterMinValue = 29,
+        eDynamicRasterMaxValue = 30,
+        eDynamicRasterDefaultValue = 31,
+
+        eNumGhostAgents = 40,
+        eGhostAgentType = 41,
+        eGhostAgent = 42,
 
 
-        eNumGhostAgents = 3,
-        eGhostAgent = 4,
+
         eRasterData = 5,
         eRasterMaxData = 6,
         eVectorAttribute = 7,
         eSizeVector = 8,
         eNumModifiedAgents = 9,
         eModifiedAgent = 10
-    };
-
-    enum MpiMessageTypeSpaces
-    {
-        eCoordinates = 1,
-        eNumNeighbours = 2,
-        eNeighbourID = 3,
-        eCoordinatesNeighbour = 4
     };
 
     enum SubOverlapType

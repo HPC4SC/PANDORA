@@ -106,10 +106,10 @@ namespace Engine {
         ss << "NEIGHBOURING AGENTS PER TYPE:" << std::endl;
         for (OpenMPIMultiNode::NeighbouringAgentsMap::const_iterator it = schedulerInstance._neighbouringAgents.begin(); it != schedulerInstance._neighbouringAgents.end(); ++it)
         {
-            ss << "Type: " << it->first << std::endl;
-            for (std::map<int, AgentsList>::const_iterator it2 = it->second.begin(); it2 != it->second.end(); ++it2) 
+            ss << "Node: " << it->first << std::endl;
+            for (std::map<std::string, AgentsList>::const_iterator it2 = it->second.begin(); it2 != it->second.end(); ++it2) 
             {
-                ss << "\tNode: " << it2->first << std::endl;
+                ss << "\tType: " << it->first << std::endl;
                 ss << "\t  ";
                 for (AgentsList::const_iterator it3 = it2->second.begin(); it3 != it2->second.end(); ++it3)
                 {
@@ -117,7 +117,6 @@ namespace Engine {
                 }
                 ss << std::endl;
             }
-            ss << std::endl;
         }
 
         log_DEBUG(_logFileNames.at(schedulerInstance.getId()), ss.str());
