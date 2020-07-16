@@ -40,7 +40,7 @@ namespace Engine
 
         protected:
 
-            node<Rectangle<int>>* _root;            //! Tree used for the uneven partitioning of the space in _numTasks nodes.
+            node<Rectangle<int>>* _root;            //! Tree used for the uneven partitioning of the space in _numPartitions nodes.
 
             World* _world;                          //! Pointer to the World of the simulation
             int _numPartitions;                     //! Number of tasks in which the simulation should be split.
