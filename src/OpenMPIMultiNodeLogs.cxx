@@ -109,7 +109,7 @@ namespace Engine {
             ss << "Node: " << it->first << std::endl;
             for (std::map<std::string, AgentsList>::const_iterator it2 = it->second.begin(); it2 != it->second.end(); ++it2) 
             {
-                ss << "\tType: " << it->first << std::endl;
+                ss << "\tType: " << it2->first << std::endl;
                 ss << "\t  ";
                 for (AgentsList::const_iterator it3 = it2->second.begin(); it3 != it2->second.end(); ++it3)
                 {

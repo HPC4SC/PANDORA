@@ -37,6 +37,8 @@ namespace Engine
 
     class OpenMPIMultiNode : public Scheduler
     {
+        #define CreateStringStream(VALUE) static_cast<std::ostringstream&&>(std::ostringstream() << VALUE)
+
         public:
 
             struct MPINode {
@@ -87,6 +89,7 @@ namespace Engine
             OpenMPIMultiNodeLogs* _schedulerLogs;
 
             double _initialTime;                                    //! Initial running time.
+            std::list<std::string> _agentIDsToBeRemoved;            //! List containing the IDs of the agents that needs to be removed at the end of each step.
             //Serializer _serializer;                                 //! Serializer instance.
 
             /** INITIALIZATION PROTECTED METHODS **/
@@ -418,13 +421,7 @@ namespace Engine
              */
             void printNodeRasters() const;
 
-            /** RUN PUBLIC METHODS (INHERIT) **/
-
-            /**
-             * @brief Executes agents in the calling node inner-most area (_nodeSpace.ownedAreaWithoutInnerOverlap).
-             * 
-             */
-            void executeAgentsInInnerMostArea();
+            /** RUN PROTECTED METHODS (CALLED BY INHERIT METHODS) **/
 
             /**
              * @brief Shuffles all the agents in 'agentsToExecute' and then call their executing methods. It uses OpenMP in case it has been stated so.
@@ -442,11 +439,27 @@ namespace Engine
             void executeAgentsInArea(const Rectangle<int>& areaToExecute, AgentsVector& agentsVector);
 
             /**
+             * @brief Sends agents in 'agentsVector' and receives them, if it is necessary (i.e. if they are currently in some suboverlap area).
+             * 
+             * @param agentsVector const AgentsVector&
+             */
+            void synchronizeAgentsIfNecessary(const AgentsVector& agentsVector);
+
+            /**
              * @brief Initializes the passed-by-reference map 'agentsByNode'.
              * 
              * @param agentsByNode std::map<int, std::list<Agent*>>&
              */
             void initializeAgentsToSend(std::map<int, std::list<Agent*>>& agentsByNode) const;
+
+            /**
+             * @brief Gets the neighbour IDs of the suboverlap in which the agent currently is. If the agents has changed to another suboverlap, this method also adds the neighbours from the original suboverlap to the returned list (for removing purposes in the other nodes).
+             * 
+             * @param agent const Agent&
+             * @param originalSubOverlapAreaID const int&
+             * @return std::list<int> 
+             */
+            std::list<int> getNeighbourToSendAgent(const Agent& agent, const int& originalSubOverlapID) const;
 
             /**
              * @brief Sends a non-blocking request of 'data' typed as 'mpiDataType, to 'destinationNode', tagged with 'tag'.
@@ -466,12 +479,12 @@ namespace Engine
             void sendGhostAgentsInMap(const std::map<int, std::list<Agent*>>& agentsByNode);
 
             /**
-             * @brief Non-blockingly sends the agents in 'agentsList' to the corresponding neighbours of the overlap area identified by 'overlapAreaID'.
+             * @brief Non-blockingly sends the agents in 'agentsVector' to the corresponding neighbours of the overlap area identified by 'originalSubOverlapAreaID' and the suboverlap to which the agent has just moved to (currently is).
              * 
-             * @param overlapAreaID const int&
+             * @param originalSubOverlapAreaID const int&
              * @param agentsVector const AgentsVector&
              */
-            void sendGhostAgentsToNeighbours(const int& overlapAreaID, const AgentsVector& agentsVector);
+            void sendGhostAgentsToNeighbours(const int& originalSubOverlapAreaID, const AgentsVector& agentsVector);
 
             /**
              * @brief Non-blockingly receives agents from the other nodes.
@@ -496,6 +509,14 @@ namespace Engine
              * 
              */
             void waitForMessagesToFinishAndClearRequests();
+
+            /**
+             * @brief Gets the iterator pointing to the agent identified by 'agentID'.
+             * 
+             * @param agentID const std::string&
+             * @return AgentsList::const_iterator 
+             */
+            AgentsList::const_iterator getAgentIteratorFromID(const std::string& agentID);
 
         public:
 
@@ -572,9 +593,27 @@ namespace Engine
             double getWallTime() const override;
 
             size_t getNumberOfTypedAgents( const std::string & type ) const {}
-            void removeAgents() {}
-            void removeAgent(Agent* agent) {}
-            Agent* getAgent(const std::string& id) {}
+
+            /**
+             * @brief 
+             * 
+             */
+            void removeAgents();
+
+            /**
+             * @brief 
+             * 
+             * @param agent 
+             */
+            void removeAgent(Agent* agent);
+
+            /**
+             * @brief Get the agent identified by 'id'. It should be able to be seen by the calling MPI node (i.e. it should be an agent within _nodeSpace.ownedAreaWithOuterOverlaps). Otherwise, it returns an iterator pointing to _world->endAgents().
+             * 
+             * @param id const std::string.
+             * @return Agent*
+             */
+            Agent* getAgent(const std::string& id) override;
 
             /**
              * @brief Get the Agent object
@@ -586,7 +625,17 @@ namespace Engine
             AgentsVector getAgent(const Point2D<int>& position, const std::string& type = "all") override;
 
             int countNeighbours(Agent* target, const double& radius, const std::string& type) {}
-            AgentsVector getNeighbours(Agent* target, const double& radius, const std::string& type) {}
+
+            /**
+             * @brief Get the Neighbours object
+             * 
+             * @param target 
+             * @param radius 
+             * @param type 
+             * @return AgentsVector 
+             */
+            AgentsVector getNeighbours(Agent* target, const double& radius, const std::string& type) override;
+
             void addStringAttribute( const std::string& type, const std::string& key, const std::string& value) {}
             void addIntAttribute(const std::string& type, const std::string& key, int value) {}
             void addFloatAttribute(const std::string & type, const std::string& key, float value) {}
