@@ -105,7 +105,7 @@ namespace Engine
              */
             friend std::ostream & operator<<( std::ostream & stream, const Point2D<Type> & point )
             {
-                return stream << point._x << "/" << point._y;
+                return stream << "x=" << point._x << " y=" << point._y;
             }
 
             /**

@@ -161,14 +161,6 @@ namespace Engine
         virtual double getWallTime( ) const = 0;
 
         /**
-         * @brief Get the NumberOfTypedAgents. Must be implemented in the children.
-         * 
-         * @param type Type selected of Agent.
-         * @return size_t 
-         */
-        virtual size_t getNumberOfTypedAgents( const std::string & type ) const = 0;
-
-        /**
          * @brief Do anything needed after adding agent to the list of World _agents
          * 
          * @param agent Pointer of teh selected Agent.
@@ -229,6 +221,50 @@ namespace Engine
         virtual AgentsVector getNeighbours( Agent * target, const double & radius, const std::string & type ) = 0;
 
         /**
+         * @brief Get the NumberOfTypedAgents. Must be implemented in the children.
+         * 
+         * @param type Type selected of Agent.
+         * @return size_t 
+         */
+        virtual size_t getNumberOfTypedAgents( const std::string & type ) const = 0;
+
+        /**
+         * @brief Set the value of a concrete position. Must be implemented in child.
+         * 
+         * @param raster Raster to update.
+         * @param position Position to update.
+         * @param value New value of the position.
+         */
+        virtual void setValue( DynamicRaster & raster, const Point2D<int> & position, int value ) = 0;
+
+        /**
+         * @brief Get the value of a concrete position. Must be implemented in child.
+         * 
+         * @param raster Raster to check.
+         * @param position Position to check.
+         * @return int 
+         */
+        virtual int getValue( const DynamicRaster & raster, const Point2D<int> & position ) const = 0;
+
+        /**
+         * @brief Set the _maxValue of the position specified. Must be implemented in child.
+         * 
+         * @param raster Raster to update.
+         * @param position Position to change the _maxValue.
+         * @param value New maxValue.
+         */
+        virtual void setMaxValue( DynamicRaster & raster, const Point2D<int> & position, int value ) = 0;
+
+        /**
+         * @brief Get the _maxValue of the specified position. Must be implemented in child.
+         * 
+         * @param raster Raster to check.
+         * @param position Position to check.
+         * @return int 
+         */
+        virtual int getMaxValue( const DynamicRaster & raster, const Point2D<int> & position ) const = 0;
+
+        /**
          * @brief Calls the serializer to add an string attribute of an Agent. Must be implemented in child.
          * 
          * @param type Type of int value.
@@ -268,42 +304,6 @@ namespace Engine
          * @param step Current simulation time
          */
         virtual void serializeRasters( const int & step ) = 0;
-
-        /**
-         * @brief Set the value of a concrete position. Must be implemented in child.
-         * 
-         * @param raster Raster to update.
-         * @param position Position to update.
-         * @param value New value of the position.
-         */
-        virtual void setValue( DynamicRaster & raster, const Point2D<int> & position, int value ) = 0;
-
-        /**
-         * @brief Get the value of a concrete position. Must be implemented in child.
-         * 
-         * @param raster Raster to check.
-         * @param position Position to check.
-         * @return int 
-         */
-        virtual int getValue( const DynamicRaster & raster, const Point2D<int> & position ) const = 0;
-
-        /**
-         * @brief Set the _maxValue of the position specified. Must be implemented in child.
-         * 
-         * @param raster Raster to update.
-         * @param position Position to change the _maxValue.
-         * @param value New maxValue.
-         */
-        virtual void setMaxValue( DynamicRaster & raster, const Point2D<int> & position, int value ) = 0;
-
-        /**
-         * @brief Get the _maxValue of the specified position. Must be implemented in child.
-         * 
-         * @param raster Raster to check.
-         * @param position Position to check.
-         * @return int 
-         */
-        virtual int getMaxValue( const DynamicRaster & raster, const Point2D<int> & position ) const = 0;
 
         /**
          * @brief [Only implemented in MPI scheduler] Sets the _overlapSize member.

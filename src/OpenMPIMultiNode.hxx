@@ -26,6 +26,7 @@
 #include <Scheduler.hxx>
 #include <LoadBalanceTree.hxx>
 #include <OpenMPIMultiNodeLogs.hxx>
+#include <Serializer.hxx>
 
 #include <mpi.h>
 
@@ -37,7 +38,6 @@ namespace Engine
 
     class OpenMPIMultiNode : public Scheduler
     {
-        #define CreateStringStream(VALUE) static_cast<std::ostringstream&&>(std::ostringstream() << VALUE)
 
         public:
 
@@ -90,7 +90,8 @@ namespace Engine
 
             double _initialTime;                                    //! Initial running time.
             std::list<std::string> _agentIDsToBeRemoved;            //! List containing the IDs of the agents that needs to be removed at the end of each step.
-            //Serializer _serializer;                                 //! Serializer instance.
+
+            Serializer _serializer;                                 //! Serializer instance.
 
             /** INITIALIZATION PROTECTED METHODS **/
 
@@ -439,27 +440,11 @@ namespace Engine
             void executeAgentsInArea(const Rectangle<int>& areaToExecute, AgentsVector& agentsVector);
 
             /**
-             * @brief Sends agents in 'agentsVector' and receives them, if it is necessary (i.e. if they are currently in some suboverlap area).
-             * 
-             * @param agentsVector const AgentsVector&
-             */
-            void synchronizeAgentsIfNecessary(const AgentsVector& agentsVector);
-
-            /**
-             * @brief Initializes the passed-by-reference map 'agentsByNode'.
+             * @brief Initializes the passed-by-reference map 'agentsByNode', with the neighbouring nodes in the key, and an empty list in the value.
              * 
              * @param agentsByNode std::map<int, std::list<Agent*>>&
              */
             void initializeAgentsToSend(std::map<int, std::list<Agent*>>& agentsByNode) const;
-
-            /**
-             * @brief Gets the neighbour IDs of the suboverlap in which the agent currently is. If the agents has changed to another suboverlap, this method also adds the neighbours from the original suboverlap to the returned list (for removing purposes in the other nodes).
-             * 
-             * @param agent const Agent&
-             * @param originalSubOverlapAreaID const int&
-             * @return std::list<int> 
-             */
-            std::list<int> getNeighbourToSendAgent(const Agent& agent, const int& originalSubOverlapID) const;
 
             /**
              * @brief Sends a non-blocking request of 'data' typed as 'mpiDataType, to 'destinationNode', tagged with 'tag'.
@@ -479,18 +464,34 @@ namespace Engine
             void sendGhostAgentsInMap(const std::map<int, std::list<Agent*>>& agentsByNode);
 
             /**
+             * @brief Non-blockingly receives agents from the neighbouring nodes.
+             * 
+             */
+            void receiveGhostAgentsFromNeighbouringNodes();
+
+            /**
+             * @brief Sends agents in 'agentsVector' and receives them, if it is necessary (i.e. if they are currently in some suboverlap area).
+             * 
+             * @param agentsVector const AgentsVector&
+             */
+            void synchronizeAgentsIfNecessary(const AgentsVector& agentsVector);
+
+            /**
+             * @brief Gets the neighbour IDs of the suboverlap in which the agent currently is. If the agents has changed to another suboverlap, this method also adds the neighbours from the original suboverlap to the returned list (for removing purposes in the other nodes).
+             * 
+             * @param agent const Agent&
+             * @param originalSubOverlapAreaID const int&
+             * @return std::list<int> 
+             */
+            std::list<int> getNeighbourToSendAgent(const Agent& agent, const int& originalSubOverlapID) const;
+
+            /**
              * @brief Non-blockingly sends the agents in 'agentsVector' to the corresponding neighbours of the overlap area identified by 'originalSubOverlapAreaID' and the suboverlap to which the agent has just moved to (currently is).
              * 
              * @param originalSubOverlapAreaID const int&
              * @param agentsVector const AgentsVector&
              */
             void sendGhostAgentsToNeighbours(const int& originalSubOverlapAreaID, const AgentsVector& agentsVector);
-
-            /**
-             * @brief Non-blockingly receives agents from the other nodes.
-             * 
-             */
-            void receiveGhostAgentsFromAllNodes();
 
             /**
              * @brief Non-blockingly sends rasters to the other nodes.
@@ -592,8 +593,6 @@ namespace Engine
              */
             double getWallTime() const override;
 
-            size_t getNumberOfTypedAgents( const std::string & type ) const {}
-
             /**
              * @brief 
              * 
@@ -624,7 +623,15 @@ namespace Engine
              */
             AgentsVector getAgent(const Point2D<int>& position, const std::string& type = "all") override;
 
-            int countNeighbours(Agent* target, const double& radius, const std::string& type) {}
+            /**
+             * @brief Counts the total number of neighbours for the given parameters.
+             * 
+             * @param target Agent* target
+             * @param radius const double& radius
+             * @param type const std::string& type
+             * @return int 
+             */
+            int countNeighbours(Agent* target, const double& radius, const std::string& type) override;
 
             /**
              * @brief Get the Neighbours object
@@ -636,15 +643,106 @@ namespace Engine
              */
             AgentsVector getNeighbours(Agent* target, const double& radius, const std::string& type) override;
 
-            void addStringAttribute( const std::string& type, const std::string& key, const std::string& value) {}
-            void addIntAttribute(const std::string& type, const std::string& key, int value) {}
-            void addFloatAttribute(const std::string & type, const std::string& key, float value) {}
-            void serializeAgents(const int& step) {}
-            void serializeRasters(const int& step) {}
-            void setValue(DynamicRaster& raster, const Point2D<int>& position, int value) {}
-            int getValue(const DynamicRaster& raster, const Point2D<int>& position) const {}
-            void setMaxValue(DynamicRaster& raster, const Point2D<int>& position, int value) {}
-            int getMaxValue(const DynamicRaster& raster, const Point2D<int>& position) const {}
+            /**
+             * @brief Gets the total number of agents of 'type', updating the result in the different nodes.
+             * 
+             * @param type const std::string& type
+             * @return size_t 
+             */
+            size_t getNumberOfTypedAgents(const std::string& type) const override;
+
+            /**
+             * @brief Sets the value of the 'position' in the 'raster' object.
+             * 
+             * @param raster DynamicRaster&
+             * @param position const Point2D<int>&
+             * @param value int
+             */
+            void setValue(DynamicRaster& raster, const Point2D<int>& position, int value) override;
+
+            /**
+             * @brief Gets the value of the 'position' in the 'raster' object.
+             * 
+             * @param raster const DynamicRaster& raster
+             * @param position const Point2D<int>& position
+             * @return int 
+             */
+            int getValue(const DynamicRaster& raster, const Point2D<int>& position) const override;
+
+            /**
+             * @brief Sets the maximum value of the 'position' in the 'raster' object.
+             * 
+             * @param raster DynamicRaster& raster
+             * @param position const Point2D<int>& position
+             * @param value int value
+             */
+            void setMaxValue(DynamicRaster& raster, const Point2D<int>& position, int value) override;
+
+            /**
+             * @brief Gets the value of the 'position' in the 'raster' object.
+             * 
+             * @param raster const DynamicRaster&
+             * @param position const Point2D<int>&
+             * @return int 
+             */
+            int getMaxValue(const DynamicRaster& raster, const Point2D<int>& position) const override;
+
+            /** SERIALIZATION METHODS **/
+
+            /**
+             * @brief 
+             * 
+             * @param type 
+             * @param key 
+             * @param value 
+             */
+            void addStringAttribute(const std::string& type, const std::string& key, const std::string& value) override;
+
+            /**
+             * @brief 
+             * 
+             * @param type 
+             * @param key 
+             * @param value 
+             */
+            void addIntAttribute(const std::string& type, const std::string& key, int value) override;
+
+            /**
+             * @brief 
+             * 
+             * @param type 
+             * @param key 
+             * @param value 
+             */
+            void addFloatAttribute(const std::string & type, const std::string& key, float value) override;
+
+            /**
+             * @brief 
+             * 
+             * @param step 
+             */
+            void serializeAgents(const int& step) override;
+
+            /**
+             * @brief 
+             * 
+             * @param step 
+             */
+            void serializeRasters(const int& step) override;
+
+            /**
+             * @brief 
+             * 
+             * @return const Rectangle<int>& 
+             */
+            const Rectangle<int>& getOwnedArea() const;
+
+            /**
+             * @brief Gets the _overlapSize member.
+             * 
+             * @return const int&
+             */
+            const int& getOverlap() const;
 
     };
 

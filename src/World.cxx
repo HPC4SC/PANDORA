@@ -24,7 +24,6 @@
 #include <Exception.hxx>
 #include <Scheduler.hxx>
 #include <OpenMPIMultiNode.hxx>
-#include <SpacePartition.hxx>
 #include <OpenMPSingleNode.hxx>
 
 #include <GeneralState.hxx>
@@ -442,10 +441,10 @@ namespace Engine
         return new OpenMPIMultiNode();
     }
 
-    Scheduler * World::useSpacePartition( int overlap, bool finalize )
-    {
-        return new SpacePartition( overlap, finalize );
-    }
+    // Scheduler * World::useSpacePartition( int overlap, bool finalize )
+    // {
+    //     return new SpacePartition( overlap, finalize );
+    // }
 
     Scheduler * World::useOpenMPSingleNode( )
     {

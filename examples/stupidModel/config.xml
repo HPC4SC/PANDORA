@@ -2,11 +2,12 @@
 <config>  
 	<!-- Global simulation parameters -->
 	<output resultsFile="./data/stupidModel.h5" logsDir="./logs"/>
-	<numSteps value="200" serializeResolution="1"/>
+	<numSteps value="10" serializeResolution="1"/>
 	<seed value="1234"/>
-	<size width="100" height="100"/>
-	<seed value="1234"/>
-	<Bugs numBugs="300" maxFoodConsumption="10" initialBugSizeMean="1" initialBugSizeSD="0.7"/>
+	<overlapSizeMPI value="2"/>
+	<size width="14" height="14"/>
+	<Bugs numBugs="10" maxBugMovement="2" maxFoodConsumption="10" survivalProbability="95" initialBugSizeMean="1" initialBugSizeSD="0.7"/>
+	<Predators numPredators="0" maxPredatorHuntDistance="1"/>
 	<Raster maxFoodProduction = "1"/>
 </config>
 

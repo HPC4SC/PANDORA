@@ -18,7 +18,6 @@ set( PANDORA_FILES
      Serializer.cxx
      ShpLoader.cxx
      SimulationRecord.cxx
-     SpacePartition.cxx
      StaticRaster.cxx
      Statistics.cxx
      World.cxx

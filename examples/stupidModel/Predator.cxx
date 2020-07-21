@@ -6,7 +6,8 @@
 namespace Examples
 {
 
-Predator::Predator( const std::string & id ) : Agent(id){}
+Predator::Predator( const std::string & id, const int& maxPredatorHuntDistance) : Agent(id), _maxPredatorHuntDistance(maxPredatorHuntDistance)
+{}
 
 Predator::~Predator() {}
 
@@ -21,6 +22,10 @@ void Predator::selectActions() {
 	}
 }
 
+int Predator::getPredatorHuntDistance() const
+{
+	return _maxPredatorHuntDistance;
+}
 
 void Predator::updateState( ) {}
 void Predator::updateKnowledge( ) {}

@@ -39,7 +39,6 @@ namespace Engine
 {
 class Scheduler;
 class Agent;
-class SpacePartition;
 class OpenMPSingleNode;
 
 class World
@@ -602,7 +601,7 @@ public:
 	 * @param finalize If true will call MPI_Finalize at the end of run ( default behavior ).
 	 * @return Scheduler* 
 	 */
-    static Scheduler * useSpacePartition( int overlap = 1, bool finalize = true );
+    //static Scheduler * useSpacePartition( int overlap = 1, bool finalize = true );
     
     /**
 	 * @brief Factory method for sequential Scheduler without any non-shared communication mechanism, apt for being executed in a single computer.

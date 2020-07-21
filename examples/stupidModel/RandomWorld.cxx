@@ -35,27 +35,23 @@ void RandomWorld::createAgents() {
 
 	Engine::RNGNormal rngNormal(randomConfig.getSeed(), (double) randomConfig._initialBugSizeMean, (double) randomConfig._initialBugSizeSD);
 	for (int i = 0; i < randomConfig._numBugs; i++) {
-		if ((i%getNumTasks()) == getId()) {
 			std::ostringstream oss;
 			oss << "Bug_" << i;
 			double size = rngNormal.draw();
 			if (size < 0.0) size = 0.0; // checks that the in value of size is correct
-			Bug * bug = new Bug(oss.str(),randomConfig._bugMaxConsumptionRate,(int)size);
+			Bug * bug = new Bug(oss.str(), randomConfig._maxBugMovement, randomConfig._bugMaxConsumptionRate, randomConfig._survivalProbability, (int)size);
 			addAgent(bug);
 			bug->setRandomPosition();
 			// all of this steps are registered in the log files
 	        log_INFO(logName.str(), getWallTime() << " new bug: " << bug);
-		}
 	}
-	for (int i = 0; i < 500; i++) { // 200 predators are created and placed randomly
-		if ((i%getNumTasks()) == getId()) {
+	for (int i = 0; i < randomConfig._numPredators; i++) { // 200 predators are created and placed randomly
 			std::ostringstream oss;
 			oss << "Predator_" << i;
-			Predator * predator = new Predator(oss.str());
+			Predator * predator = new Predator(oss.str(), randomConfig._maxPredatorHuntDistance);
 			addAgent(predator);
 			predator->setRandomPosition();
 			log_INFO(logName.str(), getWallTime() << " new predator: " << predator);
-		}
 	}
 }
 
@@ -68,7 +64,7 @@ void RandomWorld::step() {
 	if (_step%_config->getSerializeResolution() == 0) {
 		_scheduler->serializeRasters(_step);
 		_scheduler->serializeAgents(_step);
-		log_DEBUG(logName.str(), getWallTime() << " step: " << step_ << " serialization done");
+		log_DEBUG(logName.str(), getWallTime() << " step: " << _step << " serialization done");
 	}
 	// first of all the updates of the raster are executed
 	stepEnvironment();
