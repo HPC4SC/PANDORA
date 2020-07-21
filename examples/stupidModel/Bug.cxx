@@ -10,7 +10,7 @@
 namespace Examples 
 {
 
-Bug::Bug( const std::string & id, const int &maxConsumptionRate, const int &size) : Agent(id),  _maxConsumptionRate(maxConsumptionRate), _size(size) 
+Bug::Bug( const std::string & id, const int& maxMovement, const int &maxConsumptionRate, const int& survivalProbability, const int &size) : Agent(id), _maxBugMovement(maxMovement), _maxConsumptionRate(maxConsumptionRate), _survivalProbability(survivalProbability), _size(size)
 {
 	this->_exists = true;
 }
@@ -50,6 +50,10 @@ int Bug::getSize() const {
 	return _size;
 }
 
+int Bug::getMaxMovement() const {
+	return _maxBugMovement;
+}
+
 int Bug::getMaxConsumptionRate() const {
 	return _maxConsumptionRate;
 }
@@ -59,7 +63,7 @@ int Bug::getSurvivalProbability() const {
 }
 
 void Bug::reproduce(const std::string &childId) {
-	Bug * child = new Bug(childId,this->_maxConsumptionRate,0);
+	Bug * child = new Bug(childId, this->_maxBugMovement, this->_maxConsumptionRate, this->_survivalProbability, 0);
 	// creation of a new agent
 	_world->addAgent(child);
 	bool colocat = false;

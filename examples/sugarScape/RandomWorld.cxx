@@ -39,19 +39,17 @@ void RandomWorld::createAgents()
 	const RandomWorldConfig & randomConfig = (const RandomWorldConfig&)getConfig();
 	// this loop creates the agents of the simulation and gives them random values for their attributes
 	for(int i = 0; i < randomConfig._numAgents; i++) {
-		if((i%getNumTasks())==getId()) {
-			std::ostringstream oss;
-			oss << "RandomAgent_" << i;
-			int wealth =  Engine::GeneralState::statistics().getUniformDistValue(randomConfig._minWealth,randomConfig._maxWealth);
-			int vision =  Engine::GeneralState::statistics().getUniformDistValue(randomConfig._minVision,randomConfig._maxVision);
-			int metabolicRate =  Engine::GeneralState::statistics().getUniformDistValue(randomConfig._minMr,randomConfig._maxMr);
-			int maxAge =  Engine::GeneralState::statistics().getUniformDistValue(randomConfig._minMAge,randomConfig._maxMAge);
-			RandomAgent * agent = new RandomAgent(oss.str(),wealth,vision,metabolicRate,0,maxAge);
-			addAgent(agent);
-			agent->setRandomPosition();
-			// when the agent is created this acction is regitered into the log files
-	        log_INFO(logName.str(), getWallTime() << " new agent: " << agent);
-		}
+		std::ostringstream oss;
+		oss << "RandomAgent_" << i;
+		int wealth =  Engine::GeneralState::statistics().getUniformDistValue(randomConfig._minWealth,randomConfig._maxWealth);
+		int vision =  Engine::GeneralState::statistics().getUniformDistValue(randomConfig._minVision,randomConfig._maxVision);
+		int metabolicRate =  Engine::GeneralState::statistics().getUniformDistValue(randomConfig._minMr,randomConfig._maxMr);
+		int maxAge =  Engine::GeneralState::statistics().getUniformDistValue(randomConfig._minMAge,randomConfig._maxMAge);
+		RandomAgent * agent = new RandomAgent(oss.str(),wealth,vision,metabolicRate,0,maxAge);
+		addAgent(agent);
+		agent->setRandomPosition();
+		// when the agent is created this acction is regitered into the log files
+		log_INFO(logName.str(), getWallTime() << " new agent: " << agent);
 	}
 }
 

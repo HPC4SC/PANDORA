@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
 		Examples::RandomWorld world(new Examples::RandomWorldConfig(fileName), world.useOpenMPIMultiNode());
 	
 		world.initialize(argc, argv);
-		world.setParallelism(true, false);
+		world.setParallelism(false, false);
 		world.run();
 	}
 	catch( std::exception & exceptionThrown ) 

@@ -27,12 +27,9 @@ void MoveAction::execute( Engine::Agent & agent ) {
 
 	// look around
 	Engine::Agent * p_agent = agent.getWorld()->getAgent(agent.getId());
-
 	Engine::AgentsVector flockmates = agent.getWorld()->getNeighbours(p_agent,birdAgent.getSigth(),"Bird");
-
 	// change heading
 	if (! flockmates.empty()) correctHeading(birdAgent,flockmates);
-
 	// go forward velocity cells in the heading direction
 	Engine::Point2D<int> newPosition = agent.getPosition();
 	int agentVelocity = birdAgent.getVelocity();

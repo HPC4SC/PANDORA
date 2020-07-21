@@ -31,8 +31,12 @@ namespace Engine
 
 class Exception : public std::exception
 {
+public:
+    #define CreateStringStream(VALUE) static_cast<std::ostringstream&&>(std::ostringstream() << VALUE)
+
 private:
     std::string _error; //! Error message of the exception.
+    
 public:
     /**
      * @brief Construct a new Exception.
