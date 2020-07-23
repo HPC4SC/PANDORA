@@ -375,10 +375,15 @@ namespace Engine
          */
         void changeType( const std::string & newType );
 
-
-        void pauseParallelization();
-
-        void resumeParallelization();
+        /**
+         * @brief Gets the weight for this agent. By default it is 1. Can be overriden in the concrete Agent classes, in order to return a different weight per class/per agent.
+         * 
+         * @return int 
+         */
+        virtual int getWeight() const
+        {
+            return 1;
+        }
 
     };
 } // namespace Engine

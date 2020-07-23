@@ -156,26 +156,24 @@ namespace Engine {
         }
     }
 
-    double LoadBalanceTree::getAgentWeight(const Agent& agent) const
+    double LoadBalanceTree::getAllAgentsWeight() const
     {
-        // Make a map<agentsId, agentsWeight> for more complex implementations
-        return 1;  // Simplest implementation
+        double totalWeight = 0;
+        for (AgentsList::iterator it = _world->beginAgents(); it != _world->endAgents(); ++it)
+        {
+            Agent* agent = it->get();
+            totalWeight += agent->getWeight();
+        }
+        return totalWeight;
     }
 
     double LoadBalanceTree::getAgentsWeight(const AgentsVector& agentsVector) const
     {
         double totalWeight = 0;
         for (int i = 0; i < agentsVector.size(); ++i) {
-            totalWeight += getAgentWeight(*agentsVector[i]);
+            Agent* agent = agentsVector[i].get();
+            totalWeight += agent->getWeight();
         }
-        return totalWeight;
-    }
-
-    double LoadBalanceTree::getAllAgentsWeight() const
-    {
-        double totalWeight = 0;
-        for (AgentsList::iterator it = _world->beginAgents(); it != _world->endAgents(); ++it)
-            totalWeight += getAgentWeight(*it->get());
         return totalWeight;
     }
 

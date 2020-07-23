@@ -45,7 +45,12 @@ namespace Engine {
         }
     }
 
-    void OpenMPIMultiNodeLogs::printPartitionsBeforeMPI(const OpenMPIMultiNode& schedulerInstance) const
+    void OpenMPIMultiNodeLogs::writeInDebugFile(const std::string& message, const OpenMPIMultiNode& schedulerInstance)
+    {
+        log_DEBUG(_logFileNames.at(schedulerInstance.getId()), message);
+    }
+
+    std::string OpenMPIMultiNodeLogs::getString_PartitionsBeforeMPI(const OpenMPIMultiNode& schedulerInstance) const
     {
         std::stringstream ss;
         ss << "TS = " << schedulerInstance.getWallTime() << ":" << std::endl;
@@ -63,10 +68,10 @@ namespace Engine {
             ss << std::endl;
         }
 
-        log_DEBUG(_logFileNames.at(schedulerInstance.getId()), ss.str());
+        return ss.str();
     }
 
-    void OpenMPIMultiNodeLogs::printOwnNodeStructureAfterMPI(const OpenMPIMultiNode& schedulerInstance) const
+    std::string OpenMPIMultiNodeLogs::getString_OwnNodeStructureAfterMPI(const OpenMPIMultiNode& schedulerInstance) const
     {
         std::stringstream ss;
         ss << "TS = " << schedulerInstance.getWallTime() << ":" << std::endl;
@@ -97,10 +102,10 @@ namespace Engine {
         }
         ss << std::endl;
 
-        log_DEBUG(_logFileNames.at(schedulerInstance.getId()), ss.str());
+        return ss.str();
     }
 
-    void OpenMPIMultiNodeLogs::printNeighbouringAgentsPerTypes(const OpenMPIMultiNode& schedulerInstance) const
+    std::string OpenMPIMultiNodeLogs::getString_NeighbouringAgentsPerTypes(const OpenMPIMultiNode& schedulerInstance) const
     {
         std::stringstream ss;
         ss << "NEIGHBOURING AGENTS PER TYPE:" << std::endl;
@@ -119,24 +124,27 @@ namespace Engine {
             }
         }
 
-        log_DEBUG(_logFileNames.at(schedulerInstance.getId()), ss.str());
+        return ss.str();
     }
     
-    void OpenMPIMultiNodeLogs::printNodeAgents(const OpenMPIMultiNode& schedulerInstance) const
+    std::string OpenMPIMultiNodeLogs::getString_NodeAgents(const OpenMPIMultiNode& schedulerInstance, const bool& fullDescription) const
     {
         std::stringstream ss;
         ss << "TS = " << schedulerInstance.getWallTime() << ":" << std::endl;
         ss << "NODE AGENTS:" << std::endl;
         for (AgentsList::const_iterator it = schedulerInstance._world->beginAgents(); it != schedulerInstance._world->endAgents(); ++it)
         {
-            ss << it->get()->getId() << ", ";
+            if (fullDescription)
+                ss << it->get() << std::endl;
+            else
+                ss << it->get()->getId() << ", ";
         }
         ss << std::endl;
 
-        log_DEBUG(_logFileNames.at(schedulerInstance.getId()), ss.str());
+        return ss.str();
     }
 
-    void OpenMPIMultiNodeLogs::printNodeRasters(const OpenMPIMultiNode& schedulerInstance) const
+    std::string OpenMPIMultiNodeLogs::getString_NodeRasters(const OpenMPIMultiNode& schedulerInstance) const
     {
         std::stringstream ss;
         ss << "TS = " << schedulerInstance.getWallTime() << ":" << std::endl;
@@ -164,9 +172,34 @@ namespace Engine {
             }
             ss << std::endl;
         }
-
         ss << std::endl;
-        log_DEBUG(_logFileNames.at(schedulerInstance.getId()), ss.str());
+
+        return ss.str();
+    }
+
+    void OpenMPIMultiNodeLogs::printPartitionsBeforeMPIInDebugFile(const OpenMPIMultiNode& schedulerInstance) const
+    {
+        log_DEBUG(_logFileNames.at(schedulerInstance.getId()), getString_PartitionsBeforeMPI(schedulerInstance));
+    }
+
+    void OpenMPIMultiNodeLogs::printOwnNodeStructureAfterMPIInDebugFile(const OpenMPIMultiNode& schedulerInstance) const
+    {
+        log_DEBUG(_logFileNames.at(schedulerInstance.getId()), getString_OwnNodeStructureAfterMPI(schedulerInstance));
+    }
+
+    void OpenMPIMultiNodeLogs::printNeighbouringAgentsPerTypesInDebugFile(const OpenMPIMultiNode& schedulerInstance) const
+    {
+        log_DEBUG(_logFileNames.at(schedulerInstance.getId()), getString_NeighbouringAgentsPerTypes(schedulerInstance));
+    }
+
+    void OpenMPIMultiNodeLogs::printNodeAgentsInDebugFile(const OpenMPIMultiNode& schedulerInstance, const bool& fullDescription) const
+    {
+        log_DEBUG(_logFileNames.at(schedulerInstance.getId()), getString_NodeAgents(schedulerInstance, fullDescription));
+    }
+
+    void OpenMPIMultiNodeLogs::printNodeRastersInDebugFile(const OpenMPIMultiNode& schedulerInstance) const
+    {
+        log_DEBUG(_logFileNames.at(schedulerInstance.getId()), getString_NodeRasters(schedulerInstance));
     }
 
     /** PROTECTED METHODS **/

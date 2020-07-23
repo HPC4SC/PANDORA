@@ -136,7 +136,7 @@ namespace Engine {
         createNodesInformationToSend();
 
         if (not arePartitionsSuitable()) {
-            throw Exception(CreateStringStream("[Process # " << getId() <<  "] Partitions not suitable. Maybe there are too many unnecessary MPI nodes for a small space, or the overlap size is too wide.").str());
+            throw Exception(CreateStringStream("[Process # " << getId() <<  "] Partitions not suitable. Maybe there are too many unnecessary MPI nodes for such a small space, or the overlap size is too wide.").str());
             exit(1);
         }
     }
@@ -675,27 +675,27 @@ namespace Engine {
 
     void OpenMPIMultiNode::printPartitionsBeforeMPI() const
     {
-        _schedulerLogs->printPartitionsBeforeMPI(*this);
+        _schedulerLogs->printPartitionsBeforeMPIInDebugFile(*this);
     }
 
     void OpenMPIMultiNode::printOwnNodeStructureAfterMPI() const
     {
-        _schedulerLogs->printOwnNodeStructureAfterMPI(*this);
+        _schedulerLogs->printOwnNodeStructureAfterMPIInDebugFile(*this);
     }
 
     void OpenMPIMultiNode::printNeighbouringAgentsPerTypes() const
     {
-        _schedulerLogs->printNeighbouringAgentsPerTypes(*this);
+        _schedulerLogs->printNeighbouringAgentsPerTypesInDebugFile(*this);
     }
     
     void OpenMPIMultiNode::printNodeAgents() const
     {
-        _schedulerLogs->printNodeAgents(*this);
+        _schedulerLogs->printNodeAgentsInDebugFile(*this);
     }
 
     void OpenMPIMultiNode::printNodeRasters() const
     {
-        _schedulerLogs->printNodeRasters(*this);
+        _schedulerLogs->printNodeRastersInDebugFile(*this);
     }
 
     /** RUN PROTECTED METHODS (CALLED BY INHERIT METHODS) **/
@@ -720,12 +720,22 @@ namespace Engine {
         }
     }
 
+    bool OpenMPIMultiNode::hasBeenExecuted(const std::string& agentID) const
+    {
+        return not (_executedAgentsInStep.find(agentID) == _executedAgentsInStep.end());
+    }
+
     void OpenMPIMultiNode::executeAgentsInArea(const Rectangle<int>& areaToExecute, AgentsVector& agentsVector)
     {
         for (AgentsList::const_iterator it = _world->beginAgents(); it != _world->endAgents(); ++it)
         {
             AgentPtr agentPtr = *it;
-            if (areaToExecute.contains(agentPtr->getPosition())) agentsVector.push_back(agentPtr);
+            std::string agentID = agentPtr.get()->getId();
+            if (not hasBeenExecuted(agentID) and areaToExecute.contains(agentPtr->getPosition())) 
+            {
+                _executedAgentsInStep.insert(agentID);
+                agentsVector.push_back(agentPtr);
+            }
         }
         randomlyExecuteAgents(agentsVector);
     }
@@ -806,9 +816,41 @@ std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTim
                 if (agentIt != _world->endAgents())
                     _world->eraseAgent(agentIt);
 
-                if (_nodeSpace.ownedAreaWithOuterOverlaps.contains(agent->getPosition())) 
+                if (_nodeSpace.ownedAreaWithOuterOverlaps.contains(agent->getPosition()))
+                {
                     _world->addAgent(agent, true);
+                    _executedAgentsInStep.insert(agent->getId());
+                }
             }
+        }
+    }
+
+    std::list<int> OpenMPIMultiNode::getNeighboursToSendAgent(const Agent& agent) const
+    {
+        std::list<int> resultingList = std::list<int>();
+
+        for (std::map<int, Rectangle<int>>::const_iterator it = _nodeSpace.innerSubOverlaps.begin(); it != _nodeSpace.innerSubOverlaps.end(); ++it)
+        {
+            int currentSubOverlapID = it->first;
+            Rectangle<int> subOverlapArea = it->second;
+
+            if (subOverlapArea.contains(agent.getPosition()))
+            {
+                resultingList = _nodeSpace.innerSubOverlapsNeighbours.at(currentSubOverlapID);
+                break;
+            }
+        }
+
+        return resultingList;
+    }
+
+    void OpenMPIMultiNode::addSubOverlapNeighboursToList(std::list<int>& subOverlapNeighboursIDs, const int& subOverlapID) const
+    {
+        if (subOverlapID >= 1 and subOverlapID <= eNumberOfSubOverlaps)
+        {
+            std::list<int> originalSubOverlapNeighbourList = _nodeSpace.innerSubOverlapsNeighbours.at(subOverlapID);
+            subOverlapNeighboursIDs.insert(subOverlapNeighboursIDs.end(), originalSubOverlapNeighbourList.begin(), originalSubOverlapNeighbourList.end());
+            subOverlapNeighboursIDs.unique();
         }
     }
 
@@ -822,59 +864,34 @@ std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTim
         {
             Agent* agent = itAgent->get();
 
-            for (std::map<int, Rectangle<int>>::const_iterator itSubOverlap = _nodeSpace.innerSubOverlaps.begin(); itSubOverlap != _nodeSpace.innerSubOverlaps.end(); ++itSubOverlap)
+            if (agent->exists())
             {
-                int subOverlapID = itSubOverlap->first;
-                Rectangle<int> subOverlapArea = itSubOverlap->second;
-                if (subOverlapArea.contains(agent->getPosition()))
+                std::list<int> subOverlapNeighboursIDs = getNeighboursToSendAgent(*agent);
+                for (std::list<int>::const_iterator itNeighbourNodeID = subOverlapNeighboursIDs.begin(); itNeighbourNodeID != subOverlapNeighboursIDs.end(); ++itNeighbourNodeID)
                 {
-                    std::list<int> subOverlapNeighbours = _nodeSpace.innerSubOverlapsNeighbours.at(subOverlapID);
-                    for (std::list<int>::const_iterator itNeighbours = subOverlapNeighbours.begin(); itNeighbours != subOverlapNeighbours.end(); ++itNeighbours)
-                    {
-                        int neighbourID = *itNeighbours;
-                        agentsByNode.at(neighbourID).push_back(agent);
-                    }
-                    break;
+                    int neighbourID = *itNeighbourNodeID;
+                    agentsByNode.at(neighbourID).push_back(agent);
                 }
             }
         }
+
         sendGhostAgentsInMap(agentsByNode);
         receiveGhostAgentsFromNeighbouringNodes();
     }
 
-    std::list<int> OpenMPIMultiNode::getNeighbourToSendAgent(const Agent& agent, const int& originalSubOverlapID) const
-    {
-        for (std::map<int, Rectangle<int>>::const_iterator it = _nodeSpace.innerSubOverlaps.begin(); it != _nodeSpace.innerSubOverlaps.end(); ++it)
-        {
-            int currentSubOverlapID = it->first;
-            Rectangle<int> subOverlapArea = it->second;
-
-            if (subOverlapArea.contains(agent.getPosition()))
-            {
-                std::list<int> resultingList = _nodeSpace.innerSubOverlapsNeighbours.at(currentSubOverlapID);
-                if (currentSubOverlapID != originalSubOverlapID)
-                {
-                    std::list<int> originalSubOverlapNeighbourList = _nodeSpace.innerSubOverlapsNeighbours.at(originalSubOverlapID);
-                    resultingList.insert(resultingList.end(), originalSubOverlapNeighbourList.begin(), originalSubOverlapNeighbourList.end());
-                    resultingList.unique();
-                }
-                return resultingList;
-            }
-        }
-    }
-
-    void OpenMPIMultiNode::sendGhostAgentsToNeighbours(const int& originalSubOverlapAreaID, const AgentsVector& agentsVector)
+    void OpenMPIMultiNode::sendGhostAgentsToNeighbours(const AgentsVector& agentsVector, const int& originalSubOverlapAreaID)
     {
         std::map<int, std::list<Agent*>> agentsByNode;
 
         initializeAgentsToSend(agentsByNode);
 
-        for (int i = 0; i < agentsVector.size(); ++i)
+        for (AgentsVector::const_iterator itAgent = agentsVector.begin(); itAgent != agentsVector.end(); ++itAgent)
         {
-            Agent* agent = agentsVector[i].get();
+            Agent* agent = itAgent->get();
 
-            std::list<int> neighbourIDsToSend = getNeighbourToSendAgent(*agent, originalSubOverlapAreaID);
-            for (std::list<int>::const_iterator itNeighbourNodeID = neighbourIDsToSend.begin(); itNeighbourNodeID != neighbourIDsToSend.end(); ++itNeighbourNodeID)
+            std::list<int> subOverlapNeighboursIDs = getNeighboursToSendAgent(*agent);
+            addSubOverlapNeighboursToList(subOverlapNeighboursIDs, originalSubOverlapAreaID);
+            for (std::list<int>::const_iterator itNeighbourNodeID = subOverlapNeighboursIDs.begin(); itNeighbourNodeID != subOverlapNeighboursIDs.end(); ++itNeighbourNodeID)
             {
                 int neighbourNodeID = *itNeighbourNodeID;
                 agentsByNode.at(neighbourNodeID).push_back(agent);
@@ -925,53 +942,56 @@ std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTim
 
     void OpenMPIMultiNode::executeAgents()
     {
-        //usleep(getId() * 1000000);
+        _executedAgentsInStep.clear();
+usleep(getId() * 1000000);
 
-        // std::stringstream ss;
-        // ss << "[Process # " << getId() <<  "]";
-        // for (AgentsList::const_iterator it = _world->beginAgents(); it != _world->endAgents(); ++it)
-        // {
-        //     ss << it->get() << std::endl;
-        // }
-        // ss << std::endl;
-        // std::cout << ss.str();
+_schedulerLogs->writeInDebugFile(CreateStringStream("AGENTS AT STEP " << _world->getCurrentStep() << "; ORIGINAL AGENTS:").str(), *this);
+_schedulerLogs->printNodeAgentsInDebugFile(*this, true);
 
-        AgentsVector executedAgents;
-std::cout << CreateStringStream("[Process # " << getId() <<  "] " << getWallTime() << " executing agents\n").str();
-        executeAgentsInArea(_nodeSpace.ownedAreaWithoutInnerOverlap, executedAgents);
+if (_world->getCurrentStep() == 1) exit(0);
+        AgentsVector executedAgentsInArea;
+        executeAgentsInArea(_nodeSpace.ownedAreaWithoutInnerOverlap, executedAgentsInArea);
+        synchronizeAgentsIfNecessary(executedAgentsInArea);
+        MPI_Barrier(MPI_COMM_WORLD);
 
-        // std::stringstream ss2;
-        // ss2 << "[Process # " << getId() <<  "]";
-        // for (AgentsList::const_iterator it = _world->beginAgents(); it != _world->endAgents(); ++it)
-        // {
-        //     ss2 << it->get() << std::endl;
-        // }
-        // ss2 << std::endl;
-        // std::cout << ss2.str();
+_schedulerLogs->writeInDebugFile(CreateStringStream("AGENTS AT STEP " << _world->getCurrentStep() << "; INNER_MOST EXECUTED:").str(), *this);
+_schedulerLogs->printNodeAgentsInDebugFile(*this, true);
+
+std::cout << CreateStringStream("\n").str();
+usleep(1000000);
+
+        for (std::map<int, Rectangle<int>>::const_iterator it = _nodeSpace.innerSubOverlaps.begin(); it != _nodeSpace.innerSubOverlaps.end(); ++it)
+        {
+            int originalSubOverlapAreaID = it->first;
+            Rectangle<int> originalOverlapArea = it->second;
+
+usleep(getId() * 1000000);
+
+            executedAgentsInArea.clear();
+std::cout << CreateStringStream("[Process # " << getId() <<  "] " << getWallTime() << " executing agents in suboverlap #" << originalSubOverlapAreaID << "\n").str();
+            executeAgentsInArea(originalOverlapArea, executedAgentsInArea);
 
 std::cout << CreateStringStream("[Process # " << getId() <<  "] " << getWallTime() << " agents executed -> synchronizing\n").str();
-        synchronizeAgentsIfNecessary(executedAgents);
+            sendGhostAgentsToNeighbours(executedAgentsInArea, originalSubOverlapAreaID);
+            receiveGhostAgentsFromNeighbouringNodes();
+
+_schedulerLogs->writeInDebugFile(CreateStringStream("AGENTS AT STEP " << _world->getCurrentStep() << "; AFTER OVERLAP: " << originalSubOverlapAreaID).str(), *this);
+_schedulerLogs->printNodeAgentsInDebugFile(*this, true);
+
 std::cout << CreateStringStream("[Process # " << getId() <<  "] " << getWallTime() << " agents synchronized\n").str();
+std::cout << CreateStringStream("[Process # " << getId() <<  "]\n").str();
 
-        // for (std::map<int, Rectangle<int>>::const_iterator it = _nodeSpace.innerSubOverlaps.begin(); it != _nodeSpace.innerSubOverlaps.end(); ++it)
-        // {
-        //     int originalSubOverlapAreaID = it->first;
-        //     Rectangle<int> originalOverlapArea = it->second;
-
-        //     AgentsVector executedAgents;
-        //     executeAgentsInArea(originalOverlapArea, executedAgents);
-
-        //     sendGhostAgentsToNeighbours(originalSubOverlapAreaID, executedAgents);
-        //     receiveGhostAgentsFromNeighbouringNodes();
-
+// std::cout << CreateStringStream("[Process # " << getId() <<  "]\n").str();
         //     sendRastersToNeighbours();
         //     MPI_Barrier(MPI_COMM_WORLD);  // Needed if synchronized?¿
         //     receiveRasters();
 
         //     waitForMessagesToFinishAndClearRequests();
-        // }
         MPI_Barrier(MPI_COMM_WORLD);
-        exit(0);
+
+std::cout << CreateStringStream("\n").str();
+usleep(1000000);
+        }
     }
     
     void OpenMPIMultiNode::finish() 
@@ -993,8 +1013,14 @@ std::cout << CreateStringStream("[Process # " << getId() <<  "] " << getWallTime
 
     void OpenMPIMultiNode::removeAgents()
     {
-        removeAgentsFromID(_agentIDsToBeRemoved);
-        _agentIDsToBeRemoved.clear();
+        std::list<std::string> agentIDsToBeRemoved;
+        for (AgentsList::const_iterator it = _world->beginAgents(); it != _world->endAgents(); ++it)
+        {
+            Agent* agent = it->get();
+            if (not agent->exists()) agentIDsToBeRemoved.push_back(agent->getId());
+        }
+
+        removeAgentsFromID(agentIDsToBeRemoved);
     }
 
     void OpenMPIMultiNode::removeAgent(Agent* agent)
@@ -1002,8 +1028,6 @@ std::cout << CreateStringStream("[Process # " << getId() <<  "] " << getWallTime
         AgentsList::const_iterator agentIt = getAgentIteratorFromID(agent->getId());
         if (agentIt == _world->endAgents())
             throw Exception(CreateStringStream("[Process # " << getId() <<  "] OpenMPIMultiNode::removeAgent(id) - agent: " << agentIt->get()->getId() << " not found.\n").str());
-        
-        _agentIDsToBeRemoved.push_back(agentIt->get()->getId());
     }
 
     Agent* OpenMPIMultiNode::getAgent(const std::string& id)
