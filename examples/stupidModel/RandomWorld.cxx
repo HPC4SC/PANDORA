@@ -23,6 +23,14 @@ void RandomWorld::createRasters() {
 	// the raster of the food is created and initialized with value 0 and maximum value 100
 	registerDynamicRaster("food", true);
 	getDynamicRaster("food").setInitValues(0,100,0);
+	for (int i = 0; i < randomConfig.getSize().getHeight(); ++i)
+	{
+		for (int j = 0; j < randomConfig.getSize().getWidth(); ++j)
+		{
+			Engine::Point2D<int> point = Engine::Point2D<int>(i, j);
+			getDynamicRaster("food").setValue(point, std::abs(j-i));
+		}
+	}
 	// the attribute _maxFoodProduction with the in value
 	setMaxProductionRate(randomConfig._maxFoodProduction);
 }

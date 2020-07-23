@@ -111,12 +111,11 @@ namespace Engine
             void destroyTree(node<Rectangle<int>>* leaf);
 
             /**
-             * @brief Gets the weight of the 'agent'.
+             * @brief Get the weight of all the agents in the simulation.
              * 
-             * @param agent const Agent&
-             * @return double
+             * @return double 
              */
-            double getAgentWeight(const Agent& agent) const;
+            double getAllAgentsWeight() const;
 
             /**
              * @brief Gets the total weight of the agents in 'agentsVector'.
@@ -125,13 +124,6 @@ namespace Engine
              * @return double
              */
             double getAgentsWeight(const AgentsVector& agentsVector) const;
-
-            /**
-             * @brief Get the weight of all the agents in the simulation.
-             * 
-             * @return double 
-             */
-            double getAllAgentsWeight() const;
 
             /**
              * @brief Get the total agents weight that appear in cell <row, column>

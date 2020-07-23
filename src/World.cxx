@@ -175,7 +175,7 @@ namespace Engine
 
     void World::stepRaster( const int & index  )
     {
-        // Only do this when incremental rasters¿?
+        // Only do this when incremental rasters?
         //( (DynamicRaster* ) _rasters.at( index ))->updateRasterIncrement( ); 
     }
 
@@ -245,7 +245,9 @@ namespace Engine
     bool World::checkPosition( const Point2D<int> & newPosition ) const
     {
         // checking size: if environment is a border of the real world
-        if ( !getBoundaries( ).contains( newPosition ))
+        int totalWidth = _config->getSize().getWidth();
+        int totalHeight = _config->getSize().getHeight();
+        if (newPosition.getX() < 0 or newPosition.getY() < 0 or newPosition.getX() >= totalWidth or newPosition.getY() >= totalHeight)
         {
             return false;
         }

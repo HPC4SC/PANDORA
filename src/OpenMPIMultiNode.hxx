@@ -28,6 +28,7 @@
 #include <OpenMPIMultiNodeLogs.hxx>
 #include <Serializer.hxx>
 
+#include <set>
 #include <mpi.h>
 
 namespace Engine
@@ -47,9 +48,8 @@ namespace Engine
                 Rectangle<int> ownedAreaWithOuterOverlaps;                  //! Area of this node with    outer (other nodes) overlaps.
                 std::map<int, MPINode*> neighbours;                         //! Map<neighbouringNodeId, neighbouringNodeSpaces> containing the neighbours information for communication.
 
-                std::map<int, Rectangle<int>> innerSubOverlaps;             //! Sub areas of the inner overlap (should be 8 in total). <subAreaID, area>, where subAreaID = Engine::SubOverlapType enum.
-                //std::map<int, Rectangle<int>> neighboursInnerOverlap;     //! Map<neighbouringNodeId, neighbouringNodeInnerOverlap>. Used for efficient agents and rasters communication.
-                std::map<int, std::list<int>> innerSubOverlapsNeighbours;   //! Map<neighbouringNodeId, neighbouringNodeOuterOverlap>. Used for efficient agents and rasters communication.
+                std::map<int, Rectangle<int>> innerSubOverlaps;             //! Sub-overlaps (Sub areas of the inner overlap). Should be 8 in total. Map<subOverlapID, subOverlapArea>, where subOverlapID = Engine::SubOverlapType enum.
+                std::map<int, std::list<int>> innerSubOverlapsNeighbours;   //! Sub-overlaps neighbouring nodes. Map<subOverlapID, list<nodeID>>. Used for efficient agents and rasters communication.
             };
 
             typedef std::map<int, std::map<std::string, AgentsList>> NeighbouringAgentsMap;
@@ -66,7 +66,9 @@ namespace Engine
             NeighbouringAgentsMap _neighbouringAgents;              //! <nodeID, <agentsType, agentsList>> with the neighbouring agents, classified first by their belonging nodes. Used to send/receive agents from master to the rest of the nodes.
 
             /** Node own data structures (nodes0..n) **/
-            MPINode _nodeSpace;                                     //! Areas of this node.
+            MPINode _nodeSpace;                                     //! Areas and neighbours information for this node.
+
+            std::set<std::string> _executedAgentsInStep;            //! Set containing the IDs of the agents that have been already executed in the current step.
 
             /** MPI Data Structures **/
             int _masterNodeID;                                      //! ID of the master node. Used for communication.
@@ -89,7 +91,6 @@ namespace Engine
             OpenMPIMultiNodeLogs* _schedulerLogs;
 
             double _initialTime;                                    //! Initial running time.
-            std::list<std::string> _agentIDsToBeRemoved;            //! List containing the IDs of the agents that needs to be removed at the end of each step.
 
             Serializer _serializer;                                 //! Serializer instance.
 
@@ -152,7 +153,7 @@ namespace Engine
             Rectangle<int> squeezeRectangle(const Rectangle<int>& rectangle, const int& squeezeTop, const int& squeezeBottom, const int& squeezeLeft, const int& squeezeRight) const;
 
             /**
-             * @brief Generate inner sub overlap areas for 'mpiNode'.
+             * @brief Generate inner sub-overlap areas for 'mpiNode'.
              * 
              * @param mpiNode MPINode&
              */
@@ -432,6 +433,14 @@ namespace Engine
             void randomlyExecuteAgents(AgentsVector& agentsToExecute);
 
             /**
+             * @brief Checks whether agent identified by 'agentID' is in set _executedAgentsInStep.
+             * 
+             * @param agentID const std::string&
+             * @return bool
+             */
+            bool hasBeenExecuted(const std::string& agentID) const;
+
+            /**
              * @brief Gathers all the agents inside 'areaToExecute', executes them in random order and leave them up-to-date in 'agentsList'.
              * 
              * @param areaToExecute const Rectangle<int>&
@@ -470,6 +479,22 @@ namespace Engine
             void receiveGhostAgentsFromNeighbouringNodes();
 
             /**
+             * @brief Adds the neighbours of sub-overlap 'subOverlapID' to the passed-by-ref list 'subOverlapNeighboursIDs'. 'subOverlapID' needs to be between [1,eNumberOfSubOverlaps].
+             * 
+             * @param subOverlapNeighboursIDs 
+             * @param subOverlapID 
+             */
+            void addSubOverlapNeighboursToList(std::list<int>& subOverlapNeighboursIDs, const int& subOverlapID) const;
+
+            /**
+             * @brief Gets the neighbour IDs of the suboverlap in which the agent currently is.
+             * 
+             * @param agent const Agent&
+             * @return std::list<int> 
+             */
+            std::list<int> getNeighboursToSendAgent(const Agent& agent) const;
+
+            /**
              * @brief Sends agents in 'agentsVector' and receives them, if it is necessary (i.e. if they are currently in some suboverlap area).
              * 
              * @param agentsVector const AgentsVector&
@@ -477,21 +502,12 @@ namespace Engine
             void synchronizeAgentsIfNecessary(const AgentsVector& agentsVector);
 
             /**
-             * @brief Gets the neighbour IDs of the suboverlap in which the agent currently is. If the agents has changed to another suboverlap, this method also adds the neighbours from the original suboverlap to the returned list (for removing purposes in the other nodes).
-             * 
-             * @param agent const Agent&
-             * @param originalSubOverlapAreaID const int&
-             * @return std::list<int> 
-             */
-            std::list<int> getNeighbourToSendAgent(const Agent& agent, const int& originalSubOverlapID) const;
-
-            /**
              * @brief Non-blockingly sends the agents in 'agentsVector' to the corresponding neighbours of the overlap area identified by 'originalSubOverlapAreaID' and the suboverlap to which the agent has just moved to (currently is).
              * 
-             * @param originalSubOverlapAreaID const int&
              * @param agentsVector const AgentsVector&
+             * @param originalSubOverlapAreaID const int&
              */
-            void sendGhostAgentsToNeighbours(const int& originalSubOverlapAreaID, const AgentsVector& agentsVector);
+            void sendGhostAgentsToNeighbours(const AgentsVector& agentsVector, const int& originalSubOverlapAreaID);
 
             /**
              * @brief Non-blockingly sends rasters to the other nodes.
