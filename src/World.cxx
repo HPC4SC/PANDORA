@@ -113,6 +113,20 @@ namespace Engine
         log_EDEBUG( logName.str( ), "agent: " << agent << " added at time step: " << getCurrentTimeStep( ) );
     }
 
+    void World::updateAgentsCurrentStepOriginalPositions() const
+    {
+        for (AgentsList::const_iterator it = _agents.begin(); it != _agents.end(); ++it)
+        {
+            Agent* agent = it->get();
+            agent->setCurrentStepOriginalPosition(agent->getPosition());
+        }
+    }
+
+    void World::engineStep()
+    {
+        updateAgentsCurrentStepOriginalPositions();
+    }
+
     void World::step( )
     {
         std::stringstream logName;
@@ -142,7 +156,8 @@ namespace Engine
 
         for ( _step=0; _step<_config->getNumSteps( ); _step++ )
         {
-            step( );
+            engineStep();
+            step();
         }
         // storing last step data
         if ( _step%_config->getSerializeResolution( )==0 )

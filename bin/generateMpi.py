@@ -228,6 +228,23 @@ def writeFillPackage(f, agentName, attributesMap):
     f.write('\n')
     return None
 
+def writeComparator(f, agentName, parent, attributesMap):
+    f.write('bool ' + agentName + '::hasTheSameAttributes(const ' + parent + '& other) const\n')
+    f.write('{\n')
+    f.write('\tif (not ' + parent + '::hasTheSameAttributes(other)) return false;\n')
+    f.write('\n')
+    f.write('\tconst ' + agentName + '& otherCastedToBug = static_cast<const ' + agentName + '&>(other);\n')
+    f.write('\n')
+    f.write('\treturn')
+    firstAttribute = True
+    for nameAttribute, typeAttribute in attributesMap.items():
+        if not firstAttribute:
+            f.write(' and\n\t\t')
+        f.write('\t' + nameAttribute + ' == otherCastedToBug.' + nameAttribute)
+        firstAttribute = False
+    f.write(';\n')
+    f.write('}\n')
+    return None
 
 def writeConstructor(f, agentName, parent, attributesMap):
     f.write(
@@ -288,7 +305,7 @@ def writeVectorAttributesPassing(f, agentName, vectorAttributesMap):
         f.write('\n')
     f.write('}\n')
     f.write('\n')
-
+    return None
 
 def createMpiCode(agentName, source, header, namespace, parent, attributesMap, vectorAttributesMap):
     print '\t\tcreating mpi file: mpiCode/' + agentName + '_mpi.cxx for agent: ' + agentName + ' in namespace: ' + namespace + ' with parent: ' + parent + ' from source: ' + source + ' and header: ' + header
@@ -307,6 +324,7 @@ def createMpiCode(agentName, source, header, namespace, parent, attributesMap, v
         f.write('\n')
     writeFillPackage(f, agentName, attributesMap)
     writeConstructor(f, agentName, parent, attributesMap)
+    writeComparator(f, agentName, parent, attributesMap)
     writeVectorAttributesPassing(f, agentName, vectorAttributesMap);
     if namespace != "":
         f.write('} // namespace ' + namespace + '\n')
@@ -414,6 +432,7 @@ def checkHeader(agentName, headerName):
             fTmp.write('\t////////////////////////////////////////////////\n')
             fTmp.write('\t' + agentName + '( void * );\n')
             fTmp.write('\tvoid * fillPackage();\n')
+            fTmp.write('\tbool hasTheSameAttributes(const Engine::Agent&) const override;\n')
             fTmp.write('\tvoid sendVectorAttributes(int);\n')
             fTmp.write('\tvoid receiveVectorAttributes(int);\n')
             fTmp.write('\t////////////////////////////////////////////////\n')
