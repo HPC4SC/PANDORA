@@ -80,6 +80,7 @@ namespace Engine
             MPI_Datatype* _coordinatesDatatype;                     //! Own MPI Datatype used to send/receive the coordinates of a node.
 
             struct MpiRequest {
+                int packageID;
                 void* package;
                 int requestType;
                 MPI_Request request;
@@ -453,7 +454,7 @@ namespace Engine
              * 
              * @param agentsByNode std::map<int, std::list<Agent*>>&
              */
-            void initializeAgentsToSend(std::map<int, std::list<Agent*>>& agentsByNode) const;
+            void initializeAgentsToSendMap(std::map<int, std::list<Agent*>>& agentsByNode) const;
 
             /**
              * @brief Sends a non-blocking request of 'data' typed as 'mpiDataType, to 'destinationNode', tagged with 'tag'.
@@ -479,15 +480,16 @@ namespace Engine
             void receiveGhostAgentsFromNeighbouringNodes();
 
             /**
-             * @brief Adds the neighbours of sub-overlap 'subOverlapID' to the passed-by-ref list 'subOverlapNeighboursIDs'. 'subOverlapID' needs to be between [1,eNumberOfSubOverlaps].
+             * @brief Gets the neighbours from 'potentialNeighbours' that contains the 'agentPosition'.
              * 
-             * @param subOverlapNeighboursIDs 
-             * @param subOverlapID 
+             * @param potentialNeighbours const std::list<int>&
+             * @param agentPosition const Point2D<int>& 
+             * @return std::list<int> 
              */
-            void addSubOverlapNeighboursToList(std::list<int>& subOverlapNeighboursIDs, const int& subOverlapID) const;
+            std::list<int> getRealNeighboursForAgent(const std::list<int>& potentialNeighbours, const Point2D<int>& agentPosition) const;
 
             /**
-             * @brief Gets the neighbour IDs of the suboverlap in which the agent currently is.
+             * @brief Gets the neighbouring node IDs that the agent should be sent to (by its current position).
              * 
              * @param agent const Agent&
              * @return std::list<int> 
@@ -500,6 +502,15 @@ namespace Engine
              * @param agentsVector const AgentsVector&
              */
             void synchronizeAgentsIfNecessary(const AgentsVector& agentsVector);
+
+            /**
+             * @brief Checks neighbours of sub-overlap 'subOverlapID', and add to the passed-by-ref list 'subOverlapNeighboursIDs' only those that contains the 'agentPosition'. 'subOverlapID' needs to be between [1,eNumberOfSubOverlaps].
+             * 
+             * @param subOverlapNeighboursIDs 
+             * @param subOverlapID 
+             * @param agentPosition const Point2D<int>&
+             */
+            void addSubOverlapNeighboursToList(std::list<int>& subOverlapNeighboursIDs, const int& subOverlapID, const Point2D<int>& agentPosition) const;
 
             /**
              * @brief Non-blockingly sends the agents in 'agentsVector' to the corresponding neighbours of the overlap area identified by 'originalSubOverlapAreaID' and the suboverlap to which the agent has just moved to (currently is).
@@ -525,7 +536,7 @@ namespace Engine
              * @brief Waits for the send/receive messages to complete and free the communication buffers (in _sendRequests).
              * 
              */
-            void waitForMessagesToFinishAndClearRequests();
+            void clearRequests();
 
             /**
              * @brief Gets the iterator pointing to the agent identified by 'agentID'.

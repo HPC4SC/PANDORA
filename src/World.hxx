@@ -76,7 +76,19 @@ protected:
     void updateRasterToMaxValues( const int & index );
 
     /**
-     * @brief Dumps current state of the simulation. Then applies next simulation step.
+     * @brief Updates the _currentStepOriginalPosition member for all the current agents of *this World.
+     * 
+     */
+    void updateAgentsCurrentStepOriginalPositions() const;
+
+    /**
+     * @brief Runs all the needed internal modifications at the beginning of each step. Cannot be overriden by the simulation.
+     * 
+     */
+    void engineStep();
+
+    /**
+     * @brief Dumps current state of the simulation into the log files. Then applies next simulation step. Can be overriden by the model.
      * 
      */
     virtual void step( );

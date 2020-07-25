@@ -29,13 +29,15 @@ public:
 	
 	void updateState( );
 	void updateKnowledge( );
-	
+
+
 	////////////////////////////////////////////////
 	// This code has been automatically generated //
 	/////// Please do not modify it ////////////////
 	////////////////////////////////////////////////
 	Predator( void * );
 	void * fillPackage();
+	bool hasTheSameAttributes(const Engine::Agent&) const override;
 	void sendVectorAttributes(int);
 	void receiveVectorAttributes(int);
 	////////////////////////////////////////////////

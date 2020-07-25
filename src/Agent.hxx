@@ -49,6 +49,7 @@ namespace Engine
         std::string _id; //! Agent identifier.
         bool _exists; //! Flag to control if agent is "dead" or "alive". it is used in analyzer in order to know if agent must be painted.
         Point2D<int> _position; //! Position of the agent, in global coordinates.
+        Point2D<int> _currentStepOriginalPosition; //! Position in the current step 'i', not 'i+1'. NOT TO BE USED BY THE MODELS!
         World * _world; //! Pointer to the world that owns this agent.
 
         std::list<Action*> _actions; //! list of actions to be executed by the Agent.
@@ -157,11 +158,18 @@ namespace Engine
         void setExists( bool exists );
 
         /**
-         * @brief get the position of the Agent.
+         * @brief get the _position of the Agent.
          * 
          * @return const Point2D<int>& 
          */
         const Point2D<int> & getPosition( ) const;
+
+        /**
+         * @brief Gets the _currentStepOriginalPosition member of the Agent.
+         * 
+         * @return const Point2D<int>& 
+         */
+        const Point2D<int>& getCurrentStepOriginalPosition() const;
 
         /**
          * @brief set the position attribute.
@@ -169,6 +177,12 @@ namespace Engine
          * @param position new value of the position attribute.
          */
         void setPosition( const Point2D<int> & position );
+
+        /**
+         * @brief Sets the _currentStepOriginalPosition member.
+         * 
+         */
+        void setCurrentStepOriginalPosition(const Point2D<int>& currentStepOriginalPosition);
 
         /**
          * @brief delete the Agent from world.
@@ -233,6 +247,24 @@ namespace Engine
         {
             return agent->print( os );
         }
+
+        /**
+         * @brief Comparison operator overload.
+         * 
+         * @param other const Agent&
+         * @return bool
+         */
+        bool operator==(const Agent& other) const;
+
+        /**
+         * @brief Checks whether 'this' object has the exact same class attributes than 
+         * 
+         * @param other 
+         * @return true 
+         * @return false 
+         */
+        virtual bool hasTheSameAttributes(const Agent& other) const;
+
 
         /**
          * @brief Checks whether the _id member of 'this' object is equal to the one passed by parameter ('agent').
@@ -305,7 +337,7 @@ namespace Engine
          * @return void* 
          */
         virtual void * fillPackage( ) = 0;
-        
+
         /**
          * @brief sends the registered vector attributes of an Agent.
          * 

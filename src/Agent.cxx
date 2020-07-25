@@ -35,7 +35,7 @@
 namespace Engine
 {
 
-Agent::Agent( const std::string & id ) : _id( id ), _exists( true ), _position( -1, -1 ), _world( 0 )
+Agent::Agent( const std::string & id ) : _id( id ), _exists( true ), _position( -1, -1 ), _currentStepOriginalPosition(-1, -1), _world( 0 )
 {
     _stringAttributes.push_back( "id" );
     _intAttributes.push_back( "x" );
@@ -72,14 +72,24 @@ World & Agent::getWorldRef( )
     return *_world;
 }
 
+const Point2D<int> & Agent::getPosition( ) const
+{
+    return _position;
+}
+
+const Point2D<int>& Agent::getCurrentStepOriginalPosition() const
+{
+    return _currentStepOriginalPosition;
+}
+
 void Agent::setPosition( const Point2D<int> & position )
 {
     _position = position;
 }
 
-const Point2D<int> & Agent::getPosition( ) const
+void Agent::setCurrentStepOriginalPosition(const Point2D<int>& currentStepOriginalPosition)
 {
-    return _position;
+    _currentStepOriginalPosition = currentStepOriginalPosition;
 }
 
 void Agent::serializeAttribute( const std::string & name, const int & value )
@@ -110,6 +120,23 @@ bool Agent::exists( ) const
 void Agent::setExists( bool exists )
 {
     _exists = exists;
+}
+
+bool Agent::operator==(const Agent& other) const
+{
+    if (typeid(*this) != typeid(other)) return false;
+    return hasTheSameAttributes(other);
+}
+
+bool Agent::hasTheSameAttributes(const Agent& other) const
+{
+    return  _intAttributes == other._intAttributes and
+            _floatAttributes == other._floatAttributes and
+            _stringAttributes == other._stringAttributes and
+            _id == other._id and
+            _exists == other._exists and
+            _position == other._position and
+            _world->getId() == other._world->getId();
 }
 
 std::ostream& Agent::print( std::ostream& os ) const {
