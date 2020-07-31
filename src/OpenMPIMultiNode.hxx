@@ -55,6 +55,9 @@ namespace Engine
             typedef std::map<int, std::map<std::string, AgentsList>> NeighbouringAgentsMap;
             typedef std::map<int, MPINode> MPINodesMap;
 
+            typedef std::list<std::pair<Point2D<int>, int>> ListOfPositionAndValue;
+            typedef std::map<int, ListOfPositionAndValue> ListOfValuesByRaster;
+
             friend class OpenMPIMultiNodeLogs;
 
         protected:
@@ -69,6 +72,7 @@ namespace Engine
             MPINode _nodeSpace;                                     //! Areas and neighbours information for this node.
 
             std::set<std::string> _executedAgentsInStep;            //! Set containing the IDs of the agents that have been already executed in the current step.
+            ListOfValuesByRaster _sentRastersInStep;                //! <rasterIndex, list<rasterPosition,positionValue>>. Map containing the list of already sent positions in the current step, by raster.
 
             /** MPI Data Structures **/
             int _masterNodeID;                                      //! ID of the master node. Used for communication.
@@ -427,6 +431,12 @@ namespace Engine
             /** RUN PROTECTED METHODS (CALLED BY INHERIT METHODS) **/
 
             /**
+             * @brief Performs everything that is needed to save the state of agents and rasters among sub-overlap processing chunks.
+             * 
+             */
+            void initializeAgentsAndRastersState();
+
+            /**
              * @brief Shuffles all the agents in 'agentsToExecute' and then call their executing methods. It uses OpenMP in case it has been stated so.
              * 
              * @param agentsToExecute AgentsVector&
@@ -519,6 +529,37 @@ namespace Engine
              * @param originalSubOverlapAreaID const int&
              */
             void sendGhostAgentsToNeighbours(const AgentsVector& agentsVector, const int& originalSubOverlapAreaID);
+
+            /**
+             * @brief Initializes the passed-by-reference map 'rasterValuesByNode', with the neighbouring nodes in the key, and an map in the value, which contains in turn the rasterIndex in the key, and a list of empty pair<position,value> in the value which are the modified values.
+             * 
+             * @param rasterValuesByNode const std::map<int, std::map<int, std::list<std::pair<Point2D<int>, int>>>>&
+             */
+            void initializeRasterValuesToSendMap(std::map<int, ListOfValuesByRaster>& rasterValuesByNode);
+
+            /**
+             * @brief Checks whether 'point' is inside the outer or inner overlap of the node calling this function.
+             * 
+             * @param point const Point2D<int>&
+             * @return bool
+             */
+            bool isInOverlapArea(const Point2D<int>& point);
+
+            /**
+             * @brief Check whether 'positionToCheck' has changed since the last time rasters were sent to neighbours.
+             * 
+             * @param positionToCheck const Point2D<int>&
+             * @param raster const DynamicRaster&
+             * @return bool
+             */
+            bool hasPositionChangedInRaster(const Point2D<int>& positionToCheck, const DynamicRaster& raster);
+
+            /**
+             * @brief Sends rasters in 'rasterValuesByNode'. Check 'initializeRasterValuesToSendMap(...)' documentation to know what is exactly the map.
+             * 
+             * @param rasterValuesByNode std::map<int, std::map<int, std::list<std::pair<Point2D<int>, int>>>>&
+             */
+            void sendRasterValuesInMap(const std::map<int, ListOfValuesByRaster>& rasterValuesByNode);
 
             /**
              * @brief Non-blockingly sends rasters to the other nodes.

@@ -35,7 +35,7 @@
 namespace Engine
 {
 
-Agent::Agent( const std::string & id ) : _id( id ), _exists( true ), _position( -1, -1 ), _currentStepOriginalPosition(-1, -1), _world( 0 )
+Agent::Agent( const std::string & id ) : _id( id ), _exists( true ), _position( -1, -1 ), _world( 0 )
 {
     _stringAttributes.push_back( "id" );
     _intAttributes.push_back( "x" );
@@ -77,19 +77,14 @@ const Point2D<int> & Agent::getPosition( ) const
     return _position;
 }
 
-const Point2D<int>& Agent::getCurrentStepOriginalPosition() const
+const Point2D<int>& Agent::getDiscretePosition() const
 {
-    return _currentStepOriginalPosition;
+    return _discretePosition;
 }
 
 void Agent::setPosition( const Point2D<int> & position )
 {
     _position = position;
-}
-
-void Agent::setCurrentStepOriginalPosition(const Point2D<int>& currentStepOriginalPosition)
-{
-    _currentStepOriginalPosition = currentStepOriginalPosition;
 }
 
 void Agent::serializeAttribute( const std::string & name, const int & value )
@@ -140,7 +135,7 @@ bool Agent::hasTheSameAttributes(const Agent& other) const
 }
 
 std::ostream& Agent::print( std::ostream& os ) const {
-    os << "id: " << getId( ) << " pos: " << getPosition( ) << " exists: " << exists( );
+    os << "id: " << getId( ) << " pos: " << getPosition( ) << " discrete pos: " << getDiscretePosition() << " exists: " << exists( );
     return getWorld( ) ? os << " at world: " << getWorld( )->getId( ) : os << " without world";
 }
 
@@ -195,6 +190,11 @@ void Agent::changeType( const std::string & type )
     std::string oldType = getType( );
     size_t startPos = _id.find( oldType );
     _id.replace( startPos, oldType.length( ), type );
+}
+
+void Agent::copyContinuousValuesToDiscreteOnes()
+{
+    _discretePosition = _position;
 }
 
 } // namespace Engine

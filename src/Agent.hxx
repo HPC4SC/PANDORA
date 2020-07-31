@@ -48,8 +48,8 @@ namespace Engine
         
         std::string _id; //! Agent identifier.
         bool _exists; //! Flag to control if agent is "dead" or "alive". it is used in analyzer in order to know if agent must be painted.
-        Point2D<int> _position; //! Position of the agent, in global coordinates.
-        Point2D<int> _currentStepOriginalPosition; //! Position in the current step 'i', not 'i+1'. NOT TO BE USED BY THE MODELS!
+        Point2D<int> _position; //! Up-to-date position of the agent, in global coordinates.
+        Point2D<int> _discretePosition; //! Position in the current step 'i', not 'i+1'. Only updated at the beginning of each step.
         World * _world; //! Pointer to the world that owns this agent.
 
         std::list<Action*> _actions; //! list of actions to be executed by the Agent.
@@ -165,24 +165,18 @@ namespace Engine
         const Point2D<int> & getPosition( ) const;
 
         /**
-         * @brief Gets the _currentStepOriginalPosition member of the Agent.
+         * @brief Gets the _discretePosition of the Agent.
          * 
          * @return const Point2D<int>& 
          */
-        const Point2D<int>& getCurrentStepOriginalPosition() const;
+        const Point2D<int>& getDiscretePosition() const;
 
         /**
-         * @brief set the position attribute.
+         * @brief Sets the _position attribute.
          * 
          * @param position new value of the position attribute.
          */
         void setPosition( const Point2D<int> & position );
-
-        /**
-         * @brief Sets the _currentStepOriginalPosition member.
-         * 
-         */
-        void setCurrentStepOriginalPosition(const Point2D<int>& currentStepOriginalPosition);
 
         /**
          * @brief delete the Agent from world.
@@ -416,6 +410,12 @@ namespace Engine
         {
             return 1;
         }
+
+        /**
+         * @brief Updates the member _discretePosition, copying all values in _position to it.
+         * 
+         */
+        void copyContinuousValuesToDiscreteOnes();
 
     };
 } // namespace Engine

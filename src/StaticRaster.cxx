@@ -73,6 +73,7 @@ bool StaticRaster::operator==( const StaticRaster& other ) const {
     return _minValue == other._minValue &&
            _maxValue == other._maxValue &&
            _values == other._values &&
+           _discreteValues == other._discreteValues &&
            _hasColorTable == other._hasColorTable &&
            _colorTable == other._colorTable;
 }
@@ -85,9 +86,14 @@ void StaticRaster::resize( const Size<int> & size )
 {
     _values.resize( size._width );
     for ( int i=0; i<size._width; i++ )
-    {
         _values[i].resize( size._height );
-    }
+}
+
+void StaticRaster::resizeDiscrete(const Size<int>& size)
+{
+    _discreteValues.resize(size._width);
+    for ( int i=0; i<size._width; i++ )
+        _discreteValues[i].resize(size._height);
 }
 
 const int & StaticRaster::getValue( const Point2D<int>& position ) const
@@ -105,6 +111,23 @@ const int & StaticRaster::getValue( const Point2D<int>& position ) const
         throw Exception( oss.str( ) );
     }
     return _values[position._x][position._y];
+}
+
+const int& StaticRaster::getDiscreteValue(const Point2D<int>& position) const
+{
+    if ( position._x<0 || position._x>=_discreteValues.size( ) )
+    {
+        std::stringstream oss;
+        oss << "StaticRaster::getDiscreteValue - " << position << " x out of bounds: " << _discreteValues.size( );
+        throw Exception( oss.str( ) );
+    }
+    if ( position._y<0 || position._y>=_discreteValues[position._x].size( ) )
+    {
+        std::stringstream oss;
+        oss << "StaticRaster::getDiscreteValue - " << position << " y out of bounds: " << _discreteValues.size( ) << "/" << _discreteValues[position._x].size( );
+        throw Exception( oss.str( ) );
+    }
+    return _discreteValues[position._x][position._y];
 }
 
 Size<int> StaticRaster::getSize( ) const
@@ -126,24 +149,34 @@ const int & StaticRaster::getMaxValue( ) const
     return _maxValue;
 }
 
-float StaticRaster::getAvgValue( ) const
+float StaticRaster::getAvgValueBase(const std::vector<std::vector<int>>& matrixOfValues) const
 {
-    if ( _values.size( )==0 )
+    if ( matrixOfValues.size( )==0 )
     {
         return 0.0f;
     }
     float norm = 0.0f;
     float avg = 0.0f;
 
-    for ( size_t i=0; i<_values.size( ); i++ )
+    for ( size_t i=0; i<matrixOfValues.size( ); i++ )
     {
-        for ( size_t j=0; j<_values[i].size( ); j++ )
+        for ( size_t j=0; j<matrixOfValues[i].size( ); j++ )
         {
             norm += 1.0;
-            avg += _values[i][j];
+            avg += matrixOfValues[i][j];
         }
     }
     return avg / norm;
+}
+
+float StaticRaster::getAvgValue( ) const
+{
+    return getAvgValueBase(_values);
+}
+
+float StaticRaster::getAvgValueDiscrete() const
+{
+    return getAvgValueBase(_discreteValues);
 }
 
 void StaticRaster::updateMinMaxValues( )
@@ -199,6 +232,11 @@ int StaticRaster::getNumColorEntries( ) const
     return _colorTable.size( );
 }
 
+bool StaticRaster::hasColorTable( ) const
+{
+    return _hasColorTable;
+}
+
 ColorEntry StaticRaster::getColorEntry( int index ) const
 {
     if ( !_hasColorTable )
@@ -216,9 +254,15 @@ ColorEntry StaticRaster::getColorEntry( int index ) const
     return _colorTable.at( index );
 }
 
-bool StaticRaster::hasColorTable( ) const
+void StaticRaster::copyContinuousValuesToDiscreteOnes()
 {
-    return _hasColorTable;
+    for (int i = 0; i < _values.size(); ++i)
+    {
+        for (int j = 0; j < _values[i].size(); ++j)
+        {
+            _discreteValues[i][j] = _values[i][j];
+        }
+    }
 }
 
 } // namespace Engine

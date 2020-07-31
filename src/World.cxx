@@ -113,18 +113,25 @@ namespace Engine
         log_EDEBUG( logName.str( ), "agent: " << agent << " added at time step: " << getCurrentTimeStep( ) );
     }
 
-    void World::updateAgentsCurrentStepOriginalPositions() const
+    void World::updateDiscreteStateStructures() const
     {
         for (AgentsList::const_iterator it = _agents.begin(); it != _agents.end(); ++it)
         {
             Agent* agent = it->get();
-            agent->setCurrentStepOriginalPosition(agent->getPosition());
+            agent->copyContinuousValuesToDiscreteOnes();
+        }
+
+        for (int i = 0; i < _rasters.size(); ++i)
+        {
+            StaticRaster* raster = _rasters[i];
+            raster->resizeDiscrete(raster->getSize()); 
+            raster->copyContinuousValuesToDiscreteOnes();
         }
     }
 
     void World::engineStep()
     {
-        updateAgentsCurrentStepOriginalPositions();
+        updateDiscreteStateStructures();
     }
 
     void World::step( )

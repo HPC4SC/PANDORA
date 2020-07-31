@@ -702,6 +702,18 @@ namespace Engine {
 
     /** RUN PROTECTED METHODS (CALLED BY INHERIT METHODS) **/
 
+    void OpenMPIMultiNode::initializeAgentsAndRastersState()
+    {
+        _executedAgentsInStep.clear();
+        _sentRastersInStep.clear();
+
+        for (int rasterIndex = 0; rasterIndex < _world->getNumberOfRasters(); ++rasterIndex)
+        {
+            if (_world->rasterExists(rasterIndex) and _world->isRasterDynamic(rasterIndex))
+                _sentRastersInStep[rasterIndex] = ListOfPositionAndValue();
+        }
+    }
+
     void OpenMPIMultiNode::randomlyExecuteAgents(AgentsVector& agentsToExecute)
     {
         std::random_shuffle(agentsToExecute.begin(), agentsToExecute.end());
@@ -905,7 +917,6 @@ std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTim
     void OpenMPIMultiNode::sendGhostAgentsToNeighbours(const AgentsVector& agentsVector, const int& originalSubOverlapAreaID)
     {
         std::map<int, std::list<Agent*>> agentsByNode;
-
         initializeAgentsToSendMap(agentsByNode);
 
         for (AgentsVector::const_iterator itAgent = agentsVector.begin(); itAgent != agentsVector.end(); ++itAgent)
@@ -913,7 +924,7 @@ std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTim
             Agent* agent = itAgent->get();
 
             std::list<int> subOverlapNeighboursIDs = getNeighboursToSendAgent(*agent);
-            addSubOverlapNeighboursToList(subOverlapNeighboursIDs, originalSubOverlapAreaID, agent->getCurrentStepOriginalPosition());  // For other nodes removing reasons
+            addSubOverlapNeighboursToList(subOverlapNeighboursIDs, originalSubOverlapAreaID, agent->getDiscretePosition());  // For other nodes removing reasons
             for (std::list<int>::const_iterator itNeighbourNodeID = subOverlapNeighboursIDs.begin(); itNeighbourNodeID != subOverlapNeighboursIDs.end(); ++itNeighbourNodeID)
             {
                 int neighbourNodeID = *itNeighbourNodeID;
@@ -924,9 +935,122 @@ std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTim
         sendGhostAgentsInMap(agentsByNode);
     }
 
-    void OpenMPIMultiNode::sendRastersToNeighbours()
+    void OpenMPIMultiNode::initializeRasterValuesToSendMap(std::map<int, ListOfValuesByRaster>& rasterValuesByNode)
+    {
+        for (std::map<int, MPINode*>::const_iterator it = _nodeSpace.neighbours.begin(); it != _nodeSpace.neighbours.end(); ++it)
+        {
+            int neighbourID = it->first;
+
+            if (neighbourID == _masterNodeID and not _assignLoadToMasterNode) continue;
+            rasterValuesByNode[neighbourID] = std::map<int, ListOfPositionAndValue>();
+
+            for (int i = 0; i < _world->getNumberOfRasters(); ++i)
+            {
+                if (_world->rasterExists(i) and _world->isRasterDynamic(i))
+                    rasterValuesByNode[neighbourID][i] = ListOfPositionAndValue();
+            }
+        }
+    }
+
+    bool OpenMPIMultiNode::isInOverlapArea(const Point2D<int>& point)
+    {
+        return _nodeSpace.ownedAreaWithOuterOverlaps.contains(point) and not _nodeSpace.ownedAreaWithoutInnerOverlap.contains(point);
+    }
+
+    bool OpenMPIMultiNode::hasPositionChangedInRaster(const Point2D<int>& positionToCheck, const DynamicRaster& raster)
+    {
+        int rasterIndex = raster.getID();
+        if (_sentRastersInStep.find(rasterIndex) != _sentRastersInStep.end())
+        {
+            int continuousValue = raster.getValue(positionToCheck);
+            for (ListOfPositionAndValue::const_iterator it = _sentRastersInStep.at(rasterIndex).begin(); it != _sentRastersInStep.at(rasterIndex).end(); ++it)
+            {
+                Point2D<int> position = it->first;
+                int lastKnownValue = it->second;
+
+                if (position == positionToCheck)
+                {
+                    if (continuousValue != lastKnownValue) return true;
+                    else return false;
+                }
+            }
+
+            // If position not found, need to check against it discrete value (initial value at the beginning of the current step):
+            int discreteValue = raster.getDiscreteValue(positionToCheck);
+            if (continuousValue != discreteValue) return true;
+        }
+        return false;
+    }
+
+    void OpenMPIMultiNode::sendRasterValuesInMap(const std::map<int, ListOfValuesByRaster>& rasterValuesByNode)
     {
 
+    }
+
+    void OpenMPIMultiNode::sendRastersToNeighbours()
+    {
+        std::map<int, ListOfValuesByRaster> rastersValuesByNode;
+        initializeRasterValuesToSendMap(rastersValuesByNode);
+
+        for (int rasterIndex = 0; rasterIndex < _world->getNumberOfRasters(); ++rasterIndex)
+        {
+            if (_world->rasterExists(rasterIndex) and _world->isRasterDynamic(rasterIndex))
+            {
+                DynamicRaster raster = _world->getDynamicRaster(rasterIndex);
+
+                for (int i = 0; i < raster.getSize().getHeight(); ++i)
+                {
+                    for (int j = 0; j < raster.getSize().getWidth(); ++j)
+                    {
+                        Point2D<int> point = Point2D<int>(i, j);
+
+                        if (isInOverlapArea(point) and hasPositionChangedInRaster(point, raster))
+                        {
+                            for (std::map<int, Rectangle<int>>::const_iterator subOverlapIt = _nodeSpace.innerSubOverlaps.begin(); subOverlapIt != _nodeSpace.innerSubOverlaps.end(); ++subOverlapIt)
+                            {
+                                int subOverlapID = subOverlapIt->first;
+                                Rectangle<int> subOverlapArea = subOverlapIt->second;
+                                if (subOverlapArea.contains(point))
+                                {
+                                    for (std::list<int>::const_iterator neighboursIt = _nodeSpace.innerSubOverlapsNeighbours.at(subOverlapID).begin(); neighboursIt != _nodeSpace.innerSubOverlapsNeighbours.at(subOverlapID).end(); ++neighboursIt)
+                                    {
+                                        int neighbourID = *neighboursIt;
+                                        if (_nodeSpace.neighbours.at(neighbourID)->ownedAreaWithOuterOverlaps.contains(point))
+                                        {
+                                            std::pair<Point2D<int>, int> positionAndValue(point, raster.getValue(point));
+                                            rastersValuesByNode.at(neighbourID).at(rasterIndex).push_back(positionAndValue);
+
+                                            _sentRastersInStep.at(rasterIndex).push_back(positionAndValue);
+                                        }
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        std::stringstream ss;
+        ss << "Node " << getId() << " sending rasters...\n";
+        for (std::map<int, ListOfValuesByRaster>::const_iterator it1 = rastersValuesByNode.begin(); it1 != rastersValuesByNode.end(); ++it1)
+        {
+            ss << "\tto neighbour: " << it1->first << ":\n";
+            for (ListOfValuesByRaster::const_iterator it2 = it1->second.begin(); it2 != it1->second.end(); ++it2) 
+            {
+                ss << "\tRasterID: " << it2->first << "\t";
+                for (ListOfPositionAndValue::const_iterator it3 = it2->second.begin(); it3 != it2->second.end(); ++it3)
+                {
+                    ss << " position " << it3->first << ", value " << it3->second << "\n\t\t\t";
+                }
+            }
+            ss << "\n";
+        }
+        ss << "\n";
+        std::cout << ss.str();
+
+        sendRasterValuesInMap(rastersValuesByNode);
     }
 
     void OpenMPIMultiNode::receiveRasters()
@@ -966,10 +1090,12 @@ std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTim
 
     void OpenMPIMultiNode::executeAgents()
     {
-        _executedAgentsInStep.clear();
+        initializeAgentsAndRastersState();
+
 usleep(getId() * 500000);
 
 _schedulerLogs->printNodeRastersInDebugFile(*this);
+_schedulerLogs->printNodeRastersDiscreteInDebugFile(*this);
 
 _schedulerLogs->writeInDebugFile(CreateStringStream("AGENTS AT STEP " << _world->getCurrentStep() << "; ORIGINAL AGENTS:").str(), *this);
 _schedulerLogs->printNodeAgentsInDebugFile(*this, true);
@@ -978,6 +1104,10 @@ if (_world->getCurrentStep() == 2) exit(0);
         AgentsVector executedAgentsInArea;
         executeAgentsInArea(_nodeSpace.ownedAreaWithoutInnerOverlap, executedAgentsInArea);
         synchronizeAgentsIfNecessary(executedAgentsInArea);
+
+        sendRastersToNeighbours();
+        receiveRasters();
+
         MPI_Barrier(MPI_COMM_WORLD);
 
 _schedulerLogs->writeInDebugFile(CreateStringStream("AGENTS AT STEP " << _world->getCurrentStep() << "; INNER_MOST EXECUTED:").str(), *this);
@@ -1007,12 +1137,15 @@ _schedulerLogs->printNodeAgentsInDebugFile(*this, true);
 std::cout << CreateStringStream("[Process # " << getId() <<  "] " << getWallTime() << " agents synchronized\n").str();
 std::cout << CreateStringStream("[Process # " << getId() <<  "]\n").str();
 
-// std::cout << CreateStringStream("[Process # " << getId() <<  "]\n").str();
-        //     sendRastersToNeighbours();
-        //     receiveRasters();
+
+            sendRastersToNeighbours();
+            receiveRasters();
 
             clearRequests();
         MPI_Barrier(MPI_COMM_WORLD);
+
+_schedulerLogs->printNodeRastersInDebugFile(*this);
+_schedulerLogs->printNodeRastersDiscreteInDebugFile(*this);
 
 std::cout << CreateStringStream("\n").str();
 usleep(500000);
