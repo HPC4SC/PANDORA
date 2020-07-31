@@ -144,31 +144,36 @@ namespace Engine {
         return ss.str();
     }
 
-    std::string OpenMPIMultiNodeLogs::getString_NodeRasters(const OpenMPIMultiNode& schedulerInstance) const
+    std::string OpenMPIMultiNodeLogs::getString_NodeRasters(const OpenMPIMultiNode& schedulerInstance, const bool& discrete) const
     {
         std::stringstream ss;
         ss << "TS = " << schedulerInstance.getWallTime() << ":" << std::endl;
         ss << "Total number of rasters = " << schedulerInstance._world->getNumberOfRasters() << std::endl;
-        ss << "NODE STATIC RASTERS:" << std::endl;
+
+        if (discrete) ss << "NODE STATIC RASTERS / DISCRETE VALUES:" << std::endl;
+        else ss << "NODE STATIC RASTERS / CONTINUOUS VALUES:" << std::endl;
+
         for (int i = 0; i < schedulerInstance._world->getNumberOfRasters(); ++i)
         {
             if (schedulerInstance._world->rasterExists(i) and not schedulerInstance._world->isRasterDynamic(i))
             {
                 DynamicRaster* raster = static_cast<DynamicRaster*>(&(schedulerInstance._world->getStaticRaster(i)));
                 ss << "Raster #" << i << ": " << schedulerInstance._world->getRasterNameFromID(i) << std::endl;
-                ss << getRasterValues(*raster, schedulerInstance);
+                ss << getRasterValues(*raster, schedulerInstance, discrete);
             }
         }
         ss << std::endl;
 
-        ss << "NODE DYNAMIC RASTERS:" << std::endl;
+        if (discrete) ss << "NODE DYNAMIC RASTERS / DISCRETE VALUES:" << std::endl;
+        else ss << "NODE DYNAMIC RASTERS / CONTINUOUS VALUES:" << std::endl;
+
         for (int i = 0; i < schedulerInstance._world->getNumberOfRasters(); ++i)
         {
             if (schedulerInstance._world->rasterExists(i) and schedulerInstance._world->isRasterDynamic(i))
             {
                 DynamicRaster raster = schedulerInstance._world->getDynamicRaster(i);
                 ss << "Raster #" << i << ": " << schedulerInstance._world->getRasterNameFromID(i) << std::endl;
-                ss << getRasterValues(raster, schedulerInstance);
+                ss << getRasterValues(raster, schedulerInstance, discrete);
             }
             ss << std::endl;
         }
@@ -199,12 +204,17 @@ namespace Engine {
 
     void OpenMPIMultiNodeLogs::printNodeRastersInDebugFile(const OpenMPIMultiNode& schedulerInstance) const
     {
-        log_DEBUG(_logFileNames.at(schedulerInstance.getId()), getString_NodeRasters(schedulerInstance));
+        log_DEBUG(_logFileNames.at(schedulerInstance.getId()), getString_NodeRasters(schedulerInstance, false));
+    }
+
+    void OpenMPIMultiNodeLogs::printNodeRastersDiscreteInDebugFile(const OpenMPIMultiNode& schedulerInstance) const
+    {
+        log_DEBUG(_logFileNames.at(schedulerInstance.getId()), getString_NodeRasters(schedulerInstance, true));
     }
 
     /** PROTECTED METHODS **/
 
-    std::string OpenMPIMultiNodeLogs::getRasterValues(const DynamicRaster& raster, const OpenMPIMultiNode& schedulerInstance) const
+    std::string OpenMPIMultiNodeLogs::getRasterValues(const DynamicRaster& raster, const OpenMPIMultiNode& schedulerInstance, const bool& discrete) const
     {
         std::stringstream ss;
         for (int i = 0; i < raster.getSize().getHeight(); ++i)
@@ -212,7 +222,12 @@ namespace Engine {
             for (int j = 0; j < raster.getSize().getWidth(); ++j)
             {
                 Point2D<int> point = Point2D<int>(j, i);
-                if (schedulerInstance._nodeSpace.ownedAreaWithOuterOverlaps.contains(point)) ss << raster.getValue(point) << " ";
+                if (schedulerInstance._nodeSpace.ownedAreaWithOuterOverlaps.contains(point)) 
+                {
+                    if (discrete) ss << raster.getDiscreteValue(point);
+                    else ss << raster.getValue(point);
+                    ss << " ";
+                }
                 else ss << "-" << " ";
             }
             ss << std::endl;

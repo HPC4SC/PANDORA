@@ -57,7 +57,7 @@ protected:
 
     std::map<std::string, int> _rasterNames; //! <rasterName, rasterIndex in _rasters>.
     std::map<int, std::string> _rasterIDsToNames; //! <rasterIndex, rasterName>
-    std::vector<StaticRaster * > _rasters; //! Rasters of the simulations.
+    std::vector<StaticRaster*> _rasters; //! Rasters of the simulations.
     std::vector<bool> _dynamicRasters; //! True if the raster is dynamic, false the raster is static.
     std::vector<bool> _serializeRasters; //! True if the raster must be serialized, false otherwise.
 
@@ -79,7 +79,7 @@ protected:
      * @brief Updates the _currentStepOriginalPosition member for all the current agents of *this World.
      * 
      */
-    void updateAgentsCurrentStepOriginalPositions() const;
+    void updateDiscreteStateStructures() const;
 
     /**
      * @brief Runs all the needed internal modifications at the beginning of each step. Cannot be overriden by the simulation.

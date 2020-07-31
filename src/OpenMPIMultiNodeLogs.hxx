@@ -35,7 +35,15 @@ namespace Engine
     {
         protected:
 
-            std::string getRasterValues(const DynamicRaster& raster, const OpenMPIMultiNode& schedulerInstance) const;
+            /**
+             * @brief Get the 'raster' string in matrix format for the node calling this function. 'discrete' indicates whether discrete or continuous values are requested.
+             * 
+             * @param raster const DynamicRaster&
+             * @param schedulerInstance const OpenMPIMultiNode&
+             * @param discrete const bool&
+             * @return std::string 
+             */
+            std::string getRasterValues(const DynamicRaster& raster, const OpenMPIMultiNode& schedulerInstance, const bool& discrete) const;
 
             std::map<int, std::string> _logFileNames;               //! Names of the log files for each of the MPI processes.
 
@@ -105,9 +113,10 @@ namespace Engine
              * @brief Gets the string representing: the rasters for the current node executing this method.
              * 
              * @param schedulerInstance const OpenMPIMultiNode&
+             * @param discrete const bool&
              * @return std::string 
              */
-            std::string getString_NodeRasters(const OpenMPIMultiNode& schedulerInstance) const;
+            std::string getString_NodeRasters(const OpenMPIMultiNode& schedulerInstance, const bool& discrete) const;
 
             /**
              * @brief Prints in the node's debug file: the nodes partitioning and neighbours for each one.
@@ -143,6 +152,13 @@ namespace Engine
              * @param schedulerInstance const OpenMPIMultiNode&
              */
             void printNodeRastersInDebugFile(const OpenMPIMultiNode& schedulerInstance) const;
+
+            /**
+             * @brief Prints in the node's debug file: the discrete state of the rasters for the current node executing this method.
+             * 
+             * @param schedulerInstance const OpenMPIMultiNode&
+             */
+            void printNodeRastersDiscreteInDebugFile(const OpenMPIMultiNode& schedulerInstance) const;
 
     };
 
