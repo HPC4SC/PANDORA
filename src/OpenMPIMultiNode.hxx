@@ -43,20 +43,20 @@ namespace Engine
         public:
 
             struct MPINode {
-                Rectangle<int> ownedAreaWithoutInnerOverlap;                //! Area of this node without inner (this node)   overlaps.
-                Rectangle<int> ownedArea;                                   //! Area of this node with    inner (this node)   overlaps.
-                Rectangle<int> ownedAreaWithOuterOverlaps;                  //! Area of this node with    outer (other nodes) overlaps.
-                std::map<int, MPINode*> neighbours;                         //! Map<neighbouringNodeId, neighbouringNodeSpaces> containing the neighbours information for communication.
+                Rectangle<int> ownedAreaWithoutInnerOverlap;                //! Area of this node without inner (this node)   overlaps. // Filled up to depth 1 (from neighbours->second).
+                Rectangle<int> ownedArea;                                   //! Area of this node with    inner (this node)   overlaps. // Filled up to depth 1 (from neighbours->second).
+                Rectangle<int> ownedAreaWithOuterOverlaps;                  //! Area of this node with    outer (other nodes) overlaps. // Filled up to depth 1 (from neighbours->second).
+                std::map<int, MPINode*> neighbours;                         //! Map<neighbouringNodeId, neighbouringNodeSpaces> containing the neighbours information for communication. // Filled up to depth 0 (from neighbours->second).
 
-                std::map<int, Rectangle<int>> innerSubOverlaps;             //! Sub-overlaps (Sub areas of the inner overlap). Should be 8 in total. Map<subOverlapID, subOverlapArea>, where subOverlapID = Engine::SubOverlapType enum.
-                std::map<int, std::list<int>> innerSubOverlapsNeighbours;   //! Sub-overlaps neighbouring nodes. Map<subOverlapID, list<nodeID>>. Used for efficient agents and rasters communication.
+                std::map<int, Rectangle<int>> innerSubOverlaps;             //! Sub-overlaps (Sub areas of the inner overlap). Should be 8 in total. Map<subOverlapID, subOverlapArea>, where subOverlapID = Engine::SubOverlapType enum. // Filled up to depth 0 (from neighbours->second).
+                std::map<int, std::list<int>> innerSubOverlapsNeighbours;   //! Sub-overlaps neighbouring nodes. Map<subOverlapID, list<nodeID>>. Used for efficient agents and rasters communication. // Filled up to depth 0 (from neighbours->second).
             };
 
             typedef std::map<int, std::map<std::string, AgentsList>> NeighbouringAgentsMap;
             typedef std::map<int, MPINode> MPINodesMap;
 
-            typedef std::list<std::pair<Point2D<int>, int>> ListOfPositionAndValue;
-            typedef std::map<int, ListOfPositionAndValue> ListOfValuesByRaster;
+            typedef std::map<Point2D<int>, int> MapOfPositionsAndValues;
+            typedef std::map<int, MapOfPositionsAndValues> MapOfValuesByRaster;
 
             friend class OpenMPIMultiNodeLogs;
 
@@ -72,7 +72,7 @@ namespace Engine
             MPINode _nodeSpace;                                     //! Areas and neighbours information for this node.
 
             std::set<std::string> _executedAgentsInStep;            //! Set containing the IDs of the agents that have been already executed in the current step.
-            ListOfValuesByRaster _sentRastersInStep;                //! <rasterIndex, list<rasterPosition,positionValue>>. Map containing the list of already sent positions in the current step, by raster.
+            MapOfValuesByRaster _sentRastersInStep;                 //! <rasterIndex, list<rasterPosition,positionValue>>. Map containing the mapped list of already sent positions in the current step, by raster.
 
             /** MPI Data Structures **/
             int _masterNodeID;                                      //! ID of the master node. Used for communication.
@@ -81,7 +81,12 @@ namespace Engine
             struct Coordinates {
                 int top, left, bottom, right;
             };                                                      //! Struct used to parse in/out the to-be-send/received coordinates.
-            MPI_Datatype* _coordinatesDatatype;                     //! Own MPI Datatype used to send/receive the coordinates of a node.
+            MPI_Datatype* _coordinatesDatatype;                     //! Own MPI Datatype used to send/receive the coordinates of a neighbouring node.
+
+            struct PositionAndValue {
+                int x, y, value;
+            };                                                      //! Struct used to parse in/out the to-be-send/received raster positions and values.
+            MPI_Datatype* _positionAndValueDatatype;                //! Own MPI Datatype used to send/receive the positions and values of an updated raster.
 
             struct MpiRequest {
                 int packageID;
@@ -90,7 +95,6 @@ namespace Engine
                 MPI_Request request;
             };
             std::list<MpiRequest*> _sendRequests;
-            //std::list<MpiRequest*> _receiveRequests;
 
             /** Other structures **/
             OpenMPIMultiNodeLogs* _schedulerLogs;
@@ -356,7 +360,7 @@ namespace Engine
             void addMPINodeToSendInMapItIsNot(const std::vector<Rectangle<int>>& partitions, const int& neighbourIndex);
 
             /**
-             * @brief Creates a rectangle like 'rectangle' expanded exactly 'expansion' cells in all directions (if possible). If 'contractInTheLimits' == false means that, if 'rectangle' is already in the limits of the simulation space ([_root->value.top(), _root->value.left()] or [_root->value.bottom(), _root->value.right()], then the resulting rectangle will NOT be expanded (even if 'expansion' < 0 == contraction). This is normally used only when 'expansion' < 0.
+             * @brief Creates a rectangle like 'rectangle' expanded exactly 'expansion' cells in all directions (if possible). A 'expansion' < 0 == contraction. If 'contractInTheLimits' == false means that, if 'rectangle' is already in the limits of the simulation space ([_root->value.top(), _root->value.left()] or [_root->value.bottom(), _root->value.right()], then the resulting rectangle will NOT be modified (neither contracted nor expanded). This is normally used only when 'expansion' < 0.
              * 
              * @pre For contractions ('expansion' < 0), 'rectangle'.getSize().getWidth() and 'rectangle'.getSize().getHeight() should be > 2*'expansion'.
              * @param rectangle const Rectangle<int>&
@@ -535,15 +539,16 @@ namespace Engine
              * 
              * @param rasterValuesByNode const std::map<int, std::map<int, std::list<std::pair<Point2D<int>, int>>>>&
              */
-            void initializeRasterValuesToSendMap(std::map<int, ListOfValuesByRaster>& rasterValuesByNode);
+            void initializeRasterValuesToSendMap(std::map<int, MapOfValuesByRaster>& rasterValuesByNode) const;
 
             /**
-             * @brief Checks whether 'point' is inside the outer or inner overlap of the node calling this function.
+             * @brief Checks whether 'position' is in the area of influence of 'area' (i.e. 'area'.expanded(overlapSize).contains('position')).
              * 
-             * @param point const Point2D<int>&
+             * @param position const Point2D<int>&
+             * @param area const Rectangle<int>&
              * @return bool
              */
-            bool isInOverlapArea(const Point2D<int>& point);
+            bool isPointInAreaOfInfluence(const Point2D<int>& position, const Rectangle<int>& area);
 
             /**
              * @brief Check whether 'positionToCheck' has changed since the last time rasters were sent to neighbours.
@@ -552,20 +557,46 @@ namespace Engine
              * @param raster const DynamicRaster&
              * @return bool
              */
-            bool hasPositionChangedInRaster(const Point2D<int>& positionToCheck, const DynamicRaster& raster);
+            bool hasPositionChangedInRaster(const Point2D<int>& positionToCheck, const DynamicRaster& raster) const;
+
+            /**
+             * @brief Gets the list of the neighour IDs, which need to know about the recently changed raster value at 'point'. 'point' should be inside the current's node inner sub-overlap area.
+             * 
+             * @param point const Point2D<int>&
+             * @return std::list<int> 
+             */
+            std::list<int> getNeighbourIDsInInnerSubOverlap(const Point2D<int>& point) const;
+
+            /**
+             * @brief Gets the list of the neighour IDs, which need to know about the recently changed raster value at 'point'. 'point' should be insde the current's node outer sub-overlap area.
+             * 
+             * @param point const Point2D<int>&
+             * @return std::list<int> 
+             */
+            std::list<int> getNeighbourIDsInOuterSubOverlap(const Point2D<int>& point) const;
+
+            /**
+             * @brief Securely adds the pair <position,value> in the 'map'.
+             * 
+             * @param map MapOfPositionsAndValues&
+             * @param position const Point2D<int>&
+             * @param value const int&
+             */
+            void addPositionAndValueToMap(MapOfPositionsAndValues& map, const Point2D<int>& position, const int& value);
 
             /**
              * @brief Sends rasters in 'rasterValuesByNode'. Check 'initializeRasterValuesToSendMap(...)' documentation to know what is exactly the map.
              * 
              * @param rasterValuesByNode std::map<int, std::map<int, std::list<std::pair<Point2D<int>, int>>>>&
              */
-            void sendRasterValuesInMap(const std::map<int, ListOfValuesByRaster>& rasterValuesByNode);
+            void sendRasterValuesInMap(const std::map<int, MapOfValuesByRaster>& rasterValuesByNode);
 
             /**
-             * @brief Non-blockingly sends rasters to the other nodes.
+             * @brief Non-blockingly sends rasters to the other nodes. It only takes into account those positions around the sub-overlap area identifed by 'subOverlapAreaID' (i.e. the area expanded _overlapSize).
              * 
+             * @param subOverlapAreaID const int&
              */
-            void sendRastersToNeighbours();
+            void sendRastersToNeighbours(const int& subOverlapAreaID = -1);
 
             /**
              * @brief Non-blockingly receives rasters from the other nodes.
@@ -634,6 +665,12 @@ namespace Engine
             void initData() override;
 
             /** RUN PUBLIC METHODS (INHERIT) **/
+
+            /**
+             * @brief Updates the resources modified in the World::stepEnvironment() method.
+             * 
+             */
+            void updateEnvironmentState() override;
 
             /**
              * @brief Executes the agents and updates the world.

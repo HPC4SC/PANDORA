@@ -58,8 +58,9 @@ def getMpiTypeAttribute(typeAttribute):
 
 
 def writeCreateType(f, nameAgent, attributesMap):
-    # we have to send 4 basic attributes (_id, _position._x, _position._y & _exists + the number of dynamic attributes
-    numAttributes = 4 + len(attributesMap)
+    # we have to send 6 basic attributes (_id, _position._x, _position._y, _discretePosition._x, _discretePosition._y & _exists + the number of dynamic attributes
+    numBasicAttributes = 6
+    numAttributes = numBasicAttributes + len(attributesMap)
     f.write('MPI_Datatype * create' + nameAgent + 'Type()\n')
     f.write('{\n')
     f.write('\t' + nameAgent + 'Package package;\n')
@@ -78,12 +79,18 @@ def writeCreateType(f, nameAgent, attributesMap):
     f.write('\t// _position._y\n')
     f.write('\tblockLengths[2] = 1;\n')
     f.write('\ttypeList[2] = MPI_INT;\n')
-    f.write('\t// _exists\n')
+    f.write('\t// _discretePosition._x\n')
     f.write('\tblockLengths[3] = 1;\n')
     f.write('\ttypeList[3] = MPI_INT;\n')
+    f.write('\t// _discretePosition._y\n')
+    f.write('\tblockLengths[4] = 1;\n')
+    f.write('\ttypeList[4] = MPI_INT;\n')
+    f.write('\t// _exists\n')
+    f.write('\tblockLengths[5] = 1;\n')
+    f.write('\ttypeList[5] = MPI_INT;\n')
 
     # dynamic params
-    index = 4
+    index = numBasicAttributes
     for nameAttribute, typeAttribute in attributesMap.items():
         f.write('\t// ' + nameAttribute + '\n')
         if typeAttribute == "string":
@@ -100,7 +107,7 @@ def writeCreateType(f, nameAgent, attributesMap):
     f.write('\tMPI_Aint startAddress;\n')
     f.write('\tMPI_Aint address;\n')
 
-    # id, position & exists
+    # id, position, discretePosition & exists
     f.write('\t// id\n')
     f.write('\tMPI_Address(package._idMpi, &startAddress);\n')
     f.write('\tdisplacements[0] = 0;\n')
@@ -113,12 +120,20 @@ def writeCreateType(f, nameAgent, attributesMap):
     f.write('\tMPI_Address(&package._positionMpi._y, &address);\n')
     f.write('\tdisplacements[2] = address-startAddress;\n')
 
-    f.write('\t// _exists\n')
-    f.write('\tMPI_Address(&package._existsMpi, &address);\n')
+    f.write('\t// _discretePosition._x\n')
+    f.write('\tMPI_Address(&package._discretePositionMpi._x, &address);\n')
     f.write('\tdisplacements[3] = address-startAddress;\n')
 
+    f.write('\t// _discretePosition._y\n')
+    f.write('\tMPI_Address(&package._discretePositionMpi._y, &address);\n')
+    f.write('\tdisplacements[4] = address-startAddress;\n')
+
+    f.write('\t// _exists\n')
+    f.write('\tMPI_Address(&package._existsMpi, &address);\n')
+    f.write('\tdisplacements[5] = address-startAddress;\n')
+
     # dynamic params
-    index = 4
+    index = numBasicAttributes
     for nameAttribute, typeAttribute in attributesMap.items():
         f.write('\t// ' + nameAttribute + '\n')
         f.write('\tMPI_Address(&package.' + nameAttribute + 'Mpi, &address);\n')
@@ -182,10 +197,11 @@ def createMpiHeader(agentName, source, header, attributesMap):
     # struct Package
     f.write('typedef struct\n')
     f.write('{\n')
-    # basic data: _id, _position & _exists
+    # basic data: _id, _position, _discretePosition & _exists
     f.write('\tchar _idMpi[32];\n')
     f.write('\tbool _existsMpi;\n')
     f.write('\tEngine::Point2D<int> _positionMpi;\n')
+    f.write('\tEngine::Point2D<int> _discretePositionMpi;\n')
     f.write('\n')
     # dynamic params
     for nameAttribute, typeAttribute in attributesMap.items():
@@ -206,13 +222,14 @@ def createMpiHeader(agentName, source, header, attributesMap):
 def writeFillPackage(f, agentName, attributesMap):
     f.write('void * ' + agentName + '::fillPackage()\n')
     f.write('{\n')
-    # basic params: _id, _position & _exists
+    # basic params: _id, _position, _discretePosition & _exists
     f.write('\t' + agentName + 'Package * package = new ' + agentName + 'Package;\n')
     f.write(
         '\tmemcpy(&package->_idMpi, _id.c_str(), std::min((unsigned int)32,(unsigned int)(sizeof(char)*_id.size())));\n')
     f.write('\tpackage->_idMpi[std::min((unsigned int)32,(unsigned int)_id.size())] = \'\\0\';\n')
     f.write('\tpackage->_existsMpi = _exists;\n')
     f.write('\tpackage->_positionMpi = _position;\n')
+    f.write('\tpackage->_discretePositionMpi = _discretePosition;\n')
     f.write('\n')
     # dynamic params
     for nameAttribute, typeAttribute in attributesMap.items():
@@ -224,6 +241,23 @@ def writeFillPackage(f, agentName, attributesMap):
         else:
             f.write('\tpackage->' + nameAttribute + 'Mpi = ' + nameAttribute + ';\n')
     f.write('\treturn package;\n')
+    f.write('}\n')
+    f.write('\n')
+    return None
+
+def writeConstructor(f, agentName, parent, attributesMap):
+    f.write(
+        agentName + '::' + agentName + '( void * package ) : ' + parent + '(((' + agentName + 'Package*)package)->_idMpi)\n')
+    f.write('{\n')
+    f.write('\t' + agentName + 'Package * particularPackage = (' + agentName + 'Package*)package;\n')
+    # basic params: _position & _exists
+    f.write('\t_exists = particularPackage->_existsMpi;\n')
+    f.write('\t_position = particularPackage->_positionMpi;\n')
+    f.write('\t_discretePosition = particularPackage->_discretePositionMpi;\n')
+    f.write('\n')
+    # dynamic params
+    for nameAttribute in attributesMap.keys():
+        f.write('\t' + nameAttribute + ' = particularPackage->' + nameAttribute + 'Mpi;\n')
     f.write('}\n')
     f.write('\n')
     return None
@@ -245,23 +279,6 @@ def writeComparator(f, agentName, parent, attributesMap):
     f.write(';\n')
     f.write('}\n')
     return None
-
-def writeConstructor(f, agentName, parent, attributesMap):
-    f.write(
-        agentName + '::' + agentName + '( void * package ) : ' + parent + '(((' + agentName + 'Package*)package)->_idMpi)\n')
-    f.write('{\n')
-    f.write('\t' + agentName + 'Package * particularPackage = (' + agentName + 'Package*)package;\n')
-    # basic params: _position & _exists
-    f.write('\t_exists = particularPackage->_existsMpi;\n')
-    f.write('\t_position = particularPackage->_positionMpi;\n')
-    f.write('\n')
-    # dynamic params
-    for nameAttribute in attributesMap.keys():
-        f.write('\t' + nameAttribute + ' = particularPackage->' + nameAttribute + 'Mpi;\n')
-    f.write('}\n')
-    f.write('\n')
-    return None
-
 
 def getMpiTypeConversion(typeInCpp):
     if typeInCpp == 'int':

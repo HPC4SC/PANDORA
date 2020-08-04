@@ -348,6 +348,12 @@ namespace Engine
         void initData( );
         
         /**
+         * @brief NOT IMPLEMENTED.
+         * 
+         */
+        void updateEnvironmentState() override {}
+
+        /**
          * @brief responsible for executing the agents and update world.
          * 
          */

@@ -45,6 +45,10 @@ namespace Engine
         eGhostAgentType = 41,
         eGhostAgent = 42,
 
+        eNumRasters = 50,
+        eRasterIndex = 51,
+        eNumRasterPositions = 52,
+        ePosAndValue = 53,
 
 
         eRasterData = 5,

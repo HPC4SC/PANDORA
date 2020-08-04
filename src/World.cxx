@@ -148,9 +148,8 @@ namespace Engine
         }
         stepEnvironment( );
         log_DEBUG( logName.str( ), getWallTime( ) << " step: " << _step << " has executed step environment" );
-        //log_DEBUG(logName.str(), getWallTime() << "*******  executeAgents() is going to be executed");
+        _scheduler->updateEnvironmentState();
         _scheduler->executeAgents( );
-        //log_DEBUG(logName.str(), getWallTime() << "*******  removeAgents() is going to be executed");
         _scheduler->removeAgents( );
         log_INFO( logName.str( ), getWallTime( ) << " finished step: " << _step );
     }
@@ -161,10 +160,12 @@ namespace Engine
         logName << "simulation_" << getId( );
         log_INFO( logName.str( ), getWallTime( ) << " executing " << _config->getNumSteps( ) << " steps..." );
 
+        engineStep();
+
         for ( _step=0; _step<_config->getNumSteps( ); _step++ )
         {
-            engineStep();
             step();
+            engineStep();
         }
         // storing last step data
         if ( _step%_config->getSerializeResolution( )==0 )

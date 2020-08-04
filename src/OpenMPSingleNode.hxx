@@ -87,6 +87,12 @@ public:
     void initData( );
     
     /**
+     * @brief NOT IMPLEMENTED.
+     * 
+     */
+    void updateEnvironmentState() override {}
+
+    /**
      * @brief Responsible for executing the agents and update world.
      * 
      */
