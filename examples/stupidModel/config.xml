@@ -8,6 +8,6 @@
 	<size width="20" height="20"/>
 	<Bugs numBugs="17" maxBugMovement="2" maxFoodConsumption="10" survivalProbability="95" initialBugSizeMean="1" initialBugSizeSD="0.7"/>
 	<Predators numPredators="0" maxPredatorHuntDistance="1"/>
-	<Raster maxFoodProduction = "0"/>
+	<Raster maxFoodProduction = "10"/>
 </config>
 

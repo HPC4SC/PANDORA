@@ -167,7 +167,7 @@ public:
     int getCurrentStep( ) const;
    
     /**
-     * @brief This method can be redefined by the children in order to modify the execution of each step on a given resource field. Default is grow 1 until max.
+     * @brief This method can be redefined by the children in order to modify the execution of each step on a given resource field.
      * 
      */
     virtual void stepEnvironment( );

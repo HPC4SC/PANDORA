@@ -27,14 +27,13 @@ void Bug::selectActions() {
 	 * that the agent must perform in the codeig order
  	 */
 	Engine::World * world = this->getWorld();
-	int step = world->getCurrentStep();
 	/* the bugs must be executed before the predateors.
 	 * therefore they are executed in even timesteps
 	 */
 	//if (step%2 == 0) { 
 		_actions.push_back(new MoveAction());
 		_actions.push_back(new EatAction());
-		_actions.push_back(new DieAction());
+		//_actions.push_back(new DieAction());
 	//}
 }
 

@@ -114,6 +114,12 @@ namespace Engine
         virtual void initData( ) = 0;
         
         /**
+         * @brief Updates the resources modified in the World::stepEnvironment() method. Must be implemented in child.
+         * 
+         */
+        virtual void updateEnvironmentState() = 0;
+
+        /**
          * @brief Responsible for executing the agents and update world. Must be implemented in child.
          * 
          */

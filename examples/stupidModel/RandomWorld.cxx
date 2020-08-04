@@ -78,6 +78,7 @@ void RandomWorld::step() {
 	stepEnvironment();
 	log_DEBUG(logName.str(), getWallTime() << " step: " << _step << " has executed step enviroment");
 	// then the agents perform their actions
+	_scheduler->updateEnvironmentState();
 	_scheduler->executeAgents();
 	_scheduler->removeAgents();
 	log_INFO(logName.str(), getWallTime() << " finished step: " << _step);
@@ -87,7 +88,8 @@ void RandomWorld::stepEnvironment() {
 	// for all of the cells they grow a random quantity of food wihtin the stipulated range
 	for(auto index : getBoundaries()) {
 		float oldFood = getValue("food",index);
-		float foodProduced = Engine::GeneralState::statistics().getUniformDistValue(0,_maxProductionRate);
+		//float foodProduced = Engine::GeneralState::statistics().getUniformDistValue(0,_maxProductionRate);
+		float foodProduced = _maxProductionRate;
 		// also we must check if the food value is more than the maximum and update it correcly
 		if ((oldFood + foodProduced) > 100) setValue("food",index,100);
 		else setValue("food",index,oldFood + foodProduced);
