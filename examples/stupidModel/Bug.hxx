@@ -54,6 +54,7 @@ public:
 	////////////////////////////////////////////////
 	Bug( void * );
 	void * fillPackage();
+	void freePackage(void* package) const override;
 	bool hasTheSameAttributes(const Engine::Agent&) const override;
 	void sendVectorAttributes(int);
 	void receiveVectorAttributes(int);

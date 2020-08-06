@@ -121,6 +121,11 @@ public:
 		return 0;
 	}
 
+	void freePackage(void* package) const
+	{
+		return;
+	}
+
 	void sendVectorAttributes(int target)
 	{
 	}

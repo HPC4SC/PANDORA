@@ -35,7 +35,9 @@ def writeCreateAndFillAgents(f, listAgents, namespaces):
     f.write('Agent * MpiFactory::createAndFillAgent( const std::string & type, void * package )\n')
     f.write('{\n')
     for i, agent in enumerate(listAgents):
-        f.write('\tif(type.compare("' + agent + '")==0)\n')
+        f.write('\t')
+        if (i > 0): f.write('else ')
+        f.write('if(type.compare("' + agent + '")==0)\n')
         f.write('\t{\n')
         f.write('\t\treturn new ' + namespaces[i] + "::" + agent + '(package);\n')
         f.write('\t}\n')
@@ -49,6 +51,26 @@ def writeCreateAndFillAgents(f, listAgents, namespaces):
     f.write('\n')
     return None
 
+def writeFreePackage(f, listAgents):
+    f.write('void MpiFactory::freePackage(void* package, const std::string& type) const\n')
+    f.write('{\n')
+    for i, agent in enumerate(listAgents):
+        f.write('\t')
+        if (i > 0): f.write('else ')
+        f.write('if(type.compare("' + agent + '") == 0)\n')
+        f.write('\t{\n')
+        f.write('\t\t' + agent + 'Package* ' + agent.lower() + 'Package = static_cast<' + agent + 'Package*>(package);\n')
+        f.write('\t\tdelete ' + agent.lower() + 'Package;\n')
+        f.write('\t\treturn;\n')
+        f.write('\t}\n')
+    f.write('\n')
+    f.write('\tstd::stringstream oss;\n')
+    f.write('\toss << "MpiFactory::createDefaultPackage - unknown agent type: " << type;\n')
+    f.write('\tthrow Engine::Exception(oss.str());\n')
+
+    f.write('}\n')
+    f.write('\n')
+    return None
 
 def getMpiTypeAttribute(typeAttribute):
     mpiTypeAttribute = 'MPI_INT'
@@ -176,6 +198,7 @@ def createFactoryMethods(listAgents, factoryFile, namespaces, listAttributesMaps
     writeRegisterTypes(f, listAgents)
     writeCreateDefaultPackage(f, listAgents)
     writeCreateAndFillAgents(f, listAgents, namespaces)
+    writeFreePackage(f, listAgents)
 
     # close header & namespace
     f.write('} // namespace Engine\n')
@@ -241,6 +264,15 @@ def writeFillPackage(f, agentName, attributesMap):
         else:
             f.write('\tpackage->' + nameAttribute + 'Mpi = ' + nameAttribute + ';\n')
     f.write('\treturn package;\n')
+    f.write('}\n')
+    f.write('\n')
+    return None
+
+def writeFreeAgentPackage(f, agentName):
+    f.write('void ' + agentName + '::freePackage(void* package) const\n')
+    f.write('{\n')
+    f.write('\t' + agentName + 'Package* ' + agentName.lower() + 'Package = static_cast<' + agentName + 'Package*>(package);\n')
+    f.write('\tdelete ' + agentName.lower() + 'Package;\n')
     f.write('}\n')
     f.write('\n')
     return None
@@ -340,6 +372,7 @@ def createMpiCode(agentName, source, header, namespace, parent, attributesMap, v
         f.write('{\n')
         f.write('\n')
     writeFillPackage(f, agentName, attributesMap)
+    writeFreeAgentPackage(f, agentName)
     writeConstructor(f, agentName, parent, attributesMap)
     writeComparator(f, agentName, parent, attributesMap)
     writeVectorAttributesPassing(f, agentName, vectorAttributesMap);
@@ -449,6 +482,7 @@ def checkHeader(agentName, headerName):
             fTmp.write('\t////////////////////////////////////////////////\n')
             fTmp.write('\t' + agentName + '( void * );\n')
             fTmp.write('\tvoid * fillPackage();\n')
+            fTmp.write('\tvoid freePackage(void* package) const override;\n')
             fTmp.write('\tbool hasTheSameAttributes(const Engine::Agent&) const override;\n')
             fTmp.write('\tvoid sendVectorAttributes(int);\n')
             fTmp.write('\tvoid receiveVectorAttributes(int);\n')

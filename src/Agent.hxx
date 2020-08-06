@@ -333,6 +333,12 @@ namespace Engine
         virtual void * fillPackage( ) = 0;
 
         /**
+         * @brief Frees the allocated memory that 'package' is pointing to.
+         * 
+         */
+        virtual void freePackage(void* package) const = 0;
+
+        /**
          * @brief sends the registered vector attributes of an Agent.
          * 
          * @param target Agent that will recieve the data.

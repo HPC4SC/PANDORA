@@ -53,7 +53,7 @@ namespace Engine {
     std::string OpenMPIMultiNodeLogs::getString_PartitionsBeforeMPI(const OpenMPIMultiNode& schedulerInstance) const
     {
         std::stringstream ss;
-        ss << "TS = " << schedulerInstance.getWallTime() << ":" << std::endl;
+        //ss << "TS = " << schedulerInstance.getWallTime() << ":" << std::endl;
         ss << "Number of real tasks: " << schedulerInstance._numTasks << std::endl;
         ss << "Number of working nodes: " << schedulerInstance._numTasks - int(not schedulerInstance._assignLoadToMasterNode) << std::endl;
         ss << "Overlap size: " << schedulerInstance._overlapSize << std::endl << std::endl;
@@ -74,7 +74,7 @@ namespace Engine {
     std::string OpenMPIMultiNodeLogs::getString_OwnNodeStructureAfterMPI(const OpenMPIMultiNode& schedulerInstance) const
     {
         std::stringstream ss;
-        ss << "TS = " << schedulerInstance.getWallTime() << ":" << std::endl;
+        //ss << "TS = " << schedulerInstance.getWallTime() << ":" << std::endl;
         ss << "OWN STRUCTURES AFTER MPI:" << std::endl;
         ss << "ownedAreaWithoutInnerOverlap: " << schedulerInstance._nodeSpace.ownedAreaWithoutInnerOverlap << std::endl;
         ss << "ownedArea: " << schedulerInstance._nodeSpace.ownedArea << std::endl;
@@ -109,6 +109,7 @@ namespace Engine {
     {
         std::stringstream ss;
         ss << "NEIGHBOURING AGENTS PER TYPE:" << std::endl;
+        //ss << "TS = " << schedulerInstance.getWallTime() << ":" << std::endl;
         for (OpenMPIMultiNode::NeighbouringAgentsMap::const_iterator it = schedulerInstance._neighbouringAgents.begin(); it != schedulerInstance._neighbouringAgents.end(); ++it)
         {
             ss << "Node: " << it->first << std::endl;
@@ -130,7 +131,7 @@ namespace Engine {
     std::string OpenMPIMultiNodeLogs::getString_NodeAgents(const OpenMPIMultiNode& schedulerInstance, const bool& fullDescription) const
     {
         std::stringstream ss;
-        ss << "TS = " << schedulerInstance.getWallTime() << ":" << std::endl;
+        //ss << "TS = " << schedulerInstance.getWallTime() << ":" << std::endl;
         ss << "NODE AGENTS:" << std::endl;
         for (AgentsList::const_iterator it = schedulerInstance._world->beginAgents(); it != schedulerInstance._world->endAgents(); ++it)
         {
@@ -147,7 +148,7 @@ namespace Engine {
     std::string OpenMPIMultiNodeLogs::getString_NodeRasters(const OpenMPIMultiNode& schedulerInstance, const bool& discrete) const
     {
         std::stringstream ss;
-        ss << "TS = " << schedulerInstance.getWallTime() << ":" << std::endl;
+        //ss << "TS = " << schedulerInstance.getWallTime() << ":" << std::endl;
         ss << "Total number of rasters = " << schedulerInstance._world->getNumberOfRasters() << std::endl;
 
         if (discrete) ss << "NODE STATIC RASTERS / DISCRETE VALUES:" << std::endl;
