@@ -342,7 +342,7 @@ namespace Engine {
 
             void* agentPackage = agent->fillPackage();
             MPI_Send(agentPackage, 1, *agentTypeMPI, currentNode, eAgent, MPI_COMM_WORLD);
-            delete agentPackage;
+            agent->freePackage(agentPackage);
         }
     }
 
@@ -441,7 +441,7 @@ namespace Engine {
                 void* package = MpiFactory::instance()->createDefaultPackage(agentsTypeName);
                 MPI_Recv(package, 1, *agentType, masterNodeID, eAgent, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
                 Agent* agent = MpiFactory::instance()->createAndFillAgent(agentsTypeName, package);
-                delete package;
+                MpiFactory::instance()->freePackage(package, agentsTypeName);
 
                 _world->addAgent(agent, false);
             }
@@ -771,7 +771,7 @@ namespace Engine {
     void OpenMPIMultiNode::sendDataRequestToNode(void* data, const MPI_Datatype& mpiDatatype, const int& destinationNode, const int& tag)
     {
         MpiRequest* mpiRequest = new MpiRequest;
-        mpiRequest->package = data;
+        //mpiRequest->package = data;
         mpiRequest->requestType = tag;
 
         MPI_Isend(data, 1, mpiDatatype, destinationNode, tag, MPI_COMM_WORLD, &mpiRequest->request);
@@ -802,6 +802,7 @@ std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTim
                 void* agentPackage = agent->fillPackage();
                 MPI_Datatype* agentTypeMPI = MpiFactory::instance()->getMPIType(agentType);
                 sendDataRequestToNode(agentPackage, *agentTypeMPI, neighbourNodeID, eGhostAgent);
+                agent->freePackage(agentPackage);
             }
         }
     }
@@ -825,7 +826,7 @@ std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTim
                 void* package = MpiFactory::instance()->createDefaultPackage(agentTypeName);
                 MPI_Recv(package, 1, *agentType, sendingNodeID, eGhostAgent, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
                 Agent* agent = MpiFactory::instance()->createAndFillAgent(agentTypeName, package);
-                delete package;
+                MpiFactory::instance()->freePackage(package, agentTypeName);
 
 std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTime() << " receiving agent: " << agent << "\tfrom node: " << sendingNodeID << "\n").str();
 
@@ -1116,24 +1117,6 @@ std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTim
             }
         }
 
-        std::stringstream ss;
-        ss << "Node " << getId() << " sending rasters...\n";
-        for (std::map<int, MapOfValuesByRaster>::const_iterator it1 = rastersValuesByNode.begin(); it1 != rastersValuesByNode.end(); ++it1)
-        {
-            ss << "\tto neighbour: " << it1->first << ":\n";
-            for (MapOfValuesByRaster::const_iterator it2 = it1->second.begin(); it2 != it1->second.end(); ++it2) 
-            {
-                ss << "\tRasterID: " << it2->first << "\t";
-                for (MapOfPositionsAndValues::const_iterator it3 = it2->second.begin(); it3 != it2->second.end(); ++it3)
-                {
-                    ss << " position " << it3->first << ", value " << it3->second << "\n\t\t\t";
-                }
-            }
-            ss << "\n";
-        }
-        ss << "\n";
-        std::cout << ss.str();
-
         sendRasterValuesInMap(rastersValuesByNode);
     }
 
@@ -1216,16 +1199,15 @@ std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTim
 
     void OpenMPIMultiNode::executeAgents()
     {
-usleep(getId() * 500000);
+//usleep(getId() * 500000);
 
-_schedulerLogs->writeInDebugFile(CreateStringStream("RASTERS AT STEP " << _world->getCurrentStep() << ":").str(), *this);
-_schedulerLogs->printNodeRastersInDebugFile(*this);
-_schedulerLogs->printNodeRastersDiscreteInDebugFile(*this);
-
-_schedulerLogs->writeInDebugFile(CreateStringStream("AGENTS AT STEP " << _world->getCurrentStep() << "; ORIGINAL AGENTS:").str(), *this);
+_schedulerLogs->writeInDebugFile(CreateStringStream("AGENTS AT THE BEGINNING OF STEP " << _world->getCurrentStep() << ":").str(), *this);
 _schedulerLogs->printNodeAgentsInDebugFile(*this, true);
 
-if (_world->getCurrentStep() == 2) exit(0);
+_schedulerLogs->writeInDebugFile(CreateStringStream("RASTERS AT THE BEGINNING OF STEP " << _world->getCurrentStep() << ":").str(), *this);
+_schedulerLogs->printNodeRastersInDebugFile(*this);
+
+if (_world->getCurrentStep() == 8) exit(0);
         AgentsVector executedAgentsInArea;
         executeAgentsInArea(_nodeSpace.ownedAreaWithoutInnerOverlap, executedAgentsInArea);
         synchronizeAgentsIfNecessary(executedAgentsInArea);
@@ -1238,15 +1220,18 @@ if (_world->getCurrentStep() == 2) exit(0);
 _schedulerLogs->writeInDebugFile(CreateStringStream("AGENTS AT STEP " << _world->getCurrentStep() << "; INNER_MOST EXECUTED:").str(), *this);
 _schedulerLogs->printNodeAgentsInDebugFile(*this, true);
 
+_schedulerLogs->writeInDebugFile(CreateStringStream("RASTERS AT STEP " << _world->getCurrentStep() << "; INNER_MOST EXECUTED:").str(), *this);
+_schedulerLogs->printNodeRastersInDebugFile(*this);
+
 std::cout << CreateStringStream("\n").str();
-usleep(500000);
+//usleep(500000);
 
         for (std::map<int, Rectangle<int>>::const_iterator it = _nodeSpace.innerSubOverlaps.begin(); it != _nodeSpace.innerSubOverlaps.end(); ++it)
         {
             int originalSubOverlapAreaID = it->first;
             Rectangle<int> originalOverlapArea = it->second;
 
-usleep(getId() * 500000);
+//usleep(getId() * 500000);
 
             executedAgentsInArea.clear();
 std::cout << CreateStringStream("[Process # " << getId() <<  "] " << getWallTime() << " executing agents in suboverlap #" << originalSubOverlapAreaID << "\n").str();
@@ -1258,6 +1243,9 @@ std::cout << CreateStringStream("[Process # " << getId() <<  "] " << getWallTime
 
 _schedulerLogs->writeInDebugFile(CreateStringStream("AGENTS AT STEP " << _world->getCurrentStep() << "; AFTER OVERLAP: " << originalSubOverlapAreaID).str(), *this);
 _schedulerLogs->printNodeAgentsInDebugFile(*this, true);
+
+_schedulerLogs->writeInDebugFile(CreateStringStream("RASTERS AT STEP " << _world->getCurrentStep() << "; AFTER OVERLAP: " << originalSubOverlapAreaID).str(), *this);
+_schedulerLogs->printNodeRastersInDebugFile(*this);
 
 std::cout << CreateStringStream("[Process # " << getId() <<  "] " << getWallTime() << " agents synchronized\n").str();
 std::cout << CreateStringStream("[Process # " << getId() <<  "]\n").str();
@@ -1271,10 +1259,9 @@ std::cout << CreateStringStream("[Process # " << getId() <<  "]\n").str();
 
 _schedulerLogs->writeInDebugFile(CreateStringStream("AGENTS AT STEP " << _world->getCurrentStep() << "; AFTER OVERLAP: " << originalSubOverlapAreaID).str(), *this);
 _schedulerLogs->printNodeRastersInDebugFile(*this);
-_schedulerLogs->printNodeRastersDiscreteInDebugFile(*this);
 
 std::cout << CreateStringStream("\n").str();
-usleep(500000);
+//usleep(500000);
         }
 
         // v2¿?: synchronize everything only at the end of the step, or 

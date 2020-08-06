@@ -106,6 +106,14 @@ namespace Engine
         Agent * createAndFillAgent( const std::string & type, void * package );
         
         /**
+         * @brief Frees the allocated memory that 'package' is pointing to. To do it, it uses the 'type' of the class to parse it.
+         * 
+         * @param package void*
+         * @param type const std::string&
+         */
+        void freePackage(void* package, const std::string& type) const;
+
+        /**
          * @brief Returns the first position of the typesMap.
          * 
          * @return TypesMap::iterator.

@@ -96,6 +96,10 @@ namespace Engine
             };
             std::list<MpiRequest*> _sendRequests;
 
+
+            // std::list<MpiSendRequest*> _sendRequests;
+            // std::list<MpiRecvRequest*> _recvRequests;
+
             /** Other structures **/
             OpenMPIMultiNodeLogs* _schedulerLogs;
 
