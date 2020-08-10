@@ -46,6 +46,8 @@ namespace Engine
         logName << "RasterLoader";
         log_DEBUG( logName.str( ), "loading file: " << fileName );
 
+        raster.setFileName(fileName);
+
         GDALAllRegister( );
         GDALDataset * dataset = ( GDALDataset * ) GDALOpen( fileName.c_str( ), GA_ReadOnly );
 

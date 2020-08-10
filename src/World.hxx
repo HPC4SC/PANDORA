@@ -39,7 +39,6 @@ namespace Engine
 {
 class Scheduler;
 class Agent;
-class SpacePartition;
 class OpenMPSingleNode;
 
 class World
@@ -56,9 +55,9 @@ protected:
 
     Scheduler * _scheduler; //! Pointer to the scheduler of the world.
 
-protected:
     std::map<std::string, int> _rasterNames; //! <rasterName, rasterIndex in _rasters>.
-    std::vector<StaticRaster * > _rasters; //! Rasters of the simularions.
+    std::map<int, std::string> _rasterIDsToNames; //! <rasterIndex, rasterName>
+    std::vector<StaticRaster*> _rasters; //! Rasters of the simulations.
     std::vector<bool> _dynamicRasters; //! True if the raster is dynamic, false the raster is static.
     std::vector<bool> _serializeRasters; //! True if the raster must be serialized, false otherwise.
 
@@ -77,7 +76,19 @@ protected:
     void updateRasterToMaxValues( const int & index );
 
     /**
-     * @brief Dumps current state of the simulation. Then applies next simulation step.
+     * @brief Updates the _currentStepOriginalPosition member for all the current agents of *this World.
+     * 
+     */
+    void updateDiscreteStateStructures() const;
+
+    /**
+     * @brief Runs all the needed internal modifications at the beginning of each step. Cannot be overriden by the simulation.
+     * 
+     */
+    void engineStep();
+
+    /**
+     * @brief Dumps current state of the simulation into the log files. Then applies next simulation step. Can be overriden by the model.
      * 
      */
     virtual void step( );
@@ -156,7 +167,7 @@ public:
     int getCurrentStep( ) const;
    
     /**
-     * @brief This method can be redefined by the children in order to modify the execution of each step on a given resource field. Default is grow 1 until max.
+     * @brief This method can be redefined by the children in order to modify the execution of each step on a given resource field.
      * 
      */
     virtual void stepEnvironment( );
@@ -261,6 +272,14 @@ public:
      * @return false 
      */
     bool checkPosition( const Point2D<int> & newPosition ) const;
+
+    /**
+     * @brief Gets the name of the raster from its ID (index).
+     * 
+     * @param id const int&
+     * @return std::string 
+     */
+    std::string getRasterNameFromID(const int& id) const;
 
     /**
      * @brief Sets the value of raster "key" to value "value" in global position "position".
@@ -400,6 +419,16 @@ public:
     const Rectangle<int> & getBoundaries( ) const;
 
     /**
+     * @brief Get the _agents member.
+     * 
+     * @return AgentsList* 
+     */
+    AgentsList getAgentsList()
+    {
+        return _agents;
+    }
+
+    /**
      * @brief Returns the iteratior pointing to the first Agent in the _agents vector.
      * 
      * @return AgentsList::iterator 
@@ -430,6 +459,51 @@ public:
     }
 
     /**
+     * @brief Gets the number of existing rasters.
+     * 
+     * @return size_t 
+     */
+    size_t getNumberOfExistingRasters() const
+    {
+        size_t result = 0;
+        for (size_t i = 0; i < _rasters.size(); ++i)
+        {
+            if (rasterExists(i)) result += 1;
+        }
+        return result;
+    }
+
+    /**
+     * @brief Get the Number Of Static Rasters.
+     * 
+     * @return size_t 
+     */
+    size_t getNumberOfStaticRasters() const
+    {
+        size_t result = 0;
+        for (size_t i = 0; i < _rasters.size(); ++i)
+        {
+            if (rasterExists(i) and not isRasterDynamic(i)) result += 1;
+        }
+        return result;
+    }
+
+    /**
+     * @brief Get the Number Of Dynamic Rasters.
+     * 
+     * @return size_t 
+     */
+    size_t getNumberOfDynamicRasters() const
+    {
+        size_t result = 0;
+        for (size_t i = 0; i < _rasters.size(); ++i)
+        {
+            if (rasterExists(i) and isRasterDynamic(i)) result += 1;
+        }
+        return result;
+    }
+
+    /**
      * @brief Get the Number Of Agents.
      * 
      * @return size_t.
@@ -455,6 +529,16 @@ public:
     void eraseAgent( AgentsList::iterator & it ) 
     { 
         _agents.erase( it ); 
+    }
+
+    /**
+     * @brief Erases the Agent pointed by 'it' from the _agents member.
+     * 
+     * @param it AgentsList::const_iterator&
+     */
+    void eraseAgent(AgentsList::const_iterator& it) 
+    { 
+        _agents.erase(it); 
     }
 
     /**
@@ -516,6 +600,29 @@ public:
     void addFloatAttribute( const std::string & type, const std::string & key, float value );
 
     /**
+     * @brief Factory method for distributed Scheduler based on uneven spatial distribution with dynamic load balancing implementation.
+     * 
+     * @return Scheduler* 
+     */
+    static Scheduler* useOpenMPIMultiNode();
+
+    /**
+	 * @brief Factory method for distributed Scheduler based on spatial distribution of a simulation.
+	 * 
+	 * @param overlap Number of depth of the overlap zone.
+	 * @param finalize If true will call MPI_Finalize at the end of run ( default behavior ).
+	 * @return Scheduler* 
+	 */
+    //static Scheduler * useSpacePartition( int overlap = 1, bool finalize = true );
+    
+    /**
+	 * @brief Factory method for sequential Scheduler without any non-shared communication mechanism, apt for being executed in a single computer.
+	 * 
+	 * @return Scheduler* 
+	 */
+    static Scheduler * useOpenMPSingleNode( );
+
+    /**
      * @brief Get the identifier of the world.
      * 
      * @return const int& 
@@ -545,7 +652,7 @@ public:
      * @return true 
      * @return false 
      */
-    bool isRasterDynamic( size_t index ) { return _dynamicRasters.at( index ); }
+    bool isRasterDynamic( size_t index ) const { return _dynamicRasters.at( index ); }
     
     /**
      * @brief Returns if the raster in index 'index' exists.
@@ -554,31 +661,31 @@ public:
      * @return true 
      * @return false 
      */
-    bool rasterExists( size_t index )
+    bool rasterExists( size_t index ) const
     {
-        /*if ( _rasters.at( index ))
-        {
-            return true;
-        }
-        return false;*/
-        return bool(_rasters.at( index ));
+        return bool(_rasters.at(index));
     }
-
-    /**
-	 * @brief Factory method for distributed Scheduler based on spatial distribution of a simulation.
-	 * 
-	 * @param overlap Number of depth of the overlap zone.
-	 * @param finalize If true will call MPI_Finalize at the end of run ( default behavior ).
-	 * @return Scheduler* 
-	 */
-    static Scheduler * useSpacePartition( int overlap = 1, bool finalize = true );
     
     /**
-	 * @brief Factory method for sequential Scheduler without any non-shared communication mechanism, apt for being executed in a single computer.
-	 * 
-	 * @return Scheduler* 
-	 */
-    static Scheduler * useOpenMPSingleNode( );
+     * @brief [OpenMP] Set whether the agents' actions should be run in parallel or not. If executeActionsInParallel = true, control locks are REQUIRED to be used in the model!
+     * 
+     * @param updateKnowledgeInParallel bool
+     * @param executeActionsInParallel bool
+     */
+    void setParallelism(bool updateKnowledgeInParallel, bool executeActionsInParallel);
+
+    /**
+     * @brief [PARALLELISM FUNCTION] Indicates that the world is going to be changed, so it is necessary to pause the execution of all the threads but the one calling this function.
+     * 
+     */
+    void changingWorld();
+
+    /**
+     * @brief [PARALLELISM FUNCTION] Indicates that the world has already been changed, so the paused threads execution can be resumed.
+     * 
+     */
+    void worldChanged();
+
 };
 
 } // namespace Engine

@@ -36,6 +36,8 @@ namespace Engine
     {
     public:
         typedef std::map< std::string, MPI_Datatype *> TypesMap;
+        typedef std::map< std::string, int> TypesMapNameToID;
+        typedef std::map< int, std::string> TypesMapIDToName;
 
     private:
         
@@ -48,6 +50,8 @@ namespace Engine
         MpiFactory( );
 
         TypesMap _types; //! Map of the different Agent types.
+        TypesMapNameToID _typesMapNameToID;
+        TypesMapIDToName _typesMapIDToName;
 
     public:
         
@@ -77,6 +81,14 @@ namespace Engine
         void cleanTypes( );
 
         /**
+         * @brief Gets the MPI_Datatype from an agent type (TypesMap[typeString])
+         * 
+         * @param typeString std::string
+         * @return MPIDatatype*
+         */
+        MPI_Datatype* getMPIType(std::string typeString);
+
+        /**
          * @brief Create a Default Package object
          * 
          * @param type Type of the package created.
@@ -94,6 +106,14 @@ namespace Engine
         Agent * createAndFillAgent( const std::string & type, void * package );
         
         /**
+         * @brief Frees the allocated memory that 'package' is pointing to. To do it, it uses the 'type' of the class to parse it.
+         * 
+         * @param package void*
+         * @param type const std::string&
+         */
+        void freePackage(void* package, const std::string& type) const;
+
+        /**
          * @brief Returns the first position of the typesMap.
          * 
          * @return TypesMap::iterator.
@@ -106,6 +126,23 @@ namespace Engine
          * @return TypesMap::iterator 
          */
         TypesMap::iterator endTypes( );
+
+        /**
+         * @brief Gets the ID of the agent type from its name 'typeName'.
+         * 
+         * @param typeName const std::string&
+         * @return int 
+         */
+        int getIDFromTypeName(const std::string& typeName) const;
+
+        /**
+         * @brief Gets the name of the agent type from its ID 'typeID'.
+         * 
+         * @param typeID const int&
+         * @return std::string 
+         */
+        std::string getNameFromTypeID(const int& typeID) const;
+
     };
 } // namespace Engine
 #endif // __MpiFactory_hxx__

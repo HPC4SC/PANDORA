@@ -34,6 +34,11 @@ namespace Engine
 class DynamicRaster : public StaticRaster
 {
 private:
+
+    // Variables for raster creation (MPI mainly)
+    int _defaultValue;
+
+    // Class variables
     std::vector< std::vector<int> > _maxValues; //! Matrix of the maximun values of the raster.
     int    _currentMaxValue; //! Current maximum value of the raster.
     int    _currentMinValue; //! Current minimum value of the raster.
@@ -46,10 +51,26 @@ public:
     DynamicRaster( );
 
     /**
+     * @brief Construct a new Dynamic Raster object.
+     * 
+     * @param id const id&
+     * @param name const std::string&
+     * @param serialize const bool&
+     */
+    DynamicRaster(const int& id, const std::string name, const bool& serialize);
+
+    /**
      * @brief Destroy the Dynamic Raster object
      * 
      */
     virtual ~DynamicRaster( );
+
+    /**
+     * @brief Get the _defaultValue member.
+     * 
+     * @return int 
+     */
+    int getDefaultValue() const;
 
     bool operator==( const DynamicRaster& other ) const; //! Equality operators
     bool operator!=( const DynamicRaster& other ) const; //! Equality operators
@@ -65,6 +86,13 @@ public:
      * 
      */
     void updateRasterToMaxValues( );
+
+    /**
+     * @brief Gets attribute _maxValue.
+     * 
+     * @return const int& 
+     */
+    const int & getMaxValue( ) const;
 
     /**
      * @brief Reads the maximum allowed value in the cell located by parameter "position". Returns -1 if "position" is out of the area of the raster.

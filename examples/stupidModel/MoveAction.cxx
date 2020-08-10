@@ -1,9 +1,10 @@
 
 #include <MoveAction.hxx>
 
-#include <Bug.hxx>
 #include <GeneralState.hxx>
 #include <Rectangle.hxx>
+
+#include <Exception.hxx>
 
 namespace Examples 
 {
@@ -12,13 +13,14 @@ MoveAction::MoveAction() {}
 
 MoveAction::~MoveAction() {}
 
-void MoveAction::execute( Engine::Agent & agent ) {	
+void MoveAction::execute( Engine::Agent & agent ) {
 	Engine::World * world = agent.getWorld();
 	Engine::Point2D<int> newPosition = agent.getPosition();
 	int new_x = newPosition._x;
 	int new_y = newPosition._y;
 	// the bug selects the position in it's reach with the most food
-	moveBestPos(new_x,new_y,world);
+	Bug& bug = (Bug&) agent;
+	moveBestPos(new_x,new_y,world, bug);
 	newPosition._x = new_x;
 	newPosition._y = new_y;
 	// the bug moves to the selected position if it isn't occupied
@@ -27,22 +29,34 @@ void MoveAction::execute( Engine::Agent & agent ) {
 	}
 }
 
-void MoveAction::moveBestPos(int &new_x,int &new_y, Engine::World * world) {
+void MoveAction::moveBestPos(int &new_x,int &new_y, Engine::World * world, const Bug& bug) {
 	Engine::Point2D<int> candidate;
 	candidate._x = new_x;
 	candidate._y = new_y;
 	int maxFood = 0;
-	int ini_i = new_x - 4;
-	int last_i = new_x + 4;
-	int ini_j = new_y - 4;
-	int last_j = new_y + 4;
+	int maxBugMovement = bug.getMaxMovement();
+	int ini_i = new_x - maxBugMovement;
+	int last_i = new_x + maxBugMovement;
+	int ini_j = new_y - maxBugMovement;
+	int last_j = new_y + maxBugMovement;
 	// the bug looks around and compares the food in the cells within its reach
-	for(int i = ini_i; i < last_i; ++i) {
-		for(int j = ini_j; j < last_j; ++j) {
+// std::string lookedupBugID = "Bug_2";
+// int node = 3;
+// if (world->getId() == node and bug.getId() == lookedupBugID)
+// {
+// 	int originalFood = world->getValue("food", bug.getPosition());
+// 	std::cout << CreateStringStream("[Process # " << world->getId() <<  "] " << bug.getId() << " position: " << bug.getPosition() << " original food: " << originalFood << " \n").str();
+// }
+	for(int i = ini_i; i <= last_i; ++i) {
+		for(int j = ini_j; j <= last_j; ++j) {
 			if(inside(i,j,world)){
 				candidate._x = i;
 				candidate._y = j;
 				int candidateFood = world->getValue("food",candidate);
+// if (world->getId() == node and bug.getId() == lookedupBugID)
+// {
+// 	std::cout << CreateStringStream("[Process # " << world->getId() <<  "] " << bug.getId() << " candidate x=" << candidate._x << " y=" << candidate._y << " where food is: " << candidateFood << " \n").str();
+// }
 			    // the bug checks if the candidate is a better position
 				if (maxFood < candidateFood) {
 					maxFood = candidateFood;
@@ -60,8 +74,9 @@ void MoveAction::moveBestPos(int &new_x,int &new_y, Engine::World * world) {
 }
 
 bool MoveAction::inside(int i, int j, Engine::World * world) {
-	Engine::Rectangle<int> r = world->getBoundaries();
-	return ((j >= r.top() and j <= r.bottom()) and (i >= r.left() and i <= r.right()));
+	int totalWidth = world->getConfig().getSize().getWidth();
+	int totalHeight = world->getConfig().getSize().getHeight();
+	return (i >= 0 and j >= 0 and i < totalWidth and j < totalHeight);
 }
 
 std::string MoveAction::describe() const {

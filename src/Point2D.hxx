@@ -29,258 +29,286 @@
 namespace Engine
 {
 
-//! Basic pointing object
-/*!
-  This class contains x/y coordinates, as well as needed utilities ( arithmetics, distance, etc. )
-  It is templatised by the type of coordinates
-*/
-template <typename Type> class Point2D
-{
-public:
-    Type _x; //! X axis position.
-    Type _y; //! Y axis position.
-
-    /**
-     * @brief Construct a new Point2D object with _x = 0 and _y = 0.
-     * 
-     */
-    Point2D( ) : _x( 0 ), _y( 0 )
+    //! Basic pointing object
+    /*!
+    This class contains x/y coordinates, as well as needed utilities ( arithmetics, distance, etc. )
+    It is templatised by the type of coordinates
+    */
+    template <typename Type> class Point2D
     {
-    }
+        public:
+            Type _x; //! X axis position.
+            Type _y; //! Y axis position.
 
-    /**
-     * @brief Construct a new Point2D object with _x = x and _y = y.
-     * 
-     * @param x Initial x axis position.
-     * @param y Initial y axis position.
-     */
-    Point2D( const Type & x, const Type & y ) : _x( x ), _y( y )
-    {
-    }
+            /**
+             * @brief Construct a new Point2D object with _x = 0 and _y = 0.
+             * 
+             */
+            Point2D( ) : _x( 0 ), _y( 0 )
+            {
+            }
 
-    /**
-     * @brief Clones the calling Point2D.
-     * 
-     * @return Point2D<Type> 
-     */
-    Point2D<Type> clone( ) const
-    {
-        return Point2D<Type>( _x, _y );
-    }
+            /**
+             * @brief Construct a new Point2D object with _x = x and _y = y.
+             * 
+             * @param x Initial x axis position.
+             * @param y Initial y axis position.
+             */
+            Point2D( const Type & x, const Type & y ) : _x( x ), _y( y )
+            {
+            }
 
-    /**
-     * @brief Shape output of Point2D.
-     * 
-     * @param stream Data stream.
-     * @param point Point to be printed.
-     * @return std::ostream& 
-     */
-    friend std::ostream & operator<<( std::ostream & stream, const Point2D<Type> & point )
-    {
-        return stream << point._x << "/" << point._y;
-    }
+            /**
+             * @brief Getter for the _x member.
+             * 
+             * @return const Type& 
+             */
+            const Type& getX() const { return _x; }
 
-    /**
-     * @brief Equality within an square area around the caller object.
-     * 
-     * @param point is considered equal if it falls in the rectangle ( (_x-delta, _y-delta )..( _x+delta, _y+delta )). 
-     * Assuming ( (a, b )..( c, d )) a rectangle with top left corner ( a, b ) and bottom right corner ( c, d ).
-     * @param delta Error.
-     * @return true 
-     * @return false 
-     */
-    bool isEqual( const Point2D<Type> & point, const double & delta = 0.0001 ) const
-    {
-        return distance( point )<=delta;
-    }
+            /**
+             * @brief Getter for the _y member.
+             * 
+             * @return const Type& 
+             */
+            const Type& getY() const { return _y; }
 
-    /**
-     * @brief Point2D Assignation.
-     * 
-     * @param point Value of the Point2D
-     * @return Point2D<Type>& 
-     */
-    Point2D<Type> & operator=( const Point2D<Type> & point )
-    {
-        _x = point._x;
-        _y = point._y;
-        return *this;
-    }
+            /**
+             * @brief Setter for the _x member.
+             * 
+             * @return const Type& 
+             */
+            Type& getX() { return _x; }
 
-    /**
-     * @brief Equality of two points.
-     * 
-     * @param point Point2D to compare with.
-     * @return true 
-     * @return false 
-     */
-    bool operator==( const Point2D<Type> & point ) const
-    {
-        return isEqual( point );
-    }
+            /**
+             * @brief Setter for the _y member.
+             * 
+             * @return const Type& 
+             */
+            Type& getY() { return _y; }
 
-    /**
-     * @brief Non equality of two poits.
-     * 
-     * @param point Point2D to compare with.
-     * @return true 
-     * @return false 
-     */
-    bool operator!=( const Point2D<Type>& point ) const
-    {
-        return !isEqual( point );
-    }
+            /**
+             * @brief Clones the calling Point2D.
+             * 
+             * @return Point2D<Type> 
+             */
+            Point2D<Type> clone( ) const
+            {
+                return Point2D<Type>( _x, _y );
+            }
 
-    /**
-     * @brief Sum coordinates of the param to the coordinates of the caller object.
-     * 
-     * @param point Point2D to sum.
-     * @return Point2D<Type>& 
-     */
-    Point2D<Type> & operator+=( const Point2D<Type> & point )
-    {
-        _x += point._x;
-        _y += point._y;
-        return *this;
-    }
+            /**
+             * @brief Shape output of Point2D.
+             * 
+             * @param stream Data stream.
+             * @param point Point to be printed.
+             * @return std::ostream& 
+             */
+            friend std::ostream & operator<<( std::ostream & stream, const Point2D<Type> & point )
+            {
+                return stream << "x=" << point._x << " y=" << point._y;
+            }
 
-    /**
-     * @brief Substraction coordinates of the param to the coordinates of the caller object.
-     * 
-     * @param point Point2D to substract.
-     * @return Point2D<Type>& 
-     */
-    Point2D<Type> & operator-=( const Point2D<Type> & point )
-    {
-        _x -= point._x;
-        _y -= point._y;
-        return *this;
-    }
+            /**
+             * @brief Equality within an square area around the caller object.
+             * 
+             * @param point is considered equal if it falls in the rectangle ( (_x-delta, _y-delta )..( _x+delta, _y+delta )). 
+             * Assuming ( (a, b )..( c, d )) a rectangle with top left corner ( a, b ) and bottom right corner ( c, d ).
+             * @param delta Error.
+             * @return true 
+             * @return false 
+             */
+            bool isEqual( const Point2D<Type> & point, const double & delta = 0.0001 ) const
+            {
+                return distance( point )<=delta;
+            }
 
-    /**
-     * @brief Sum arithmethic operation of a Point2D and a gerneral type.
-     * 
-     * @param value Value to be summed.
-     * @return Point2D<Type> 
-     */
-    Point2D<Type> operator+( const Type & value ) const
-    {
-        return Point2D<Type>( _x+value, _y+value );
-    }
+            /**
+             * @brief Point2D Assignation.
+             * 
+             * @param point Value of the Point2D
+             * @return Point2D<Type>& 
+             */
+            Point2D<Type> & operator=( const Point2D<Type> & point )
+            {
+                _x = point._x;
+                _y = point._y;
+                return *this;
+            }
 
-    /**
-     * @brief Substraction arithmethic operation of a Point2D and a gerneral type.
-     * 
-     * @param value Value to be substracted.
-     * @return Point2D<Type> 
-     */
-    Point2D<Type> operator-( const Type & value ) const
-    {
-        return Point2D<Type>( _x-value, _y-value );
-    }
+            /**
+             * @brief Equality of two points.
+             * 
+             * @param point Point2D to compare with.
+             * @return true 
+             * @return false 
+             */
+            bool operator==( const Point2D<Type> & point ) const
+            {
+                return isEqual( point );
+            }
 
-    /**
-     * @brief Multiplication arithmethic operation of a Point2D and a gerneral type.
-     * 
-     * @param value Value to be multiplied.
-     * @return Point2D<Type> 
-     */
-    Point2D<Type> operator*( const Type & value ) const
-    {
-        return Point2D<Type>( _x*value, _y*value );
-    }
+            /**
+             * @brief Non equality of two poits.
+             * 
+             * @param point Point2D to compare with.
+             * @return true 
+             * @return false 
+             */
+            bool operator!=( const Point2D<Type>& point ) const
+            {
+                return !isEqual( point );
+            }
 
-    /**
-     * @brief Division arithmethic operation of a Point2D and a gerneral type.
-     * 
-     * @param value Value to be devied by.
-     * @return Point2D<Type> 
-     */
-    Point2D<Type> operator/( const Type & value ) const
-    {
-        return Point2D<Type>( _x/value, _y/value );
-    }
+            /**
+             * @brief Sum coordinates of the param to the coordinates of the caller object.
+             * 
+             * @param point Point2D to sum.
+             * @return Point2D<Type>& 
+             */
+            Point2D<Type> & operator+=( const Point2D<Type> & point )
+            {
+                _x += point._x;
+                _y += point._y;
+                return *this;
+            }
 
-    /**
-     * @brief Sum arithmethic operation of two Point2D.
-     * 
-     * @param point Point2D to be summed.
-     * @return Point2D<Type> 
-     */
-    Point2D<Type> operator+( const Point2D<Type> & point ) const
-    {
-        return Point2D<Type>( _x+point._x, _y+point._y );
-    }
+            /**
+             * @brief Substraction coordinates of the param to the coordinates of the caller object.
+             * 
+             * @param point Point2D to substract.
+             * @return Point2D<Type>& 
+             */
+            Point2D<Type> & operator-=( const Point2D<Type> & point )
+            {
+                _x -= point._x;
+                _y -= point._y;
+                return *this;
+            }
 
-    /**
-     * @brief Substraction arithmethic operation of two Point2D.
-     * 
-     * @param point Point2D to be substracted.
-     * @return Point2D<Type> 
-     */
-    Point2D<Type> operator-( const Point2D<Type> & point ) const
-    {
-        return Point2D<Type>( _x-point._x, _y-point._y );
-    }
+            /**
+             * @brief Sum arithmethic operation of a Point2D and a gerneral type.
+             * 
+             * @param value Value to be summed.
+             * @return Point2D<Type> 
+             */
+            Point2D<Type> operator+( const Type & value ) const
+            {
+                return Point2D<Type>( _x+value, _y+value );
+            }
 
-    /**
-     * @brief Multiplication arithmethic operation of two Point2D.
-     * 
-     * @param point Point2D to be multiplied.
-     * @return Point2D<Type> 
-     */
-    Point2D<Type> operator*( const Point2D<Type> & point ) const
-    {
-        return Point2D<Type>( _x*point._x, _y*point._y );
-    }
+            /**
+             * @brief Substraction arithmethic operation of a Point2D and a gerneral type.
+             * 
+             * @param value Value to be substracted.
+             * @return Point2D<Type> 
+             */
+            Point2D<Type> operator-( const Type & value ) const
+            {
+                return Point2D<Type>( _x-value, _y-value );
+            }
 
-    /**
-     * @brief Division arithmethic operation of two Point2D.
-     * 
-     * @param point Point2D to be devied by.
-     * @return Point2D<Type> 
-     */
-    Point2D<Type> operator/( const Point2D<Type> & point ) const
-    {
-        return Point2D<Type>( _x/point._x, _y/point._y );
-    }
+            /**
+             * @brief Multiplication arithmethic operation of a Point2D and a gerneral type.
+             * 
+             * @param value Value to be multiplied.
+             * @return Point2D<Type> 
+             */
+            Point2D<Type> operator*( const Type & value ) const
+            {
+                return Point2D<Type>( _x*value, _y*value );
+            }
 
-    /**
-     * @brief Checks if the calling point is lesser than the given one.
-     * 
-     * @param point Point2D to compare with.
-     * @return true 
-     * @return false 
-     */
-    bool operator<( const Point2D<Type>& point ) const
-    {
-        return ( _x < point._x ) || ( (_x == point._x ) && ( _y < point._y ) );
-    }
+            /**
+             * @brief Division arithmethic operation of a Point2D and a gerneral type.
+             * 
+             * @param value Value to be devied by.
+             * @return Point2D<Type> 
+             */
+            Point2D<Type> operator/( const Type & value ) const
+            {
+                return Point2D<Type>( _x/value, _y/value );
+            }
 
-    /**
-     * @brief Metric between two Point2D.
-     * 
-     * @param point Point2D needed.
-     * @return Type 
-     */
-    Type dot( const Point2D<Type> & point ) const
-    {
-        return _x*point._x + _y*point._y;
-    }
+            /**
+             * @brief Sum arithmethic operation of two Point2D.
+             * 
+             * @param point Point2D to be summed.
+             * @return Point2D<Type> 
+             */
+            Point2D<Type> operator+( const Point2D<Type> & point ) const
+            {
+                return Point2D<Type>( _x+point._x, _y+point._y );
+            }
 
-    /**
-     * @brief Euclidean Distance between points.
-     * 
-     * @param point Point2D to check the distance with.
-     * @return double 
-     */
-    double distance( const Point2D<Type> & point ) const
-    {
-        double valueX = _x-point._x;
-        double valueY = _y-point._y;
-        return sqrt( valueX*valueX + valueY*valueY );
-    }
-};
+            /**
+             * @brief Substraction arithmethic operation of two Point2D.
+             * 
+             * @param point Point2D to be substracted.
+             * @return Point2D<Type> 
+             */
+            Point2D<Type> operator-( const Point2D<Type> & point ) const
+            {
+                return Point2D<Type>( _x-point._x, _y-point._y );
+            }
+
+            /**
+             * @brief Multiplication arithmethic operation of two Point2D.
+             * 
+             * @param point Point2D to be multiplied.
+             * @return Point2D<Type> 
+             */
+            Point2D<Type> operator*( const Point2D<Type> & point ) const
+            {
+                return Point2D<Type>( _x*point._x, _y*point._y );
+            }
+
+            /**
+             * @brief Division arithmethic operation of two Point2D.
+             * 
+             * @param point Point2D to be devied by.
+             * @return Point2D<Type> 
+             */
+            Point2D<Type> operator/( const Point2D<Type> & point ) const
+            {
+                return Point2D<Type>( _x/point._x, _y/point._y );
+            }
+
+            /**
+             * @brief Checks if the calling point is lesser than the given one.
+             * 
+             * @param point Point2D to compare with.
+             * @return true 
+             * @return false 
+             */
+            bool operator<( const Point2D<Type>& point ) const
+            {
+                return ( _x < point._x ) || ( (_x == point._x ) && ( _y < point._y ) );
+            }
+
+            /**
+             * @brief Metric between two Point2D.
+             * 
+             * @param point Point2D needed.
+             * @return Type 
+             */
+            Type dot( const Point2D<Type> & point ) const
+            {
+                return _x*point._x + _y*point._y;
+            }
+
+            /**
+             * @brief Euclidean Distance between points.
+             * 
+             * @param point Point2D to check the distance with.
+             * @return double 
+             */
+            double distance( const Point2D<Type> & point ) const
+            {
+                double valueX = _x-point._x;
+                double valueY = _y-point._y;
+                return sqrt( valueX*valueX + valueY*valueY );
+            }
+    };
 
 } // namespace Engine
 

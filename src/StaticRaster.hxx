@@ -48,15 +48,30 @@ struct ColorEntry
 //! this class is used to load a static raster map. Values can't be modified, and it won't be serialized each time step ( only one time )
 class StaticRaster
 {
+
+    friend class RasterLoader;
+
 protected:
-    std::vector< std::vector<int> >_values; //! Matrix of values of the raster.
+
+
+    // Variables for raster creation (MPI mainly)
+    int _id;
+    std::string _name;
+    bool _serialize;
+    std::string _fileName;
+
+    // Class variables
+    std::vector<std::vector<int>> _values; //! Matrix of values of the raster.
+    std::vector<std::vector<int>> _discreteValues; //! Matrix of discrete values of the raster (current step 'i', not 'i+1').
 
     int _minValue; //! Minimum value of the raster.
     int _maxValue; //! Maximum value of the raster.
 
     bool _hasColorTable; //! True the raster has a color table, otherwise a color table is not set.
     std::vector< ColorEntry > _colorTable; //! Color pallet of the raster.
+
 public:
+
     /**
      * @brief Construct a new Static Raster object.
      * 
@@ -64,10 +79,54 @@ public:
     StaticRaster( );
 
     /**
+     * @brief Construct a new Static Raster object.
+     * 
+     * @param id const int&
+     * @param name const std::string&
+     * @param serialize const bool&
+     */
+    StaticRaster(const int& id, const std::string& name, const bool& serialize);
+
+    /**
      * @brief Destroy the Static Raster object
      * 
      */
     virtual ~StaticRaster( );
+
+    /**
+     * @brief Gets the _id (index in World) member.
+     * 
+     * @return int 
+     */
+    int getID() const;
+
+    /**
+     * @brief Gets the _name member.
+     * 
+     * @return std::string 
+     */
+    std::string getName() const;
+
+    /**
+     * @brief Get the _fileName member.
+     * 
+     * @return std::string 
+     */
+    std::string getFileName() const;
+
+    /**
+     * @brief Get the _serialize member.
+     * 
+     * @return bool
+     */
+    bool getSerialize() const;
+
+    /**
+     * @brief Set the _fileName member.
+     * 
+     * @param fileName Set the _fileName member.
+     */
+    void setFileName(const std::string& fileName);
 
     /**
      * @brief Equality operator between two rasters.
@@ -95,12 +154,27 @@ public:
     virtual void resize( const Size<int> & size );
     
     /**
+     * @brief Changes the size of the _discreteValues member.
+     * 
+     * @param size const Size<int>&
+     */
+    virtual void resizeDiscrete(const Size<int>& size);
+
+    /**
      * @brief Gets the value in the cell located by parameter "position". Returns -1 if "position" is out of the area of the raster.
      * 
      * @param position Position of the raster whose value we need.
      * @return const int& 
      */
     virtual const int & getValue( const Point2D<int>& position ) const;
+
+    /**
+     * @brief Gets the 'position' in _discreteValues attribute.
+     * 
+     * @param position const Point2D<int>&
+     * @return const int& 
+     */
+    virtual const int& getDiscreteValue(const Point2D<int>& position) const;
 
     /**
      * @brief Returns size of the raster codifying the horizontal and vertical dimensions in a Size object.
@@ -124,12 +198,27 @@ public:
     const int & getMinValue( ) const;
 
     /**
+     * @brief Gets the avg value for the 'matrixOfValues' representing a raster.
+     * 
+     * @param matrixOfValues const std::vector<std::vector<int>>&
+     * @return float 
+     */
+    float getAvgValueBase(const std::vector<std::vector<int>>& matrixOfValues) const;
+
+    /**
      * @brief Gets the average value of the raster.
      * 
      * @return float 
      */
     float getAvgValue( ) const;
     
+    /**
+     * @brief Gets the average value for the raster for its _discreteValues.
+     * 
+     * @return float 
+     */
+    float getAvgValueDiscrete() const;
+
     /**
      * @brief Updates the new minumim and maximum values of the raster.
      * 
@@ -178,7 +267,12 @@ public:
      */
     ColorEntry getColorEntry( int index ) const;
 
-    friend class RasterLoader;
+    /**
+     * @brief Updates the member matrix _discreteValues, copying all values in _continuousValues to it.
+     * 
+     */
+    void copyContinuousValuesToDiscreteOnes();
+
 };
 
 } // namespace Engine

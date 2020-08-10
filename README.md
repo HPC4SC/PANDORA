@@ -25,6 +25,7 @@ Tutorial:
 06. [Pandora's logging system & gdbgui](docs/tutorials/03_logging_system.md) 
 07. [Analysis pandora's output (python)](docs/tutorials/04_pyanalysis.md) 
 08. [Analysis pandora's output (C++)](docs/tutorials/05_analysis.md)
-09. [Marenostrum deployment and scripting](docs/tutorials/06_marenostrum.md)
+09. [Cassandra tool](docs/tutorials/06_cassandra.md)
+10. [Marenostrum deployment and scripting](docs/tutorials/07_marenostrum.md)
 
 

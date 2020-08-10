@@ -21,9 +21,10 @@ int main(int argc, char *argv[])
 		{
 			fileName = argv[1];
 		}
-		Examples::RandomWorld world(new Examples::RandomWorldConfig(fileName), world.useSpacePartition(2));
+		Examples::RandomWorld world(new Examples::RandomWorldConfig(fileName), world.useOpenMPIMultiNode());
 	
 		world.initialize(argc, argv);
+		world.setParallelism(false, false);
 		world.run();
 	}
 	catch( std::exception & exceptionThrown ) 

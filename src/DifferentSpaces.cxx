@@ -47,7 +47,7 @@ namespace Engine {
         }
     }
 
-    void SpacePartition::stablishBoundaries() {
+    void DifferentSpaces::stablishBoundaries() {
         // position of world related to the complete set of computer nodes
         int worldsPerRow = sqrt(_numTasks);
         _worldPos = getPositionFromId(_id);
@@ -102,7 +102,7 @@ namespace Engine {
 
         if (_ownedArea._size._width % 2 != 0 || _ownedArea._size._height % 2 != 0) {
             std::stringstream oss;
-            oss << "SpacePartition::init - local raster size: " << _ownedArea._size << " must be divisible by 2";
+            oss << "DifferentSpaces::init - local raster size: " << _ownedArea._size << " must be divisible by 2";
             throw Exception(oss.str());
         }
         checkOverlapSize();

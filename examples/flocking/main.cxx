@@ -6,11 +6,12 @@
 
 #include <iostream>
 #include <cstdlib>
+#include <unistd.h>
 
 int main(int argc, char *argv[]) 
 {
 	try 
-	{	
+	{
 		if(argc>2) 
 		{
 			throw Engine::Exception("USAGE: Flocking [config file]");
@@ -21,9 +22,10 @@ int main(int argc, char *argv[])
 		{
 			fileName = argv[1];
 		}
-		Examples::RandomWorld world(new Examples::RandomWorldConfig(fileName), world.useSpacePartition(2));
+		Examples::RandomWorld world(new Examples::RandomWorldConfig(fileName), world.useOpenMPIMultiNode());
 	
 		world.initialize(argc, argv);
+		world.setParallelism(false, false);
 		world.run();
 	}
 	catch( std::exception & exceptionThrown ) 

@@ -72,14 +72,19 @@ World & Agent::getWorldRef( )
     return *_world;
 }
 
-void Agent::setPosition( const Point2D<int> & position )
-{
-    _position = position;
-}
-
 const Point2D<int> & Agent::getPosition( ) const
 {
     return _position;
+}
+
+const Point2D<int>& Agent::getDiscretePosition() const
+{
+    return _discretePosition;
+}
+
+void Agent::setPosition( const Point2D<int> & position )
+{
+    _position = position;
 }
 
 void Agent::serializeAttribute( const std::string & name, const int & value )
@@ -112,8 +117,25 @@ void Agent::setExists( bool exists )
     _exists = exists;
 }
 
+bool Agent::operator==(const Agent& other) const
+{
+    if (typeid(*this) != typeid(other)) return false;
+    return hasTheSameAttributes(other);
+}
+
+bool Agent::hasTheSameAttributes(const Agent& other) const
+{
+    return  _intAttributes == other._intAttributes and
+            _floatAttributes == other._floatAttributes and
+            _stringAttributes == other._stringAttributes and
+            _id == other._id and
+            _exists == other._exists and
+            _position == other._position and
+            _world->getId() == other._world->getId();
+}
+
 std::ostream& Agent::print( std::ostream& os ) const {
-    os << "id: " << getId( ) << " pos: " << getPosition( ) << " exists: " << exists( );
+    os << "id: " << getId( ) << " pos: " << getPosition( ) << " discrete pos: " << getDiscretePosition() << " exists: " << exists( );
     return getWorld( ) ? os << " at world: " << getWorld( )->getId( ) : os << " without world";
 }
 
@@ -168,6 +190,11 @@ void Agent::changeType( const std::string & type )
     std::string oldType = getType( );
     size_t startPos = _id.find( oldType );
     _id.replace( startPos, oldType.length( ), type );
+}
+
+void Agent::copyContinuousValuesToDiscreteOnes()
+{
+    _discretePosition = _position;
 }
 
 } // namespace Engine

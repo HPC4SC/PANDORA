@@ -9,4 +9,4 @@
 module purge
 module load singularity/3.5.2
 
-singularity exec --pwd ~/PANDORA/examples/sugarScape ~/pandora_ext_singularity.sif ./sugarScape
+singularity exec --pwd ~/PANDORA/examples/sugarScape ~/genajim_pandora.sif ./sugarScape

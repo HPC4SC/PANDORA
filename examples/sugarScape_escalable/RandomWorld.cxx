@@ -113,7 +113,7 @@ void RandomWorld::step() {  // each step of the world is registered into the log
 	if (_step%_config->getSerializeResolution() == 0) {
 		_scheduler->serializeRasters(_step);
 		_scheduler->serializeAgents(_step);
-		log_DEBUG(logName.str(), getWallTime() << " step: " << step_ << " serialization done");
+		log_DEBUG(logName.str(), getWallTime() << " step: " << _step << " serialization done");
 	}
 	stepEnvironment();
 	log_DEBUG(logName.str(), getWallTime() << " step: " << _step << " has executed step enviroment");

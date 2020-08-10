@@ -58,7 +58,7 @@ public:
      * @brief Construct a new OpenMPSingleNode object. And creates the corresponding serializer.
      * 
      */
-    OpenMPSingleNode( );
+    OpenMPSingleNode();
 
     /**
      * @brief Destroy the OpenMPSingle Node object.
@@ -79,13 +79,19 @@ public:
      * @param argv Not used.
      */
     void init( int argc, char *argv[] );
-    
+
     /**
      * @brief Initialize data processes after creation of agents and rasters.
      * 
      */
     void initData( );
     
+    /**
+     * @brief NOT IMPLEMENTED.
+     * 
+     */
+    void updateEnvironmentState() override {}
+
     /**
      * @brief Responsible for executing the agents and update world.
      * 

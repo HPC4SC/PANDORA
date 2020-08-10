@@ -48,8 +48,11 @@ namespace Engine
         
         std::string _id; //! Agent identifier.
         bool _exists; //! Flag to control if agent is "dead" or "alive". it is used in analyzer in order to know if agent must be painted.
-        Point2D<int> _position; //! Position of the agent, in global coordinates.
+        Point2D<int> _position; //! Up-to-date position of the agent, in global coordinates.
+        Point2D<int> _discretePosition; //! Position in the current step 'i', not 'i+1'. Only updated at the beginning of each step.
         World * _world; //! Pointer to the world that owns this agent.
+
+        std::list<Action*> _actions; //! list of actions to be executed by the Agent.
 
         /**
          * @brief used in child class. Serializes a float attribute.
@@ -75,7 +78,6 @@ namespace Engine
          */
         void serializeAttribute( const std::string & name, const std::string & value );
 
-        std::list<Action*> _actions; //! list of actions to be executed by the Agent.
     public:
 
         /**
@@ -156,14 +158,21 @@ namespace Engine
         void setExists( bool exists );
 
         /**
-         * @brief get the position of the Agent.
+         * @brief get the _position of the Agent.
          * 
          * @return const Point2D<int>& 
          */
         const Point2D<int> & getPosition( ) const;
 
         /**
-         * @brief set the position attribute.
+         * @brief Gets the _discretePosition of the Agent.
+         * 
+         * @return const Point2D<int>& 
+         */
+        const Point2D<int>& getDiscretePosition() const;
+
+        /**
+         * @brief Sets the _position attribute.
          * 
          * @param position new value of the position attribute.
          */
@@ -209,9 +218,66 @@ namespace Engine
          */
         void setRandomPosition( );
 
-        friend std::ostream& operator << ( std::ostream &os, const Agent&  agent ) { return agent.print( os ); } //! Prints a representation of the state to the given stream.
-        friend std::ostream& operator << ( std::ostream &os, const Agent*  agent ) { return agent->print( os ); } //! Prints a representation of the state to the given stream.
-        virtual std::ostream& print( std::ostream& os ) const; //! Prints a representation of the state to the given stream.
+        /**
+         * @brief Prints a representation of the state to the given stream.
+         * 
+         * @param os std::ostream &
+         * @param agent const Agent&
+         * @return std::ostream& 
+         */
+        friend std::ostream& operator << ( std::ostream &os, const Agent&  agent ) 
+        { 
+            return agent.print( os ); 
+        }
+
+        /**
+         * @brief Prints a representation of the state to the given stream.
+         * 
+         * @param os std::ostream &
+         * @param agent const Agent*
+         * @return std::ostream& 
+         */
+        friend std::ostream& operator << ( std::ostream &os, const Agent*  agent )
+        {
+            return agent->print( os );
+        }
+
+        /**
+         * @brief Comparison operator overload.
+         * 
+         * @param other const Agent&
+         * @return bool
+         */
+        bool operator==(const Agent& other) const;
+
+        /**
+         * @brief Checks whether 'this' object has the exact same class attributes than 
+         * 
+         * @param other 
+         * @return true 
+         * @return false 
+         */
+        virtual bool hasTheSameAttributes(const Agent& other) const;
+
+
+        /**
+         * @brief Checks whether the _id member of 'this' object is equal to the one passed by parameter ('agent').
+         * 
+         * @param agent Const Agent&
+         * @return bool
+         */
+        bool isEqual(const Agent& agent) const
+        {
+            return _id == agent.getId();
+        }
+
+        /**
+         * @brief Prints a representation of the state to the given stream.
+         * 
+         * @param os std::ostream &
+         * @return std::ostream& 
+         */
+        virtual std::ostream& print( std::ostream& os ) const;
 
         /**
          * @brief this function returns true if the type of the agent is the one passed by reference.
@@ -265,7 +331,13 @@ namespace Engine
          * @return void* 
          */
         virtual void * fillPackage( ) = 0;
-        
+
+        /**
+         * @brief Frees the allocated memory that 'package' is pointing to.
+         * 
+         */
+        virtual void freePackage(void* package) const = 0;
+
         /**
          * @brief sends the registered vector attributes of an Agent.
          * 
@@ -334,6 +406,23 @@ namespace Engine
          * @param newType new type of the Agent.
          */
         void changeType( const std::string & newType );
+
+        /**
+         * @brief Gets the weight for this agent. By default it is 1. Can be overriden in the concrete Agent classes, in order to return a different weight per class/per agent.
+         * 
+         * @return int 
+         */
+        virtual int getWeight() const
+        {
+            return 1;
+        }
+
+        /**
+         * @brief Updates the member _discretePosition, copying all values in _position to it.
+         * 
+         */
+        void copyContinuousValuesToDiscreteOnes();
+
     };
 } // namespace Engine
 #endif //__Agent_hxx__

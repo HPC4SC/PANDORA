@@ -34,8 +34,17 @@ DynamicRaster::DynamicRaster( )
 {
 }
 
+DynamicRaster::DynamicRaster(const int& id, const std::string name, const bool& serialize) : StaticRaster(id, name, serialize)
+{
+}
+
 DynamicRaster::~DynamicRaster( )
 {
+}
+
+int DynamicRaster::getDefaultValue() const
+{
+    return _defaultValue;
 }
 
 bool DynamicRaster::operator==( const DynamicRaster& other ) const {
@@ -77,6 +86,11 @@ void DynamicRaster::updateRasterToMaxValues( )
 {
     // std::copy is deep oriented.
     std::copy( _maxValues.begin( ), _maxValues.end( ), _values.begin( ) );
+}
+
+const int & DynamicRaster::getMaxValue( ) const
+{
+    return _maxValue;
 }
 
 int DynamicRaster::getMaxValue( const Point2D<int>& position ) const
@@ -185,6 +199,8 @@ void DynamicRaster::updateCurrentMinMaxValues( )
 
 void DynamicRaster::setInitValues( int minValue, int maxValue, int defaultValue )
 {
+    _defaultValue = defaultValue;
+
     _minValue = _currentMinValue = minValue;
     _maxValue = _currentMaxValue = maxValue;
     for ( size_t i=0; i<_values.size( ); i++ )

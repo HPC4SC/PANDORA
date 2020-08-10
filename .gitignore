@@ -68,3 +68,5 @@ install/
 examples/sugarScape_escalable/output.txt
 examples/IoTwins/out.txt
 examples/IoTwins/IoTwin
+
+examples/flocking/flocking

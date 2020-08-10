@@ -31,12 +31,16 @@
 #include <Logger.hxx>
 #include <GeneralState.hxx>
 
-#include <SpacePartition.hxx>
+#include <OpenMPIMultiNode.hxx>
 
 namespace Engine
 {
 
-Serializer::Serializer( const SpacePartition & scheduler ) : _scheduler( scheduler ), _agentsFileId( -1 ), _fileId( -1 ), _currentAgentDatasetId( -1 )
+// Serializer::Serializer( const SpacePartition & scheduler ) : _scheduler( scheduler ), _agentsFileId( -1 ), _fileId( -1 ), _currentAgentDatasetId( -1 )
+// {
+// }
+
+Serializer::Serializer(const OpenMPIMultiNode& scheduler) : _scheduler(scheduler), _agentsFileId(-1), _fileId(-1), _currentAgentDatasetId(-1)
 {
 }
 
