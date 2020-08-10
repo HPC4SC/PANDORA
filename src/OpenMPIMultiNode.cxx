@@ -34,7 +34,7 @@ namespace Engine {
 
     /** INITIALIZATION PUBLIC METHODS **/
 
-    OpenMPIMultiNode::OpenMPIMultiNode() : _initialTime(0.0f), _masterNodeID(0), _assignLoadToMasterNode(true), _serializer(*this)
+    OpenMPIMultiNode::OpenMPIMultiNode() : _initialTime(0.0f), _masterNodeID(0), _assignLoadToMasterNode(true), _serializer(*this), _printInConsole(true)
     {
     }
 
@@ -172,6 +172,8 @@ namespace Engine {
         mpiNode.ownedAreaWithOuterOverlaps = mpiNode.ownedArea;
         mpiNode.ownedAreaWithoutInnerOverlap = mpiNode.ownedArea;
 
+        if (_numTasks == 1) return;
+
         expandRectangleConsideringLimits(mpiNode.ownedAreaWithOuterOverlaps, _overlapSize);
         expandRectangleConsideringLimits(mpiNode.ownedAreaWithoutInnerOverlap, -_overlapSize, false);
     }
@@ -191,6 +193,8 @@ namespace Engine {
 
     void OpenMPIMultiNode::generateInnerSubOverlapAreas(MPINode& mpiNode) const
     {
+        if (_numTasks == 1) return;
+
         mpiNode.innerSubOverlaps[eTopCenter] =      squeezeRectangle(mpiNode.ownedArea, 0, mpiNode.ownedArea.getSize().getHeight() - _overlapSize, _overlapSize, _overlapSize);
         mpiNode.innerSubOverlaps[eBottomCenter] =   squeezeRectangle(mpiNode.ownedArea, mpiNode.ownedArea.getSize().getHeight() - _overlapSize, 0, _overlapSize, _overlapSize);
         mpiNode.innerSubOverlaps[eLeftCenter] =     squeezeRectangle(mpiNode.ownedArea, _overlapSize, _overlapSize, 0, mpiNode.ownedArea.getSize().getWidth() - _overlapSize);
@@ -222,6 +226,7 @@ namespace Engine {
     void OpenMPIMultiNode::fillOwnStructures(const MPINode& mpiNodeInfo)
     {
         _nodeSpace.ownedArea = mpiNodeInfo.ownedArea;
+
         generateOverlapAreas(_nodeSpace);
         generateInnerSubOverlapAreas(_nodeSpace);
 
@@ -306,6 +311,8 @@ namespace Engine {
 
     void OpenMPIMultiNode::createNeighbouringAgents()
     {
+        if (_numTasks == 1) return;
+
         for (AgentsList::const_iterator itAgent = _world->beginAgents(); itAgent != _world->endAgents(); ++itAgent)
         {
             AgentPtr agent = *itAgent;
@@ -390,6 +397,8 @@ namespace Engine {
 
     void OpenMPIMultiNode::sendAgentsToNodes()
     {
+        if (_numTasks == 1) return;
+
         AgentsList agentsToKeepInMasterNode;
 
         for (NeighbouringAgentsMap::const_iterator itNode = _neighbouringAgents.begin(); itNode != _neighbouringAgents.end(); ++itNode)
@@ -770,11 +779,9 @@ namespace Engine {
 
     void OpenMPIMultiNode::sendDataRequestToNode(void* data, const MPI_Datatype& mpiDatatype, const int& destinationNode, const int& tag)
     {
-        MpiRequest* mpiRequest = new MpiRequest;
-        //mpiRequest->package = data;
-        mpiRequest->requestType = tag;
+        MPI_Request* mpiRequest = new MPI_Request;
 
-        MPI_Isend(data, 1, mpiDatatype, destinationNode, tag, MPI_COMM_WORLD, &mpiRequest->request);
+        MPI_Isend(data, 1, mpiDatatype, destinationNode, tag, MPI_COMM_WORLD, mpiRequest);
         _sendRequests.push_back(mpiRequest);
     }
 
@@ -786,7 +793,7 @@ namespace Engine {
             std::list<Agent*> agentsList = itNeighbourNode->second;
             
             int numberOfAgentsForNode = agentsList.size();
-std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTime() << " sending numberOfAgents: " << numberOfAgentsForNode << "\tto node: " << neighbourNodeID << "\n").str();
+if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTime() << " sending numberOfAgents: " << numberOfAgentsForNode << "\tto node: " << neighbourNodeID << "\n").str();
             sendDataRequestToNode(&numberOfAgentsForNode, MPI_INTEGER, neighbourNodeID, eNumGhostAgents);
 
             for (std::list<Agent*>::const_iterator itAgents = agentsList.begin(); itAgents != agentsList.end(); ++itAgents)
@@ -794,7 +801,7 @@ std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTim
                 Agent* agent = *itAgents;
                 std::string agentType = agent->getType();
 
-std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTime() << " sending agent: " << agent << "\tto node: " << neighbourNodeID << "\n").str();
+if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTime() << " sending agent: " << agent << "\tto node: " << neighbourNodeID << "\n").str();
 
                 int agentTypeID = MpiFactory::instance()->getIDFromTypeName(agentType);
                 sendDataRequestToNode(&agentTypeID, MPI_INTEGER, neighbourNodeID, eGhostAgentType);
@@ -813,9 +820,9 @@ std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTim
         {
             int sendingNodeID = it->first;
             int numberOfAgents;
-std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTime() << " prepare to receive numberOfAgents from node: " << sendingNodeID << "\n").str();
+if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTime() << " prepare to receive numberOfAgents from node: " << sendingNodeID << "\n").str();
             MPI_Recv(&numberOfAgents, 1, MPI_INTEGER, sendingNodeID, eNumGhostAgents, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTime() << " receiving numberOfAgents: " << numberOfAgents << "\tfrom node: " << sendingNodeID << "\n").str();
+if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTime() << " receiving numberOfAgents: " << numberOfAgents << "\tfrom node: " << sendingNodeID << "\n").str();
             for (int i = 0; i < numberOfAgents; ++i)
             {
                 int agentTypeID;
@@ -828,7 +835,7 @@ std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTim
                 Agent* agent = MpiFactory::instance()->createAndFillAgent(agentTypeName, package);
                 MpiFactory::instance()->freePackage(package, agentTypeName);
 
-std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTime() << " receiving agent: " << agent << "\tfrom node: " << sendingNodeID << "\n").str();
+if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTime() << " receiving agent: " << agent << "\tfrom node: " << sendingNodeID << "\n").str();
 
                 AgentsList::const_iterator agentIt = getAgentIteratorFromID(agent->getId());
                 if (agentIt != _world->endAgents())
@@ -880,6 +887,8 @@ std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTim
 
     void OpenMPIMultiNode::synchronizeAgentsIfNecessary(const AgentsVector& agentsVector)
     {
+        if (_numTasks == 1) return;
+
         std::map<int, std::list<Agent*>> agentsByNode;
 
         initializeAgentsToSendMap(agentsByNode);
@@ -1055,7 +1064,7 @@ std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTim
                 int numberOfPositions = positionsAndValues.size();
                 sendDataRequestToNode(&numberOfPositions, MPI_INTEGER, neighbourNodeID, eNumRasterPositions);
 
-std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTime() << " sending numberOfPositions: " << numberOfPositions << " of raster: " << rasterIndex << "\tto node: " << neighbourNodeID << "\n").str();
+if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTime() << " sending numberOfPositions: " << numberOfPositions << " of raster: " << rasterIndex << "\tto node: " << neighbourNodeID << "\n").str();
 
                 for (MapOfPositionsAndValues::const_iterator positionsAndValuesIt = positionsAndValues.begin(); positionsAndValuesIt != positionsAndValues.end(); ++positionsAndValuesIt)
                 {
@@ -1064,7 +1073,7 @@ std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTim
                     positionAndValue.y = positionsAndValuesIt->first.getY();
                     positionAndValue.value = positionsAndValuesIt->second;
 
-std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTime() << " sending position: " << positionsAndValuesIt->first << " and value: " << positionsAndValuesIt->second << "\tto node: " << neighbourNodeID << "\n").str();
+if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTime() << " sending position: " << positionsAndValuesIt->first << " and value: " << positionsAndValuesIt->second << "\tto node: " << neighbourNodeID << "\n").str();
 
                     sendDataRequestToNode(&positionAndValue, *_positionAndValueDatatype, neighbourNodeID, ePosAndValue);
                 }
@@ -1074,6 +1083,8 @@ std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTim
 
     void OpenMPIMultiNode::sendRastersToNeighbours(const int& subOverlapAreaID)
     {
+        if (_numTasks == 1) return;
+
         std::map<int, MapOfValuesByRaster> rastersValuesByNode;
         initializeRasterValuesToSendMap(rastersValuesByNode);
 
@@ -1122,6 +1133,8 @@ std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTim
 
     void OpenMPIMultiNode::receiveRasters()
     {
+        if (_numTasks == 1) return;
+
         for (std::map<int, MPINode*>::const_iterator it = _nodeSpace.neighbours.begin(); it != _nodeSpace.neighbours.end(); ++it)
         {
             int sendingNodeID = it->first;
@@ -1147,7 +1160,7 @@ std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTim
                     Point2D<int> position = Point2D<int>(positionAndValue.x, positionAndValue.y);
                     int continuousValue = positionAndValue.value;
 
-std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTime() << " receiving raster index: " << rasterIndex << " position: " << position << " and value: " << continuousValue << "\tfrom node: " << sendingNodeID << "\n").str();
+if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTime() << " receiving raster index: " << rasterIndex << " position: " << position << " and value: " << continuousValue << "\tfrom node: " << sendingNodeID << "\n").str();
 
                     _world->getDynamicRaster(rasterIndex).setValue(position, continuousValue);
 
@@ -1159,20 +1172,11 @@ std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTim
 
     void OpenMPIMultiNode::clearRequests()
     {
-        // Look at task Pandora BUGS/Optimizations at Trello
-
-        // free send/receive requests _sendRequests
-
-        // delete agentPackage; these should be performed by the factory code created (virtual method for agents), after parsing each void* to its corresponding type.
-
-
-
-
-
-
-
-
-        MPI_Barrier(MPI_COMM_WORLD);
+        for (std::list<MPI_Request*>::const_iterator it = _sendRequests.begin(); it != _sendRequests.end(); ++it)
+        {
+            MPI_Request* mpiRequest = *it;
+            MPI_Wait(mpiRequest, MPI_STATUS_IGNORE);
+        }
     }
 
     AgentsList::const_iterator OpenMPIMultiNode::getAgentIteratorFromID(const std::string& agentID)
@@ -1207,7 +1211,7 @@ _schedulerLogs->printNodeAgentsInDebugFile(*this, true);
 _schedulerLogs->writeInDebugFile(CreateStringStream("RASTERS AT THE BEGINNING OF STEP " << _world->getCurrentStep() << ":").str(), *this);
 _schedulerLogs->printNodeRastersInDebugFile(*this);
 
-if (_world->getCurrentStep() == 8) exit(0);
+//if (_world->getCurrentStep() == 8) exit(0);
         AgentsVector executedAgentsInArea;
         executeAgentsInArea(_nodeSpace.ownedAreaWithoutInnerOverlap, executedAgentsInArea);
         synchronizeAgentsIfNecessary(executedAgentsInArea);
@@ -1223,7 +1227,7 @@ _schedulerLogs->printNodeAgentsInDebugFile(*this, true);
 _schedulerLogs->writeInDebugFile(CreateStringStream("RASTERS AT STEP " << _world->getCurrentStep() << "; INNER_MOST EXECUTED:").str(), *this);
 _schedulerLogs->printNodeRastersInDebugFile(*this);
 
-std::cout << CreateStringStream("\n").str();
+if (_printInConsole) std::cout << CreateStringStream("\n").str();
 //usleep(500000);
 
         for (std::map<int, Rectangle<int>>::const_iterator it = _nodeSpace.innerSubOverlaps.begin(); it != _nodeSpace.innerSubOverlaps.end(); ++it)
@@ -1234,10 +1238,10 @@ std::cout << CreateStringStream("\n").str();
 //usleep(getId() * 500000);
 
             executedAgentsInArea.clear();
-std::cout << CreateStringStream("[Process # " << getId() <<  "] " << getWallTime() << " executing agents in suboverlap #" << originalSubOverlapAreaID << "\n").str();
+if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<  "] " << getWallTime() << " executing agents in suboverlap #" << originalSubOverlapAreaID << "\n").str();
             executeAgentsInArea(originalOverlapArea, executedAgentsInArea);
 
-std::cout << CreateStringStream("[Process # " << getId() <<  "] " << getWallTime() << " agents executed -> synchronizing\n").str();
+if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<  "] " << getWallTime() << " agents executed -> synchronizing\n").str();
             sendGhostAgentsToNeighbours(executedAgentsInArea, originalSubOverlapAreaID);
             receiveGhostAgentsFromNeighbouringNodes();
 
@@ -1247,27 +1251,22 @@ _schedulerLogs->printNodeAgentsInDebugFile(*this, true);
 _schedulerLogs->writeInDebugFile(CreateStringStream("RASTERS AT STEP " << _world->getCurrentStep() << "; AFTER OVERLAP: " << originalSubOverlapAreaID).str(), *this);
 _schedulerLogs->printNodeRastersInDebugFile(*this);
 
-std::cout << CreateStringStream("[Process # " << getId() <<  "] " << getWallTime() << " agents synchronized\n").str();
-std::cout << CreateStringStream("[Process # " << getId() <<  "]\n").str();
+if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<  "] " << getWallTime() << " agents synchronized\n").str();
+if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<  "]\n").str();
 
             sendRastersToNeighbours(originalSubOverlapAreaID);
             receiveRasters();
 
-            clearRequests();
+            //clearRequests(); // Is this really necessary?
 
             MPI_Barrier(MPI_COMM_WORLD);
 
 _schedulerLogs->writeInDebugFile(CreateStringStream("AGENTS AT STEP " << _world->getCurrentStep() << "; AFTER OVERLAP: " << originalSubOverlapAreaID).str(), *this);
 _schedulerLogs->printNodeRastersInDebugFile(*this);
 
-std::cout << CreateStringStream("\n").str();
+if (_printInConsole) std::cout << CreateStringStream("\n").str();
 //usleep(500000);
         }
-
-        // v2¿?: synchronize everything only at the end of the step, or 
-        // v2.1: modified agents only go to a datastructure parallel to World._agents, 
-        // which is _agentsNextStep (agents at i+1). this includes agents received by the neighbour nodes. 
-        // At the beginning of the next step World._agentsNextStep = World._agents
     }
     
     void OpenMPIMultiNode::finish() 

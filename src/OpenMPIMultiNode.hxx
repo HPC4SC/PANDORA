@@ -88,20 +88,11 @@ namespace Engine
             };                                                      //! Struct used to parse in/out the to-be-send/received raster positions and values.
             MPI_Datatype* _positionAndValueDatatype;                //! Own MPI Datatype used to send/receive the positions and values of an updated raster.
 
-            struct MpiRequest {
-                int packageID;
-                void* package;
-                int requestType;
-                MPI_Request request;
-            };
-            std::list<MpiRequest*> _sendRequests;
-
-
-            // std::list<MpiSendRequest*> _sendRequests;
-            // std::list<MpiRecvRequest*> _recvRequests;
+            std::list<MPI_Request*> _sendRequests;
 
             /** Other structures **/
             OpenMPIMultiNodeLogs* _schedulerLogs;
+            bool _printInConsole;
 
             double _initialTime;                                    //! Initial running time.
 
