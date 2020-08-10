@@ -24,28 +24,45 @@ void Supermarket::createRasters() {
 
 void Supermarket::createAgents() {
     if (_step == 0) {
-        for (i = 0; i < _supermarketConfig; i++) {
-            std::ostringstream oss;
-            oss << "Cashier_" << _cashierId;
-            _cashierId++;
-            Cashier *cashier = new Cashier(oss.str());
-            addAgent(cashier);
-            int spawnIndex = Engine::GeneralState::statistics().getUniformDistValue(0,_cashierWorkplacec reo .size() - 1);
-            Engine::Point2D<int> spawn = _cashierWorkplace[spawnIndex];
-            cashier->setPosition(spawn);
-        }
+        for (int i = 0; i < _supermarketConfig._numCashiers; i++) createCashier();
     }
-    if (_step%_supermarketConfig._clientRate == 0) {
-        std::ostringstream oss;
-        oss << "Client_" << _clientId;
-        _clientId++;
-        Client *client = new Client(oss.str());
-        addAgent(client);
-        int spawnIndex = Engine::GeneralState::statistics().getUniformDistValue(0,_entry.size() - 1);
-        Engine::Point2D<int> spawn = _entry[spawnIndex];
-        agent->setPosition(spawn);
+    if (_step%_supermarketConfig._clientRate == 0) createClient();
+}
+
+void Supermarket::createCashier() {
+    std::ostringstream oss;
+    oss << "Cashier_" << _cashierId;
+    _cashierId++;
+    bool sick = false;
+    if (_currentSickCashiers < _supermarketConfig._sickCashiers and _supermarketConfig._sickCashiers != -1) {
+        sick = true;
+    } 
+    Cashier *cashier = new Cashier(oss.str(),sick);
+    addAgent(cashier);
+    int spawnIndex = Engine::GeneralState::statistics().getUniformDistValue(0,_cashierWorkplace.size() - 1);
+    Engine::Point2D<int> spawn = _cashierWorkplace[spawnIndex];
+    while (not this->checkPosition(spawn)) {
+        spawnIndex = Engine::GeneralState::statistics().getUniformDistValue(0,_cashierWorkplace.size() - 1);
+        spawn = _cashierWorkplace[spawnIndex];
     }
-        
+    cashier->setPosition(spawn);
+}
+
+void Supermarket::createClient() {
+    std::ostringstream oss;
+    oss << "Client_" << _clientId;
+    _clientId++;
+    bool sick = false;
+    if (Engine::RNGNormal(_supermarketConfig.getSeed(), 0, 1.0).draw() < _supermarketConfig._sickRate) sick = true;
+    Client *client = new Client(oss.str(),sick);
+    addAgent(client);
+    int spawnIndex = Engine::GeneralState::statistics().getUniformDistValue(0,_entry.size() - 1);
+    Engine::Point2D<int> spawn = _entry[spawnIndex];
+    while (not this->checkPosition(spawn)) {
+        spawnIndex = Engine::GeneralState::statistics().getUniformDistValue(0,_cashierWorkplace.size() - 1);
+        spawn = _cashierWorkplace[spawnIndex];
+    }
+    client->setPosition(spawn);
 }
 
 void Supermarket::step() {

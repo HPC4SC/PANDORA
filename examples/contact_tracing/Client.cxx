@@ -8,7 +8,7 @@
 namespace Examples
 {
 
-Client::Client(const std::string &id) : Agent(id) {}
+Client::Client(const std::string &id, const int &sick) : Agent(id), _sick(sick), _infected(false) {}
 
 Client::~Client(){}
 
