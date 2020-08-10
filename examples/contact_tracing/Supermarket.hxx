@@ -26,6 +26,10 @@ class Supermarket : public Engine::World
     
     std::vector<Engine::Point2D<int>> _exitZone;
 
+    int _cashierId = 0;
+
+    int _clientId = 0;
+
     public:
         
         Supermarket(Engine::Config * config, Engine::Scheduler * scheduler = 0);
