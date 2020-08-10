@@ -22,7 +22,31 @@ void Supermarket::createRasters() {
     devideLayout();
 }
 
-void Supermarket::createAgents() {}
+void Supermarket::createAgents() {
+    if (_step == 0) {
+        for (i = 0; i < _supermarketConfig; i++) {
+            std::ostringstream oss;
+            oss << "Cashier_" << _cashierId;
+            _cashierId++;
+            Cashier *cashier = new Cashier(oss.str());
+            addAgent(cashier);
+            int spawnIndex = Engine::GeneralState::statistics().getUniformDistValue(0,_cashierWorkplacec reo .size() - 1);
+            Engine::Point2D<int> spawn = _cashierWorkplace[spawnIndex];
+            cashier->setPosition(spawn);
+        }
+    }
+    if (_step%_supermarketConfig._clientRate == 0) {
+        std::ostringstream oss;
+        oss << "Client_" << _clientId;
+        _clientId++;
+        Client *client = new Client(oss.str());
+        addAgent(client);
+        int spawnIndex = Engine::GeneralState::statistics().getUniformDistValue(0,_entry.size() - 1);
+        Engine::Point2D<int> spawn = _entry[spawnIndex];
+        agent->setPosition(spawn);
+    }
+        
+}
 
 void Supermarket::step() {
     if (_step%_config->getSerializeResolution() == 0) {

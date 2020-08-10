@@ -301,7 +301,7 @@ def writeComparator(f, agentName, parent, attributesMap):
     f.write('\n')
     f.write('\tconst ' + agentName + '& otherCastedToBug = static_cast<const ' + agentName + '&>(other);\n')
     f.write('\n')
-    f.write('\treturn')
+    f.write('\treturn ')
     firstAttribute = True
     for nameAttribute, typeAttribute in attributesMap.items():
         if not firstAttribute:
