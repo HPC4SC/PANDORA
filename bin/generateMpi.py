@@ -7,6 +7,8 @@ def writeRegisterTypes(f, listAgents):
     f.write('{\n')
     for i, agent in enumerate(listAgents):
         f.write('\t_types.insert( std::make_pair( "' + agent + '", create' + agent + 'Type()));\n')
+        f.write('\t_typesMapNameToID.insert( std::make_pair( "' + agent + '", ' + str(i) + '));\n')
+        f.write('\t_typesMapIDToName.insert( std::make_pair( ' + str(i) + ', "' + agent + '"));\n')
     f.write('}\n')
     f.write('\n')
 
@@ -33,7 +35,9 @@ def writeCreateAndFillAgents(f, listAgents, namespaces):
     f.write('Agent * MpiFactory::createAndFillAgent( const std::string & type, void * package )\n')
     f.write('{\n')
     for i, agent in enumerate(listAgents):
-        f.write('\tif(type.compare("' + agent + '")==0)\n')
+        f.write('\t')
+        if (i > 0): f.write('else ')
+        f.write('if(type.compare("' + agent + '")==0)\n')
         f.write('\t{\n')
         f.write('\t\treturn new ' + namespaces[i] + "::" + agent + '(package);\n')
         f.write('\t}\n')
@@ -47,6 +51,26 @@ def writeCreateAndFillAgents(f, listAgents, namespaces):
     f.write('\n')
     return None
 
+def writeFreePackage(f, listAgents):
+    f.write('void MpiFactory::freePackage(void* package, const std::string& type) const\n')
+    f.write('{\n')
+    for i, agent in enumerate(listAgents):
+        f.write('\t')
+        if (i > 0): f.write('else ')
+        f.write('if(type.compare("' + agent + '") == 0)\n')
+        f.write('\t{\n')
+        f.write('\t\t' + agent + 'Package* ' + agent.lower() + 'Package = static_cast<' + agent + 'Package*>(package);\n')
+        f.write('\t\tdelete ' + agent.lower() + 'Package;\n')
+        f.write('\t\treturn;\n')
+        f.write('\t}\n')
+    f.write('\n')
+    f.write('\tstd::stringstream oss;\n')
+    f.write('\toss << "MpiFactory::createDefaultPackage - unknown agent type: " << type;\n')
+    f.write('\tthrow Engine::Exception(oss.str());\n')
+
+    f.write('}\n')
+    f.write('\n')
+    return None
 
 def getMpiTypeAttribute(typeAttribute):
     mpiTypeAttribute = 'MPI_INT'
@@ -56,8 +80,9 @@ def getMpiTypeAttribute(typeAttribute):
 
 
 def writeCreateType(f, nameAgent, attributesMap):
-    # we have to send 4 basic attributes (_id, _position._x, _position._y & _exists + the number of dynamic attributes
-    numAttributes = 4 + len(attributesMap)
+    # we have to send 6 basic attributes (_id, _position._x, _position._y, _discretePosition._x, _discretePosition._y & _exists + the number of dynamic attributes
+    numBasicAttributes = 6
+    numAttributes = numBasicAttributes + len(attributesMap)
     f.write('MPI_Datatype * create' + nameAgent + 'Type()\n')
     f.write('{\n')
     f.write('\t' + nameAgent + 'Package package;\n')
@@ -76,12 +101,18 @@ def writeCreateType(f, nameAgent, attributesMap):
     f.write('\t// _position._y\n')
     f.write('\tblockLengths[2] = 1;\n')
     f.write('\ttypeList[2] = MPI_INT;\n')
-    f.write('\t// _exists\n')
+    f.write('\t// _discretePosition._x\n')
     f.write('\tblockLengths[3] = 1;\n')
     f.write('\ttypeList[3] = MPI_INT;\n')
+    f.write('\t// _discretePosition._y\n')
+    f.write('\tblockLengths[4] = 1;\n')
+    f.write('\ttypeList[4] = MPI_INT;\n')
+    f.write('\t// _exists\n')
+    f.write('\tblockLengths[5] = 1;\n')
+    f.write('\ttypeList[5] = MPI_INT;\n')
 
     # dynamic params
-    index = 4
+    index = numBasicAttributes
     for nameAttribute, typeAttribute in attributesMap.items():
         f.write('\t// ' + nameAttribute + '\n')
         if typeAttribute == "string":
@@ -98,7 +129,7 @@ def writeCreateType(f, nameAgent, attributesMap):
     f.write('\tMPI_Aint startAddress;\n')
     f.write('\tMPI_Aint address;\n')
 
-    # id, position & exists
+    # id, position, discretePosition & exists
     f.write('\t// id\n')
     f.write('\tMPI_Address(package._idMpi, &startAddress);\n')
     f.write('\tdisplacements[0] = 0;\n')
@@ -111,12 +142,20 @@ def writeCreateType(f, nameAgent, attributesMap):
     f.write('\tMPI_Address(&package._positionMpi._y, &address);\n')
     f.write('\tdisplacements[2] = address-startAddress;\n')
 
-    f.write('\t// _exists\n')
-    f.write('\tMPI_Address(&package._existsMpi, &address);\n')
+    f.write('\t// _discretePosition._x\n')
+    f.write('\tMPI_Address(&package._discretePositionMpi._x, &address);\n')
     f.write('\tdisplacements[3] = address-startAddress;\n')
 
+    f.write('\t// _discretePosition._y\n')
+    f.write('\tMPI_Address(&package._discretePositionMpi._y, &address);\n')
+    f.write('\tdisplacements[4] = address-startAddress;\n')
+
+    f.write('\t// _exists\n')
+    f.write('\tMPI_Address(&package._existsMpi, &address);\n')
+    f.write('\tdisplacements[5] = address-startAddress;\n')
+
     # dynamic params
-    index = 4
+    index = numBasicAttributes
     for nameAttribute, typeAttribute in attributesMap.items():
         f.write('\t// ' + nameAttribute + '\n')
         f.write('\tMPI_Address(&package.' + nameAttribute + 'Mpi, &address);\n')
@@ -159,6 +198,7 @@ def createFactoryMethods(listAgents, factoryFile, namespaces, listAttributesMaps
     writeRegisterTypes(f, listAgents)
     writeCreateDefaultPackage(f, listAgents)
     writeCreateAndFillAgents(f, listAgents, namespaces)
+    writeFreePackage(f, listAgents)
 
     # close header & namespace
     f.write('} // namespace Engine\n')
@@ -180,10 +220,11 @@ def createMpiHeader(agentName, source, header, attributesMap):
     # struct Package
     f.write('typedef struct\n')
     f.write('{\n')
-    # basic data: _id, _position & _exists
+    # basic data: _id, _position, _discretePosition & _exists
     f.write('\tchar _idMpi[32];\n')
     f.write('\tbool _existsMpi;\n')
     f.write('\tEngine::Point2D<int> _positionMpi;\n')
+    f.write('\tEngine::Point2D<int> _discretePositionMpi;\n')
     f.write('\n')
     # dynamic params
     for nameAttribute, typeAttribute in attributesMap.items():
@@ -204,13 +245,14 @@ def createMpiHeader(agentName, source, header, attributesMap):
 def writeFillPackage(f, agentName, attributesMap):
     f.write('void * ' + agentName + '::fillPackage()\n')
     f.write('{\n')
-    # basic params: _id, _position & _exists
+    # basic params: _id, _position, _discretePosition & _exists
     f.write('\t' + agentName + 'Package * package = new ' + agentName + 'Package;\n')
     f.write(
         '\tmemcpy(&package->_idMpi, _id.c_str(), std::min((unsigned int)32,(unsigned int)(sizeof(char)*_id.size())));\n')
     f.write('\tpackage->_idMpi[std::min((unsigned int)32,(unsigned int)_id.size())] = \'\\0\';\n')
     f.write('\tpackage->_existsMpi = _exists;\n')
     f.write('\tpackage->_positionMpi = _position;\n')
+    f.write('\tpackage->_discretePositionMpi = _discretePosition;\n')
     f.write('\n')
     # dynamic params
     for nameAttribute, typeAttribute in attributesMap.items():
@@ -226,6 +268,14 @@ def writeFillPackage(f, agentName, attributesMap):
     f.write('\n')
     return None
 
+def writeFreeAgentPackage(f, agentName):
+    f.write('void ' + agentName + '::freePackage(void* package) const\n')
+    f.write('{\n')
+    f.write('\t' + agentName + 'Package* ' + agentName.lower() + 'Package = static_cast<' + agentName + 'Package*>(package);\n')
+    f.write('\tdelete ' + agentName.lower() + 'Package;\n')
+    f.write('}\n')
+    f.write('\n')
+    return None
 
 def writeConstructor(f, agentName, parent, attributesMap):
     f.write(
@@ -235,6 +285,7 @@ def writeConstructor(f, agentName, parent, attributesMap):
     # basic params: _position & _exists
     f.write('\t_exists = particularPackage->_existsMpi;\n')
     f.write('\t_position = particularPackage->_positionMpi;\n')
+    f.write('\t_discretePosition = particularPackage->_discretePositionMpi;\n')
     f.write('\n')
     # dynamic params
     for nameAttribute in attributesMap.keys():
@@ -243,6 +294,23 @@ def writeConstructor(f, agentName, parent, attributesMap):
     f.write('\n')
     return None
 
+def writeComparator(f, agentName, parent, attributesMap):
+    f.write('bool ' + agentName + '::hasTheSameAttributes(const ' + parent + '& other) const\n')
+    f.write('{\n')
+    f.write('\tif (not ' + parent + '::hasTheSameAttributes(other)) return false;\n')
+    f.write('\n')
+    f.write('\tconst ' + agentName + '& otherCastedToBug = static_cast<const ' + agentName + '&>(other);\n')
+    f.write('\n')
+    f.write('\treturn')
+    firstAttribute = True
+    for nameAttribute, typeAttribute in attributesMap.items():
+        if not firstAttribute:
+            f.write(' and\n\t\t')
+        f.write('\t' + nameAttribute + ' == otherCastedToBug.' + nameAttribute)
+        firstAttribute = False
+    f.write(';\n')
+    f.write('}\n')
+    return None
 
 def getMpiTypeConversion(typeInCpp):
     if typeInCpp == 'int':
@@ -286,7 +354,7 @@ def writeVectorAttributesPassing(f, agentName, vectorAttributesMap):
         f.write('\n')
     f.write('}\n')
     f.write('\n')
-
+    return None
 
 def createMpiCode(agentName, source, header, namespace, parent, attributesMap, vectorAttributesMap):
     print '\t\tcreating mpi file: mpiCode/' + agentName + '_mpi.cxx for agent: ' + agentName + ' in namespace: ' + namespace + ' with parent: ' + parent + ' from source: ' + source + ' and header: ' + header
@@ -304,7 +372,9 @@ def createMpiCode(agentName, source, header, namespace, parent, attributesMap, v
         f.write('{\n')
         f.write('\n')
     writeFillPackage(f, agentName, attributesMap)
+    writeFreeAgentPackage(f, agentName)
     writeConstructor(f, agentName, parent, attributesMap)
+    writeComparator(f, agentName, parent, attributesMap)
     writeVectorAttributesPassing(f, agentName, vectorAttributesMap);
     if namespace != "":
         f.write('} // namespace ' + namespace + '\n')
@@ -412,6 +482,8 @@ def checkHeader(agentName, headerName):
             fTmp.write('\t////////////////////////////////////////////////\n')
             fTmp.write('\t' + agentName + '( void * );\n')
             fTmp.write('\tvoid * fillPackage();\n')
+            fTmp.write('\tvoid freePackage(void* package) const override;\n')
+            fTmp.write('\tbool hasTheSameAttributes(const Engine::Agent&) const override;\n')
             fTmp.write('\tvoid sendVectorAttributes(int);\n')
             fTmp.write('\tvoid receiveVectorAttributes(int);\n')
             fTmp.write('\t////////////////////////////////////////////////\n')

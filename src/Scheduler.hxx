@@ -4,6 +4,8 @@
 #include <iostream>
 #include <Agent.hxx>
 
+#include <omp.h>
+
 namespace Engine
 {
     /** Scheduler is the base class to create simulation schedulers that control the flow of World and Agents execution
@@ -12,10 +14,15 @@ namespace Engine
     class Scheduler
     {
     protected:
-        int                     _id; //! Identifier of the Scheduler.
-        int                     _numTasks; //! Number of tasks executing the simulations.
-        Engine::Rectangle<int>  _boundaries; //! Limits of the simulation space.
-        World                  *_world; //! Pointer to the World of the simulation
+        int                     _id;            //! Identifier of the Scheduler.
+        int                     _numTasks;      //! Number of MPI tasks executing the simulation
+        Engine::Rectangle<int>  _boundaries;    //! Limits of the simulation space.
+        World                  *_world;         //! Pointer to the World of the simulation
+
+        bool _updateKnowledgeInParallel;        //! 
+        bool _executeActionsInParallel;         //! Initialized to False by default in the init() method.
+        omp_lock_t _ompLock;                    //! Lock object of OpenMP management
+        int _overlapSize;                       //! [Only for MPI scheduler] Overlap size in number of cells, defined for partition rectangles.
 
         /**
          * @brief This method returns a list with the list of agents in euclidean distance radius of position. If include center is false, position is not checked.
@@ -74,7 +81,7 @@ namespace Engine
          * @brief Construct a new Scheduler object created by default.
          * 
          */
-        Scheduler( ) : _id( 0 ), _numTasks( 1 ), _world( 0 ) { }
+        Scheduler( ) : _id( 0 ), _numTasks(1), _world( 0 ), _updateKnowledgeInParallel(false), _executeActionsInParallel(false) { }
 
         /**
          * @brief Destroy the Scheduler object
@@ -101,11 +108,17 @@ namespace Engine
         virtual void init( int argc, char *argv[] ) = 0;
         
         /**
-         * @brief Initializing procedures AFTER creating agents/rasters ( i.e. send initial data to other nodes in parallel schedulers ). Must be implemented in child.
+         * @brief Initializing all the data needed (i.e. rasters, agents, send initial data to other nodes in parallel schedulers, etc.). Must be implemented in child.
          * 
          */
         virtual void initData( ) = 0;
         
+        /**
+         * @brief Updates the resources modified in the World::stepEnvironment() method. Must be implemented in child.
+         * 
+         */
+        virtual void updateEnvironmentState() = 0;
+
         /**
          * @brief Responsible for executing the agents and update world. Must be implemented in child.
          * 
@@ -133,7 +146,7 @@ namespace Engine
         virtual Point2D<int> getRandomPosition( ) const = 0;
 
         /**
-         * @brief Get the Id object. Id will always be 0 unless the execution is distributed in some way.
+         * @brief Gets the _id member. Id will always be 0 unless the execution is distributed in some way.
          * 
          * @return const int& 
          */
@@ -144,22 +157,14 @@ namespace Engine
          * 
          * @return const int& 
          */
-        const int & getNumTasks( ) const { return _numTasks; }
-        
+        const int & getNumTasks() const { return _numTasks; }
+
         /**
          * @brief Get the Wall Time of the simulatio. Must be implemented in the children.
          * 
          * @return double 
          */
         virtual double getWallTime( ) const = 0;
-
-        /**
-         * @brief Get the NumberOfTypedAgents. Must be implemented in the children.
-         * 
-         * @param type Type selected of Agent.
-         * @return size_t 
-         */
-        virtual size_t getNumberOfTypedAgents( const std::string & type ) const = 0;
 
         /**
          * @brief Do anything needed after adding agent to the list of World _agents
@@ -222,6 +227,50 @@ namespace Engine
         virtual AgentsVector getNeighbours( Agent * target, const double & radius, const std::string & type ) = 0;
 
         /**
+         * @brief Get the NumberOfTypedAgents. Must be implemented in the children.
+         * 
+         * @param type Type selected of Agent.
+         * @return size_t 
+         */
+        virtual size_t getNumberOfTypedAgents( const std::string & type ) const = 0;
+
+        /**
+         * @brief Set the value of a concrete position. Must be implemented in child.
+         * 
+         * @param raster Raster to update.
+         * @param position Position to update.
+         * @param value New value of the position.
+         */
+        virtual void setValue( DynamicRaster & raster, const Point2D<int> & position, int value ) = 0;
+
+        /**
+         * @brief Get the value of a concrete position. Must be implemented in child.
+         * 
+         * @param raster Raster to check.
+         * @param position Position to check.
+         * @return int 
+         */
+        virtual int getValue( const DynamicRaster & raster, const Point2D<int> & position ) const = 0;
+
+        /**
+         * @brief Set the _maxValue of the position specified. Must be implemented in child.
+         * 
+         * @param raster Raster to update.
+         * @param position Position to change the _maxValue.
+         * @param value New maxValue.
+         */
+        virtual void setMaxValue( DynamicRaster & raster, const Point2D<int> & position, int value ) = 0;
+
+        /**
+         * @brief Get the _maxValue of the specified position. Must be implemented in child.
+         * 
+         * @param raster Raster to check.
+         * @param position Position to check.
+         * @return int 
+         */
+        virtual int getMaxValue( const DynamicRaster & raster, const Point2D<int> & position ) const = 0;
+
+        /**
          * @brief Calls the serializer to add an string attribute of an Agent. Must be implemented in child.
          * 
          * @param type Type of int value.
@@ -263,40 +312,36 @@ namespace Engine
         virtual void serializeRasters( const int & step ) = 0;
 
         /**
-         * @brief Set the value of a concrete position. Must be implemented in child.
+         * @brief [Only implemented in MPI scheduler] Sets the _overlapSize member.
          * 
-         * @param raster Raster to update.
-         * @param position Position to update.
-         * @param value New value of the position.
+         * @param overlapSize int
          */
-        virtual void setValue( DynamicRaster & raster, const Point2D<int> & position, int value ) = 0;
+        void setOverlapSize(int overlapSize) { _overlapSize = overlapSize; }
 
         /**
-         * @brief Get the value of a concrete position. Must be implemented in child.
+         * @brief [OpenMP] Method to enable/disable the OpenMP paralellism.
          * 
-         * @param raster Raster to check.
-         * @param position Position to check.
-         * @return int 
+         * @param updateKnowledgeInParallel bool
+         * @param executeActionsInParallel bool
          */
-        virtual int getValue( const DynamicRaster & raster, const Point2D<int> & position ) const = 0;
+        void setParallelism(bool updateKnowledgeInParallel, bool executeActionsInParallel) 
+        {
+            _updateKnowledgeInParallel = updateKnowledgeInParallel;
+            _executeActionsInParallel = executeActionsInParallel; 
+        }
 
         /**
-         * @brief Set the _maxValue of the position specified. Must be implemented in child.
+         * @brief [OpenMP] Pause all the threads but the one calling this function.
          * 
-         * @param raster Raster to update.
-         * @param position Position to change the _maxValue.
-         * @param value New maxValue.
          */
-        virtual void setMaxValue( DynamicRaster & raster, const Point2D<int> & position, int value ) = 0;
+        void pauseParallelization() { omp_set_lock(&_ompLock); }
 
         /**
-         * @brief Get the _maxValue of the specified position. Must be implemented in child.
+         * @brief [OpenMP] Resume the threads that were locked in the pauseParallelization() method.
          * 
-         * @param raster Raster to check.
-         * @param position Position to check.
-         * @return int 
          */
-        virtual int getMaxValue( const DynamicRaster & raster, const Point2D<int> & position ) const = 0;
+        void resumeParallelization() { omp_unset_lock(&_ompLock); }
+
     };
 } // namespace Engine
 #endif // __Scheduler_hxx__

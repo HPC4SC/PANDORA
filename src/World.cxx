@@ -23,7 +23,7 @@
 #include <Agent.hxx>
 #include <Exception.hxx>
 #include <Scheduler.hxx>
-#include <SpacePartition.hxx>
+#include <OpenMPIMultiNode.hxx>
 #include <OpenMPSingleNode.hxx>
 
 #include <GeneralState.hxx>
@@ -51,6 +51,7 @@ namespace Engine
             _scheduler = useOpenMPSingleNode( );
         }
         _scheduler->setWorld( this );
+        _scheduler->setOverlapSize(config->getOverlapSize());
     }
 
     World::~World( )
@@ -70,7 +71,6 @@ namespace Engine
 
     void World::initialize( int argc, char *argv[] )
     {
-        // Set randomness
         int seed = _config->getSeed();
         if (_config->getSeed() == -1) seed = Statistics::getNewSeed();
 
@@ -79,13 +79,11 @@ namespace Engine
         
         _scheduler->init( argc, argv );
 
-        createRasters( );
-        createAgents( );
-
         _scheduler->initData( );
     }
 
-    void World::setRandomShuffleSeed(uint64_t seed) {
+    void World::setRandomShuffleSeed(uint64_t seed) 
+    {
         std::srand(seed);
     }
 
@@ -115,6 +113,27 @@ namespace Engine
         log_EDEBUG( logName.str( ), "agent: " << agent << " added at time step: " << getCurrentTimeStep( ) );
     }
 
+    void World::updateDiscreteStateStructures() const
+    {
+        for (AgentsList::const_iterator it = _agents.begin(); it != _agents.end(); ++it)
+        {
+            Agent* agent = it->get();
+            agent->copyContinuousValuesToDiscreteOnes();
+        }
+
+        for (int i = 0; i < _rasters.size(); ++i)
+        {
+            StaticRaster* raster = _rasters[i];
+            raster->resizeDiscrete(raster->getSize()); 
+            raster->copyContinuousValuesToDiscreteOnes();
+        }
+    }
+
+    void World::engineStep()
+    {
+        updateDiscreteStateStructures();
+    }
+
     void World::step( )
     {
         std::stringstream logName;
@@ -129,9 +148,8 @@ namespace Engine
         }
         stepEnvironment( );
         log_DEBUG( logName.str( ), getWallTime( ) << " step: " << _step << " has executed step environment" );
-        //log_DEBUG(logName.str(), getWallTime() << "*******  executeAgents() is going to be executed");
+        _scheduler->updateEnvironmentState();
         _scheduler->executeAgents( );
-        //log_DEBUG(logName.str(), getWallTime() << "*******  removeAgents() is going to be executed");
         _scheduler->removeAgents( );
         log_INFO( logName.str( ), getWallTime( ) << " finished step: " << _step );
     }
@@ -142,9 +160,12 @@ namespace Engine
         logName << "simulation_" << getId( );
         log_INFO( logName.str( ), getWallTime( ) << " executing " << _config->getNumSteps( ) << " steps..." );
 
+        engineStep();
+
         for ( _step=0; _step<_config->getNumSteps( ); _step++ )
         {
-            step( );
+            step();
+            engineStep();
         }
         // storing last step data
         if ( _step%_config->getSerializeResolution( )==0 )
@@ -177,7 +198,8 @@ namespace Engine
 
     void World::stepRaster( const int & index  )
     {
-        ( (DynamicRaster* ) _rasters.at( index ))->updateRasterIncrement( );
+        // Only do this when incremental rasters?
+        //( (DynamicRaster* ) _rasters.at( index ))->updateRasterIncrement( ); 
     }
 
     void World::registerDynamicRaster( const std::string & key, const bool & serialize, int index )
@@ -200,12 +222,13 @@ namespace Engine
             _serializeRasters.resize( index+1 );
         }
         _rasterNames.insert( make_pair( key, index ));
+        _rasterIDsToNames.insert(make_pair(index, key));
         _dynamicRasters.at( index ) = true;
         if ( _rasters.at( index ))
         {
             delete _rasters.at( index );
         }
-        _rasters.at( index ) = new DynamicRaster( );
+        _rasters.at( index ) = new DynamicRaster( index, key, serialize );
         _rasters.at( index )->resize( _scheduler->getBoundaries( )._size );
         _serializeRasters.at( index ) = serialize;
     }
@@ -230,11 +253,12 @@ namespace Engine
             _serializeRasters.resize( index+1 );
         }
         _rasterNames.insert( make_pair( key, index ));
+        _rasterIDsToNames.insert(make_pair(index, key));
         if ( _rasters.at( index ))
         {
             delete _rasters.at( index );
         }
-        _rasters.at( index ) = new StaticRaster( );
+        _rasters.at( index ) = new StaticRaster( index, key, serialize );
         _rasters.at( index )->resize( _scheduler->getBoundaries( )._size );
 
         _dynamicRasters.at( index ) = false;
@@ -244,7 +268,9 @@ namespace Engine
     bool World::checkPosition( const Point2D<int> & newPosition ) const
     {
         // checking size: if environment is a border of the real world
-        if ( !getBoundaries( ).contains( newPosition ))
+        int totalWidth = _config->getSize().getWidth();
+        int totalHeight = _config->getSize().getHeight();
+        if (newPosition.getX() < 0 or newPosition.getY() < 0 or newPosition.getX() >= totalWidth or newPosition.getY() >= totalHeight)
         {
             return false;
         }
@@ -325,6 +351,11 @@ namespace Engine
     DynamicRaster & World::getDynamicRaster( const std::string & key ) {
         // @see http://stackoverflow.com/a/123995
         return const_cast<DynamicRaster &>( static_cast<const World&>( *this ).getDynamicRaster( key ) );
+    }
+
+    std::string World::getRasterNameFromID(const int& id) const
+    {
+        return _rasterIDsToNames.at(id);
     }
 
     void World::setValue( const std::string & key, const Point2D<int> & position, int value )
@@ -430,17 +461,20 @@ namespace Engine
         throw Exception( oss.str( ) );
     }
 
-
-    Scheduler * World::useSpacePartition( int overlap, bool finalize )
+    Scheduler* World::useOpenMPIMultiNode()
     {
-        return new SpacePartition( overlap, finalize );
+        return new OpenMPIMultiNode();
     }
+
+    // Scheduler * World::useSpacePartition( int overlap, bool finalize )
+    // {
+    //     return new SpacePartition( overlap, finalize );
+    // }
 
     Scheduler * World::useOpenMPSingleNode( )
     {
         return new OpenMPSingleNode( );
     }
-
 
     const int & World::getId( ) const 
     { 
@@ -492,6 +526,20 @@ namespace Engine
     { 
         _scheduler->addFloatAttribute( type, key, value ); 
     }
-    
+
+    void World::setParallelism(bool updateKnowledgeInParallel, bool executeActionsInParallel) {
+        _scheduler->setParallelism(updateKnowledgeInParallel, executeActionsInParallel);
+    }
+
+    void World::changingWorld()
+    {
+        _scheduler->pauseParallelization();
+    }
+
+    void World::worldChanged()
+    {
+        _scheduler->resumeParallelization();
+    }
+
 } // namespace Engine
 

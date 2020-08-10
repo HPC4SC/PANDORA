@@ -121,6 +121,11 @@ public:
 		return 0;
 	}
 
+	void freePackage(void* package) const
+	{
+		return;
+	}
+
 	void sendVectorAttributes(int target)
 	{
 	}
@@ -488,8 +493,8 @@ BOOST_PYTHON_MODULE(libpyPandora)
 		.def("getDynamicRaster", getDynamicRaster, boost::python::return_value_policy<boost::python::reference_existing_object>())
 		.def("getStaticRaster", getStaticRaster, boost::python::return_value_policy<boost::python::reference_existing_object>())
 		.def("run", &Engine::World::run)
-		.def("useSpacePartition", &Engine::World::useSpacePartition, boost::python::return_value_policy<boost::python::reference_existing_object>())
-		.staticmethod("useSpacePartition")
+		// .def("useSpacePartition", &Engine::World::useSpacePartition, boost::python::return_value_policy<boost::python::reference_existing_object>())
+		// .staticmethod("useSpacePartition")
 		.def("useOpenMPSingleNode", &Engine::World::useOpenMPSingleNode, boost::python::return_value_policy<boost::python::reference_existing_object>())
 		.staticmethod("useOpenMPSingleNode")
 		.def("addAgent", &WorldWrap::addAgentSimple,boost::python::with_custodian_and_ward<1,2>())

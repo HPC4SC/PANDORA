@@ -33,7 +33,7 @@ public:
 	// method that describes what happens in the World in one step
 	void step();
 	// method that advances the world one step in time
-	void stepEnvironment();
+	void stepEnvironment() override;
 };
 
 } // namespace Examples 

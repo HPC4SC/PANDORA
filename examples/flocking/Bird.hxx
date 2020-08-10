@@ -14,13 +14,13 @@ namespace Examples {
 class Bird : public Engine::Agent 
 {
 	
-	int _velocity; // attribute that represents the vlocity of the bird Agent
-	int _sigth; // attribute that represents the radius of the vision of the birds
-	int _mindist; // attribute that represents the minim distance between bird Agents
-	float _heading; // attribute that represents the direction in witch the bird is moving towards
-	float _max_A_turn; // attribute that represents the maximum turn that a bird will do when it aligns
-	float _max_C_turn; // attribute that represents the maximum turn that a bird will do when it coheres
-	float _max_S_turn; // attribute that represents the maximum turn that a bird will do when it separates
+	int _velocity; // MpiBasicAttribute: attribute that represents the vlocity of the bird Agent
+	int _sigth; // MpiBasicAttribute: attribute that represents the radius of the vision of the birds
+	int _mindist; // MpiBasicAttribute: attribute that represents the minim distance between bird Agents
+	float _heading; // MpiBasicAttribute: attribute that represents the direction in witch the bird is moving towards
+	float _max_A_turn; // MpiBasicAttribute: attribute that represents the maximum turn that a bird will do when it aligns
+	float _max_C_turn; // MpiBasicAttribute: attribute that represents the maximum turn that a bird will do when it coheres
+	float _max_S_turn; // MpiBasicAttribute: attribute that represents the maximum turn that a bird will do when it separates
 
 public:
 	// creates a bird Agent instance and initiallazes its attributes with the in values

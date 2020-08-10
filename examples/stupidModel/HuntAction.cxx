@@ -15,7 +15,9 @@ HuntAction::~HuntAction() {}
 
 void HuntAction::execute( Engine::Agent & agent ) {	
 	Engine::Agent * p_agent = agent.getWorld()-> getAgent(agent.getId());
-	Engine::AgentsVector neighbours = agent.getWorld()->getNeighbours(p_agent,1);
+
+	Predator& predator = (Predator&) agent;
+	Engine::AgentsVector neighbours = agent.getWorld()->getNeighbours(p_agent, predator.getPredatorHuntDistance());
 	Engine::Point2D<int> newPosition;
 	if (neighbours.size() > 0) { 
 		random_shuffle(neighbours.begin(),neighbours.end());

@@ -9,13 +9,15 @@ set( PANDORA_FILES
      LoggerBase.cxx
      MpiFactory.cxx
      OpenMPSingleNode.cxx
+     LoadBalanceTree.cxx
+     OpenMPIMultiNodeLogs.cxx
+     OpenMPIMultiNode.cxx
      RasterLoader.cxx
      RNGNormal.cxx
      SequentialSerializer.cxx
      Serializer.cxx
      ShpLoader.cxx
      SimulationRecord.cxx
-     SpacePartition.cxx
      StaticRaster.cxx
      Statistics.cxx
      World.cxx

@@ -316,6 +316,7 @@ namespace Engine
          * @param finalize If true the simulation will finalize if a MPI fault occurs, otherwise the simulation will continue.
          */
         SpacePartition( const int & overlap, bool finalize );
+        
         virtual ~SpacePartition( );
 
         /**
@@ -346,6 +347,12 @@ namespace Engine
          */
         void initData( );
         
+        /**
+         * @brief NOT IMPLEMENTED.
+         * 
+         */
+        void updateEnvironmentState() override {}
+
         /**
          * @brief responsible for executing the agents and update world.
          * 
@@ -531,6 +538,7 @@ namespace Engine
          * @return AgentsList::const_iterator 
          */
         AgentsList::const_iterator endOverlapAgents( ) const{ return _overlapAgents.end( ); }
+
     };
 } // namespace Engine
 #endif // __SpacePartition_hxx__

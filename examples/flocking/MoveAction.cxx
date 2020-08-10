@@ -9,6 +9,12 @@
 #include <cmath>
 #include <string>
 
+
+#include <omp.h>
+#include <thread>
+#include <chrono>
+
+
 namespace Examples {
 
 MoveAction::MoveAction() {}
@@ -20,7 +26,7 @@ void MoveAction::execute( Engine::Agent & agent ) {
 	Bird & birdAgent = (Bird&)agent;
 
 	// look around
-	Engine::Agent * p_agent = agent.getWorld()-> getAgent(agent.getId());
+	Engine::Agent * p_agent = agent.getWorld()->getAgent(agent.getId());
 	Engine::AgentsVector flockmates = agent.getWorld()->getNeighbours(p_agent,birdAgent.getSigth(),"Bird");
 	// change heading
 	if (! flockmates.empty()) correctHeading(birdAgent,flockmates);
@@ -28,10 +34,13 @@ void MoveAction::execute( Engine::Agent & agent ) {
 	Engine::Point2D<int> newPosition = agent.getPosition();
 	int agentVelocity = birdAgent.getVelocity();
 	advanceForward(newPosition,agentVelocity,birdAgent);
+
 	// checks if the position is occupied
+	agent.getWorld()->changingWorld();
 	if(world->checkPosition(newPosition)) {
 		agent.setPosition(newPosition);
 	}
+	agent.getWorld()->worldChanged();
 }
 
 std::string MoveAction::describe() const {
@@ -40,7 +49,7 @@ std::string MoveAction::describe() const {
 
 void MoveAction::correctHeading(Bird & birdAgent, const Engine::AgentsVector & flockmates) {
 	float nearestHeading;
-	// checks wich of the turns must the bird execute
+	// checks which of the turns must the bird execute
 	if (distNearestFlockmate(birdAgent,flockmates,nearestHeading) < birdAgent.getMindist()) {
 		MoveAction::separate(birdAgent,nearestHeading);
 	}
