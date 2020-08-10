@@ -16,7 +16,7 @@ class Client : public Engine::Agent
     
     public:
 
-        Client(const std::string &id);
+        Client(const std::string &id,const int &sick);
 
         ~Client();
 

@@ -30,6 +30,8 @@ class Supermarket : public Engine::World
 
     int _clientId = 0;
 
+    int _currentSickCashiers = 0;
+
     public:
         
         Supermarket(Engine::Config * config, Engine::Scheduler * scheduler = 0);
@@ -39,6 +41,10 @@ class Supermarket : public Engine::World
         void createRasters();
 	
 	    void createAgents();
+
+        void createCashier();
+
+        void createClient();
 
         void step();
 
