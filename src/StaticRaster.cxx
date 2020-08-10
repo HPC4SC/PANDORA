@@ -92,7 +92,7 @@ void StaticRaster::resize( const Size<int> & size )
 void StaticRaster::resizeDiscrete(const Size<int>& size)
 {
     _discreteValues.resize(size._width);
-    for ( int i=0; i<size._width; i++ )
+    for (int i = 0; i < size._width; ++i)
         _discreteValues[i].resize(size._height);
 }
 
