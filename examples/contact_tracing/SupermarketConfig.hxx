@@ -36,7 +36,7 @@ class SupermarketConfig : public Engine::Config {
 
     public:
 
-        SupermarketConfig(const std::string & xmlFile);
+        SupermarketConfig(const std::string& xmlFile);
 
         virtual ~SupermarketConfig();
 

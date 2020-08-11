@@ -8,7 +8,8 @@
 namespace Examples 
 {
 
-Cashier::Cashier(const std::string &id, const int &sick) : Agent(id), _sick(sick), _infected(false) {}
+Cashier::Cashier(const std::string& id, const int& sick, const int& shift, const int& workedTime) 
+    : Agent(id), _sick(sick), _infected(false), _shift(shift), _workedTime(workedTime) {}
 
 Cashier::~Cashier() {}
 

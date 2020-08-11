@@ -3,6 +3,7 @@
 
 #include <Agent.hxx>
 #include <Action.hxx>
+#include <Point2D.hxx>
 
 namespace Examples 
 {
@@ -13,10 +14,21 @@ class Client : public Engine::Agent
 
         bool _sick; //MpiBasicAttribute
         bool _infected; //MpiBasicAttribute
+		bool _purchaseFinished; //MpiBasicAttribute
+		Engine::Point2D<int> _targetPosition;
+		int _itemsPurchased; //MpiBasicAttribute
+		int _itemsPayed; //MpiBasicAttribute
+		float _purchaseSpeedFactor; //MpiBasicAttribute
+		std::vector<Engine::Point2D<int>> _memory;
+		float _stopping; //MpiBasicAttribute
+		int _stopTime; //MpiBasicAttribute
+		int _stopCounter; //MpiBasicAttribute
+		int _entryTime; //MpiBasicAttribute
     
     public:
 
-        Client(const std::string &id,const int &sick);
+        Client(const std::string& id, const int& sick, const float& purchaseSpeed, const float& stopping, 
+                const int& stopTime, const int& entryTime);
 
         ~Client();
 
