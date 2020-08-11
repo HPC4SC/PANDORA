@@ -15,4 +15,8 @@ Cashier::~Cashier() {}
 
 void Cashier::selectActions() {}
 
+bool Cashier::isSick() {
+    return _sick;
+}
+
 }

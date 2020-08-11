@@ -5,6 +5,8 @@
 
 #include <World.hxx>
 
+#include <vector>
+
 namespace Examples 
 {
 
@@ -51,6 +53,12 @@ class Supermarket : public Engine::World
         void step();
 
         void devideLayout();
+
+        bool isObstacle(Engine::Point2D<int> point);
+
+        bool isExit(Engine::Point2D<int> point);
+        
+        bool isPossibleTarget(Engine::Point2D<int> point);
 };
 
 }

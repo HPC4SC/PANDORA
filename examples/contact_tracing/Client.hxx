@@ -34,6 +34,8 @@ class Client : public Engine::Agent
 
         void selectActions();
 
+		bool isSick();
+
 	////////////////////////////////////////////////
 	// This code has been automatically generated //
 	/////// Please do not modify it ////////////////

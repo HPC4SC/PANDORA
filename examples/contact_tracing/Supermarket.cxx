@@ -8,6 +8,8 @@
 #include <Logger.hxx>
 #include <RNGNormal.hxx>
 
+#include <algorithm>
+
 namespace Examples
 {
 
@@ -91,6 +93,21 @@ void Supermarket::devideLayout() {
             else _purchaseTargets.push_back(candidate);
         }
     }
+}
+
+bool Supermarket::isObstacle(Engine::Point2D<int> point) {
+    std::vector<Engine::Point2D<int>>::iterator it = find(_obstacles.begin(),_obstacles.end(),point);
+    return it != _obstacles.end(); 
+}
+
+bool Supermarket::isExit(Engine::Point2D<int> point) {
+    std::vector<Engine::Point2D<int>>::iterator it = find(_exit.begin(),_exit.end(),point);
+    return it != _exit.end();
+}
+
+bool Supermarket::isPossibleTarget(Engine::Point2D<int> point) {
+    std::vector<Engine::Point2D<int>>::iterator it = find(_purchaseTargets.begin(),_purchaseTargets.end(),point);
+    return it != _purchaseTargets.end();
 }
 
 }
