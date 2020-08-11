@@ -1,6 +1,8 @@
 #ifndef __Client_hxx__
 #define __Client_hxx__
 
+#include <Phone.hxx>
+
 #include <Agent.hxx>
 #include <Action.hxx>
 #include <Point2D.hxx>
@@ -24,17 +26,20 @@ class Client : public Engine::Agent
 		int _stopTime; //MpiBasicAttribute
 		int _stopCounter; //MpiBasicAttribute
 		int _entryTime; //MpiBasicAttribute
+		Phone* _phone;
     
     public:
 
-        Client(const std::string& id, const int& sick, const float& purchaseSpeed, const float& stopping, 
-                const int& stopTime, const int& entryTime);
+        Client(const std::string& id, const int& sick, const float& purchaseSpeed, const float& stopping, const int& stopTime, 
+		const int& entryTime,const int& phoneT1, const int& phoneT2, const bool& phoneApp, const int& signalRadius);
 
         ~Client();
 
         void selectActions();
 
 		bool isSick();
+
+		void createPhone(const int& threshold1, const int& threshold2, const bool& hasApplication, const int& signalRadius);
 
 	////////////////////////////////////////////////
 	// This code has been automatically generated //
