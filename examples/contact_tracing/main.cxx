@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
 		Examples::Supermarket world(new Examples::SupermarketConfig(fileName), world.useOpenMPIMultiNode());
 	
 		world.initialize(argc, argv);
-		world.setParallelism(false, false);
+		world.setParallelism(true, false);
 		world.run();
 	}
 	catch( std::exception & exceptionThrown ) 

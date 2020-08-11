@@ -34,9 +34,7 @@ void Supermarket::createCashier() {
     oss << "Cashier_" << _cashierId;
     _cashierId++;
     bool sick = false;
-    if (_currentSickCashiers < _supermarketConfig._sickCashiers and _supermarketConfig._sickCashiers != -1) {
-        sick = true;
-    } 
+    if (_currentSickCashiers < _supermarketConfig._sickCashiers and _supermarketConfig._sickCashiers != -1) sick = true;
     Cashier *cashier = new Cashier(oss.str(),sick);
     addAgent(cashier);
     int spawnIndex = Engine::GeneralState::statistics().getUniformDistValue(0,_cashierWorkplace.size() - 1);
@@ -71,6 +69,7 @@ void Supermarket::step() {
         _scheduler->serializeAgents(_step);
     }
     createAgents();
+    _scheduler->updateEnvironmentState();
     _scheduler->executeAgents();
     _scheduler->removeAgents();
 }
@@ -80,14 +79,13 @@ void Supermarket::devideLayout() {
         for (int j = 0; j <= getBoundaries().bottom(); ++j) {
             Engine::Point2D<int> candidate = Engine::Point2D<int>(j,i);
             if (getStaticRaster("layout").getValue(candidate) == 0) _obstacles.push_back(candidate);
-            if (getStaticRaster("layout").getValue(candidate) == 118) _cashierWorkplace.push_back(candidate);
-            if (getStaticRaster("layout").getValue(candidate) == 86) _cashierTill.push_back(candidate);
-            if (getStaticRaster("layout").getValue(candidate) == 79) _exit.push_back(candidate);
-            if (getStaticRaster("layout").getValue(candidate) == 135) _exit.push_back(candidate);
-            if (getStaticRaster("layout").getValue(candidate) == 31) _exitZone.push_back(candidate);
-            std::cout << getStaticRaster("layout").getValue(candidate) << " ";
+            else if (getStaticRaster("layout").getValue(candidate) == 118) _cashierWorkplace.push_back(candidate);
+            else if (getStaticRaster("layout").getValue(candidate) == 86) _cashierTill.push_back(candidate);
+            else if (getStaticRaster("layout").getValue(candidate) == 79) _exit.push_back(candidate);
+            else if (getStaticRaster("layout").getValue(candidate) == 135) _exit.push_back(candidate);
+            else if (getStaticRaster("layout").getValue(candidate) == 31) _exitZone.push_back(candidate);
+            else _purchaseTargets.push_back(candidate);
         }
-        std::cout << std::endl;
     }
 }
 
