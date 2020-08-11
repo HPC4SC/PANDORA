@@ -41,9 +41,10 @@ namespace Engine
         eDynamicRasterMaxValue = 30,
         eDynamicRasterDefaultValue = 31,
 
-        eNumGhostAgents = 40,
-        eGhostAgentType = 41,
-        eGhostAgent = 42,
+        eNumGhostAgentsType = 40, 
+        eGhostAgentsType = 41,
+        eNumGhostAgents = 42,
+        eGhostAgents = 43,
 
         eNumRasters = 50,
         eRasterIndex = 51,
