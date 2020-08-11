@@ -459,11 +459,11 @@ namespace Engine
             void executeAgentsInArea(const Rectangle<int>& areaToExecute, AgentsVector& agentsVector);
 
             /**
-             * @brief Initializes the passed-by-reference map 'agentsByNode', with the neighbouring nodes in the key, and an empty list in the value.
+             * @brief Initializes the passed-by-reference map 'agentsByTypeAndNode', with the neighbouring nodes in the key, and an empty map <typeName, agentsList>.
              * 
-             * @param agentsByNode std::map<int, std::list<Agent*>>&
+             * @param agentsByNode std::map<int, std::map<std::string, AgentsList>>&
              */
-            void initializeAgentsToSendMap(std::map<int, std::list<Agent*>>& agentsByNode) const;
+            void initializeAgentsToSendMap(std::map<int, std::map<std::string, AgentsList>>& agentsByTypeAndNode) const;
 
             /**
              * @brief Sends a non-blocking request of 'numberOfElements', from 'data' typed as 'mpiDataType, to 'destinationNode', tagged with 'tag'.
@@ -477,11 +477,11 @@ namespace Engine
             void sendDataRequestToNode(void* data, const int& numberOfElements, const MPI_Datatype& mpiDatatype, const int& destinationNode, const int& tag);
 
             /**
-             * @brief Sends agents in 'agentsToSend'. The corresponding node is indicated in the key of the map.
+             * @brief Sends agents in 'agentsByTypeAndNode'. The corresponding node is indicated in the key of the map.
              * 
-             * @param agentsToSend const std::map<int, std::list<Agent*>>&
+             * @param agentsByTypeAndNode const std::map<int, std::map<std::string, AgentsList>>&
              */
-            void sendGhostAgentsInMap(const std::map<int, std::list<Agent*>>& agentsByNode);
+            void sendGhostAgentsInMap(const std::map<int, std::map<std::string, AgentsList>>& agentsByTypeAndNode);
 
             /**
              * @brief Non-blockingly receives agents from the neighbouring nodes.

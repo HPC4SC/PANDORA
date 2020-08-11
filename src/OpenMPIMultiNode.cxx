@@ -35,7 +35,7 @@ namespace Engine {
 
     /** INITIALIZATION PUBLIC METHODS **/
 
-    OpenMPIMultiNode::OpenMPIMultiNode() : _initialTime(0.0f), _masterNodeID(0), _assignLoadToMasterNode(true), _serializer(*this), _printInConsole(true)
+    OpenMPIMultiNode::OpenMPIMultiNode() : _initialTime(0.0f), _masterNodeID(0), _assignLoadToMasterNode(true), _serializer(*this), _printInConsole(false)
     {
     }
 
@@ -354,6 +354,7 @@ namespace Engine {
 
             void* agentPackage = agent->fillPackage();
             memcpy((char*) agentsPackageArray + i * sizeOfAgentPackage, agentPackage, sizeOfAgentPackage);
+            agent->freePackage(agentPackage);
             ++i;
         }
         MPI_Send(agentsPackageArray, numberOfAgentsToSend, *agentTypeMPI, currentNode, eAgent, MPI_COMM_WORLD);
@@ -778,14 +779,14 @@ namespace Engine {
         agentsVector.insert(agentsVector.end(), agentsToExecute.begin(), agentsToExecute.end());
     }
 
-    void OpenMPIMultiNode::initializeAgentsToSendMap(std::map<int, std::list<Agent*>>& agentsByNode) const
+    void OpenMPIMultiNode::initializeAgentsToSendMap(std::map<int, std::map<std::string, AgentsList>>& agentsByTypeAndNode) const
     {
-        for (std::map<int, MPINode*>::const_iterator it = _nodeSpace.neighbours.begin(); it != _nodeSpace.neighbours.end(); ++it)
+        for (std::map<int, MPINode*>::const_iterator itNode = _nodeSpace.neighbours.begin(); itNode != _nodeSpace.neighbours.end(); ++itNode)
         {
-            int neighbourID = it->first;
-
+            int neighbourID = itNode->first;
             if (neighbourID == _masterNodeID and not _assignLoadToMasterNode) continue;
-            agentsByNode[neighbourID] = std::list<Agent*>();
+
+            agentsByTypeAndNode[neighbourID] = std::map<std::string, AgentsList>();
         }
     }
 
@@ -797,31 +798,48 @@ namespace Engine {
         _sendRequests.push_back(mpiRequest);
     }
 
-    void OpenMPIMultiNode::sendGhostAgentsInMap(const std::map<int, std::list<Agent*>>& agentsByNode)
+    void OpenMPIMultiNode::sendGhostAgentsInMap(const std::map<int, std::map<std::string, AgentsList>>& agentsByTypeAndNode)
     {
-        for (std::map<int, std::list<Agent*>>::const_iterator itNeighbourNode = agentsByNode.begin(); itNeighbourNode != agentsByNode.end(); ++itNeighbourNode)
+        for (std::map<int, std::map<std::string, AgentsList>>::const_iterator itNeighbourNode = agentsByTypeAndNode.begin(); itNeighbourNode != agentsByTypeAndNode.end(); ++itNeighbourNode)
         {
             int neighbourNodeID = itNeighbourNode->first;
-            std::list<Agent*> agentsList = itNeighbourNode->second;
-            
-            int numberOfAgentsForNode = agentsList.size();
-if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTime() << " sending numberOfAgents: " << numberOfAgentsForNode << "\tto node: " << neighbourNodeID << "\n").str();
-            sendDataRequestToNode(&numberOfAgentsForNode, 1, MPI_INTEGER, neighbourNodeID, eNumGhostAgents);
+            std::map<std::string, AgentsList> agentsByType = itNeighbourNode->second;
 
-            for (std::list<Agent*>::const_iterator itAgents = agentsList.begin(); itAgents != agentsList.end(); ++itAgents)
+            int numberOfAgentTypesToSend = agentsByType.size();
+            sendDataRequestToNode(&numberOfAgentTypesToSend, 1, MPI_INTEGER, neighbourNodeID, eNumGhostAgentsType);
+
+            for (std::map<std::string, AgentsList>::const_iterator itType = agentsByType.begin(); itType != agentsByType.end(); ++itType)
             {
-                Agent* agent = *itAgents;
-                std::string agentType = agent->getType();
+                std::string agentsTypeName = itType->first;
+                AgentsList agentsToSend = itType->second;
 
-if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTime() << " sending agent: " << agent << "\tto node: " << neighbourNodeID << "\n").str();
+                int agentsTypeID = MpiFactory::instance()->getIDFromTypeName(agentsTypeName);
+                sendDataRequestToNode(&agentsTypeID, 1, MPI_INTEGER, neighbourNodeID, eGhostAgentsType);
 
-                int agentTypeID = MpiFactory::instance()->getIDFromTypeName(agentType);
-                sendDataRequestToNode(&agentTypeID, 1, MPI_INTEGER, neighbourNodeID, eGhostAgentType);
+                int numberOfAgentsToSend = agentsToSend.size();
+                sendDataRequestToNode(&numberOfAgentsToSend, 1, MPI_INTEGER, neighbourNodeID, eNumGhostAgents);
 
-                void* agentPackage = agent->fillPackage();
-                MPI_Datatype* agentTypeMPI = MpiFactory::instance()->getMPIType(agentType);
-                sendDataRequestToNode(agentPackage, 1, *agentTypeMPI, neighbourNodeID, eGhostAgent);
-                agent->freePackage(agentPackage);
+if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTime() << " sending numberOfAgents: " << numberOfAgentsToSend << " of type: " << agentsTypeName << "\tto node: " << neighbourNodeID << "\n").str();
+
+                int sizeOfAgentPackage = MpiFactory::instance()->getSizeOfPackage(agentsTypeName);
+                void* agentsPackageArray = malloc(numberOfAgentsToSend * sizeOfAgentPackage);
+
+                int i = 0;
+                MPI_Datatype* agentTypeMPI = MpiFactory::instance()->getMPIType(agentsTypeName);
+                for (AgentsList::const_iterator itAgent = agentsToSend.begin(); itAgent != agentsToSend.end(); ++itAgent)
+                {
+                    Agent* agent = itAgent->get();
+
+ if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTime() << " sending agent: " << agent << "\tto node: " << neighbourNodeID << "\n").str();
+
+                    void* agentPackage = agent->fillPackage();
+                    memcpy((char*) agentsPackageArray + i * sizeOfAgentPackage, agentPackage, sizeOfAgentPackage);
+                    agent->freePackage(agentPackage);
+                    ++i;
+                }
+                sendDataRequestToNode(agentsPackageArray, numberOfAgentsToSend, *agentTypeMPI, neighbourNodeID, eGhostAgents);
+                
+                //free(agentsPackageArray);
             }
         }
     }
@@ -831,35 +849,45 @@ if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<
         for (std::map<int, MPINode*>::const_iterator it = _nodeSpace.neighbours.begin(); it != _nodeSpace.neighbours.end(); ++it)
         {
             int sendingNodeID = it->first;
-            int numberOfAgents;
-if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTime() << " prepare to receive numberOfAgents from node: " << sendingNodeID << "\n").str();
-            MPI_Recv(&numberOfAgents, 1, MPI_INTEGER, sendingNodeID, eNumGhostAgents, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTime() << " receiving numberOfAgents: " << numberOfAgents << "\tfrom node: " << sendingNodeID << "\n").str();
-            for (int i = 0; i < numberOfAgents; ++i)
+
+            int numberOfAgentTypesToReceive;
+            MPI_Recv(&numberOfAgentTypesToReceive, 1, MPI_INTEGER, sendingNodeID, eNumGhostAgentsType, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+            for (int i = 0; i < numberOfAgentTypesToReceive; ++i)
             {
                 int agentTypeID;
-                MPI_Recv(&agentTypeID, 1, MPI_INTEGER, sendingNodeID, eGhostAgentType, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-                std::string agentTypeName = MpiFactory::instance()->getNameFromTypeID(agentTypeID);
-                MPI_Datatype* agentType = MpiFactory::instance()->getMPIType(agentTypeName);
+                MPI_Recv(&agentTypeID, 1, MPI_INTEGER, sendingNodeID, eGhostAgentsType, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                std::string agentsTypeName = MpiFactory::instance()->getNameFromTypeID(agentTypeID);
+                MPI_Datatype* agentTypeMPI = MpiFactory::instance()->getMPIType(agentsTypeName);
 
-                MPI_Status mpiStatus;
+                int numberOfAgentsToReceive;
+                MPI_Recv(&numberOfAgentsToReceive, 1, MPI_INTEGER, sendingNodeID, eNumGhostAgents, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-                void* package = MpiFactory::instance()->createDefaultPackage(agentTypeName);
-                int returnCode = MPI_Recv(package, 1, *agentType, sendingNodeID, eGhostAgent, MPI_COMM_WORLD, &mpiStatus);
-                Agent* agent = MpiFactory::instance()->createAndFillAgent(agentTypeName, package);
-                MpiFactory::instance()->freePackage(package, agentTypeName);
+if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTime() << " receiving numberOfAgentsToReceive: " << numberOfAgentsToReceive << " of type: " << agentsTypeName << "\tfrom node: " << sendingNodeID << "\n").str();
 
-if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTime() << " receiving agent: " << agent << "\tfrom node: " << sendingNodeID << "\t with returnCode: " << returnCode << "\n").str();
+                int sizeOfAgentPackage = MpiFactory::instance()->getSizeOfPackage(agentsTypeName);
+                void* agentsPackageArray = malloc(numberOfAgentsToReceive * sizeOfAgentPackage);
 
-                AgentsList::const_iterator agentIt = getAgentIteratorFromID(agent->getId());
-                if (agentIt != _world->endAgents())
-                    _world->eraseAgent(agentIt);
+                MPI_Recv(agentsPackageArray, numberOfAgentsToReceive, *agentTypeMPI, sendingNodeID, eGhostAgents, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-                if (_nodeSpace.ownedAreaWithOuterOverlaps.contains(agent->getPosition()))
+                for (int j = 0; j < numberOfAgentsToReceive; ++j)
                 {
-                    _world->addAgent(agent, true);
-                    _executedAgentsInStep.insert(agent->getId());
+                    void* package = (char*) agentsPackageArray + j * sizeOfAgentPackage;
+                    Agent* agent = MpiFactory::instance()->createAndFillAgent(agentsTypeName, package);
+
+if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTime() << " receiving agent: " << agent << "\tfrom node: " << sendingNodeID << "\n").str();
+
+                    AgentsList::const_iterator agentIt = getAgentIteratorFromID(agent->getId());
+                    if (agentIt != _world->endAgents())
+                        _world->eraseAgent(agentIt);
+
+                    if (_nodeSpace.ownedAreaWithOuterOverlaps.contains(agent->getPosition()))
+                    {
+                        _world->addAgent(agent, true);
+                        _executedAgentsInStep.insert(agent->getId());
+                    }
                 }
+                free(agentsPackageArray);
             }
         }
     }
@@ -903,26 +931,28 @@ if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<
     {
         if (_numTasks == 1) return;
 
-        std::map<int, std::list<Agent*>> agentsByNode;
-
-        initializeAgentsToSendMap(agentsByNode);
+        std::map<int, std::map<std::string, AgentsList>> agentsByTypeAndNode;
+        initializeAgentsToSendMap(agentsByTypeAndNode);
 
         for (AgentsVector::const_iterator itAgent = agentsVector.begin(); itAgent != agentsVector.end(); ++itAgent)
         {
-            Agent* agent = itAgent->get();
+            AgentPtr agentPtr = *itAgent;
+            Agent* agent = agentPtr.get();
+            std::string agentType = agent->getType();
 
-            if (agent->exists())
+            std::list<int> subOverlapNeighboursIDs = getNeighboursToSendAgent(*agent);
+            for (std::list<int>::const_iterator itNeighbourNodeID = subOverlapNeighboursIDs.begin(); itNeighbourNodeID != subOverlapNeighboursIDs.end(); ++itNeighbourNodeID)
             {
-                std::list<int> subOverlapNeighboursIDs = getNeighboursToSendAgent(*agent);
-                for (std::list<int>::const_iterator itNeighbourNodeID = subOverlapNeighboursIDs.begin(); itNeighbourNodeID != subOverlapNeighboursIDs.end(); ++itNeighbourNodeID)
-                {
-                    int neighbourID = *itNeighbourNodeID;
-                    agentsByNode.at(neighbourID).push_back(agent);
-                }
+                int neighbourNodeID = *itNeighbourNodeID;
+
+                if (agentsByTypeAndNode.at(neighbourNodeID).find(agentType) == agentsByTypeAndNode.at(neighbourNodeID).end())
+                    agentsByTypeAndNode.at(neighbourNodeID)[agentType] = AgentsList();
+
+                agentsByTypeAndNode.at(neighbourNodeID).at(agentType).push_back(agentPtr);
             }
         }
 
-        sendGhostAgentsInMap(agentsByNode);
+        sendGhostAgentsInMap(agentsByTypeAndNode);
         receiveGhostAgentsFromNeighbouringNodes();
     }
 
@@ -940,23 +970,29 @@ if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<
 
     void OpenMPIMultiNode::sendGhostAgentsToNeighbours(const AgentsVector& agentsVector, const int& originalSubOverlapAreaID)
     {
-        std::map<int, std::list<Agent*>> agentsByNode;
-        initializeAgentsToSendMap(agentsByNode);
+        std::map<int, std::map<std::string, AgentsList>> agentsByTypeAndNode;
+        initializeAgentsToSendMap(agentsByTypeAndNode);
 
         for (AgentsVector::const_iterator itAgent = agentsVector.begin(); itAgent != agentsVector.end(); ++itAgent)
         {
-            Agent* agent = itAgent->get();
+            AgentPtr agentPtr = *itAgent;
+            Agent* agent = agentPtr.get();
+            std::string agentType = agent->getType();
 
             std::list<int> subOverlapNeighboursIDs = getNeighboursToSendAgent(*agent);
             addSubOverlapNeighboursToList(subOverlapNeighboursIDs, originalSubOverlapAreaID, agent->getDiscretePosition());  // For other nodes removing reasons
             for (std::list<int>::const_iterator itNeighbourNodeID = subOverlapNeighboursIDs.begin(); itNeighbourNodeID != subOverlapNeighboursIDs.end(); ++itNeighbourNodeID)
             {
                 int neighbourNodeID = *itNeighbourNodeID;
-                agentsByNode.at(neighbourNodeID).push_back(agent);
+
+                if (agentsByTypeAndNode.at(neighbourNodeID).find(agentType) == agentsByTypeAndNode.at(neighbourNodeID).end())
+                    agentsByTypeAndNode.at(neighbourNodeID)[agentType] = AgentsList();
+
+                agentsByTypeAndNode.at(neighbourNodeID).at(agentType).push_back(agentPtr);
             }
         }
 
-        sendGhostAgentsInMap(agentsByNode);
+        sendGhostAgentsInMap(agentsByTypeAndNode);
     }
 
     void OpenMPIMultiNode::initializeRasterValuesToSendMap(std::map<int, MapOfValuesByRaster>& rasterValuesByNode) const
