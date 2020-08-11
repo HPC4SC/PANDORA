@@ -35,6 +35,10 @@ int Phone::getStartOffset() {
     return _startOffset;
 }
 
+int Phone::getSignalRadius() {
+    return _signalRadius;
+}
+
 int Phone::checkDetection(const int& sick, const double& distance, const int& dt) {
     int d_ref = 9;
 	int s_ref = 70;
