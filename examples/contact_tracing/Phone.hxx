@@ -34,7 +34,9 @@ class Phone {
 
     int getStartOffset();
 
-    int checkDetection(const int& sick, const double& distance, const int& dt=300);
+    int getSignalRadius();
+
+    int checkDetection(const int& sick, const double& distance, const int& dt);
 
 };
 

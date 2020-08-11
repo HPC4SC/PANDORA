@@ -40,7 +40,7 @@ void Supermarket::createCashier() {
     int initWorkedTime = _supermarketConfig._cashierShift * Engine::RNGNormal(_supermarketConfig.getSeed(), 0, 1.0).draw();
     bool hasApp = Engine::RNGNormal(_supermarketConfig.getSeed(), 0, 1.0).draw() * _supermarketConfig._applicationRate;
     Cashier *cashier = new Cashier(oss.str(),sick,_supermarketConfig._cashierShift,initWorkedTime,
-        _supermarketConfig._phoneThreshold1,_supermarketConfig._phoneThreshold2,hasApp,_supermarketConfig._signalRadius);
+        _supermarketConfig._phoneThreshold1,_supermarketConfig._phoneThreshold2,hasApp,_supermarketConfig._signalRadius,_supermarketConfig._encounterRadius);
     addAgent(cashier);
     int spawnIndex = Engine::GeneralState::statistics().getUniformDistValue(0,_cashierWorkplace.size() - 1);
     Engine::Point2D<int> spawn = _cashierWorkplace[spawnIndex];
@@ -62,7 +62,7 @@ void Supermarket::createClient() {
     int stopTime = (int)Engine::RNGNormal(_supermarketConfig.getSeed(), 0, 1.0).draw() * _supermarketConfig._stopTime;
     bool hasApp = Engine::RNGNormal(_supermarketConfig.getSeed(), 0, 1.0).draw() * _supermarketConfig._applicationRate;
     Client *client = new Client(oss.str(),sick,purchaseSpeed,stopping,stopTime,_step,
-        _supermarketConfig._phoneThreshold1,_supermarketConfig._phoneThreshold2,hasApp,_supermarketConfig._signalRadius);
+        _supermarketConfig._phoneThreshold1,_supermarketConfig._phoneThreshold2,hasApp,_supermarketConfig._signalRadius,_supermarketConfig._encounterRadius);
     addAgent(client);
     int spawnIndex = Engine::GeneralState::statistics().getUniformDistValue(0,_entry.size() - 1);
     Engine::Point2D<int> spawn = _entry[spawnIndex];

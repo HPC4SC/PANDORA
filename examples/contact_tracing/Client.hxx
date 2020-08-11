@@ -7,6 +7,9 @@
 #include <Action.hxx>
 #include <Point2D.hxx>
 
+#include <vector>
+#include <utility>
+
 namespace Examples 
 {
 
@@ -27,11 +30,15 @@ class Client : public Engine::Agent
 		int _stopCounter; //MpiBasicAttribute
 		int _entryTime; //MpiBasicAttribute
 		Phone* _phone;
+		int _encounterRadius;
+		std::vector<std::pair<std::string,int>> _encountersReal;
+		std::vector<std::pair<std::string,int>> _encountersRecorded;
+		int _timeSpentWithOthers;
     
     public:
 
         Client(const std::string& id, const int& sick, const float& purchaseSpeed, const float& stopping, const int& stopTime, 
-		const int& entryTime,const int& phoneT1, const int& phoneT2, const bool& phoneApp, const int& signalRadius);
+		const int& entryTime,const int& phoneT1, const int& phoneT2, const bool& phoneApp, const int& signalRadius, const int& encounterRadius);
 
         ~Client();
 
@@ -40,6 +47,14 @@ class Client : public Engine::Agent
 		bool isSick();
 
 		void createPhone(const int& threshold1, const int& threshold2, const bool& hasApplication, const int& signalRadius);
+
+		void countEncountersReal();
+
+		void countEncountersRecorded();
+
+		bool phoneBroadcast();
+
+		int phoneListen(const bool& sick, const double& distance);
 
 	////////////////////////////////////////////////
 	// This code has been automatically generated //

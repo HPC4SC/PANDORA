@@ -6,6 +6,9 @@
 #include <Agent.hxx>
 #include <Action.hxx>
 
+#include <vector>
+#include <utility>
+
 namespace Examples 
 {
 
@@ -17,20 +20,29 @@ class Cashier : public Engine::Agent
         bool _infected; //MpiBasicAttribute
 		int _shift; //MpiBasicAttribute
 		int _workedTime; //MpiBasicAttribute
+		int _encounterRadius;
 		Phone* _phone;
+		std::vector<std::pair<std::string,int>> _encountersReal;
+		std::vector<std::pair<std::string,int>> _encountersRecorded;
 
     public:
     
         Cashier(const std::string& id, const int& sick, const int& shift, const int& workedTime, 
-		const int& phoneT1, const int& phoneT2, const bool& phoneApp, const int& signalRaius);
+		const int& phoneT1, const int& phoneT2, const bool& phoneApp, const int& signalRaius, const int& encounterRadius);
 
         ~Cashier();
 
         void selectActions();
 
+		void updateKnowledge();
+
 		bool isSick();
 
 		void createPhone(const int& threshold1, const int& threshold2, const bool& hasApplication, const int& signalRaius);
+
+		void countEncountersReal();
+
+		void countEncountersRecorded();
 
 	////////////////////////////////////////////////
 	// This code has been automatically generated //
