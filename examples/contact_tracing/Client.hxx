@@ -12,7 +12,7 @@ class Client : public Engine::Agent
     private:
 
         bool _sick; //MpiBasicAttribute
-        bool _infected;
+        bool _infected; //MpiBasicAttribute
     
     public:
 
