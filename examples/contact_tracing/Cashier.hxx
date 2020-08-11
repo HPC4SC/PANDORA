@@ -1,6 +1,8 @@
 #ifndef __Cashier_hxx__
 #define __Cashier_hxx__
 
+#include <Phone.hxx>
+
 #include <Agent.hxx>
 #include <Action.hxx>
 
@@ -15,16 +17,20 @@ class Cashier : public Engine::Agent
         bool _infected; //MpiBasicAttribute
 		int _shift; //MpiBasicAttribute
 		int _workedTime; //MpiBasicAttribute
+		Phone* _phone;
 
     public:
     
-        Cashier(const std::string& id, const int& sick, const int& shift, const int& workedTime);
+        Cashier(const std::string& id, const int& sick, const int& shift, const int& workedTime, 
+		const int& phoneT1, const int& phoneT2, const bool& phoneApp, const int& signalRaius);
 
         ~Cashier();
 
         void selectActions();
 
 		bool isSick();
+
+		void createPhone(const int& threshold1, const int& threshold2, const bool& hasApplication, const int& signalRaius);
 
 	////////////////////////////////////////////////
 	// This code has been automatically generated //
