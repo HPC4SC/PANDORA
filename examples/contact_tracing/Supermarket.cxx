@@ -11,7 +11,7 @@
 namespace Examples
 {
 
-Supermarket::Supermarket(Engine::Config * config, Engine::Scheduler * scheduler) : World(config, scheduler, false) {}
+Supermarket::Supermarket(Engine::Config* config, Engine::Scheduler* scheduler) : World(config, scheduler, false) {}
 
 Supermarket::~Supermarket() {}
 
@@ -35,7 +35,8 @@ void Supermarket::createCashier() {
     _cashierId++;
     bool sick = false;
     if (_currentSickCashiers < _supermarketConfig._sickCashiers and _supermarketConfig._sickCashiers != -1) sick = true;
-    Cashier *cashier = new Cashier(oss.str(),sick);
+    int initWorkedTime = _supermarketConfig._cashierShift * Engine::RNGNormal(_supermarketConfig.getSeed(), 0, 1.0).draw();
+    Cashier *cashier = new Cashier(oss.str(),sick,_supermarketConfig._cashierShift,initWorkedTime);
     addAgent(cashier);
     int spawnIndex = Engine::GeneralState::statistics().getUniformDistValue(0,_cashierWorkplace.size() - 1);
     Engine::Point2D<int> spawn = _cashierWorkplace[spawnIndex];
@@ -52,7 +53,10 @@ void Supermarket::createClient() {
     _clientId++;
     bool sick = false;
     if (Engine::RNGNormal(_supermarketConfig.getSeed(), 0, 1.0).draw() < _supermarketConfig._sickRate) sick = true;
-    Client *client = new Client(oss.str(),sick);
+    float purchaseSpeed = Engine::RNGNormal(_supermarketConfig.getSeed(), 0, 1.0).draw();
+    float stopping = Engine::RNGNormal(_supermarketConfig.getSeed(), 0, 1.0).draw() * _supermarketConfig._stopping;
+    int stopTime = (int)Engine::RNGNormal(_supermarketConfig.getSeed(), 0, 1.0).draw() * _supermarketConfig._stopTime;
+    Client *client = new Client(oss.str(),sick,purchaseSpeed,stopping,stopTime,_step);
     addAgent(client);
     int spawnIndex = Engine::GeneralState::statistics().getUniformDistValue(0,_entry.size() - 1);
     Engine::Point2D<int> spawn = _entry[spawnIndex];

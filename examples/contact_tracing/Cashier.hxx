@@ -13,10 +13,12 @@ class Cashier : public Engine::Agent
 
         bool _sick; //MpiBasicAttribute
         bool _infected; //MpiBasicAttribute
+		int _shift; //MpiBasicAttribute
+		int _workedTime; //MpiBasicAttribute
 
     public:
     
-        Cashier(const std::string &id, const int &sick);
+        Cashier(const std::string& id, const int& sick, const int& shift, const int& workedTime);
 
         ~Cashier();
 

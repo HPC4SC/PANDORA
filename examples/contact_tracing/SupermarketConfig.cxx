@@ -3,7 +3,7 @@
 namespace Examples 
 {
 
-SupermarketConfig::SupermarketConfig(const std::string & xmlFile) : Config(xmlFile) {}
+SupermarketConfig::SupermarketConfig(const std::string& xmlFile) : Config(xmlFile) {}
 
 SupermarketConfig::~SupermarketConfig() {}
 
