@@ -324,13 +324,14 @@ namespace Engine
          * 
          */
         void executeActions( );
-
+        
         /**
          * @brief fills an MPI package with information of an Agent.
          * 
          * @return void* 
          */
-        virtual void * fillPackage( ) = 0;
+        //virtual void * fillPackage(int& packageSize) const = 0;
+        virtual void * fillPackage() const = 0;
 
         /**
          * @brief Frees the allocated memory that 'package' is pointing to.

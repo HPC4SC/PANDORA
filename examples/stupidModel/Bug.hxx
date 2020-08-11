@@ -53,7 +53,7 @@ public:
 	/////// Please do not modify it ////////////////
 	////////////////////////////////////////////////
 	Bug( void * );
-	void * fillPackage();
+	void * fillPackage() const override;
 	void freePackage(void* package) const override;
 	bool hasTheSameAttributes(const Engine::Agent&) const override;
 	void sendVectorAttributes(int);

@@ -51,6 +51,26 @@ def writeCreateAndFillAgents(f, listAgents, namespaces):
     f.write('\n')
     return None
 
+def writeGetSizeOfPackage(f, listAgents):
+    f.write('int MpiFactory::getSizeOfPackage(const std::string& type) const\n')
+    f.write('{\n')
+    for i, agent in enumerate(listAgents):
+        f.write('\t')
+        if (i > 0): f.write('else ')
+        f.write('if(type.compare("' + agent + '") == 0)\n')
+        f.write('\t{\n')
+        f.write('\t\t' + agent + 'Package* ' + agent.lower() + 'Package = new ' + agent + 'Package;\n')
+        f.write('\t\treturn sizeof(*' + agent.lower() + 'Package);\n')
+        f.write('\t}\n')
+    f.write('\n')
+    f.write('\tstd::stringstream oss;\n')
+    f.write('\toss << "MpiFactory::getSizeOfPackage - unknown agent type: " << type;\n')
+    f.write('\tthrow Engine::Exception(oss.str());\n')
+
+    f.write('}\n')
+    f.write('\n')
+    return None
+
 def writeFreePackage(f, listAgents):
     f.write('void MpiFactory::freePackage(void* package, const std::string& type) const\n')
     f.write('{\n')
@@ -65,7 +85,7 @@ def writeFreePackage(f, listAgents):
         f.write('\t}\n')
     f.write('\n')
     f.write('\tstd::stringstream oss;\n')
-    f.write('\toss << "MpiFactory::createDefaultPackage - unknown agent type: " << type;\n')
+    f.write('\toss << "MpiFactory::freePackage - unknown agent type: " << type;\n')
     f.write('\tthrow Engine::Exception(oss.str());\n')
 
     f.write('}\n')
@@ -198,6 +218,7 @@ def createFactoryMethods(listAgents, factoryFile, namespaces, listAttributesMaps
     writeRegisterTypes(f, listAgents)
     writeCreateDefaultPackage(f, listAgents)
     writeCreateAndFillAgents(f, listAgents, namespaces)
+    writeGetSizeOfPackage(f, listAgents)
     writeFreePackage(f, listAgents)
 
     # close header & namespace
@@ -243,7 +264,7 @@ def createMpiHeader(agentName, source, header, attributesMap):
 
 
 def writeFillPackage(f, agentName, attributesMap):
-    f.write('void * ' + agentName + '::fillPackage()\n')
+    f.write('void * ' + agentName + '::fillPackage() const\n')
     f.write('{\n')
     # basic params: _id, _position, _discretePosition & _exists
     f.write('\t' + agentName + 'Package * package = new ' + agentName + 'Package;\n')
@@ -481,7 +502,7 @@ def checkHeader(agentName, headerName):
             fTmp.write('\t/////// Please do not modify it ////////////////\n')
             fTmp.write('\t////////////////////////////////////////////////\n')
             fTmp.write('\t' + agentName + '( void * );\n')
-            fTmp.write('\tvoid * fillPackage();\n')
+            fTmp.write('\tvoid * fillPackage() const;\n')
             fTmp.write('\tvoid freePackage(void* package) const override;\n')
             fTmp.write('\tbool hasTheSameAttributes(const Engine::Agent&) const override;\n')
             fTmp.write('\tvoid sendVectorAttributes(int);\n')

@@ -228,9 +228,9 @@ namespace Engine
              * 
              * @param agentsToSend const AgentsList&
              * @param currentNode const inst&
-             * @param agentType const std::string&
+             * @param agentsTypeName const std::string&
              */
-            void sendAgentsToNodeByType(const AgentsList& agentsToSend, const int& currentNode, const std::string& agentType) const;
+            void sendAgentsToNodeByType(const AgentsList& agentsToSend, const int& currentNode, const std::string& agentsTypeName) const;
 
             /**
              * @brief Check whether 'agent' is within the 'agentsList'
@@ -466,14 +466,15 @@ namespace Engine
             void initializeAgentsToSendMap(std::map<int, std::list<Agent*>>& agentsByNode) const;
 
             /**
-             * @brief Sends a non-blocking request of 'data' typed as 'mpiDataType, to 'destinationNode', tagged with 'tag'.
+             * @brief Sends a non-blocking request of 'numberOfElements', from 'data' typed as 'mpiDataType, to 'destinationNode', tagged with 'tag'.
              * 
              * @param data void*
+             * @param numberOfElements const int&
              * @param mpiDatatype const MPI_Datatype&
              * @param destinationNode const int&
              * @param tag const int&
              */
-            void sendDataRequestToNode(void* data, const MPI_Datatype& mpiDatatype, const int& destinationNode, const int& tag);
+            void sendDataRequestToNode(void* data, const int& numberOfElements, const MPI_Datatype& mpiDatatype, const int& destinationNode, const int& tag);
 
             /**
              * @brief Sends agents in 'agentsToSend'. The corresponding node is indicated in the key of the map.

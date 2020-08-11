@@ -104,7 +104,15 @@ namespace Engine
          * @return Agent* 
          */
         Agent * createAndFillAgent( const std::string & type, void * package );
-        
+
+        /**
+         * @brief Gets the size of the agent package of type 'type'.
+         * 
+         * @param type const std::string&
+         * @return int 
+         */
+        int getSizeOfPackage(const std::string& type) const;
+
         /**
          * @brief Frees the allocated memory that 'package' is pointing to. To do it, it uses the 'type' of the class to parse it.
          * 
