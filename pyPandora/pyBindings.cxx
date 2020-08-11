@@ -116,7 +116,7 @@ public:
 		Engine::Agent::updateState();
 	}
 
-	void * fillPackage()
+	void * fillPackage() const
 	{
 		return 0;
 	}

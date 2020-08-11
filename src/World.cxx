@@ -164,6 +164,7 @@ namespace Engine
 
         for ( _step=0; _step<_config->getNumSteps( ); _step++ )
         {
+            std::cout << CreateStringStream("step" << _step << "\n").str();
             step();
             engineStep();
         }
