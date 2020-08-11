@@ -24,6 +24,7 @@ class Cashier : public Engine::Agent
 		Phone* _phone;
 		std::vector<std::pair<std::string,int>> _encountersReal;
 		std::vector<std::pair<std::string,int>> _encountersRecorded;
+		int _timeSpentWithOthers;
 
     public:
     
@@ -43,6 +44,8 @@ class Cashier : public Engine::Agent
 		void countEncountersReal();
 
 		void countEncountersRecorded();
+		
+		bool phoneBroadcast();
 
 	////////////////////////////////////////////////
 	// This code has been automatically generated //

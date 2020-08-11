@@ -1,4 +1,6 @@
 #include <Client.hxx>
+#include <MoveAction.hxx>
+#include <InfectAction.hxx>
 
 #include <World.hxx>
 #include <GeneralState.hxx>
