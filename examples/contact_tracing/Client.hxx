@@ -44,7 +44,7 @@ class Client : public Examples::HumanBeeing
 	Client( void * );
 	void * fillPackage();
 	void freePackage(void* package) const override;
-	bool hasTheSameAttributes(const Examples::HumanBeeing&) const override;
+	bool hasTheSameAttributes(const Examples::HumanBeeing&) const;
 	void sendVectorAttributes(int);
 	void receiveVectorAttributes(int);
 	////////////////////////////////////////////////

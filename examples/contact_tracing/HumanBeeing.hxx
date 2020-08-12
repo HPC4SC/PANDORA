@@ -17,35 +17,39 @@ namespace Examples
     {
         private:
 
-        Phone* _phone;
-        std::vector<std::pair<std::string,int>> _encountersReal;
-		std::vector<std::pair<std::string,int>> _encountersRecorded;
+            Phone* _phone;
+            std::vector<std::pair<std::string,int>> _encountersReal;
+            std::vector<std::pair<std::string,int>> _encountersRecorded;
 
         protected:
-        bool _sick; //MpiBasicAttribute
-        bool _infected; //MpiBasicAttribute
-        int _timeSpentWithOthers;
-        int _encounterRadius;
+        
+            bool _sick; //MpiBasicAttribute
+            bool _infected; //MpiBasicAttribute
+            int _timeSpentWithOthers;
+            int _encounterRadius;
 
         public:
 
-        HumanBeeing(const std::string& id, const bool& sick, const int& encounterRadius, const int& phoneT1, 
-            const int& phoneT2, const bool& phoneApp, const int& signalRadius);
+            HumanBeeing(const std::string& id, const bool& sick, const int& encounterRadius, const int& phoneT1, 
+                const int& phoneT2, const bool& phoneApp, const int& signalRadius);
 
-        ~HumanBeeing();
+            ~HumanBeeing();
 
-        bool isSick();
+            bool isSick();
 
-		void createPhone(const int& threshold1, const int& threshold2, const bool& hasApplication, const int& signalRaius);
+            bool isInfected();
 
-		void countEncountersReal();
+            Phone* getPhonePointer();
 
-		void countEncountersRecorded();
-		
-		bool phoneBroadcast();
+            void createPhone(const int& threshold1, const int& threshold2, const bool& hasApplication, const int& signalRaius);
 
-        int phoneListen(const bool& sick, const double& distance);
+            void countEncountersReal();
 
+            void countEncountersRecorded();
+            
+            bool phoneBroadcast();
+
+            int phoneListen(const bool& sick, const double& distance);
 
 	////////////////////////////////////////////////
 	// This code has been automatically generated //
@@ -54,7 +58,7 @@ namespace Examples
 	HumanBeeing( void * );
 	void * fillPackage();
 	void freePackage(void* package) const override;
-	bool hasTheSameAttributes(const Engine::Agent&) const override;
+	bool hasTheSameAttributes(const Engine::Agent&) const;
 	void sendVectorAttributes(int);
 	void receiveVectorAttributes(int);
 	////////////////////////////////////////////////

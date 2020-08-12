@@ -91,7 +91,7 @@ void Supermarket::devideLayout() {
             if (getStaticRaster("layout").getValue(candidate) == 0) _obstacles.push_back(candidate);
             else if (getStaticRaster("layout").getValue(candidate) == 118) _cashierWorkplace.push_back(candidate);
             else if (getStaticRaster("layout").getValue(candidate) == 86) _cashierTill.push_back(candidate);
-            else if (getStaticRaster("layout").getValue(candidate) == 79) _exit.push_back(candidate);
+            else if (getStaticRaster("layout").getValue(candidate) == 79) _entry.push_back(candidate);
             else if (getStaticRaster("layout").getValue(candidate) == 135) _exit.push_back(candidate);
             else if (getStaticRaster("layout").getValue(candidate) == 31) _exitZone.push_back(candidate);
             else _purchaseTargets.push_back(candidate);

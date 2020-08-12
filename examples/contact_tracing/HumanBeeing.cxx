@@ -12,6 +12,22 @@ HumanBeeing::HumanBeeing(const std::string& id, const bool& sick, const int& enc
 
 HumanBeeing::~HumanBeeing() {}
 
+bool HumanBeeing::isSick() {
+    return _sick;
+}
+
+bool HumanBeeing::isInfected() {
+    return _infected;
+}
+
+Phone* HumanBeeing::getPhonePointer() {
+    return _phone;
+}
+
+void HumanBeeing::createPhone(const int& threshold1, const int& threshold2, const bool& hasApplication, const int& signalRaius) {
+    _phone = new Phone(threshold1,threshold2,hasApplication,signalRaius);
+}
+
 void HumanBeeing::countEncountersReal() {
     Engine::AgentsVector neighbours = _world->getNeighbours(this, _encounterRadius);
     for (int i = 0; i < neighbours.size(); i++) {
