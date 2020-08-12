@@ -16,18 +16,19 @@ InfectAction::InfectAction() {}
 InfectAction::~InfectAction() {}
 
 void InfectAction::execute(Engine::Agent & agent) {
+    std::cout << "Infect Agents by: " << agent.getId() << std::endl;
     HumanBeeing& person = (HumanBeeing&)agent;
     Engine::Agent* p_agent = agent.getWorld()->getAgent(agent.getId());
     Engine::AgentsVector neighbours = person.getWorld()->getNeighbours(p_agent, person.getPhonePointer()->getSignalRadius());
     Engine::World* world = agent.getWorld();
-    if (neighbours.size() > 0) {
+    if (neighbours.size() > 0 and person.isSick()) {
         Engine::AgentsVector::iterator neighbour = neighbours.begin();
         while (neighbour != neighbours.end()) {
             Engine::Agent* candidate = (neighbour->get());
 			HumanBeeing* other = dynamic_cast<HumanBeeing*>(candidate);
             const SupermarketConfig& config = (const SupermarketConfig &) world->getConfig();
             float draw = Engine::GeneralState::statistics().getNormalDistValueMinMax(0.,1.);
-            if (person.isSick() and not (other->isSick() or other->isInfected()) and not barrier(person,other,world) and draw < config.getInfectiousness()) {
+            if (not (other->isSick() or other->isInfected()) and not barrier(person,other,world) and draw < config.getInfectiousness()) {
                 other->getInfected();
                 other->setInfectionTime(world->getCurrentStep());
                 person.incCountInfected();
@@ -55,7 +56,7 @@ std::vector<Engine::Point2D<int>> InfectAction::getShortestPath(const Engine::Po
         double minDist = localBest.distance(p2);
         for (int i = currentPos._x - 1; i <= currentPos._x + 1; i++) {
             for (int j = currentPos._y - 1; j <= currentPos._y + 1; j++) {
-                if (i != j and i != currentPos._x - 1 and j != currentPos._y - 1) {
+                if (not (i == currentPos._x and j == currentPos._y) and (i != currentPos._x - 1 and j != currentPos._y - 1)) {
                     Engine::Point2D<int> candidate = Engine::Point2D<int>(i,j);
                     double dist = candidate.distance(p2);
                     if (dist < minDist) {
