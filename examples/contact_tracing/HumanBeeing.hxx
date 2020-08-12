@@ -43,6 +43,8 @@ namespace Examples
 
             Phone* getPhonePointer();
 
+            void updateKnowledge();
+
             void createPhone(const int& threshold1, const int& threshold2, const bool& hasApplication, const int& signalRaius);
 
             void countEncountersReal();
