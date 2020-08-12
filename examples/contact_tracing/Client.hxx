@@ -2,8 +2,8 @@
 #define __Client_hxx__
 
 #include <Phone.hxx>
+#include <HumanBeeing.hxx>
 
-#include <Agent.hxx>
 #include <Action.hxx>
 #include <Point2D.hxx>
 
@@ -13,12 +13,10 @@
 namespace Examples 
 {
 
-class Client : public Engine::Agent 
+class Client : public Examples::HumanBeeing 
 {
     private:
 
-        bool _sick; //MpiBasicAttribute
-        bool _infected; //MpiBasicAttribute
 		bool _purchaseFinished; //MpiBasicAttribute
 		Engine::Point2D<int> _targetPosition;
 		int _itemsPurchased; //MpiBasicAttribute
@@ -28,12 +26,7 @@ class Client : public Engine::Agent
 		float _stopping; //MpiBasicAttribute
 		int _stopTime; //MpiBasicAttribute
 		int _stopCounter; //MpiBasicAttribute
-		int _entryTime; //MpiBasicAttribute
-		Phone* _phone;
-		int _encounterRadius;
-		std::vector<std::pair<std::string,int>> _encountersReal;
-		std::vector<std::pair<std::string,int>> _encountersRecorded;
-		int _timeSpentWithOthers;
+		int _entryTime; //MpiBasicAttribute		
     
     public:
 
@@ -44,18 +37,6 @@ class Client : public Engine::Agent
 
         void selectActions();
 
-		bool isSick();
-
-		void createPhone(const int& threshold1, const int& threshold2, const bool& hasApplication, const int& signalRadius);
-
-		void countEncountersReal();
-
-		void countEncountersRecorded();
-
-		bool phoneBroadcast();
-
-		int phoneListen(const bool& sick, const double& distance);
-
 	////////////////////////////////////////////////
 	// This code has been automatically generated //
 	/////// Please do not modify it ////////////////
@@ -63,7 +44,7 @@ class Client : public Engine::Agent
 	Client( void * );
 	void * fillPackage();
 	void freePackage(void* package) const override;
-	bool hasTheSameAttributes(const Engine::Agent&) const override;
+	bool hasTheSameAttributes(const Examples::HumanBeeing&) const override;
 	void sendVectorAttributes(int);
 	void receiveVectorAttributes(int);
 	////////////////////////////////////////////////
