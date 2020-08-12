@@ -32,4 +32,8 @@ void SupermarketConfig::loadParams() {
     _phoneThreshold2 = getParamInt("Phone","phoneThreshold2");
 }
 
+float SupermarketConfig::getInfectiousness() const{
+    return _infectiosness;
+}
+
 }

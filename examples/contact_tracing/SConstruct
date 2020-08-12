@@ -5,7 +5,7 @@
 ##### please fill with information about your model ##
 ######################################################
 
-nameProgram = 'contactTracing'
+nameProgram = 'contact_tracing'
 
 agents = ['Client','Cashier','HumanBeeing']
 namespaceAgents = ['Examples','Examples','Examples']

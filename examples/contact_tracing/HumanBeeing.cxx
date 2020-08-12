@@ -6,7 +6,8 @@ namespace Examples
 
 HumanBeeing::HumanBeeing(const std::string& id, const bool& sick, const int& encounterRadius, 
     const int& phoneT1, const int& phoneT2, const bool& phoneApp, const int& signalRadius) 
-: Agent(id), _sick(sick), _infected(false), _timeSpentWithOthers(0), _encounterRadius(encounterRadius) {
+: Agent(id), _sick(sick), _infected(false), _timeSpentWithOthers(0), _encounterRadius(encounterRadius),
+_countInfected(0) {
     createPhone(phoneT1,phoneT2,phoneApp,signalRadius);
 }
 
@@ -67,6 +68,18 @@ bool HumanBeeing::phoneBroadcast() {
 
 int HumanBeeing::phoneListen(const bool& sick, const double& distance) { 
     return 1.0*(_phone->hasApp() and _phone->checkDetection(sick,distance,300));
+}
+
+void HumanBeeing::getInfected() {
+    _infected = true;
+}
+
+void HumanBeeing::incCountInfected() {
+    _countInfected++;
+}
+
+void HumanBeeing::setInfectionTime(const int& infectionTime) {
+    _infectionTime = infectionTime;
 }
 
 }

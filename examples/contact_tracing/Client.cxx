@@ -16,6 +16,9 @@ Client::Client(const std::string& id, const int& sick, const float& purchaseSpee
 
 Client::~Client() {}
 
-void Client::selectActions() {}
+void Client::selectActions() {
+    _actions.push_back(new MoveAction());
+    _actions.push_back(new InfectAction());
+}
 
 }
