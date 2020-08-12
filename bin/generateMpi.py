@@ -449,7 +449,7 @@ def getAttributesFromClass(className, attributesMap, vectorAttributesMap):
     return parentName
 
 
-def checkHeader(agentName, headerName):
+def checkHeader(agentName, headerName, parentName):
     print '\tchecking if header: ' + headerName + ' for agent: ' + agentName + ' defines needed methods...'
     # if this is not defined, we will add the four needed methods
     fillPackageName = 'fillPackage'
@@ -483,7 +483,7 @@ def checkHeader(agentName, headerName):
             fTmp.write('\t' + agentName + '( void * );\n')
             fTmp.write('\tvoid * fillPackage();\n')
             fTmp.write('\tvoid freePackage(void* package) const override;\n')
-            fTmp.write('\tbool hasTheSameAttributes(const Engine::Agent&) const override;\n')
+            fTmp.write('\tbool hasTheSameAttributes(const'+ parentName +'&) const override;\n')
             fTmp.write('\tvoid sendVectorAttributes(int);\n')
             fTmp.write('\tvoid receiveVectorAttributes(int);\n')
             fTmp.write('\t////////////////////////////////////////////////\n')
@@ -508,12 +508,12 @@ def execute(target, source, env):
         sourceName = str(source[i])
         headerName = sourceName.replace(".cxx", ".hxx")
         listAgents += [sourceName.replace(".cxx", "")]
-        checkHeader(sourceName.replace(".cxx", ""), headerName)
-        print '\tprocessing agent: ' + listAgents[i - 1]
-        # get the list of attributes to send/receive in MPI
         attributesMap = {}
         vectorAttributesMap = {}
         parentName = getAttributesFromClass(listAgents[i - 1], attributesMap, vectorAttributesMap)
+        checkHeader(sourceName.replace(".cxx", ""), headerName, parentName)
+        print '\tprocessing agent: ' + listAgents[i - 1]
+        # get the list of attributes to send/receive in MPI
         # create header declaring a package with the list of attributes
         createMpiHeader(listAgents[i - 1], sourceName, headerName, attributesMap)
         # create a source code defining package-class copy

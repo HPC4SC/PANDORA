@@ -1,5 +1,5 @@
 #include <InfectAction.hxx>
-#include <Client.hxx>
+#include <HumanBeeing.hxx>
 
 #include <Exception.hxx>
 
@@ -11,9 +11,9 @@ InfectAction::InfectAction() {}
 InfectAction::~InfectAction() {}
 
 void InfectAction::execute(Engine::Agent & agent) {
-    Client & client = (Client&)agent;
+    HumanBeeing & person = (HumanBeeing&)agent;
     Engine::Agent * p_agent = agent.getWorld()->getAgent(agent.getId());
-    Engine::AgentsVector neighbours = client.getWorld()->getNeighbours(p_agent, client.getPhone()->getSignalRadius());
+    Engine::AgentsVector neighbours = person.getWorld()->getNeighbours(p_agent, person.getPhonePointer()->getSignalRadius());
 }
 
 std::string InfectAction::describe() const {
