@@ -42,6 +42,8 @@ class SupermarketConfig : public Engine::Config {
 
         void loadParams();
 
+        float getInfectiousness() const;
+
         friend class Supermarket;
 };
 

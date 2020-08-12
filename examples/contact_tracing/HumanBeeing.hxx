@@ -20,6 +20,8 @@ namespace Examples
             Phone* _phone;
             std::vector<std::pair<std::string,int>> _encountersReal;
             std::vector<std::pair<std::string,int>> _encountersRecorded;
+            int _countInfected;
+            int _infectionTime;
 
         protected:
         
@@ -50,6 +52,12 @@ namespace Examples
             bool phoneBroadcast();
 
             int phoneListen(const bool& sick, const double& distance);
+
+            void getInfected();
+
+            void incCountInfected();
+
+            void setInfectionTime(const int& infectionTime);
 
 	////////////////////////////////////////////////
 	// This code has been automatically generated //

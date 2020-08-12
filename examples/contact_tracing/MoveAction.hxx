@@ -2,6 +2,7 @@
 #define __MoveAction_hxx__
 
 #include <Action.hxx>
+#include <Client.hxx>
 
 #include <string>
 

@@ -36,6 +36,8 @@ class Supermarket : public Engine::World
 
     int _currentSickCashiers = 0;
 
+    bool _first = true;
+
     public:
         
         Supermarket(Engine::Config* config, Engine::Scheduler* scheduler = 0);
