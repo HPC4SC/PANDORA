@@ -1,5 +1,7 @@
 #include <HumanBeeing.hxx>
 
+#include <GeneralState.hxx>
+
 namespace Examples
 
 {
@@ -23,6 +25,11 @@ bool HumanBeeing::isInfected() {
 
 Phone* HumanBeeing::getPhonePointer() {
     return _phone;
+}
+
+void HumanBeeing::updateKnowledge() {
+    countEncountersReal();
+    countEncountersRecorded();
 }
 
 void HumanBeeing::createPhone(const int& threshold1, const int& threshold2, const bool& hasApplication, const int& signalRaius) {
