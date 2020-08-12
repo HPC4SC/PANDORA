@@ -7,11 +7,11 @@
 
 nameProgram = 'contactTracing'
 
-agents = ['Client','Cashier']
-namespaceAgents = ['Examples','Examples']
+agents = ['Client','Cashier','HumanBeeing']
+namespaceAgents = ['Examples','Examples','Examples']
 world = 'Supermarket'
 
-srcFiles = Split('main.cxx Client.cxx Cashier.cxx Supermarket.cxx SupermarketConfig.cxx Phone.cxx')
+srcFiles = Split('main.cxx Client.cxx Cashier.cxx HumanBeeing.cxx Supermarket.cxx SupermarketConfig.cxx Phone.cxx')
 
 ###################################################
 ########## END OF CUSTOM INFORMATION  #############
