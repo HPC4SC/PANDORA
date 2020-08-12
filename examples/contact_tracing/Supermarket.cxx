@@ -75,6 +75,7 @@ void Supermarket::createClient() {
 }
 
 void Supermarket::step() {
+    std::cout << "Executing step: " << _step << std::endl;
     if (_step%_config->getSerializeResolution() == 0) {
         _scheduler->serializeRasters(_step);
         _scheduler->serializeAgents(_step);
@@ -83,6 +84,7 @@ void Supermarket::step() {
     _scheduler->updateEnvironmentState();
     _scheduler->executeAgents();
     _scheduler->removeAgents();
+    std::cout << "End step" << std::endl;
 }
 
 void Supermarket::devideLayout() {
