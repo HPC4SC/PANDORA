@@ -61,6 +61,8 @@ namespace Examples
 
             void setInfectionTime(const int& infectionTime);
 
+            void printEncounters();
+
 	////////////////////////////////////////////////
 	// This code has been automatically generated //
 	/////// Please do not modify it ////////////////

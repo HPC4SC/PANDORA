@@ -30,13 +30,6 @@ Phone* HumanBeeing::getPhonePointer() {
 void HumanBeeing::updateKnowledge() {
     countEncountersReal();
     countEncountersRecorded();
-    //std::cout << "Encounters real: " << getId() << " ";
-    //for (int i = 0; i < _encountersReal.size(); i++) std::cout << _encountersReal[i].first << "," << _encountersReal[i].second << " ";
-    //std::cout << std::endl;
-    std::cout << "Encounters real by: " <<  getId() << " #"<< _encountersReal.size() << std::endl;
-    std::cout << "Encounters recorded by: " <<  getId() << " #"<< _encountersRecorded.size() << std::endl;
-    //for (int i = 0; i < _encountersRecorded.size(); i++) std::cout << _encountersRecorded[i].first << "," << _encountersRecorded[i].second << " ";
-    //std::cout << std::endl;
 }
 
 void HumanBeeing::createPhone(const int& threshold1, const int& threshold2, const bool& hasApplication, const int& signalRaius) {
@@ -81,12 +74,11 @@ void HumanBeeing::countEncountersRecorded() {
                     }
                     if (not in) _encountersRecorded.push_back(std::pair<std::string,int>(neighbours[i]->getId(),1));
                     HumanBeeing* person = dynamic_cast<HumanBeeing*>(neighbour->get());
-                    int detection = person->phoneListen(_sick,getPosition().distance(person->getPosition()));
-                    counted += detection;
+                    counted += person->phoneListen(_sick,getPosition().distance(person->getPosition()));
                 }
             }
             neighbour++;
-        }       
+        }   
     }
 }
 
@@ -108,6 +100,15 @@ void HumanBeeing::incCountInfected() {
 
 void HumanBeeing::setInfectionTime(const int& infectionTime) {
     _infectionTime = infectionTime;
+}
+
+void HumanBeeing::printEncounters() {
+    std::cout << "Encounters real by: " <<  getId() << " #"<< _encountersReal.size() << std::endl;
+    for (int i = 0; i < _encountersReal.size(); i++) std::cout << _encountersReal[i].first << "," << _encountersReal[i].second << " ";
+    std::cout << std::endl;
+    std::cout << "Encounters recorded by: " <<  getId() << " #"<< _encountersRecorded.size() << std::endl;
+    for (int i = 0; i < _encountersRecorded.size(); i++) std::cout << _encountersRecorded[i].first << "," << _encountersRecorded[i].second << " ";
+    std::cout << std::endl;
 }
 
 }
