@@ -11,7 +11,7 @@ agents = ['Client','Cashier','HumanBeeing']
 namespaceAgents = ['Examples','Examples','Examples']
 world = 'Supermarket'
 
-srcFiles = Split('main.cxx Client.cxx Cashier.cxx HumanBeeing.cxx Supermarket.cxx SupermarketConfig.cxx Phone.cxx InfectAction.cxx MoveAction.cxx')
+srcFiles = Split('main.cxx Client.cxx Cashier.cxx HumanBeeing.cxx Supermarket.cxx SupermarketConfig.cxx Phone.cxx InfectAction.cxx MoveAction.cxx LeaveAction.cxx')
 
 ###################################################
 ########## END OF CUSTOM INFORMATION  #############

@@ -1,6 +1,7 @@
 #include <Client.hxx>
 #include <MoveAction.hxx>
 #include <InfectAction.hxx>
+#include <LeaveAction.hxx>
 
 #include <World.hxx>
 #include <GeneralState.hxx>
@@ -19,6 +20,7 @@ Client::~Client() {}
 void Client::selectActions() {
     _actions.push_back(new MoveAction());
     _actions.push_back(new InfectAction());
+    if (getWorld()->getCurrentStep()%500 == 0)  _actions.push_back(new LeaveAction());
 }
 
 }

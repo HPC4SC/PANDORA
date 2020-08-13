@@ -29,6 +29,7 @@ void InfectAction::execute(Engine::Agent & agent) {
             const SupermarketConfig& config = (const SupermarketConfig &) world->getConfig();
             float draw = Engine::GeneralState::statistics().getNormalDistValueMinMax(0.,1.);
             if (not (other->isSick() or other->isInfected()) and not barrier(person,other,world) and draw < config.getInfectiousness()) {
+                std::cout << "F " << other->getId() << std::endl;
                 other->getInfected();
                 other->setInfectionTime(world->getCurrentStep());
                 person.incCountInfected();
