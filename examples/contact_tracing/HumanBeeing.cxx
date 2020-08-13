@@ -30,10 +30,11 @@ Phone* HumanBeeing::getPhonePointer() {
 void HumanBeeing::updateKnowledge() {
     countEncountersReal();
     countEncountersRecorded();
-    std::cout << "Encounters real: " << getId() << " ";
-    for (int i = 0; i < _encountersReal.size(); i++) std::cout << _encountersReal[i].first << "," << _encountersReal[i].second << " ";
-    std::cout << std::endl;
-    //std::cout << "Encounters recorded: ";
+    //std::cout << "Encounters real: " << getId() << " ";
+    //for (int i = 0; i < _encountersReal.size(); i++) std::cout << _encountersReal[i].first << "," << _encountersReal[i].second << " ";
+    //std::cout << std::endl;
+    std::cout << "Encounters real by: " <<  getId() << " #"<< _encountersReal.size() << std::endl;
+    std::cout << "Encounters recorded by: " <<  getId() << " #"<< _encountersRecorded.size() << std::endl;
     //for (int i = 0; i < _encountersRecorded.size(); i++) std::cout << _encountersRecorded[i].first << "," << _encountersRecorded[i].second << " ";
     //std::cout << std::endl;
 }
@@ -71,13 +72,17 @@ void HumanBeeing::countEncountersRecorded() {
             if (neighbours[i]->getId() != getId()) {
                 if (_encountersRecorded.size() == 0) _encountersRecorded.push_back(std::pair<std::string,int>(neighbours[i]->getId(),1));
                 else {
+                    bool in = true;
                     for (int j = 0; j < _encountersRecorded.size(); j++) {
-                        if (_encountersRecorded[j].first == neighbours[i]->getId()) _encountersRecorded[j].second += 1;
-                        else _encountersRecorded.push_back(std::pair<std::string,int>(neighbours[i]->getId(),1));
-                        HumanBeeing* person = dynamic_cast<HumanBeeing*>(neighbour->get());
-                        int detection = person->phoneListen(_sick,getPosition().distance(person->getPosition()));
-                        counted += detection;
+                        if (_encountersRecorded[j].first == neighbours[i]->getId()) {
+                            in = true;
+                            _encountersRecorded[j].second += 1;
+                        }
                     }
+                    if (not in) _encountersRecorded.push_back(std::pair<std::string,int>(neighbours[i]->getId(),1));
+                    HumanBeeing* person = dynamic_cast<HumanBeeing*>(neighbour->get());
+                    int detection = person->phoneListen(_sick,getPosition().distance(person->getPosition()));
+                    counted += detection;
                 }
             }
             neighbour++;

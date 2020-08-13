@@ -16,7 +16,7 @@ InfectAction::InfectAction() {}
 InfectAction::~InfectAction() {}
 
 void InfectAction::execute(Engine::Agent & agent) {
-    std::cout << "Infect Agents by: " << agent.getId() << std::endl;
+    //std::cout << "Infect Agents by: " << agent.getId() << std::endl;
     HumanBeeing& person = (HumanBeeing&)agent;
     Engine::Agent* p_agent = agent.getWorld()->getAgent(agent.getId());
     Engine::AgentsVector neighbours = person.getWorld()->getNeighbours(p_agent, person.getPhonePointer()->getSignalRadius());
