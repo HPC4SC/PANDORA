@@ -48,7 +48,7 @@ void Soldier::move()
 			if(_world->checkPosition(newPos))
 			{	
 				//std::cout << "unit: " << this << " in rank: " << _rank << " moving" << std::endl;
-				_position = newPos;
+				setPosition(newPos);
 			}
 		}
 		else
@@ -75,7 +75,7 @@ void Soldier::move()
 			if(_world->checkPosition(newPos))
 			{
 				//std::cout << "unit: " << this << " in rank: " << _rank << " moving" << std::endl;
-				_position = newPos;
+				setPosition(newPos);
 			}
 		}
 	}
@@ -108,7 +108,7 @@ void Soldier::move()
 					if(_world->checkPosition(newPos))
 					{
 						//std::cout << "unit: " << this << " in rank: " << _rank << " moving" << std::endl;
-						_position = newPos;
+						setPosition(newPos);
 					}
 				}
 				else
@@ -325,7 +325,7 @@ void Soldier::rout()
 	{		
 		if(_world->checkPosition(newPos))
 		{
-			_position = newPos;
+			setPosition(newPos);
 		}
 		else
 		{
@@ -360,7 +360,7 @@ void Soldier::rout()
 			{
 				if(_world->checkPosition(newPos))
 				{
-					_position = newPos;
+					setPosition(newPos);
 				}
 				else
 				{
@@ -385,7 +385,7 @@ void Soldier::rout()
 	{
 		if(_world->checkPosition(newPos))
 		{
-			_position = newPos;
+			setPosition(newPos);
 		}
 		else
 		{

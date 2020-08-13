@@ -81,11 +81,11 @@ namespace Engine {
 
         MpiFactory::instance()->registerTypes();
 
-        _world->createRasters();
+        createRasters();
 
         if (getId() == _masterNodeID) 
         {
-            _world->createAgents();
+            createAgents();
 
             divideSpace();                          printPartitionsBeforeMPI();
             sendSpacesToNodes();                    printOwnNodeStructureAfterMPI();
@@ -131,6 +131,16 @@ namespace Engine {
         _positionAndValueDatatype = new MPI_Datatype;
         MPI_Type_contiguous(3, MPI_INT, _positionAndValueDatatype);
         MPI_Type_commit(_positionAndValueDatatype);
+    }
+
+    void OpenMPIMultiNode::createRasters()
+    {
+        _world->createRasters();
+    }
+
+    void OpenMPIMultiNode::createAgents()
+    {
+        _world->createAgents();
     }
 
     void OpenMPIMultiNode::divideSpace()
@@ -1260,6 +1270,8 @@ if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<
     {
 //usleep(getId() * 500000);
 
+_schedulerLogs->printAgentsMatrixInDebugFile(*this);
+
 _schedulerLogs->writeInDebugFile(CreateStringStream("AGENTS AT THE BEGINNING OF STEP " << _world->getCurrentStep() << ":").str(), *this);
 _schedulerLogs->printNodeAgentsInDebugFile(*this, true);
 
@@ -1361,6 +1373,7 @@ std::cout << CreateStringStream("TotalTime: " << MPI_Wtime() - _initialTime << "
         AgentsList::const_iterator agentIt = getAgentIteratorFromID(agent->getId());
         if (agentIt == _world->endAgents())
             throw Exception(CreateStringStream("[Process # " << getId() <<  "] OpenMPIMultiNode::removeAgent(id) - agent: " << agentIt->get()->getId() << " not found.\n").str());
+        agent->setExists(false);
     }
 
     Agent* OpenMPIMultiNode::getAgent(const std::string& id)

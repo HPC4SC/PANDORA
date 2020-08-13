@@ -183,6 +183,37 @@ namespace Engine {
         return ss.str();
     }
 
+    std::string OpenMPIMultiNodeLogs::getString_AgentsMatrix(const OpenMPIMultiNode& schedulerInstance) const
+    {
+        std::stringstream ss;
+        ss << "AGENTS MATRIX:" << std::endl;
+        const AgentsMatrix& agentsMatrix = schedulerInstance._world->getAgentsMatrix();
+        for (int i = 0; i < agentsMatrix.size(); ++i)
+        {
+            for (int j = 0; j < agentsMatrix[i].size(); ++j)
+            {
+                Point2D<int> point = Point2D<int>(j, i);
+                if (schedulerInstance._nodeSpace.ownedAreaWithOuterOverlaps.contains(point))
+                {
+                    if (agentsMatrix[j][i].empty()) ss << "-----";
+
+                    bool first = true;
+                    for (AgentsList::const_iterator it = agentsMatrix[j][i].begin(); it != agentsMatrix[j][i].end(); ++it)
+                    {
+                        if (not first) ss << "+";
+                        ss << it->get()->getId();
+
+                        first = false;
+                    }
+                }
+                else ss << "-";
+                ss << "\t";
+            }
+            ss << "\n";
+        }
+        return ss.str();
+    }
+
     void OpenMPIMultiNodeLogs::printPartitionsBeforeMPIInDebugFile(const OpenMPIMultiNode& schedulerInstance) const
     {
         log_DEBUG(_logFileNames.at(schedulerInstance.getId()), getString_PartitionsBeforeMPI(schedulerInstance));
@@ -211,6 +242,11 @@ namespace Engine {
     void OpenMPIMultiNodeLogs::printNodeRastersDiscreteInDebugFile(const OpenMPIMultiNode& schedulerInstance) const
     {
         log_DEBUG(_logFileNames.at(schedulerInstance.getId()), getString_NodeRasters(schedulerInstance, true));
+    }
+
+    void OpenMPIMultiNodeLogs::printAgentsMatrixInDebugFile(const OpenMPIMultiNode& schedulerInstance) const
+    {
+        log_DEBUG(_logFileNames.at(schedulerInstance.getId()), getString_AgentsMatrix(schedulerInstance));
     }
 
     /** PROTECTED METHODS **/

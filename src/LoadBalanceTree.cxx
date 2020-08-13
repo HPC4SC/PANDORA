@@ -64,11 +64,12 @@ namespace Engine {
     AgentsVector LoadBalanceTree::getAgentsInPosition(const Point2D<int>& position, const std::string& type) const
     {
         AgentsVector result;
-        for (AgentsList::iterator it = _world->beginAgents(); it != _world->endAgents(); ++it)
+
+        AgentsList agentsAtPosition = _world->getAgentsMatrix()[position.getX()][position.getY()];
+        for (AgentsList::const_iterator it = agentsAtPosition.begin(); it != agentsAtPosition.end(); ++it)
         {
-            AgentPtr agent = *it;
-            if (agent->getPosition().isEqual(position) and (type.compare("all") == 0 or agent->isType(type)))
-                result.push_back(agent);
+            AgentPtr agentPtr = *it;
+            if (type.compare("all") == 0 or agentPtr->isType(type)) result.push_back(agentPtr);
         }
         return result;
     }
