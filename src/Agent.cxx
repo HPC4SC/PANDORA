@@ -84,7 +84,8 @@ const Point2D<int>& Agent::getDiscretePosition() const
 
 void Agent::setPosition( const Point2D<int> & position )
 {
-    _position = position;
+    _position = position;   
+    _world->changeAgentInMatrixOfPositions(this);
 }
 
 void Agent::serializeAttribute( const std::string & name, const int & value )
@@ -182,7 +183,8 @@ void Agent::executeActions( )
 
 void Agent::setRandomPosition( )
 {
-    _position = _world->getRandomPosition( );
+    _position = _world->getRandomPosition();   
+    _world->changeAgentInMatrixOfPositions(this);
 }
 
 void Agent::changeType( const std::string & type )

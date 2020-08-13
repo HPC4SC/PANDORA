@@ -69,6 +69,20 @@ namespace Engine
         }
     }
 
+    void World::initializeAgentsMatrix()
+    {
+        int width = _config->getSize().getWidth();
+        int height = _config->getSize().getHeight();
+
+        _agentsMatrix.resize(width);
+        for (int i = 0; i < width; ++i)
+        {
+            _agentsMatrix[i].resize(height);
+            for (int j = 0; j < height; ++j)
+                _agentsMatrix[i][j] = AgentsList();
+        }
+    }
+
     void World::initialize( int argc, char *argv[] )
     {
         int seed = _config->getSeed();
@@ -77,6 +91,8 @@ namespace Engine
         Engine::GeneralState::statistics().setSeed(seed);
         setRandomShuffleSeed(seed);
         
+        initializeAgentsMatrix();
+
         _scheduler->init( argc, argv );
 
         _scheduler->initData( );
@@ -98,11 +114,81 @@ namespace Engine
         ( (DynamicRaster * ) _rasters.at( index ))->updateRasterToMaxValues( );
     }
 
+    const AgentsMatrix& World::getAgentsMatrix()
+    {
+        return _agentsMatrix;
+    }
+
+    void World::changeAgentInMatrixOfPositions(Agent* agent)
+    {
+        int oldX = agent->getDiscretePosition().getX();
+        int oldY = agent->getDiscretePosition().getY();
+
+        int newX = agent->getPosition().getX();
+        int newY = agent->getPosition().getY();
+
+        if (newX == -1 or newY == -1) return;
+
+        if (oldX != -1 and oldY != -1)
+        {
+            AgentsList::const_iterator agentIt = _agentsMatrix[oldX][oldY].end();
+            for (AgentsList::const_iterator it = _agentsMatrix[oldX][oldY].begin(); it != _agentsMatrix[oldX][oldY].end(); ++it)
+            {
+                AgentPtr currentAgentPtr = *it;
+                if (currentAgentPtr.get()->getId() == agent->getId()) 
+                {
+                    agentIt = it;
+                    break;
+                }
+            }
+
+            if (agentIt != _agentsMatrix[oldX][oldY].end())   // The agent was already created
+            {
+                AgentPtr retrievedAgentPtr = *agentIt;
+                _agentsMatrix[newX][newY].push_back(retrievedAgentPtr);
+                _agentsMatrix[oldX][oldY].erase(agentIt);
+                return;
+            }
+        }
+
+        // Agent not found in matrix, so find it in _agents.
+        for (AgentsList::const_iterator it = _agents.begin(); it != _agents.end(); ++it)
+        {
+            AgentPtr agentPtr = *it;
+            if (agentPtr.get()->getId() == agent->getId()) 
+            {
+                _agentsMatrix[newX][newY].push_back(agentPtr);
+                return;
+            }
+        }
+    }
+
+    void World::eraseAgentFromMatrixOfPositions(Agent* agent)
+    {        
+        int oldX = agent->getDiscretePosition().getX();
+        int oldY = agent->getDiscretePosition().getY();
+
+        AgentsList::const_iterator agentIt = _agentsMatrix[oldX][oldY].end();
+        for (AgentsList::const_iterator it = _agentsMatrix[oldX][oldY].begin(); it != _agentsMatrix[oldX][oldY].end(); ++it)
+        {
+            Agent* currentAgent = it->get();
+
+            if (currentAgent->getId() == agent->getId())
+            {
+                agentIt = it;
+                break;
+            }
+        }
+        if (agentIt != _agentsMatrix[oldX][oldY].end())
+            _agentsMatrix[oldX][oldY].erase(agentIt);
+    }
+
     void World::addAgent( Agent * agent, bool executedAgent )
     {
         agent->setWorld( this );
         AgentPtr agentPtr( agent );
         _agents.push_back( agentPtr );
+        changeAgentInMatrixOfPositions(agent);
         if ( executedAgent )
         {
             _scheduler->agentAdded( agentPtr, executedAgent );
@@ -490,6 +576,14 @@ namespace Engine
     const Rectangle<int> & World::getBoundaries( ) const
     { 
         return _scheduler->getBoundaries( ); 
+    }
+
+    void World::eraseAgent(AgentsList::const_iterator& it) 
+    { 
+        Agent* agent = it->get();
+        eraseAgentFromMatrixOfPositions(agent);
+
+        _agents.erase(it); 
     }
 
     void World::removeAgent( std::shared_ptr<Agent> agentPtr )

@@ -47,7 +47,8 @@ public:
     typedef std::map< std::string, int> RasterNameMap;
 protected:
     std::shared_ptr<Config> _config; //! Pointer to the configuration of the world.
-    AgentsList _agents; //! Global list of agents.
+    AgentsList _agents;             //! Global list of agents.
+    AgentsMatrix _agentsMatrix;     //! Global matrix of agents (used to find agents by position).
 
     bool _allowMultipleAgentsPerCell; //! False if each cell can have just one agent.
 
@@ -60,6 +61,8 @@ protected:
     std::vector<StaticRaster*> _rasters; //! Rasters of the simulations.
     std::vector<bool> _dynamicRasters; //! True if the raster is dynamic, false the raster is static.
     std::vector<bool> _serializeRasters; //! True if the raster must be serialized, false otherwise.
+
+    void initializeAgentsMatrix();
 
     /**
      * @brief Stub method for grow resource to max of initialrasters, used by children of world at init time.
@@ -130,6 +133,27 @@ public:
      * 
      */
     void run( );
+
+    /**
+     * @brief Gets a const reference of the internal _agentsMatrix.
+     * 
+     * @return const AgentsMatrix&
+     */
+    const AgentsMatrix& getAgentsMatrix();
+
+    /**
+     * @brief Changes the position of the 'agent' to its current coordinates. 'oldX' and 'oldY' are used to erase it from it previous position. NOTE: It assumes that _agents member already contain 'agent'.
+     * 
+     * @param agent Agent*
+     */
+    void changeAgentInMatrixOfPositions(Agent* agent);
+
+    /**
+     * @brief Erases the 'agent' from the _agentsMatrix member.
+     * 
+     * @param agent Agent*
+     */
+    void eraseAgentFromMatrixOfPositions(Agent* agent);
 
     /**
      * @brief Add an agent to the world, and remove it from overlap agents if exist.
@@ -536,10 +560,7 @@ public:
      * 
      * @param it AgentsList::const_iterator&
      */
-    void eraseAgent(AgentsList::const_iterator& it) 
-    { 
-        _agents.erase(it); 
-    }
+    void eraseAgent(AgentsList::const_iterator& it);
 
     /**
      * @brief Removes the specified agent from the simulation.
