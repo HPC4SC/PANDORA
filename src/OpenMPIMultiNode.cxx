@@ -719,7 +719,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
         agentsVector.insert(agentsVector.end(), agentsToExecute.begin(), agentsToExecute.end());
 
         double endTime = getWallTime();
-if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStringStream("[Process # " << getId() <<  "] executeAgentsInSubOverlap() OVERLAP: " << subOverlapID << "\tTOTAL TIME: " << endTime - initialTime).str());
+if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStringStream("\n[Process # " << getId() <<  "] executeAgentsInSubOverlap() OVERLAP: " << subOverlapID << "\tTOTAL TIME: " << endTime - initialTime).str());
     }
 
     void OpenMPIMultiNode::initializeAgentsToSendMap(std::map<int, std::map<std::string, AgentsList>>& agentsByTypeAndNode) const
@@ -1246,7 +1246,10 @@ _schedulerLogs->printNodeRastersInDebugFile(*this);
         sendRastersToNeighbours(0);
         receiveRasters(0);
 
+        double initialTime = getWallTime();
         MPI_Barrier(MPI_COMM_WORLD);
+        double endTime = getWallTime();
+if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStringStream("[Process # " << getId() <<  "] MPI_Barrier() AFTER OVERLAP: " << 0 << "\tTOTAL TIME: " << endTime - initialTime).str());
 
 _schedulerLogs->writeInDebugFile(CreateStringStream("AGENTS AT STEP " << _world->getCurrentStep() << "; INNER_MOST EXECUTED:").str(), *this);
 _schedulerLogs->printNodeAgentsInDebugFile(*this, true);
@@ -1280,7 +1283,11 @@ if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<
 
             //clearRequests(); // Is this really necessary?
 
+            initialTime = getWallTime();
             MPI_Barrier(MPI_COMM_WORLD);
+            double endTime = getWallTime();
+if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStringStream("[Process # " << getId() <<  "] MPI_Barrier() AFTER OVERLAP: " << originalSubOverlapAreaID << "\tTOTAL TIME: " << endTime - initialTime).str());
+
 
 _schedulerLogs->writeInDebugFile(CreateStringStream("AGENTS AT STEP " << _world->getCurrentStep() << "; AFTER OVERLAP: " << originalSubOverlapAreaID).str(), *this);
 _schedulerLogs->printNodeAgentsInDebugFile(*this, true);
