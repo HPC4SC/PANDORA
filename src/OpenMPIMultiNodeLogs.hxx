@@ -45,7 +45,8 @@ namespace Engine
              */
             std::string getRasterValues(const DynamicRaster& raster, const OpenMPIMultiNode& schedulerInstance, const bool& discrete) const;
 
-            std::map<int, std::string> _logFileNames;               //! Names of the log files for each of the MPI processes.
+            std::map<int, std::string> _logFileNames;                   //! Names of the log files for each of the MPI processes.
+            std::map<int, std::string> _instrumentationLogFileNames;    //! Names of the instrumentation log files.
 
         public:
 
@@ -174,6 +175,14 @@ namespace Engine
              * @param schedulerInstance const OpenMPIMultiNode&
              */
             void printAgentsMatrixInDebugFile(const OpenMPIMultiNode& schedulerInstance) const;
+
+            /**
+             * @brief Prints 'message' in the corresponding instrumentation log file of the calling process.
+             * 
+             * @param schedulerInstance const OpenMPIMultiNode& schedulerInstance
+             * @param message const std::string&
+             */
+            void printInstrumentation(const OpenMPIMultiNode& schedulerInstance, const std::string& message);
 
     };
 

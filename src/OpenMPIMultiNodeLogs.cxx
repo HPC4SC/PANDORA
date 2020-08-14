@@ -39,9 +39,13 @@ namespace Engine {
     {
         for (int i = 0; i < schedulerInstance._numTasks; ++i)
         {
-            std::stringstream ss;
-            ss << "MPIProcess_" << i << "";
-            _logFileNames[i] = ss.str();
+            std::stringstream ssMPIProcesses;
+            ssMPIProcesses << "MPIProcess_" << i;
+            _logFileNames[i] = ssMPIProcesses.str();
+
+            std::stringstream ssInstrumentation;
+            ssInstrumentation << "InstrumentationProcess_" << i;
+            _instrumentationLogFileNames[i] = ssInstrumentation.str();
         }
     }
 
@@ -247,6 +251,11 @@ namespace Engine {
     void OpenMPIMultiNodeLogs::printAgentsMatrixInDebugFile(const OpenMPIMultiNode& schedulerInstance) const
     {
         log_DEBUG(_logFileNames.at(schedulerInstance.getId()), getString_AgentsMatrix(schedulerInstance));
+    }
+
+    void OpenMPIMultiNodeLogs::printInstrumentation(const OpenMPIMultiNode& schedulerInstance, const std::string& message)
+    {
+        log_DEBUG(_instrumentationLogFileNames.at(schedulerInstance.getId()), message);
     }
 
     /** PROTECTED METHODS **/
