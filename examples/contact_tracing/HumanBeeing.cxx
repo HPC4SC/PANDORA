@@ -27,6 +27,10 @@ Phone* HumanBeeing::getPhonePointer() {
     return _phone;
 }
 
+int HumanBeeing::getEncounterRadius() {
+    return _encounterRadius;
+}
+
 void HumanBeeing::updateKnowledge() {
     countEncountersReal();
     countEncountersRecorded();
@@ -57,7 +61,7 @@ void HumanBeeing::countEncountersReal() {
 }
 
 void HumanBeeing::countEncountersRecorded() {
-    if (phoneBroadcast()) {
+    if (phoneBroadcast()) { 
         Engine::AgentsVector neighbours = getWorld()->getNeighbours(this, _phone->getSignalRadius());
         int counted = 0;
         Engine::AgentsVector::iterator neighbour = neighbours.begin();

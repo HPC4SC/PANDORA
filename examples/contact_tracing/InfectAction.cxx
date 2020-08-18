@@ -19,17 +19,18 @@ void InfectAction::execute(Engine::Agent & agent) {
     //std::cout << "Infect Agents by: " << agent.getId() << std::endl;
     HumanBeeing& person = (HumanBeeing&)agent;
     Engine::Agent* p_agent = agent.getWorld()->getAgent(agent.getId());
-    Engine::AgentsVector neighbours = person.getWorld()->getNeighbours(p_agent, person.getPhonePointer()->getSignalRadius());
+    Engine::AgentsVector neighbours = person.getWorld()->getNeighbours(p_agent, person.getEncounterRadius(),"all");
     Engine::World* world = agent.getWorld();
-    if (neighbours.size() > 0 and person.isSick()) {
+    if (neighbours.size() > 0 and person.isSick()) {    
         Engine::AgentsVector::iterator neighbour = neighbours.begin();
+        std::cout << person.getId() << " trying to infect: " << neighbours.size() << std::endl;
         while (neighbour != neighbours.end()) {
             Engine::Agent* candidate = (neighbour->get());
 			HumanBeeing* other = dynamic_cast<HumanBeeing*>(candidate);
             const SupermarketConfig& config = (const SupermarketConfig &) world->getConfig();
             float draw = Engine::GeneralState::statistics().getNormalDistValueMinMax(0.,1.);
             if (not (other->isSick() or other->isInfected()) and not barrier(person,other,world) and draw < config.getInfectiousness()) {
-                std::cout << "F " << other->getId() << std::endl;
+                std::cout << "F " << other->getId() << " infected by: " << person.getId() << std::endl;
                 other->getInfected();
                 other->setInfectionTime(world->getCurrentStep());
                 person.incCountInfected();

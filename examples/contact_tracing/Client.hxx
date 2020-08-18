@@ -3,6 +3,7 @@
 
 #include <Phone.hxx>
 #include <HumanBeeing.hxx>
+#include <Supermarket.hxx>
 
 #include <Action.hxx>
 #include <Point2D.hxx>
@@ -26,7 +27,7 @@ class Client : public Examples::HumanBeeing
 		float _stopping; //MpiBasicAttribute
 		int _stopTime; //MpiBasicAttribute
 		int _stopCounter; //MpiBasicAttribute
-		int _entryTime; //MpiBasicAttribute		
+		int _entryTime; //MpiBasicAttribute
     
     public:
 
@@ -43,7 +44,7 @@ class Client : public Examples::HumanBeeing
 	////////////////////////////////////////////////
 	Client( void * );
 	void * fillPackage();
-	void freePackage(void* package) const override;
+	void freePackage(void* package) const;
 	bool hasTheSameAttributes(const Examples::HumanBeeing&) const;
 	void sendVectorAttributes(int);
 	void receiveVectorAttributes(int);

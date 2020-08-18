@@ -36,7 +36,7 @@ class Cashier : public Examples::HumanBeeing
 	////////////////////////////////////////////////
 	Cashier( void * );
 	void * fillPackage();
-	void freePackage(void* package) const override;
+	void freePackage(void* package) const;
 	bool hasTheSameAttributes(const Examples::HumanBeeing&) const;
 	void sendVectorAttributes(int);
 	void receiveVectorAttributes(int);
