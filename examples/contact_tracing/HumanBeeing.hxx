@@ -43,6 +43,8 @@ namespace Examples
 
             Phone* getPhonePointer();
 
+            int getEncounterRadius();
+
             void updateKnowledge();
 
             void createPhone(const int& threshold1, const int& threshold2, const bool& hasApplication, const int& signalRaius);
@@ -69,7 +71,7 @@ namespace Examples
 	////////////////////////////////////////////////
 	HumanBeeing( void * );
 	void * fillPackage();
-	void freePackage(void* package) const override;
+	void freePackage(void* package) const;
 	bool hasTheSameAttributes(const Engine::Agent&) const;
 	void sendVectorAttributes(int);
 	void receiveVectorAttributes(int);
