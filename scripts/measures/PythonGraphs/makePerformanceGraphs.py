@@ -73,36 +73,43 @@ def groupDataToBePlotted(fullDataFrame):
 	resultingDataFrame = fullDataFrame.groupby(["KindOfEvent", "SubOverlapGroup"], as_index = False)["TotalTime"].mean()	
 	return resultingDataFrame
 
-def plotData(dataFrame, modelName, processID):
+def plotData(dataFrame, modelName, processID, inputParamsFile, numberOfProcesses):
 	seaborn.set()
 	plt.figure(figsize = (18, 9))
 
-	plot = seaborn.boxplot(x = 'KindOfEvent', y = 'TotalTime', hue = "SubOverlapGroup", data = dataFrame).set_title("ModelName: " + modelName + " - Process: " + processID)
+	plot = seaborn.boxplot(x = 'KindOfEvent', y = 'TotalTime', hue = "SubOverlapGroup", data = dataFrame).set_title("ModelName: " + modelName + "_params:" + inputParamsFile + "_K:" + str(numberOfProcesses) + " - Process: " + processID)
 
 	figure = plot.get_figure()
-	figure.savefig("./Graphs/InstrumentationTimes_" + modelName + "_Process_" + processID + ".png")
+	figure.savefig("./Graphs/" + modelName + "/" + inputParamsFile + "/InstrumentationTimes_" + modelName + "_" + inputParamsFile + "_" + str(numberOfProcesses) + "_Process_" + processID + ".png")
 	plt.clf()
 	return 0
 
 def main():
-	if len(sys.argv) < 2:
+	if len(sys.argv) < 4:
 		print("ERROR!\n")
-		print("Usage: python3 makePerformanceGraphs.py modelName")
-		print("Example: python makePerformanceGraphs.py stupidModel")
+		print("Usage: python3 makePerformanceGraphs.py modelName inputParamsFile numberOfProcesses")
+		print("Example: python makePerformanceGraphs.py stupidModel 20x20-17 4")
 		exit()
 
 	modelName = sys.argv[1]
-	workingDirectory = "/home/german/Documents/IoTwins/PANDORA/examples/" + modelName + "/logs/"
+	inputParamsFile = sys.argv[2]
+	numberOfProcesses = int(sys.argv[3])
 
+	workingDirectory = os.getenv("HOME") + "/PANDORA/examples/" + modelName + "/logs/"
+
+	plotsDirectory = "./Graphs/" + modelName + "/" + inputParamsFile + "/"
+	if not os.path.exists(plotsDirectory): os.makedirs(plotsDirectory)
+
+	filesToBePlotted = ["InstrumentationProcess_" + str(i) + ".log" for i in range(numberOfProcesses)]
 	for fileNameStr in os.listdir(workingDirectory):
 
-		if "InstrumentationProcess_" in fileNameStr:
+		if fileNameStr in filesToBePlotted:
 			processID = fileNameStr.split("_")[1].split(".")[0]
 
 			fullDataFrame = readFileAndParseIt(workingDirectory + fileNameStr)
 			#reducedDataFrame = groupDataToBePlotted(fullDataFrame)
 
-			plotData(fullDataFrame, modelName, processID)
+			plotData(fullDataFrame, modelName, processID, inputParamsFile, numberOfProcesses)
 
 	return 0
 

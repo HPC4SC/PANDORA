@@ -1,0 +1,12 @@
+<?xml version="1.0" ?>
+<config>  
+	<!-- Global simulation parameters -->
+	<output resultsFile="./data/stupidModel.h5" logsDir="./logs"/>
+	<numSteps value="10" serializeResolution="1"/>
+	<seed value="1234"/>
+	<overlapSizeMPI value="2"/>
+	<size width="50" height="50"/>
+	<Bugs numBugs="100" maxBugMovement="2" maxFoodConsumption="10" survivalProbability="95" initialBugSizeMean="1" initialBugSizeSD="0.7"/>
+	<Predators numPredators="0" maxPredatorHuntDistance="1"/>
+	<Raster maxFoodProduction = "0"/>
+</config>
