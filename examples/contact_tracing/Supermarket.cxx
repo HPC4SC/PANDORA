@@ -266,9 +266,6 @@ Engine::Point2D<int> Supermarket::pickTargetFromZone(const int& zone) {
 }
 
 std::list<Engine::Point2D<int>> Supermarket::getShortestPath(const Engine::Point2D<int>& pos, const Engine::Point2D<int>& target) {
-    int moveCount = 0;
-    int nodesLeftInLayer = 1;
-    int nodesInNextLayer = 0;
     std::queue<int> rowQueue;
     std::queue<int> columnQueue;
     bool reachedEnd = false;
@@ -287,13 +284,7 @@ std::list<Engine::Point2D<int>> Supermarket::getShortestPath(const Engine::Point
             reachedEnd = true;
             break;
         }
-        exploreNeighbours(r,c,nodesInNextLayer,visited, rowQueue, columnQueue, prev);
-        nodesLeftInLayer--;
-        if (nodesLeftInLayer == 0) {
-            nodesLeftInLayer = nodesInNextLayer;
-            nodesInNextLayer = 0;
-            moveCount++;
-        }
+        exploreNeighbours(r,c,visited, rowQueue, columnQueue, prev);
     }
     std::cout << "pos is: " << pos << std::endl;
     std::cout << "target is: " << target << std::endl;
@@ -301,7 +292,7 @@ std::list<Engine::Point2D<int>> Supermarket::getShortestPath(const Engine::Point
     return reconstructPath(pos,target,prev);
 }
 
-void Supermarket::exploreNeighbours(int& r, int& c, int& nodesInNextLayer, std::vector<std::vector<bool>>& visited, std::queue<int>& rowQueue, std::queue<int>& columnQueue, std::vector<std::vector<Engine::Point2D<int>>>& prev) {
+void Supermarket::exploreNeighbours(int& r, int& c, std::vector<std::vector<bool>>& visited, std::queue<int>& rowQueue, std::queue<int>& columnQueue, std::vector<std::vector<Engine::Point2D<int>>>& prev) {
     std::vector<int> rowDirection = {1,-1,0,0,-1,1,1,-1};
     std::vector<int> columnDirection = {0,0,1,-1,-1,1,-1,1};
     for (int i = 0; i < 8; i++) {
@@ -312,7 +303,6 @@ void Supermarket::exploreNeighbours(int& r, int& c, int& nodesInNextLayer, std::
             columnQueue.push(cc);
             visited[rr][cc] = true;
             prev[rr][cc] = Engine::Point2D<int>(r,c);
-            nodesInNextLayer++;
         }
     }
 }

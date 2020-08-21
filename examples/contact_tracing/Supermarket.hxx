@@ -101,7 +101,7 @@ class Supermarket : public Engine::World
 
         std::list<Engine::Point2D<int>> getShortestPath(const Engine::Point2D<int>& pos, const Engine::Point2D<int>& target);
 
-        void exploreNeighbours(int& r, int& c, int& nodesInNextLayer, std::vector<std::vector<bool>>& visited, std::queue<int>& rowQueue, std::queue<int>& columnQueue, std::vector<std::vector<Engine::Point2D<int>>>& prev);
+        void exploreNeighbours(int& r, int& c, std::vector<std::vector<bool>>& visited, std::queue<int>& rowQueue, std::queue<int>& columnQueue, std::vector<std::vector<Engine::Point2D<int>>>& prev);
 
         bool validPosition(const int& rr, const int& cc, const std::vector<std::vector<bool>>& visited);
 
