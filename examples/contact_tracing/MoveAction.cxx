@@ -13,7 +13,7 @@ MoveAction::MoveAction() {}
 
 MoveAction::~MoveAction() {}
 
-void MoveAction::execute(Engine::Agent & agent) { // TODO fer servir A*
+void MoveAction::execute(Engine::Agent & agent) {
 	std::cout << "Move Agents by: " << agent.getId() << std::endl;
 	Client& client = (Client&)agent;
 	Engine::World* world = agent.getWorld();
@@ -29,7 +29,8 @@ void MoveAction::execute(Engine::Agent & agent) { // TODO fer servir A*
 			}
 			newPosition = client.getMemory().front();
 			client.popFrontMemory();
-			if (not world->checkPosition(newPosition) or Engine::GeneralState::statistics().getUniformDistValue() < client.getWander()) {
+			if (not world->checkPosition(newPosition) and Engine::GeneralState::statistics().getUniformDistValue() < client.getWander()) {
+				Engine::Point2D<int> aux = newPosition;
 				newPosition = client.getPosition();
 				int modX = Engine::GeneralState::statistics().getUniformDistValue(-1,1);
 				int modY = Engine::GeneralState::statistics().getUniformDistValue(-1,1);
@@ -42,10 +43,10 @@ void MoveAction::execute(Engine::Agent & agent) { // TODO fer servir A*
 					newPosition._x += modX;
 					newPosition._y += modY;
 					count++;
+					if (not world->checkPosition(newPosition) or world->getStaticRaster("layout").getValue(newPosition) == 0) newPosition = aux;
 					if (count > 9) break;
 				}
 			}
-			std::cout << "I'm " << client.getId() << " and my newPosition is: " << newPosition;
 			if (world->checkPosition(newPosition))
 			{
 				agent.setPosition(newPosition);

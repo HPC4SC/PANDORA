@@ -33,7 +33,7 @@ class Supermarket : public Engine::World
 
     std::vector<Engine::Point2D<int>> _purchaseTargets;
 
-    std::map<int,std::vector<std::pair<int,double>>> _transitionProbabilities;
+    std::map<int,std::map<int,double>> _transitionProbabilities;
 
     std::map<int,std::vector<Engine::Point2D<int>>> _zoneTargets; 
 
@@ -81,7 +81,7 @@ class Supermarket : public Engine::World
 
         int getCurrentZone(const Engine::Point2D<int>& pos);
 
-        std::vector<std::pair<int,double>> getTransitionProbabilities(const int& zone);
+        std::map<int,double> getTransitionProbabilities(const int& zone);
 
         void setupTransitionProbabilities();
 
