@@ -85,9 +85,13 @@ void Supermarket::step() {
         _scheduler->serializeRasters(_step);
         _scheduler->serializeAgents(_step);
     }
+    std::cout << "Create Agents" << std::endl;
     createAgents();
+    std::cout << "UpdateState" << std::endl;
     _scheduler->updateEnvironmentState();
+    std::cout << "Execute Agents" << std::endl;
     _scheduler->executeAgents();
+    std::cout << "Remove Agents" << std::endl;
     _scheduler->removeAgents();
 }
 
@@ -149,12 +153,9 @@ int Supermarket::getCurrentZone(const Engine::Point2D<int>& pos) {
     return getStaticRaster("layout").getValue(pos);
 }
 
-std::vector<std::pair<int,double>> Supermarket::getTransitionProbabilities(const int& zone) {
-    std::map<int,std::vector<std::pair<int,double>>>::iterator it;
-    //std::cout << "getTransitionProbabilities from: " << zone << std::endl;
-    if (zone == 2 or zone == 255 or zone == 0 or zone == 254/*treure 255, 254 i 0*/) {
-        return _transitionProbabilities[1];
-    }
+std::map<int,double> Supermarket::getTransitionProbabilities(const int& zone) {
+    std::map<int,std::map<int,double>>::iterator it;
+    if (zone == 2) return _transitionProbabilities[1];
     else {
         it = _transitionProbabilities.find(zone);
         return it->second;
@@ -162,19 +163,21 @@ std::vector<std::pair<int,double>> Supermarket::getTransitionProbabilities(const
 }
 
 void Supermarket::setupTransitionProbabilities() {
-    std::vector<std::pair<int,double>> probabilities;
-    for (int i = 0; i < _zones.size(); i++) probabilities.push_back(std::pair<int,double>(_zones[i],0.));
-    for (int i = 0; i < _zones.size(); i++) _transitionProbabilities.insert(std::pair<int,std::vector<std::pair<int,double>>>(_zones[i],probabilities));
-    _transitionProbabilities.insert(std::pair<int,std::vector<std::pair<int,double>>>(1,probabilities));
-    std::map<int,std::vector<std::pair<int,double>>>::iterator it = _transitionProbabilities.begin();
+    std::map<int,double> probabilities;
+    for (int i = 0; i < _zones.size(); i++) probabilities.insert(std::pair<int,double>(_zones[i],0.));
+    for (int i = 0; i < _zones.size(); i++) _transitionProbabilities.insert(std::pair<int,std::map<int,double>>(_zones[i],probabilities));
+    _transitionProbabilities.insert(std::pair<int,std::map<int,double>>(1,probabilities));
 }
 
 void Supermarket::printTransitionProbabilities() {
-    std::map<int,std::vector<std::pair<int,double>>>::iterator aux = _transitionProbabilities.begin();
+    std::map<int,std::map<int,double>>::iterator aux = _transitionProbabilities.begin();
     while (aux != _transitionProbabilities.end()) {
         std::cout << aux->first << " {";
+        std::map<int,double>::iterator aux2 = aux->second.begin();
+        while (aux2 != aux->second.end())
         for (int i = 0; i < aux->second.size(); i++) {
-            std::cout << " " << aux->second[i].first << ": " << aux->second[i].second << ",";
+             std::cout << " " << aux2->first << ": " << aux2->second << ",";
+             aux2++;
         }
         std::cout << "}" << std::endl;
         aux++;
@@ -200,21 +203,9 @@ void Supermarket::setupZoneProbabilities() {
 
 void Supermarket::addPurchaseProbability() {
     double avgPurchasedItems = 16.5;
-    std::map<int,std::vector<std::pair<int,double>>>::iterator it = _transitionProbabilities.begin();
-    while (it != _transitionProbabilities.end()) {
-        if (it->first == 1) {
-            for (int i = 0; i < it->second.size(); i++) {
-                std::map<int,double>::iterator prob_zone = _zoneProbabilities.find(it->second[i].first);
-                if (prob_zone != _zoneProbabilities.end()) it->second[i].second = prob_zone->second;
-                else it->second[i].second = 0;
-            }
-        }
-        else {
-            for (int i = 0; i < it->second.size(); i++) {
-                if (it->second[i].first == 202) it->second[i].second = 1.0/avgPurchasedItems;
-            }
-        }
-        it++;
+    for (int i = 0; i < _zones.size(); i++) {
+        _transitionProbabilities[_zones[i]][202] = 1.0/avgPurchasedItems;
+        _transitionProbabilities[1][_zones[i]] = _zoneProbabilities[_zones[i]];
     }
 }
 
@@ -234,10 +225,8 @@ void Supermarket::calculateTransitionProbabilities() {
             if (_zones[i] != _zones[j]) {
                 double pop = _zoneProbabilities[_zones[i]] * _zoneProbabilities[_zones[j]];
                 double dist = (_centroids[_zones[i]].distance(_centroids[_zones[j]]))/7.0;
-                double prov = pop/pow(dist,1.75);
-                for (int k = 0; k < _transitionProbabilities[_zones[i]].size(); k++) {
-                    if (_transitionProbabilities[_zones[i]][k].first == _zones[j]) _transitionProbabilities[_zones[i]][k].second = prov;
-                }
+                double prob = pop/pow(dist,1.75);
+                _transitionProbabilities[_zones[i]][_zones[j]] = prob;
             }
         }
     }
@@ -245,18 +234,10 @@ void Supermarket::calculateTransitionProbabilities() {
 
 void Supermarket::normalizeTransitionProbabilities() {
     for (int i = 0; i < _zones.size(); i++) {
-        for (int j = 0; j < _transitionProbabilities[_zones[i]].size(); j++) {
-            if (_transitionProbabilities[_zones[i]][j].first == 202) {
-                double total = 1-0 - _transitionProbabilities[_zones[i]][j].second;
-                double accum = 0;
-                for (int k = 0; k < _zones.size(); k++) {
-                    accum += _transitionProbabilities[_zones[i]][k].second;
-                }
-                for (int k = 0; k < _zones.size(); k++) {
-                    _transitionProbabilities[_zones[i]][k].second = _transitionProbabilities[_zones[i]][k].second * total / accum;
-                }
-            }
-        }
+        double total = 1-0 - _transitionProbabilities[_zones[i]][202];
+        double accum = 0;
+        for (int j = 0; j < _zones.size(); j++) accum += _transitionProbabilities[_zones[i]][_zones[j]];
+        for (int j = 0; j < _zones.size(); j++) _transitionProbabilities[_zones[i]][_zones[j]] = _transitionProbabilities[_zones[i]][_zones[j]] * total / accum;
     }
 }
 
@@ -286,8 +267,6 @@ std::list<Engine::Point2D<int>> Supermarket::getShortestPath(const Engine::Point
         }
         exploreNeighbours(r,c,visited, rowQueue, columnQueue, prev);
     }
-    std::cout << "pos is: " << pos << std::endl;
-    std::cout << "target is: " << target << std::endl;
 
     return reconstructPath(pos,target,prev);
 }
@@ -317,13 +296,9 @@ std::list<Engine::Point2D<int>> Supermarket::reconstructPath(const Engine::Point
     std::list<Engine::Point2D<int>> path;
     for (Engine::Point2D<int> at = target; at != Engine::Point2D<int>(-1,-1); at = prev[at._x][at._y]) path.push_back(at);
     path.reverse();
-    std::cout << "path is: ";
-    for (std::list<Engine::Point2D<int>>::iterator i = path.begin(); i != path.end(); i++) {
-        std::cout << *i << " ";
-    }
     std::cout << std::endl;
     if (path.front() == pos) return path;
-    else return {};
+    return {};
 }
 
 }

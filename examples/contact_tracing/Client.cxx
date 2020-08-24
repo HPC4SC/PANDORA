@@ -18,37 +18,42 @@ Client::Client(const std::string& id, const int& sick, const float& purchaseSpee
 Client::~Client() {}
 
 void Client::selectActions() {
-    std::cout << "I " << getId() << " select actions" << std::endl;
     _actions.push_back(new InfectAction());
     if (_purchaseFinished) _targetPosition = _super->getRandomExit();
     else if (not _purchaseDecided) {
         int currentZone = getWorld()->getStaticRaster("layout").getValue(getPosition());
         if (currentZone >= 10 and currentZone < 100) currentZone += 100;
         if (currentZone == 201) currentZone++;
-        std::vector<std::pair<int,double>> probabilities = _super->getTransitionProbabilities(currentZone);
+        std::map<int,double> probabilities = _super->getTransitionProbabilities(currentZone);
         double sumOfWeights = 0;
-        int choice;
-        for (int i = 0; i < probabilities.size(); i++) sumOfWeights += probabilities[i].second;
+        std::map<int,double>::iterator choice;
+        std::map<int,double>::iterator it = probabilities.begin();
+        while (it != probabilities.end()) {
+            sumOfWeights += it->second;
+            it++;
+        }
         double rnd = Engine::GeneralState::statistics().getUniformDistValue(0,sumOfWeights*100);
         rnd /= 100;
-        for (int i = 0; i < probabilities.size(); i++) {
-            if (rnd < probabilities[i].second) {
-                choice = i;
+        it = probabilities.begin();
+        while (it != probabilities.end()) {
+            if (rnd < it->second) {
+                choice = it;
                 break;
             }
-            rnd -= probabilities[i].second;
+            rnd -= it->second;
+            it++;
         }
-        _targetPosition = _super->pickTargetFromZone(probabilities[choice].first);
-        _itemsPurchased += 1;
+        _targetPosition = _super->pickTargetFromZone(choice->first);
+        _itemsPurchased++;
         _purchaseDecided = true;
     }
     if (getPosition() != _targetPosition) _actions.push_back(new MoveAction());
     else {
         if (_super->isCashier(getPosition())) {
-            if (_itemsPurchased > 0) _itemsPurchased -= 1;
+            if (_itemsPurchased > 0) _itemsPurchased--;
             else _purchaseFinished = true;
         }
-        else if (_super->isExit(getPosition()) or getWorld()->getCurrentStep()%500 == 0) _actions.push_back(new LeaveAction()); //treure or
+        else if (_super->isExit(getPosition())) _actions.push_back(new LeaveAction());
         else {
             if (Engine::GeneralState::statistics().getUniformDistValue() > 0.5) _purchaseDecided = false;
         }
