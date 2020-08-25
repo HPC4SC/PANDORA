@@ -25,7 +25,7 @@ void InfectAction::execute(Engine::Agent & agent) {
         Engine::AgentsVector::iterator neighbour = neighbours.begin();
         std::cout << person.getId() << " trying to infect: " << neighbours.size() << std::endl;
         while (neighbour != neighbours.end()) {
-            Engine::Agent* candidate = (neighbour->get());
+            Engine::Agent* candidate = neighbour->get();
 			HumanBeeing* other = dynamic_cast<HumanBeeing*>(candidate);
             const SupermarketConfig& config = (const SupermarketConfig &) world->getConfig();
             float draw = Engine::GeneralState::statistics().getNormalDistValueMinMax(0.,1.);

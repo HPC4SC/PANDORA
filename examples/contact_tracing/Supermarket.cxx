@@ -222,7 +222,7 @@ void Supermarket::calculateCentroids() {
 void Supermarket::calculateTransitionProbabilities() {
     for (int i = 0; i < _zones.size(); i++) {
         for (int j = 0; j < _zones.size(); j++) {
-            if (_zones[i] != _zones[j]) {
+            if (_zones[i] != _zones[j] and _zones[j] != 202) {
                 double pop = _zoneProbabilities[_zones[i]] * _zoneProbabilities[_zones[j]];
                 double dist = (_centroids[_zones[i]].distance(_centroids[_zones[j]]))/7.0;
                 double prob = pop/pow(dist,1.75);
@@ -234,10 +234,20 @@ void Supermarket::calculateTransitionProbabilities() {
 
 void Supermarket::normalizeTransitionProbabilities() {
     for (int i = 0; i < _zones.size(); i++) {
-        double total = 1-0 - _transitionProbabilities[_zones[i]][202];
-        double accum = 0;
-        for (int j = 0; j < _zones.size(); j++) accum += _transitionProbabilities[_zones[i]][_zones[j]];
-        for (int j = 0; j < _zones.size(); j++) _transitionProbabilities[_zones[i]][_zones[j]] = _transitionProbabilities[_zones[i]][_zones[j]] * total / accum;
+        if (_zones[i] != 202) {
+            double total = 1-0 - _transitionProbabilities[_zones[i]][202];
+            double accum = 0;
+            for (int j = 0; j < _zones.size(); j++) {
+                if (_zones[j] != 202)
+                accum += _transitionProbabilities[_zones[i]][_zones[j]];
+            }
+            for (int j = 0; j < _zones.size(); j++) {
+                if (_zones[j] != 202) {
+                     _transitionProbabilities[_zones[i]][_zones[j]] = _transitionProbabilities[_zones[i]][_zones[j]] * total / accum;
+                }
+            }
+        }
+        else _transitionProbabilities[_zones[i]][202] = 0.;
     }
 }
 
