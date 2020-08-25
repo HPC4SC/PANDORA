@@ -50,6 +50,7 @@ void Client::selectActions() {
     if (getPosition() != _targetPosition) _actions.push_back(new MoveAction());
     else {
         if (_super->isCashier(getPosition())) {
+            std::cout << "estic pagant" << std::endl;
             if (_itemsPurchased > 0) _itemsPurchased--;
             else _purchaseFinished = true;
         }
