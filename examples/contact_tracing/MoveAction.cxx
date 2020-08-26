@@ -14,7 +14,6 @@ MoveAction::MoveAction() {}
 MoveAction::~MoveAction() {}
 
 void MoveAction::execute(Engine::Agent & agent) {
-	std::cout << "Move Agents by: " << agent.getId() << std::endl;
 	Client& client = (Client&)agent;
 	Engine::World* world = agent.getWorld();
 	if (client.getStopCounter() > 0) client.decreaseStopCounter();

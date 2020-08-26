@@ -1,6 +1,7 @@
 #include <LeaveAction.hxx>
 
 #include <Exception.hxx>
+#include <GeneralState.hxx>
 
 namespace Examples 
 {

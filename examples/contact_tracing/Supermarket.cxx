@@ -114,7 +114,7 @@ void Supermarket::devideLayout() {
                 _purchaseTargets.push_back(candidate);
                 _obstacles.push_back(candidate);
                 _zoneTargets[getStaticRaster("layout").getValue(candidate)+100].push_back(candidate);
-            } 
+            }
         }
     }
     setupZoneProbabilities();
