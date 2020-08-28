@@ -35,7 +35,7 @@ namespace Engine {
 
     /** INITIALIZATION PUBLIC METHODS **/
 
-    OpenMPIMultiNode::OpenMPIMultiNode() : _initialTime(0.0f), _masterNodeID(0), _assignLoadToMasterNode(true), _serializer(*this), _printInConsole(false), _printInstrumentation(true)
+    OpenMPIMultiNode::OpenMPIMultiNode() : _initialTime(0.0f), _masterNodeID(0), _assignLoadToMasterNode(true), _serializer(*this), _printInConsole(false), _printInstrumentation(false)
     {
     }
 
@@ -98,7 +98,8 @@ namespace Engine {
         else 
         {
             receiveInitialSpacesFromNode(_masterNodeID);    printOwnNodeStructureAfterMPI();
-            receiveInitialAgentsFromNode(_masterNodeID);           printNodeAgents();
+            receiveInitialAgentsFromNode(_masterNodeID);    printNodeAgents();
+            
             printNodeRasters();
         }
 
@@ -672,7 +673,8 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
 
     void OpenMPIMultiNode::randomlyExecuteAgents(AgentsVector& agentsToExecute)
     {
-        std::random_shuffle(agentsToExecute.begin(), agentsToExecute.end());
+        GeneralState::statistics().shuffleWithinIterators(agentsToExecute.begin(), agentsToExecute.end());
+
         #pragma omp parallel for schedule(dynamic) if(_updateKnowledgeInParallel)
         for (int i = 0; i < agentsToExecute.size(); ++i)
         {
@@ -1309,7 +1311,9 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
         MPI_Type_free(_coordinatesDatatype);
         MPI_Type_free(_positionAndValueDatatype);
 
-std::cout << CreateStringStream("TotalTime: " << MPI_Wtime() - _initialTime << " seconds.\n").str();
+std::string totalSimulationTime = CreateStringStream("TotalSimulationTime: " << MPI_Wtime() - _initialTime << " seconds.\n").str();
+std::cout << totalSimulationTime;
+if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, totalSimulationTime);
 
         MPI_Finalize();
     }
@@ -1367,7 +1371,7 @@ std::cout << CreateStringStream("TotalTime: " << MPI_Wtime() - _initialTime << "
     AgentsVector OpenMPIMultiNode::getNeighbours(Agent* target, const double& radius, const std::string& type)
     {
         AgentsVector agentsVector = for_each(_world->beginAgents(), _world->endAgents(), aggregatorGet<std::shared_ptr<Agent>>(radius, *target, type))._neighbors;
-        std::random_shuffle(agentsVector.begin(), agentsVector.end());
+        GeneralState::statistics().shuffleWithinIterators(agentsVector.begin(), agentsVector.end());
         return agentsVector;
     }
 

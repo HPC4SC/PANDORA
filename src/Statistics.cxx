@@ -26,6 +26,7 @@
 #include <sstream>
 #include <boost/generator_iterator.hpp>
 #include <fstream>
+#include <algorithm>
 
 namespace Engine
 {
@@ -200,9 +201,7 @@ float Statistics::getPowerLawDistValue( float xmin, float xmax,float alpha ){
 
     float x = std::pow(std::pow(xmax,(alpha+1)) - std::pow(xmin,(alpha+1))*y + std::pow(xmin,(alpha+1)),(1/(alpha+1))) ;
     return (x);
-
 }
-
 
 } // namespace Engine
 

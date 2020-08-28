@@ -89,18 +89,12 @@ namespace Engine
         if (_config->getSeed() == -1) seed = Statistics::getNewSeed();
 
         Engine::GeneralState::statistics().setSeed(seed);
-        setRandomShuffleSeed(seed);
         
         initializeAgentsMatrix();
 
         _scheduler->init( argc, argv );
 
         _scheduler->initData( );
-    }
-
-    void World::setRandomShuffleSeed(uint64_t seed) 
-    {
-        std::srand(seed);
     }
 
     void World::updateRasterToMaxValues( const std::string & key )
