@@ -120,13 +120,6 @@ public:
      * @param argv Not used.
      */
     void initialize( int argc = 0, char *argv[] = 0 );
-    
-    /**
-     * @brief Set randomness for the std::random_shuffle method, which shuffles the agents execution in each step of the simulation.
-     * 
-     * @param seed uint64_t
-     */
-    void setRandomShuffleSeed(uint64_t seed);
 
     /**
      * @brief Runs the simulation. Performs each step and stores the states. Requires calling 'init' method a-priori.

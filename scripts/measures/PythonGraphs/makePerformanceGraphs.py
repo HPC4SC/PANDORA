@@ -1,5 +1,6 @@
 import sys
 import os
+import shutil
 
 import pandas
 import numpy
@@ -73,14 +74,14 @@ def groupDataToBePlotted(fullDataFrame):
 	resultingDataFrame = fullDataFrame.groupby(["KindOfEvent", "SubOverlapGroup"], as_index = False)["TotalTime"].mean()	
 	return resultingDataFrame
 
-def plotData(dataFrame, modelName, processID, inputParamsFile, numberOfProcesses):
+def plotData(dataFrame, graphTitle, graphFileName):
 	seaborn.set()
 	plt.figure(figsize = (18, 9))
 
-	plot = seaborn.boxplot(x = 'KindOfEvent', y = 'TotalTime', hue = "SubOverlapGroup", data = dataFrame).set_title("ModelName: " + modelName + "_params:" + inputParamsFile + "_K:" + str(numberOfProcesses) + " - Process: " + processID)
+	plot = seaborn.boxplot(x = 'KindOfEvent', y = 'TotalTime', hue = "SubOverlapGroup", data = dataFrame).set_title(graphTitle)
 
 	figure = plot.get_figure()
-	figure.savefig("./Graphs/" + modelName + "/" + inputParamsFile + "/InstrumentationTimes_" + modelName + "_" + inputParamsFile + "_" + str(numberOfProcesses) + "_Process_" + processID + ".png")
+	figure.savefig(graphFileName)
 	plt.clf()
 	return 0
 
@@ -106,10 +107,15 @@ def main():
 		if fileNameStr in filesToBePlotted:
 			processID = fileNameStr.split("_")[1].split(".")[0]
 
+			graphTitle = "ModelName: " + modelName + "_params:" + inputParamsFile + "_K:" + str(numberOfProcesses) + " - Process: " + processID
+			graphFileName = plotsDirectory + "InstrumentationTimes_" + modelName + "_" + inputParamsFile + "_" + str(numberOfProcesses) + "_Process_" + processID + ".png"
+
+			shutil.copyfile(workingDirectory + fileNameStr, plotsDirectory + "InstrumentationProcess" + "_K:" + str(numberOfProcesses) + "_Process:" + processID + ".log")
+
 			fullDataFrame = readFileAndParseIt(workingDirectory + fileNameStr)
 			#reducedDataFrame = groupDataToBePlotted(fullDataFrame)
 
-			plotData(fullDataFrame, modelName, processID, inputParamsFile, numberOfProcesses)
+			plotData(fullDataFrame, graphTitle, graphFileName)
 
 	return 0
 
