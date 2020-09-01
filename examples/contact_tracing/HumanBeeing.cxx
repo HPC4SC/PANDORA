@@ -61,7 +61,7 @@ void HumanBeeing::countEncountersReal() {
 }
 
 void HumanBeeing::countEncountersRecorded() {
-    if (phoneBroadcast()) { 
+    if (phoneBroadcast()) {
         Engine::AgentsVector neighbours = getWorld()->getNeighbours(this, _phone->getSignalRadius());
         int counted = 0;
         Engine::AgentsVector::iterator neighbour = neighbours.begin();
@@ -69,7 +69,7 @@ void HumanBeeing::countEncountersRecorded() {
             if (neighbours[i]->getId() != getId()) {
                 if (_encountersRecorded.size() == 0) _encountersRecorded.push_back(std::pair<std::string,int>(neighbours[i]->getId(),1));
                 else {
-                    bool in = true;
+                    bool in = false;
                     for (unsigned int j = 0; j < _encountersRecorded.size(); j++) {
                         if (_encountersRecorded[j].first == neighbours[i]->getId()) {
                             in = true;
@@ -82,7 +82,7 @@ void HumanBeeing::countEncountersRecorded() {
                 }
             }
             neighbour++;
-        }   
+        }
     }
 }
 
@@ -97,7 +97,7 @@ bool HumanBeeing::phoneBroadcast() {
 }
 
 int HumanBeeing::phoneListen(const bool& sick, const double& distance) { 
-    return 1.0*(_phone->hasApp() and _phone->checkDetection(sick,distance,300));
+    return (int)1.0*(_phone->hasApp() and _phone->checkDetection(sick,distance,300));
 }
 
 void HumanBeeing::getInfected() {
