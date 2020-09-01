@@ -13,7 +13,7 @@ Client::Client(const std::string& id, const int& sick, const float& purchaseSpee
     const int& entryTime, const int& phoneT1, const int& phoneT2, const bool& phoneApp, const int& signalRadius, const int& encounterRadius,
     Supermarket* super, const float& wander) 
     : HumanBeeing(id,sick,encounterRadius,phoneT1,phoneT2,phoneApp,signalRadius), _purchaseFinished(false), _itemsPurchased(0), _itemsPayed(0), _purchaseSpeedFactor(purchaseSpeed),
-     _stopping(stopping), _stopTime(stopTime), _stopCounter(0), _entryTime(entryTime), _super(super), _purchaseDecided(false), _wander(wander) {}
+     _stopping(stopping), _stopTime(stopTime), _stopCounter(0), _entryTime(entryTime), _purchaseDecided(false), _super(super), _wander(wander) {}
 
 Client::~Client() {}
 
