@@ -295,7 +295,6 @@ std::list<Engine::Point2D<int>> Supermarket::reconstructPath(const Engine::Point
     std::list<Engine::Point2D<int>> path;
     for (Engine::Point2D<int> at = target; at != Engine::Point2D<int>(-1,-1); at = prev[at._x][at._y]) path.push_back(at);
     path.reverse();
-    std::cout << std::endl;
     if (path.front() == pos) return path;
     return {};
 }
