@@ -3,7 +3,7 @@
 	<!-- Global simulation parameters -->
 	<output resultsFile="./data/stupidModel.h5" logsDir="./logs"/>
 	<numSteps value="7200" serializeResolution="1"/>
-	<seed value="2"/>
+	<seed value="0"/>
 	<overlapSizeMPI value="6"/>
 	<size width="40" height="40"/>
 	<Client clientRate="10" drifting="0.09" stopping="0.02" stopTime="20" wander="0.15"/>

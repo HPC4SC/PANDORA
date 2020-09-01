@@ -9,7 +9,7 @@ namespace Examples
 HumanBeeing::HumanBeeing(const std::string& id, const bool& sick, const int& encounterRadius, 
     const int& phoneT1, const int& phoneT2, const bool& phoneApp, const int& signalRadius) 
 : Agent(id), _sick(sick), _infected(false), _timeSpentWithOthers(0), _encounterRadius(encounterRadius),
-_countInfected(0) {
+_countInfected(0), _phoneActiveCount(0) {
     createPhone(phoneT1,phoneT2,phoneApp,signalRadius);
 }
 
@@ -42,12 +42,12 @@ void HumanBeeing::createPhone(const int& threshold1, const int& threshold2, cons
 
 void HumanBeeing::countEncountersReal() {
     Engine::AgentsVector neighbours = _world->getNeighbours(this, _encounterRadius);
-    for (int i = 0; i < neighbours.size(); i++) {
+    for (unsigned int i = 0; i < neighbours.size(); i++) {
         if (neighbours[i]->getId() != getId()) {
             if (_encountersReal.size() == 0) _encountersReal.push_back(std::pair<std::string,int>(neighbours[i]->getId(),1));
             else {
                 bool in = false;
-                for (int j = 0; j < _encountersReal.size(); j++) {
+                for (unsigned int j = 0; j < _encountersReal.size(); j++) {
                     if (_encountersReal[j].first == neighbours[i]->getId()) {
                         in = true;
                         _encountersReal[j].second += 1;
@@ -65,12 +65,12 @@ void HumanBeeing::countEncountersRecorded() {
         Engine::AgentsVector neighbours = getWorld()->getNeighbours(this, _phone->getSignalRadius());
         int counted = 0;
         Engine::AgentsVector::iterator neighbour = neighbours.begin();
-        for (int i = 0; i < neighbours.size(); i++) {
+        for (unsigned int i = 0; i < neighbours.size(); i++) {
             if (neighbours[i]->getId() != getId()) {
                 if (_encountersRecorded.size() == 0) _encountersRecorded.push_back(std::pair<std::string,int>(neighbours[i]->getId(),1));
                 else {
                     bool in = true;
-                    for (int j = 0; j < _encountersRecorded.size(); j++) {
+                    for (unsigned int j = 0; j < _encountersRecorded.size(); j++) {
                         if (_encountersRecorded[j].first == neighbours[i]->getId()) {
                             in = true;
                             _encountersRecorded[j].second += 1;
@@ -87,7 +87,13 @@ void HumanBeeing::countEncountersRecorded() {
 }
 
 bool HumanBeeing::phoneBroadcast() {
-    return _phone->hasApp() and (getWorld()->getCurrentStep() + _phone->getStartOffset())%300 == 0;
+    if (_phoneActiveCount > 0) {
+        _phoneActiveCount--;
+        return true;
+    }
+    bool result = _phone->hasApp() and (getWorld()->getCurrentStep() + _phone->getStartOffset())%300 == 0;
+    if (result) _phoneActiveCount = 4;
+    return result;
 }
 
 int HumanBeeing::phoneListen(const bool& sick, const double& distance) { 
@@ -108,11 +114,25 @@ void HumanBeeing::setInfectionTime(const int& infectionTime) {
 
 void HumanBeeing::printEncounters() {
     std::cout << "Encounters real by: " <<  getId() << " #"<< _encountersReal.size() << std::endl;
-    for (int i = 0; i < _encountersReal.size(); i++) std::cout << _encountersReal[i].first << "," << _encountersReal[i].second << " ";
+    for (unsigned int i = 0; i < _encountersReal.size(); i++) std::cout << _encountersReal[i].first << "," << _encountersReal[i].second << " ";
     std::cout << std::endl;
     std::cout << "Encounters recorded by: " <<  getId() << " #"<< _encountersRecorded.size() << std::endl;
-    for (int i = 0; i < _encountersRecorded.size(); i++) std::cout << _encountersRecorded[i].first << "," << _encountersRecorded[i].second << " ";
+    for (unsigned int i = 0; i < _encountersRecorded.size(); i++) std::cout << _encountersRecorded[i].first << "," << _encountersRecorded[i].second << " ";
     std::cout << std::endl;
+}
+
+void HumanBeeing::registerAttributes() {
+    registerIntAttribute("countInfected");
+    registerIntAttribute("infectionTime");
+    registerIntAttribute("sick");
+    registerIntAttribute("infected");
+}
+
+void HumanBeeing::serialize() {
+    serializeAttribute("countInfected",_countInfected);
+    serializeAttribute("infectionTime",_infectionTime);
+    serializeAttribute("sick",_sick);
+    serializeAttribute("infected",_infected);
 }
 
 }

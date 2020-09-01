@@ -58,10 +58,7 @@ void Supermarket::createClient() {
     oss << "Client_" << _clientId;
     _clientId++;
     bool sick = false;
-    if (Engine::GeneralState::statistics().getUniformDistValue(0.,1.) < _supermarketConfig._sickRate) {
-        std::cout << oss.str() << " is sick" << std::endl;
-        sick = true;
-    }
+    if (Engine::GeneralState::statistics().getUniformDistValue(0.,1.) < _supermarketConfig._sickRate) sick = true;
     float purchaseSpeed = Engine::GeneralState::statistics().getUniformDistValue(0.,1.);
     float stopping = Engine::GeneralState::statistics().getUniformDistValue(0.,1.) * _supermarketConfig._stopping;
     int stopTime = (int)Engine::GeneralState::statistics().getUniformDistValue(0.,1.) * _supermarketConfig._stopTime;
@@ -85,13 +82,9 @@ void Supermarket::step() {
         _scheduler->serializeRasters(_step);
         _scheduler->serializeAgents(_step);
     }
-    std::cout << "Create Agents" << std::endl;
     createAgents();
-    std::cout << "UpdateState" << std::endl;
     _scheduler->updateEnvironmentState();
-    std::cout << "Execute Agents" << std::endl;
     _scheduler->executeAgents();
-    std::cout << "Remove Agents" << std::endl;
     _scheduler->removeAgents();
 }
 
@@ -164,8 +157,8 @@ std::map<int,double> Supermarket::getTransitionProbabilities(const int& zone) {
 
 void Supermarket::setupTransitionProbabilities() {
     std::map<int,double> probabilities;
-    for (int i = 0; i < _zones.size(); i++) probabilities.insert(std::pair<int,double>(_zones[i],0.));
-    for (int i = 0; i < _zones.size(); i++) _transitionProbabilities.insert(std::pair<int,std::map<int,double>>(_zones[i],probabilities));
+    for (unsigned int i = 0; i < _zones.size(); i++) probabilities.insert(std::pair<int,double>(_zones[i],0.));
+    for (unsigned int i = 0; i < _zones.size(); i++) _transitionProbabilities.insert(std::pair<int,std::map<int,double>>(_zones[i],probabilities));
     _transitionProbabilities.insert(std::pair<int,std::map<int,double>>(1,probabilities));
 }
 
@@ -175,7 +168,7 @@ void Supermarket::printTransitionProbabilities() {
         std::cout << aux->first << " {";
         std::map<int,double>::iterator aux2 = aux->second.begin();
         while (aux2 != aux->second.end())
-        for (int i = 0; i < aux->second.size(); i++) {
+        for (unsigned int i = 0; i < aux->second.size(); i++) {
              std::cout << " " << aux2->first << ": " << aux2->second << ",";
              aux2++;
         }
@@ -187,7 +180,7 @@ void Supermarket::printTransitionProbabilities() {
 void Supermarket::setupZoneProbabilities() {
     std::vector<int> zone_tragets = {110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126};
     std::vector<double> probs = {14.7, 1.18, 2.88, 3.03, 2.93, 3.47, 9.08, 10.65, 28.3, 5.98, 15.76, 1.45, 0.59, 0, 0, 0, 0};
-    for (int i = 0; i < probs.size(); i++) _zoneProbabilities.insert(std::pair<int,double>(zone_tragets[i],probs[i]));
+    for (unsigned int i = 0; i < probs.size(); i++) _zoneProbabilities.insert(std::pair<int,double>(zone_tragets[i],probs[i]));
     std::map<int,double>::iterator it = _zoneProbabilities.begin();
     while (it != _zoneProbabilities.end()) {
         if (it->second == 0 ) {
@@ -203,7 +196,7 @@ void Supermarket::setupZoneProbabilities() {
 
 void Supermarket::addPurchaseProbability() {
     double avgPurchasedItems = 16.5;
-    for (int i = 0; i < _zones.size(); i++) {
+    for (unsigned int i = 0; i < _zones.size(); i++) {
         _transitionProbabilities[_zones[i]][202] = 1.0/avgPurchasedItems;
         _transitionProbabilities[1][_zones[i]] = _zoneProbabilities[_zones[i]];
     }
@@ -220,8 +213,8 @@ void Supermarket::calculateCentroids() {
 }
 
 void Supermarket::calculateTransitionProbabilities() {
-    for (int i = 0; i < _zones.size(); i++) {
-        for (int j = 0; j < _zones.size(); j++) {
+    for (unsigned int i = 0; i < _zones.size(); i++) {
+        for (unsigned int j = 0; j < _zones.size(); j++) {
             if (_zones[i] != _zones[j] and _zones[j] != 202) {
                 double pop = _zoneProbabilities[_zones[i]] * _zoneProbabilities[_zones[j]];
                 double dist = (_centroids[_zones[i]].distance(_centroids[_zones[j]]))/7.0;
@@ -233,15 +226,15 @@ void Supermarket::calculateTransitionProbabilities() {
 }
 
 void Supermarket::normalizeTransitionProbabilities() {
-    for (int i = 0; i < _zones.size(); i++) {
+    for (unsigned int i = 0; i < _zones.size(); i++) {
         if (_zones[i] != 202) {
             double total = 1-0 - _transitionProbabilities[_zones[i]][202];
             double accum = 0;
-            for (int j = 0; j < _zones.size(); j++) {
+            for (unsigned int j = 0; j < _zones.size(); j++) {
                 if (_zones[j] != 202)
                 accum += _transitionProbabilities[_zones[i]][_zones[j]];
             }
-            for (int j = 0; j < _zones.size(); j++) {
+            for (unsigned int j = 0; j < _zones.size(); j++) {
                 if (_zones[j] != 202) {
                      _transitionProbabilities[_zones[i]][_zones[j]] = _transitionProbabilities[_zones[i]][_zones[j]] * total / accum;
                 }
@@ -259,7 +252,6 @@ Engine::Point2D<int> Supermarket::pickTargetFromZone(const int& zone) {
 std::list<Engine::Point2D<int>> Supermarket::getShortestPath(const Engine::Point2D<int>& pos, const Engine::Point2D<int>& target) {
     std::queue<int> rowQueue;
     std::queue<int> columnQueue;
-    bool reachedEnd = false;
     std::vector<std::vector<bool>> visited(_supermarketConfig.getSize().getHeight(), std::vector<bool>(_supermarketConfig.getSize().getWidth(),false));
     std::vector<std::vector<Engine::Point2D<int>>> prev(_supermarketConfig.getSize().getHeight(), std::vector<Engine::Point2D<int>>(_supermarketConfig.getSize().getWidth(),Engine::Point2D<int>(-1,-1)));
 
@@ -271,10 +263,7 @@ std::list<Engine::Point2D<int>> Supermarket::getShortestPath(const Engine::Point
         int c = columnQueue.front();
         rowQueue.pop();
         columnQueue.pop();
-        if (r == target._x and c == target._y) {
-            reachedEnd = true;
-            break;
-        }
+        if (r == target._x and c == target._y) break;
         exploreNeighbours(r,c,visited, rowQueue, columnQueue, prev);
     }
 

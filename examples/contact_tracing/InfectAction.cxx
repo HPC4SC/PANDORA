@@ -22,14 +22,13 @@ void InfectAction::execute(Engine::Agent & agent) {
     Engine::World* world = agent.getWorld();
     if (neighbours.size() > 0 and person.isSick()) {    
         Engine::AgentsVector::iterator neighbour = neighbours.begin();
-        std::cout << person.getId() << " trying to infect: " << neighbours.size() << std::endl;
         while (neighbour != neighbours.end()) {
             Engine::Agent* candidate = neighbour->get();
 			HumanBeeing* other = dynamic_cast<HumanBeeing*>(candidate);
             const SupermarketConfig& config = (const SupermarketConfig &) world->getConfig();
             float draw = Engine::GeneralState::statistics().getNormalDistValueMinMax(0.,1.);
             if (not (other->isSick() or other->isInfected()) and not barrier(person,other,world) and draw < config.getInfectiousness()) {
-                std::cout << "F " << other->getId() << " infected by: " << person.getId() << std::endl;
+                std::cout << "F " << person.getId() << " infected " << other->getId() << std::endl;
                 other->getInfected();
                 other->setInfectionTime(world->getCurrentStep());
                 person.incCountInfected();
@@ -42,7 +41,7 @@ void InfectAction::execute(Engine::Agent & agent) {
 bool InfectAction::barrier(const HumanBeeing& person, const HumanBeeing* other, const Engine::World* world) {
     std::vector<Engine::Point2D<int>> path = getShortestPath(person.getPosition(),other->getPosition());
     Supermarket& super = (Supermarket&)world;
-    for (int i = 0; i < path.size(); i++) {
+    for (unsigned int i = 0; i < path.size(); i++) {
         if (super.isObstacle(path[i])) return true;
     }
     return false;

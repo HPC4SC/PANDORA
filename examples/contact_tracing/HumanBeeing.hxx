@@ -22,6 +22,7 @@ namespace Examples
             std::vector<std::pair<std::string,int>> _encountersRecorded;
             int _countInfected;
             int _infectionTime;
+            int _phoneActiveCount;
 
         protected:
         
@@ -64,6 +65,10 @@ namespace Examples
             void setInfectionTime(const int& infectionTime);
 
             void printEncounters();
+
+            void registerAttributes();
+
+		    void serialize();
 
 	////////////////////////////////////////////////
 	// This code has been automatically generated //
