@@ -92,7 +92,7 @@ void Supermarket::devideLayout() {
     setupTransitionProbabilities();
     for (int i = 0; i <= getBoundaries().right(); ++i) {
         for (int j = 0; j <= getBoundaries().bottom(); ++j) {
-            Engine::Point2D<int> candidate = Engine::Point2D<int>(j,i);
+            Engine::Point2D<int> candidate = Engine::Point2D<int>(i,j);
             if (getStaticRaster("layout").getValue(candidate) == 0) _obstacles.push_back(candidate);
             else if (getStaticRaster("layout").getValue(candidate) == 1) _entry.push_back(candidate);
             else if (getStaticRaster("layout").getValue(candidate) == 2) _entry.push_back(candidate); //area
