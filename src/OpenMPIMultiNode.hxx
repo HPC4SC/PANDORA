@@ -323,7 +323,7 @@ namespace Engine
             bool doOverlap(const Rectangle<int>& rectangleA, const Rectangle<int>& rectangleB) const;
 
             /**
-             * @brief Check whether 'rectangleA' and 'rectangleB' are adjacent.
+             * @brief Check whether areas of influence of 'rectangleA' and 'rectangleB' collides.
              * 
              * @param rectangleA const Rectangle<int>&
              * @param rectangleB const Rectangle<int>&
@@ -450,12 +450,12 @@ namespace Engine
             std::list<int> getRealNeighboursForAgent(const std::list<int>& potentialNeighbours, const Point2D<int>& agentPosition) const;
 
             /**
-             * @brief Gets the neighbouring node IDs that the agent should be sent to (by its current position).
+             * @brief Gets the neighbouring node IDs that the agent should be sent to (by its current position). It assumes it is inside the inner overlap of the node calling this method, so it only look in the sub-overlap list.
              * 
+             * @param neighbouringNodeIDs std::list<int>&
              * @param agent const Agent&
-             * @return std::list<int> 
              */
-            std::list<int> getNeighboursToSendAgent(const Agent& agent) const;
+            void getNeighboursToSendAgentInsideInnerSubOverlap(std::list<int>& neighbouringNodeIDs, const Agent& agent) const;
 
             /**
              * @brief Sends agents in 'agentsVector' and receives them, if it is necessary (i.e. if they are currently in some suboverlap area). 'subOverlapID' is only used for instrumentation purposes.
@@ -472,7 +472,25 @@ namespace Engine
              * @param subOverlapID 
              * @param agentPosition const Point2D<int>&
              */
-            void addSubOverlapNeighboursToList(std::list<int>& subOverlapNeighboursIDs, const int& subOverlapID, const Point2D<int>& agentPosition) const;
+            void addSubOverlapNeighboursFromPosition(std::list<int>& subOverlapNeighboursIDs, const int& subOverlapID, const Point2D<int>& agentPosition) const;
+
+            /**
+             * @brief Gets the neighbouring nodes that the agent needs to be send to (for deletion).
+             * 
+             * @param subOverlapNeighboursIDs std::list<int>&
+             * @param originalSubOverlapAreaID const int&
+             * @param agent const Agent&
+             */
+            void getNeighboursThatNeedToRemoveAgent(std::list<int>& subOverlapNeighboursIDs, const int& originalSubOverlapAreaID, const Agent& agent) const;
+            
+            /**
+             * @brief Gets the neighbouring nodes that the agent needs to be send to (for addition).
+             * 
+             * @param subOverlapNeighboursIDs std::list<int>&
+             * @param originalSubOverlapAreaID const int&
+             * @param agent const Agent&
+             */
+            void getNeighboursThatNeedToAddAgent(std::list<int>& subOverlapNeighboursIDs, const int& originalSubOverlapAreaID, const Agent& agent) const;
 
             /**
              * @brief Non-blockingly sends the agents in 'agentsVector' to the corresponding neighbours of the overlap area identified by 'originalSubOverlapAreaID' and the suboverlap to which the agent has just moved to (currently is).

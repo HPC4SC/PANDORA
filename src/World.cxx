@@ -89,7 +89,7 @@ namespace Engine
         if (_config->getSeed() == -1) seed = Statistics::getNewSeed();
 
         Engine::GeneralState::statistics().setSeed(seed);
-        
+
         initializeAgentsMatrix();
 
         _scheduler->init( argc, argv );
@@ -145,16 +145,19 @@ namespace Engine
             }
         }
 
-        // Agent not found in matrix, so find it in _agents.
-        for (AgentsList::const_iterator it = _agents.begin(); it != _agents.end(); ++it)
+        // Agent not found in matrix (it means it's a new agent), so find it in _agentsByID.
+        if (_agentsByID.find(agent->getId()) != _agentsByID.end())
         {
-            AgentPtr agentPtr = *it;
-            if (agentPtr.get()->getId() == agent->getId()) 
-            {
-                _agentsMatrix[newX][newY].push_back(agentPtr);
-                return;
-            }
+            AgentPtr agentPtr = _agentsByID.at(agent->getId());
+            _agentsMatrix[newX][newY].push_back(agentPtr);
+            return;
         }
+    }
+
+    void World::eraseAgentFromMapByIDs(Agent* agent)
+    {
+        if (_agentsByID.find(agent->getId()) != _agentsByID.end())
+            _agentsByID.erase(agent->getId());
     }
 
     void World::eraseAgentFromMatrixOfPositions(Agent* agent)
@@ -179,10 +182,12 @@ namespace Engine
 
     void World::addAgent( Agent * agent, bool executedAgent )
     {
-        agent->setWorld( this );
-        AgentPtr agentPtr( agent );
-        _agents.push_back( agentPtr );
-        changeAgentInMatrixOfPositions(agent);
+        agent->setWorld(this);
+
+        AgentPtr agentPtr(agent);
+        _agents.push_back(agentPtr);
+        _agentsByID[agent->getId()] = agentPtr;
+
         if ( executedAgent )
         {
             _scheduler->agentAdded( agentPtr, executedAgent );
@@ -191,6 +196,14 @@ namespace Engine
         std::stringstream logName;
         logName << "simulation_" << getId( );
         log_EDEBUG( logName.str( ), "agent: " << agent << " added at time step: " << getCurrentTimeStep( ) );
+    }
+
+    void World::sortAgentsListAlphabetically()
+    {
+        _agents.sort(
+            [](const AgentPtr& agentPtr1, const AgentPtr& agentPtr2)
+                { return (*agentPtr1.get()) < *(agentPtr2.get()); }
+        );
     }
 
     void World::updateDiscreteStateStructures() const
@@ -575,6 +588,7 @@ namespace Engine
     void World::eraseAgent(AgentsList::const_iterator& it) 
     { 
         Agent* agent = it->get();
+        eraseAgentFromMapByIDs(agent);
         eraseAgentFromMatrixOfPositions(agent);
 
         _agents.erase(it); 

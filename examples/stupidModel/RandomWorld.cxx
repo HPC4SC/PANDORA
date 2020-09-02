@@ -57,9 +57,10 @@ void RandomWorld::createAgents() {
 			addAgent(bug);
 			bug->setRandomPosition();
 			// all of this steps are registered in the log files
-	        log_INFO(logName.str(), getWallTime() << " new bug: " << bug);
+	        log_DEBUG(logName.str(), getWallTime() << " new bug: " << bug);
 	}
-	for (int i = 0; i < randomConfig._numPredators; i++) { // 200 predators are created and placed randomly
+
+	for (int i = 0; i < randomConfig._numPredators; i++) {
 			std::ostringstream oss;
 			oss << "Predator_" << i;
 			Predator * predator = new Predator(oss.str(), randomConfig._maxPredatorHuntDistance);
