@@ -47,8 +47,10 @@ public:
     typedef std::map< std::string, int> RasterNameMap;
 protected:
     std::shared_ptr<Config> _config; //! Pointer to the configuration of the world.
-    AgentsList _agents;             //! Global list of agents.
-    AgentsMatrix _agentsMatrix;     //! Global matrix of agents (used to find agents by position).
+
+    AgentsList _agents;                             //! Global list of agents.
+    AgentsMatrix _agentsMatrix;                     //! Global matrix of agents (used to find agents by position).
+    std::map<std::string, AgentPtr> _agentsByID;    //! Global map of agents by ID.
 
     bool _allowMultipleAgentsPerCell; //! False if each cell can have just one agent.
 
@@ -142,6 +144,13 @@ public:
     void changeAgentInMatrixOfPositions(Agent* agent);
 
     /**
+     * @brief Erases the 'agent' from the _agentsByID member.
+     * 
+     * @param agent 
+     */
+    void eraseAgentFromMapByIDs(Agent* agent);
+
+    /**
      * @brief Erases the 'agent' from the _agentsMatrix member.
      * 
      * @param agent Agent*
@@ -155,6 +164,12 @@ public:
      * @param executedAgent True, the Agent has been executed. False otherwise.
      */
     virtual void addAgent( Agent * agent, bool executedAgent = true );
+
+    /**
+     * @brief Sorts alphabetically the _agents member.
+     * 
+     */
+    void sortAgentsListAlphabetically();
 
     /**
      * @brief Returns the number of neighbours of agent 'target' within the radius 'radius' using Euclidean Distance.

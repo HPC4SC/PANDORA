@@ -172,7 +172,7 @@ namespace Engine
         const Point2D<int>& getDiscretePosition() const;
 
         /**
-         * @brief Sets the _position attribute.
+         * @brief Sets the _position member attribute.
          * 
          * @param position new value of the position attribute.
          */
@@ -249,6 +249,14 @@ namespace Engine
          * @return bool
          */
         bool operator==(const Agent& other) const;
+
+        /**
+         * @brief Comparisson operator overload.
+         * 
+         * @param other const Agent&
+         * @return bool
+         */
+        bool operator<(const Agent& other) const;
 
         /**
          * @brief Checks whether 'this' object has the exact same class attributes than 

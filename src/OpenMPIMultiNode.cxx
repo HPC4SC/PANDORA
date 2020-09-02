@@ -153,6 +153,11 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
         _world->createAgents();
 
         double endTime = getWallTime();
+
+std::stringstream ss;
+ss << "TotalTime OUT: " << endTime - initialTime << "\n";
+std::cout << ss.str();
+
 if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStringStream("[Process # " << getId() <<  "] createAgents()\tTOTAL TIME: " << endTime - initialTime).str());
     }
 
@@ -170,6 +175,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
         createNodesInformationToSend();
 
         endTime = getWallTime();
+
 if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStringStream("[Process # " << getId() <<  "] createNodesInformationToSend()\tTOTAL TIME: " << endTime - initialTime).str());
 
         if (not arePartitionsSuitable()) {
@@ -589,9 +595,11 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
     bool OpenMPIMultiNode::areTheyNeighbours(const Rectangle<int>& rectangleA, const Rectangle<int>& rectangleB) const
     {
         Rectangle<int> rectangleAWithOuterOverlap = rectangleA;
+        Rectangle<int> rectangleBWithOuterOverlap = rectangleB;
         expandRectangleConsideringLimits(rectangleAWithOuterOverlap, _overlapSize);
+        expandRectangleConsideringLimits(rectangleBWithOuterOverlap, _overlapSize);
 
-        return doOverlap(rectangleAWithOuterOverlap, rectangleB);
+        return doOverlap(rectangleAWithOuterOverlap, rectangleBWithOuterOverlap);
     }
 
     void OpenMPIMultiNode::createNodesInformationToSend()
@@ -843,6 +851,8 @@ if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<
             }
         }
 
+        _world->sortAgentsListAlphabetically();     // Important when receiving agents asynchronously! Subsequent shuffles must obtain the same resulting list, so we need to sort the list of agents.
+
         double endTime = getWallTime();
 if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStringStream("[Process # " << getId() <<  "] receiveGhostAgentsFromNeighbouringNodes() OVERLAP: " << subOverlapID << "\tTOTAL TIME: " << endTime - initialTime).str());
     }
@@ -862,10 +872,8 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
         return resultingList;
     }
 
-    std::list<int> OpenMPIMultiNode::getNeighboursToSendAgent(const Agent& agent) const
+    void OpenMPIMultiNode::getNeighboursToSendAgentInsideInnerSubOverlap(std::list<int>& neighbouringNodeIDs, const Agent& agent) const
     {
-        std::list<int> resultingList = std::list<int>();
-
         for (std::map<int, Rectangle<int>>::const_iterator subOverlapsIt = _nodeSpace.innerSubOverlaps.begin(); subOverlapsIt != _nodeSpace.innerSubOverlaps.end(); ++subOverlapsIt)
         {
             int currentSubOverlapID = subOverlapsIt->first;
@@ -874,12 +882,10 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
             if (subOverlapArea.contains(agent.getPosition()))
             {
                 std::list<int> potentialNeighbours = _nodeSpace.innerSubOverlapsNeighbours.at(currentSubOverlapID);
-                resultingList = getRealNeighboursForAgent(potentialNeighbours, agent.getPosition());
+                neighbouringNodeIDs = getRealNeighboursForAgent(potentialNeighbours, agent.getPosition());
                 break;
             }
         }
-
-        return resultingList;
     }
 
     void OpenMPIMultiNode::synchronizeAgentsIfNecessary(const AgentsVector& agentsVector, const int& subOverlapID)
@@ -895,8 +901,15 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
             Agent* agent = agentPtr.get();
             std::string agentType = agent->getType();
 
-            std::list<int> subOverlapNeighboursIDs = getNeighboursToSendAgent(*agent);
-            for (std::list<int>::const_iterator itNeighbourNodeID = subOverlapNeighboursIDs.begin(); itNeighbourNodeID != subOverlapNeighboursIDs.end(); ++itNeighbourNodeID)
+            Point2D<int> agentPosition = agent->getPosition();
+
+            bool isInInnerOverlapArea = _nodeSpace.ownedArea.contains(agentPosition) and not _nodeSpace.ownedAreaWithoutInnerOverlap.contains(agentPosition);
+
+            std::list<int> neighbouringNodeIDs;
+            if (isInInnerOverlapArea)   // Case #2 (no action needed for Case #1)
+                getNeighboursToSendAgentInsideInnerSubOverlap(neighbouringNodeIDs, *agent);
+
+            for (std::list<int>::const_iterator itNeighbourNodeID = neighbouringNodeIDs.begin(); itNeighbourNodeID != neighbouringNodeIDs.end(); ++itNeighbourNodeID)
             {
                 int neighbourNodeID = *itNeighbourNodeID;
 
@@ -911,7 +924,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
         receiveGhostAgentsFromNeighbouringNodes(subOverlapID);
     }
 
-    void OpenMPIMultiNode::addSubOverlapNeighboursToList(std::list<int>& subOverlapNeighboursIDs, const int& subOverlapID, const Point2D<int>& agentPosition) const
+    void OpenMPIMultiNode::addSubOverlapNeighboursFromPosition(std::list<int>& subOverlapNeighboursIDs, const int& subOverlapID, const Point2D<int>& agentPosition) const
     {
         if (subOverlapID >= 1 and subOverlapID <= eNumberOfSubOverlaps)
         {
@@ -921,6 +934,16 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
             subOverlapNeighboursIDs.insert(subOverlapNeighboursIDs.end(), realNeighbours.begin(), realNeighbours.end());
             subOverlapNeighboursIDs.unique();
         }
+    }
+
+    void OpenMPIMultiNode::getNeighboursThatNeedToRemoveAgent(std::list<int>& subOverlapNeighboursIDs, const int& originalSubOverlapAreaID, const Agent& agent) const
+    {
+        addSubOverlapNeighboursFromPosition(subOverlapNeighboursIDs, originalSubOverlapAreaID, agent.getDiscretePosition());
+    }
+
+    void OpenMPIMultiNode::getNeighboursThatNeedToAddAgent(std::list<int>& subOverlapNeighboursIDs, const int& originalSubOverlapAreaID, const Agent& agent) const
+    {
+        addSubOverlapNeighboursFromPosition(subOverlapNeighboursIDs, originalSubOverlapAreaID, agent.getPosition());
     }
 
     void OpenMPIMultiNode::sendGhostAgentsToNeighbours(const AgentsVector& agentsVector, const int& originalSubOverlapAreaID)
@@ -934,9 +957,21 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
             Agent* agent = agentPtr.get();
             std::string agentType = agent->getType();
 
-            std::list<int> subOverlapNeighboursIDs = getNeighboursToSendAgent(*agent);
-            addSubOverlapNeighboursToList(subOverlapNeighboursIDs, originalSubOverlapAreaID, agent->getDiscretePosition());  // For other nodes removing reasons
-            for (std::list<int>::const_iterator itNeighbourNodeID = subOverlapNeighboursIDs.begin(); itNeighbourNodeID != subOverlapNeighboursIDs.end(); ++itNeighbourNodeID)
+            Point2D<int> agentPosition = agent->getPosition();
+
+            bool isInInnerMostArea = _nodeSpace.ownedAreaWithoutInnerOverlap.contains(agentPosition);
+
+            std::list<int> neighbouringNodeIDs; 
+            if (isInInnerMostArea)      // Case #3
+                getNeighboursThatNeedToRemoveAgent(neighbouringNodeIDs, originalSubOverlapAreaID, *agent);
+            else {                      // Case #4, #5 and #6
+                getNeighboursToSendAgentInsideInnerSubOverlap(neighbouringNodeIDs, *agent);
+
+                getNeighboursThatNeedToRemoveAgent(neighbouringNodeIDs, originalSubOverlapAreaID, *agent);
+                getNeighboursThatNeedToAddAgent(neighbouringNodeIDs, originalSubOverlapAreaID, *agent);
+            }
+
+            for (std::list<int>::const_iterator itNeighbourNodeID = neighbouringNodeIDs.begin(); itNeighbourNodeID != neighbouringNodeIDs.end(); ++itNeighbourNodeID)
             {
                 int neighbourNodeID = *itNeighbourNodeID;
 
@@ -1117,14 +1152,14 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
 
                         if (subOverlapID <= 0 or isPointInAreaOfInfluence(position, _nodeSpace.innerSubOverlaps.at(subOverlapID)))
                         {
-                            bool isInOwnOverlapArea = _nodeSpace.ownedArea.contains(position) and not _nodeSpace.ownedAreaWithoutInnerOverlap.contains(position);
+                            bool isInInnerOverlapArea = _nodeSpace.ownedArea.contains(position) and not _nodeSpace.ownedAreaWithoutInnerOverlap.contains(position);
                             bool isInOuterOverlapArea = _nodeSpace.ownedAreaWithOuterOverlaps.contains(position) and not _nodeSpace.ownedArea.contains(position);
 
-                            if ((isInOwnOverlapArea or isInOuterOverlapArea) and hasPositionChangedInRaster(position, raster))
+                            if ((isInInnerOverlapArea or isInOuterOverlapArea) and hasPositionChangedInRaster(position, raster))
                             {
                                 std::list<int> neighbourIDs;
 
-                                if (isInOwnOverlapArea) neighbourIDs = getNeighbourIDsInInnerSubOverlap(position);
+                                if (isInInnerOverlapArea) neighbourIDs = getNeighbourIDsInInnerSubOverlap(position);
                                 else if (isInOuterOverlapArea) neighbourIDs = getNeighbourIDsInOuterSubOverlap(position);
 
                                 for (std::list<int>::const_iterator neighboursIt = neighbourIDs.begin(); neighboursIt != neighbourIDs.end(); ++neighboursIt)

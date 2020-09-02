@@ -5,8 +5,8 @@
 	<numSteps value="10" serializeResolution="1"/>
 	<seed value="1234"/>
 	<overlapSizeMPI value="2"/>
-	<size width="10000" height="10000"/>
-	<Bugs numBugs="5000000" maxBugMovement="2" maxFoodConsumption="10" survivalProbability="95" initialBugSizeMean="1" initialBugSizeSD="0.7"/>
+	<size width="3000" height="3000"/>
+	<Bugs numBugs="150000" maxBugMovement="2" maxFoodConsumption="10" survivalProbability="95" initialBugSizeMean="1" initialBugSizeSD="0.7"/>
 	<Predators numPredators="0" maxPredatorHuntDistance="1"/>
 	<Raster maxFoodProduction = "0"/>
 </config>

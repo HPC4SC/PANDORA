@@ -124,6 +124,11 @@ bool Agent::operator==(const Agent& other) const
     return hasTheSameAttributes(other);
 }
 
+bool Agent::operator<(const Agent& other) const
+{
+    return _id < other._id;
+}
+
 bool Agent::hasTheSameAttributes(const Agent& other) const
 {
     return  _intAttributes == other._intAttributes and
