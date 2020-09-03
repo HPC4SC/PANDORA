@@ -98,11 +98,11 @@ void Supermarket::devideLayout() {
             else if (getStaticRaster("layout").getValue(candidate) == 2) _entry.push_back(candidate); //area
             else if (getStaticRaster("layout").getValue(candidate) == 254) _exitZone.push_back(candidate); //area
             else if (getStaticRaster("layout").getValue(candidate) == 255) _exit.push_back(candidate);
-            else if (getStaticRaster("layout").getValue(candidate) == 202) _cashierWorkplace.push_back(candidate);
-            else if (getStaticRaster("layout").getValue(candidate) == 201) {
-                _zoneTargets[202].push_back(candidate);
+            else if (getStaticRaster("layout").getValue(candidate) == 202) {
                 _cashierTill.push_back(candidate);
+                _zoneTargets[202].push_back(candidate);
             }
+            else if (getStaticRaster("layout").getValue(candidate) == 201) _cashierWorkplace.push_back(candidate);
             else if (getStaticRaster("layout").getValue(candidate) >= 10 and getStaticRaster("layout").getValue(candidate) < 100) {
                 _purchaseTargets.push_back(candidate);
                 _obstacles.push_back(candidate);
@@ -138,7 +138,7 @@ bool Supermarket::isCashier(Engine::Point2D<int> point) {
 }
 
 Engine::Point2D<int> Supermarket::getRandomExit() {
-    int index = Engine::GeneralState::statistics().getUniformDistValue(0,_exit.size());
+    int index = Engine::GeneralState::statistics().getUniformDistValue(0,_exit.size()-1);
     return _exit[index];
 }
 
