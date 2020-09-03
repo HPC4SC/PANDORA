@@ -2,7 +2,7 @@
 <config>  
 	<!-- Global simulation parameters -->
 	<output resultsFile="./data/contact_tracing.h5" logsDir="./logs"/>
-	<numSteps value="2000" serializeResolution="1"/>
+	<numSteps value="3600" serializeResolution="1"/>
 	<seed value="0"/>
 	<overlapSizeMPI value="6"/>
 	<size width="40" height="40"/>

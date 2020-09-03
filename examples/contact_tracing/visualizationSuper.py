@@ -20,6 +20,17 @@ def read_agents(agent_route):
             ids = np.array(G1_items[1][1])
             x_coords = np.array(G1_items[5][1])
             y_coords = np.array(G1_items[6][1])
+            G2 = hdf.get('/Cashier/step' + str(i))
+            G2_items = list(G2.items())
+            ids_cashiers = np.array(G2_items[1][1])
+            x_cashiers = np.array(G2_items[5][1])
+            y_cashiers = np.array(G2_items[6][1])
+
+            if ids.size != 0 and ids_cashiers.size != 0:
+                ids = np.append(ids,ids_cashiers)
+                x_coords = np.append(x_coords,x_cashiers)
+                y_coords = np.append(y_coords,y_cashiers)
+            
             data = {
             'id': ids,
             'x': x_coords,
@@ -48,7 +59,7 @@ def print_agents(steps_dfs):
         ax.imshow(img)
         plt.xlim(0,40)
         plt.ylim(40,0)
-        plt.scatter(x[i],y[i],s=1)
+        plt.scatter(x[i],y[i],s=2,marker='o')
         camera.snap()
     anim = camera.animate(blit=True)
     anim.save('scatter.htm')
