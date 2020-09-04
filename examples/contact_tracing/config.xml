@@ -6,7 +6,7 @@
 	<seed value="0"/>
 	<overlapSizeMPI value="6"/>
 	<size width="40" height="40"/>
-	<Client clientRate="10" drifting="0.09" stopping="0.02" stopTime="20" wander="0.15"/>
+	<Client clientRate="20" drifting="0.09" stopping="0.02" stopTime="20" wander="0.15"/>
     <Cashier numCashiers="3" sickCashiers="0" cashierShift="1000"/>
 	<Raster mapRoute="./maps/spar2.png"/>
     <Epidemiology infectiousness="0.00371" infectoinRadius="2" sickRate="0.3" encounterRadius="2" maxSick="-1"/>

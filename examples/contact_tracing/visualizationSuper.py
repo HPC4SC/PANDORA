@@ -59,7 +59,7 @@ def print_agents(steps_dfs):
         ax.imshow(img)
         plt.xlim(0,40)
         plt.ylim(40,0)
-        plt.scatter(x[i],y[i],s=2,marker='o')
+        plt.scatter(x[i],y[i],s=4,color='white',marker='o')
         camera.snap()
     anim = camera.animate(blit=True)
     anim.save('scatter.htm')
