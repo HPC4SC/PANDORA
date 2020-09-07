@@ -32,6 +32,7 @@ int HumanBeeing::getEncounterRadius() {
 }
 
 void HumanBeeing::updateKnowledge() {
+    _timeInSimulation++;
     countEncountersReal();
     countEncountersRecorded();
 }
@@ -126,6 +127,11 @@ void HumanBeeing::registerAttributes() {
     registerIntAttribute("infectionTime");
     registerIntAttribute("sick");
     registerIntAttribute("infected");
+    registerIntAttribute("timeInSimularion");
+    registerIntAttribute("firstBucketNotifications");
+    registerIntAttribute("combinedBucketsNotifications");
+    registerIntAttribute("SICKfirstBucketNotifications");
+    registerIntAttribute("SICKcombinedBucketsNotifications");
 }
 
 void HumanBeeing::serialize() {
@@ -133,6 +139,11 @@ void HumanBeeing::serialize() {
     serializeAttribute("infectionTime",_infectionTime);
     serializeAttribute("sick",_sick);
     serializeAttribute("infected",_infected);
+    serializeAttribute("timeInSimularion",_timeInSimulation);
+    serializeAttribute("firstBucketNotifications",_phone->getFirstBucketNotifications());
+    serializeAttribute("combinedBucketsNotifications",_phone->getCombinedNotifications());
+    serializeAttribute("SICKfirstBucketNotifications",_phone->getFirstBucketSickNotifications());
+    serializeAttribute("SICKcombinedBucketsNotifications",_phone->getCombinedSickNotifications());
 }
 
 }

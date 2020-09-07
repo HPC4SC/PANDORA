@@ -23,6 +23,7 @@ namespace Examples
             int _countInfected;
             int _infectionTime;
             int _phoneActiveCount;
+            int _timeInSimulation;
 
         protected:
         

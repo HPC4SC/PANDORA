@@ -70,4 +70,20 @@ int Phone::checkDetection(const int& sick, const double& distance, const int& dt
     return detect;
 }
 
+int Phone::getFirstBucketNotifications() {
+    return _buckets[0]/900;
+}
+
+int Phone::getCombinedNotifications() {
+    return (_buckets[0] + 0.5*_buckets[1])/900;
+}
+
+int Phone::getFirstBucketSickNotifications() {
+    return _bucketsSick[0]/900;
+}
+
+int Phone::getCombinedSickNotifications() {
+    return (_bucketsSick[0] + 0.5*_bucketsSick[1])/900;
+}
+
 }
