@@ -38,6 +38,14 @@ class Phone {
 
     int checkDetection(const int& sick, const double& distance, const int& dt);
 
+    int getFirstBucketNotifications();
+
+    int getCombinedNotifications();
+
+    int getFirstBucketSickNotifications();
+
+    int getCombinedSickNotifications();
+
 };
 
 }
