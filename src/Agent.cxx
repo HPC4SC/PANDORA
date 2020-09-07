@@ -35,7 +35,7 @@
 namespace Engine
 {
 
-Agent::Agent( const std::string & id ) : _id( id ), _exists( true ), _position( -1, -1 ), _world( 0 )
+Agent::Agent( const std::string & id ) : _id( id ), _exists( true ), _position( -1, -1 ), _discretePosition(-1, -1), _world( 0 )
 {
     _stringAttributes.push_back( "id" );
     _intAttributes.push_back( "x" );
@@ -84,7 +84,10 @@ const Point2D<int>& Agent::getDiscretePosition() const
 
 void Agent::setPosition( const Point2D<int> & position )
 {
-    _position = position;   
+    _position = position;
+    if (_discretePosition.getX() == -1 and _discretePosition.getY() == -1)
+        _discretePosition = _position;
+
     _world->changeAgentInMatrixOfPositions(this);
 }
 
@@ -154,7 +157,7 @@ void Agent::remove( )
         oss << "Agent::remove - removing agent without assigned World";
         throw Exception( oss.str( ) );
     }
-    _world->removeAgent( this );
+    _world->addAgentToBeRemoved( this );
 }
 
 bool Agent::isType( const std::string & type ) const
@@ -188,7 +191,10 @@ void Agent::executeActions( )
 
 void Agent::setRandomPosition( )
 {
-    _position = _world->getRandomPosition();   
+    _position = _world->getRandomPosition();
+    if (_discretePosition.getX() == -1 and _discretePosition.getY() == -1)
+        _discretePosition = _position;
+
     _world->changeAgentInMatrixOfPositions(this);
 }
 

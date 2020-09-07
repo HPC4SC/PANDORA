@@ -38,17 +38,18 @@ namespace Engine
             virtual ~aggregator( ){}
             void operator( )( T neighbor )
             {
-                if ( neighbor->getId( )==_center.getId( ) || !neighbor->exists( ) )
+                Agent* agent = neighbor.second.get();
+                if (agent->getId() == _center.getId() or not agent->exists( ) )
                 {
                     return;
                 }
-                if ( _particularType && !neighbor->isType( _type ))
+                if (_particularType and not agent->isType(_type))
                 {
                     return;
                 }
-                if ( _center.getPosition( ).distance( neighbor->getPosition( ) )-_radius<= 0.0001 )
+                if (_center.getPosition().distance(agent->getPosition()) - _radius <= 0.0001)
                 {
-                        execute( neighbor );
+                    execute( neighbor );
                 }
             }
             virtual void execute( T neighbor )=0;
@@ -71,7 +72,8 @@ namespace Engine
             aggregatorGet( double radius, Agent & center, const std::string & type ) : aggregator<T>( radius, center, type ) {}
             void execute( T neighbor )
             {
-                _neighbors.push_back( neighbor );
+                 AgentPtr agentPtr = neighbor.second;
+                _neighbors.push_back(agentPtr);
             }
             AgentsVector _neighbors;
         };
@@ -187,7 +189,7 @@ namespace Engine
          * 
          * @param agent Pointer to the removed Agent.
          */
-        virtual void removeAgent( Agent * agent ) = 0;
+        virtual void addAgentToBeRemoved( Agent * agent ) = 0;
 
         /**
          * @brief This method will return an agent, both looking at owned and ghost agents

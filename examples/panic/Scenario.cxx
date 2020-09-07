@@ -238,7 +238,7 @@ void Scenario::checkPanicEvents()
                     Engine::AgentsVector agents = getAgent(index);
 					for(int i=0; i<agents.size(); i++)
 					{
-						removeAgent(agents.at(i));
+						addAgentToBeRemoved(agents.at(i));
 						setValue(eDeaths, index, getValue(eDeaths, index)+1);		
 						setValue(eNumAgents, index, getValue(eNumAgents, index)-1);		
 						setValue(eCompression, index, 0);		

@@ -95,6 +95,8 @@ namespace Engine
             bool _printInConsole;
             bool _printInstrumentation;
 
+            std::vector<Agent*> _agentsToBeRemoved;                 //! Vector or Agents to be removed at the end of the step.
+
             double _initialTime;                                    //! Initial running time.
 
             Serializer _serializer;                                 //! Serializer instance.
@@ -255,19 +257,11 @@ namespace Engine
             bool isAgentInList(const Agent& agent, const AgentsList& agentsList) const;
 
             /**
-             * @brief Gets the agent in _world that are identified by 'agentID'.
+             * @brief Removes Agents in 'agentsToRemove' from the node's _world.
              * 
-             * @param agentID const std::string&
-             * @return AgentsList::const_iterator 
+             * @param agentsToRemove const std::vector<Agent*>&
              */
-            AgentsList::const_iterator getAgentInWorldFromID(const std::string& agentID) const;
-
-            /**
-             * @brief Removes agents in the node's _world, based on their IDs.
-             * 
-             * @param agentIDsToRemove const std::list<std::string>&
-             */
-            void removeAgentsFromID(const std::list<std::string>& agentIDsToRemove);
+            void removeAgentsInVector(const std::vector<Agent*>& agentsToRemove);
 
             /**
              * @brief Keeps all the agents in the list 'agentsToKeep'. All the remaining agents of the simulation are discarded!
@@ -677,7 +671,7 @@ namespace Engine
              * 
              * @param agent 
              */
-            void removeAgent(Agent* agent);
+            void addAgentToBeRemoved(Agent* agent);
 
             /**
              * @brief Get the agent identified by 'id'. It should be able to be seen by the calling MPI node (i.e. it should be an agent within _nodeSpace.ownedAreaWithOuterOverlaps). Otherwise, it returns an iterator pointing to _world->endAgents().

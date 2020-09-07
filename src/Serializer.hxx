@@ -201,7 +201,7 @@ public:
      * @param beginAgents Begin pointer of the AgentsList to serialize.
      * @param endAgents End pointer of the AgentsList to serialize.
      */
-    void serializeAgents( const int & step, const AgentsList::const_iterator beginAgents, const AgentsList::const_iterator endAgents );
+    void serializeAgents( const int & step, const AgentsMap::const_iterator beginAgents, const AgentsMap::const_iterator endAgents );
 
     /**
      * @brief Serializes the state of the static rasters.
