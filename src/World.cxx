@@ -24,7 +24,6 @@
 #include <Exception.hxx>
 #include <Scheduler.hxx>
 #include <OpenMPIMultiNode.hxx>
-#include <OpenMPSingleNode.hxx>
 
 #include <GeneralState.hxx>
 
@@ -48,7 +47,7 @@ namespace Engine
         // default Scheduler
         if ( !_scheduler )
         {
-            _scheduler = useOpenMPSingleNode( );
+            _scheduler = useOpenMPIMultiNode( );
         }
         _scheduler->setWorld( this );
         _scheduler->setOverlapSize(config->getOverlapSize());
@@ -79,7 +78,7 @@ namespace Engine
         {
             _agentsMatrix[i].resize(height);
             for (int j = 0; j < height; ++j)
-                _agentsMatrix[i][j] = AgentsList();
+                _agentsMatrix[i][j] = AgentsMap();
         }
     }
 
@@ -113,6 +112,11 @@ namespace Engine
         return _agentsMatrix;
     }
 
+    const AgentsMap& World::getAgentsMap()
+    {
+        return _agentsByID;
+    }
+
     void World::changeAgentInMatrixOfPositions(Agent* agent)
     {
         int oldX = agent->getDiscretePosition().getX();
@@ -123,34 +127,25 @@ namespace Engine
 
         if (newX == -1 or newY == -1) return;
 
+        std::string agentID = agent->getId();
+
         if (oldX != -1 and oldY != -1)
         {
-            AgentsList::const_iterator agentIt = _agentsMatrix[oldX][oldY].end();
-            for (AgentsList::const_iterator it = _agentsMatrix[oldX][oldY].begin(); it != _agentsMatrix[oldX][oldY].end(); ++it)
+            // Look in the _agentsMatrix for the 'agent'.
+            AgentsMap::const_iterator agentIt = _agentsMatrix[oldX][oldY].find(agentID);
+            if (agentIt != _agentsMatrix[oldX][oldY].end())
             {
-                AgentPtr currentAgentPtr = *it;
-                if (currentAgentPtr.get()->getId() == agent->getId()) 
-                {
-                    agentIt = it;
-                    break;
-                }
-            }
-
-            if (agentIt != _agentsMatrix[oldX][oldY].end())   // The agent was already created
-            {
-                AgentPtr retrievedAgentPtr = *agentIt;
-                _agentsMatrix[newX][newY].push_back(retrievedAgentPtr);
-                _agentsMatrix[oldX][oldY].erase(agentIt);
+                _agentsMatrix[newX][newY][agentID] = agentIt->second;
+                _agentsMatrix[oldX][oldY].erase(agentID);
                 return;
             }
         }
 
-        // Agent not found in matrix (it means it's a new agent), so find it in _agentsByID.
-        if (_agentsByID.find(agent->getId()) != _agentsByID.end())
+        // Agent not found in matrix (it means it's a new agent), so look in _agentsByID for its pointing AgentPtr.
+        if (_agentsByID.find(agentID) != _agentsByID.end())
         {
-            AgentPtr agentPtr = _agentsByID.at(agent->getId());
-            _agentsMatrix[newX][newY].push_back(agentPtr);
-            return;
+            AgentPtr agentPtr = _agentsByID.at(agentID);
+            _agentsMatrix[newX][newY][agentID] = agentPtr;
         }
     }
 
@@ -161,23 +156,20 @@ namespace Engine
     }
 
     void World::eraseAgentFromMatrixOfPositions(Agent* agent)
-    {        
+    {
+        std::string agentID = agent->getId();
+
         int oldX = agent->getDiscretePosition().getX();
         int oldY = agent->getDiscretePosition().getY();
 
-        AgentsList::const_iterator agentIt = _agentsMatrix[oldX][oldY].end();
-        for (AgentsList::const_iterator it = _agentsMatrix[oldX][oldY].begin(); it != _agentsMatrix[oldX][oldY].end(); ++it)
-        {
-            Agent* currentAgent = it->get();
+        if (_agentsMatrix[oldX][oldY].find(agentID) != _agentsMatrix[oldX][oldY].end())
+            _agentsMatrix[oldX][oldY].erase(agentID);
 
-            if (currentAgent->getId() == agent->getId())
-            {
-                agentIt = it;
-                break;
-            }
-        }
-        if (agentIt != _agentsMatrix[oldX][oldY].end())
-            _agentsMatrix[oldX][oldY].erase(agentIt);
+        int newX = agent->getPosition().getX();
+        int newY = agent->getPosition().getY();
+
+        if (_agentsMatrix[newX][newY].find(agentID) != _agentsMatrix[newX][newY].end())
+            _agentsMatrix[newX][newY].erase(agentID);
     }
 
     void World::addAgent( Agent * agent, bool executedAgent )
@@ -185,8 +177,9 @@ namespace Engine
         agent->setWorld(this);
 
         AgentPtr agentPtr(agent);
-        _agents.push_back(agentPtr);
         _agentsByID[agent->getId()] = agentPtr;
+
+        changeAgentInMatrixOfPositions(agent);
 
         if ( executedAgent )
         {
@@ -200,17 +193,17 @@ namespace Engine
 
     void World::sortAgentsListAlphabetically()
     {
-        _agents.sort(
-            [](const AgentPtr& agentPtr1, const AgentPtr& agentPtr2)
-                { return (*agentPtr1.get()) < *(agentPtr2.get()); }
-        );
+        // _agents.sort(
+        //     [](const AgentPtr& agentPtr1, const AgentPtr& agentPtr2)
+        //         { return (*agentPtr1.get()) < *(agentPtr2.get()); }
+        // );
     }
 
     void World::updateDiscreteStateStructures() const
     {
-        for (AgentsList::const_iterator it = _agents.begin(); it != _agents.end(); ++it)
+        for (AgentsMap::const_iterator it = _agentsByID.begin(); it != _agentsByID.end(); ++it)
         {
-            Agent* agent = it->get();
+            Agent* agent = it->second.get();
             agent->copyContinuousValuesToDiscreteOnes();
         }
 
@@ -565,10 +558,10 @@ namespace Engine
     //     return new SpacePartition( overlap, finalize );
     // }
 
-    Scheduler * World::useOpenMPSingleNode( )
-    {
-        return new OpenMPSingleNode( );
-    }
+    // Scheduler * World::useOpenMPSingleNode( )
+    // {
+    //     return new OpenMPSingleNode( );
+    // }
 
     const int & World::getId( ) const 
     { 
@@ -585,24 +578,21 @@ namespace Engine
         return _scheduler->getBoundaries( ); 
     }
 
-    void World::eraseAgent(AgentsList::const_iterator& it) 
-    { 
-        Agent* agent = it->get();
+    void World::eraseAgent(Agent* agent)
+    {
         eraseAgentFromMapByIDs(agent);
         eraseAgentFromMatrixOfPositions(agent);
-
-        _agents.erase(it); 
     }
 
-    void World::removeAgent( std::shared_ptr<Agent> agentPtr )
+    void World::addAgentToBeRemoved( std::shared_ptr<Agent> agentPtr )
     {
         Agent * agent = agentPtr.get( );
-        _scheduler->removeAgent( agent );
+        _scheduler->addAgentToBeRemoved( agent );
     }
 
-    void World::removeAgent( Agent * agent ) 
+    void World::addAgentToBeRemoved( Agent * agent ) 
     { 
-        _scheduler->removeAgent( agent ); 
+        _scheduler->addAgentToBeRemoved( agent ); 
     }
 
     Agent * World::getAgent( const std::string & id ) 

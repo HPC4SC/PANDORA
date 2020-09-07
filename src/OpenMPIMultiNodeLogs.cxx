@@ -136,13 +136,13 @@ namespace Engine {
     {
         std::stringstream ss;
         //ss << "TS = " << schedulerInstance.getWallTime() << ":" << std::endl;
-        ss << "NODE AGENTS:" << std::endl;
-        for (AgentsList::const_iterator it = schedulerInstance._world->beginAgents(); it != schedulerInstance._world->endAgents(); ++it)
+        ss << "NODE AGENTS (" << schedulerInstance._world->getNumberOfAgents() << "):" << std::endl;
+        for (AgentsMap::const_iterator it = schedulerInstance._world->beginAgents(); it != schedulerInstance._world->endAgents(); ++it)
         {
             if (fullDescription)
-                ss << it->get() << std::endl;
+                ss << it->second.get() << std::endl;
             else
-                ss << it->get()->getId() << ", ";
+                ss << it->second.get()->getId() << ", ";
         }
         ss << std::endl;
 
@@ -202,10 +202,10 @@ namespace Engine {
                     if (agentsMatrix[j][i].empty()) ss << "-----";
 
                     bool first = true;
-                    for (AgentsList::const_iterator it = agentsMatrix[j][i].begin(); it != agentsMatrix[j][i].end(); ++it)
+                    for (AgentsMap::const_iterator it = agentsMatrix[j][i].begin(); it != agentsMatrix[j][i].end(); ++it)
                     {
                         if (not first) ss << "+";
-                        ss << it->get()->getId();
+                        ss << it->second.get()->getId();
 
                         first = false;
                     }

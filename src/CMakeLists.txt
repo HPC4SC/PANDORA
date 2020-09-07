@@ -8,7 +8,6 @@ set( PANDORA_FILES
      IncrementalRaster.cxx
      LoggerBase.cxx
      MpiFactory.cxx
-     OpenMPSingleNode.cxx
      LoadBalanceTree.cxx
      OpenMPIMultiNodeLogs.cxx
      OpenMPIMultiNode.cxx

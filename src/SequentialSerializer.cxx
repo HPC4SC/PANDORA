@@ -256,17 +256,18 @@ void SequentialSerializer::init( World & world )
     serializeStaticRasters( staticRasters );
 }
 
-void SequentialSerializer::serializeAgents( const int & step, const AgentsList::const_iterator & beginAgents, const AgentsList::const_iterator & endAgents )
+void SequentialSerializer::serializeAgents( const int & step, const AgentsMap::const_iterator & beginAgents, const AgentsMap::const_iterator & endAgents )
 {
     int i=0;
-    for ( AgentsList::const_iterator it=beginAgents; it!=endAgents; ++it )
+    for ( AgentsMap::const_iterator it=beginAgents; it!=endAgents; ++it )
     {
-        if ( !( *it )->exists( ) )
+        Agent* agent = it->second.get();
+        if ( !agent->exists( ) )
         {
             continue;
         }
 
-        serializeAgent( it->get( ), step, i );
+        serializeAgent( agent, step, i );
         i++;
     }
     // serialize remaining agents

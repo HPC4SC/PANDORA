@@ -35,7 +35,7 @@ namespace Engine {
 
     /** INITIALIZATION PUBLIC METHODS **/
 
-    OpenMPIMultiNode::OpenMPIMultiNode() : _initialTime(0.0f), _masterNodeID(0), _assignLoadToMasterNode(true), _serializer(*this), _printInConsole(false), _printInstrumentation(false)
+    OpenMPIMultiNode::OpenMPIMultiNode() : _initialTime(0.0f), _masterNodeID(0), _assignLoadToMasterNode(true), _serializer(*this), _printInConsole(false), _printInstrumentation(true)
     {
     }
 
@@ -153,10 +153,6 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
         _world->createAgents();
 
         double endTime = getWallTime();
-
-std::stringstream ss;
-ss << "TotalTime OUT: " << endTime - initialTime << "\n";
-std::cout << ss.str();
 
 if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStringStream("[Process # " << getId() <<  "] createAgents()\tTOTAL TIME: " << endTime - initialTime).str());
     }
@@ -366,9 +362,9 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
 
         if (_numTasks == 1) return;
 
-        for (AgentsList::const_iterator itAgent = _world->beginAgents(); itAgent != _world->endAgents(); ++itAgent)
+        for (AgentsMap::const_iterator itAgent = _world->beginAgents(); itAgent != _world->endAgents(); ++itAgent)
         {
-            AgentPtr agent = *itAgent;
+            AgentPtr agent = itAgent->second;
             std::string agentType = agent->getType();
             
             std::list<int> belongingNodes;
@@ -426,37 +422,27 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
         }
         return false;
     }
-
-    AgentsList::const_iterator OpenMPIMultiNode::getAgentInWorldFromID(const std::string& agentID) const
+    
+    void OpenMPIMultiNode::removeAgentsInVector(const std::vector<Agent*>& agentsToRemove)
     {
-        for (AgentsList::const_iterator it = _world->beginAgents(); it != _world->endAgents(); ++it) 
+        for (int i = 0; i < agentsToRemove.size(); ++i)
         {
-            if (it->get()->getId().compare(agentID) == 0) return it;
-        }
-        return _world->endAgents();
-    }
-
-    void OpenMPIMultiNode::removeAgentsFromID(const std::list<std::string>& agentIDsToRemove)
-    {
-        for (std::list<std::string>::const_iterator it = agentIDsToRemove.begin(); it != agentIDsToRemove.end(); ++it)
-        {
-            std::string agentID = *it;
-            AgentsList::const_iterator agentIt = getAgentInWorldFromID(agentID);
-            _world->eraseAgent(agentIt);
+            Agent* agent = agentsToRemove[i];
+            _world->eraseAgent(agent);
         }
     }
 
     void OpenMPIMultiNode::keepAgentsInNode(const AgentsList& agentsToKeep)
     {
-        std::list<std::string> agentIDsToRemove;
+        std::vector<Agent*> agentsToRemove;
 
-        for (AgentsList::const_iterator it = _world->beginAgents(); it != _world->endAgents(); ++it)
+        for (AgentsMap::const_iterator it = _world->beginAgents(); it != _world->endAgents(); ++it)
         {
-            Agent* agent = it->get();
-            if (not isAgentInList(*agent, agentsToKeep)) agentIDsToRemove.push_back(agent->getId());
+            Agent* agent = it->second.get();
+            if (not isAgentInList(*agent, agentsToKeep)) agentsToRemove.push_back(agent);
         }
 
-        removeAgentsFromID(agentIDsToRemove);
+        removeAgentsInVector(agentsToRemove);
     }
 
     void OpenMPIMultiNode::sendInitialAgentsToNodes()
@@ -714,9 +700,9 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
         else                    areaToExecute = _nodeSpace.innerSubOverlaps[subOverlapID];
 
         AgentsVector agentsToExecute;
-        for (AgentsList::const_iterator it = _world->beginAgents(); it != _world->endAgents(); ++it)
+        for (AgentsMap::const_iterator it = _world->beginAgents(); it != _world->endAgents(); ++it)
         {
-            AgentPtr agentPtr = *it;
+            AgentPtr agentPtr = it->second;
             std::string agentID = agentPtr->getId();
             if (agentPtr->exists() and not hasBeenExecuted(agentID) and areaToExecute.contains(agentPtr->getPosition()))
             {
@@ -837,9 +823,9 @@ if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<
 
 if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTime() << " receiving agent: " << agent << "\tfrom node: " << sendingNodeID << "\n").str();
 
-                    AgentsList::const_iterator agentIt = getAgentIteratorFromID(agent->getId());
-                    if (agentIt != _world->endAgents())
-                        _world->eraseAgent(agentIt);
+                    AgentsMap agentsByID = _world->getAgentsMap();
+                    if (agentsByID.find(agent->getId()) != agentsByID.end())
+                        _world->eraseAgent(agentsByID.at(agent->getId()).get());
 
                     if (_nodeSpace.ownedAreaWithOuterOverlaps.contains(agent->getPosition()))
                     {
@@ -851,7 +837,8 @@ if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<
             }
         }
 
-        _world->sortAgentsListAlphabetically();     // Important when receiving agents asynchronously! Subsequent shuffles must obtain the same resulting list, so we need to sort the list of agents.
+        // This line is not needed because in principle agents are already sorted when inserted in the map.
+        //_world->sortAgentsListAlphabetically();     // Important when receiving agents asynchronously! Subsequent shuffles must obtain the same resulting list, so we need to sort the list of agents.
 
         double endTime = getWallTime();
 if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStringStream("[Process # " << getId() <<  "] receiveGhostAgentsFromNeighbouringNodes() OVERLAP: " << subOverlapID << "\tTOTAL TIME: " << endTime - initialTime).str());
@@ -890,6 +877,8 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
 
     void OpenMPIMultiNode::synchronizeAgentsIfNecessary(const AgentsVector& agentsVector, const int& subOverlapID)
     {
+        double initialTime = getWallTime();
+
         if (_numTasks == 1) return;
 
         std::map<int, std::map<std::string, AgentsList>> agentsByTypeAndNode;
@@ -920,6 +909,9 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
             }
         }
 
+        double endTime = getWallTime();
+if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStringStream("[Process # " << getId() <<  "] synchronizeAgentsIfNecessary() (PREPARATION OF THE DATA) OVERLAP: " << subOverlapID << "\tTOTAL TIME: " << endTime - initialTime).str());
+
         sendGhostAgentsInMap(agentsByTypeAndNode, subOverlapID);
         receiveGhostAgentsFromNeighbouringNodes(subOverlapID);
     }
@@ -948,6 +940,8 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
 
     void OpenMPIMultiNode::sendGhostAgentsToNeighbours(const AgentsVector& agentsVector, const int& originalSubOverlapAreaID)
     {
+        double initialTime = getWallTime();
+
         std::map<int, std::map<std::string, AgentsList>> agentsByTypeAndNode;
         initializeAgentsToSendMap(agentsByTypeAndNode);
 
@@ -981,6 +975,9 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
                 agentsByTypeAndNode.at(neighbourNodeID).at(agentType).push_back(agentPtr);
             }
         }
+
+        double endTime = getWallTime();
+if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStringStream("[Process # " << getId() <<  "] sendGhostAgentsToNeighbours() (PREPARATION OF THE DATA) OVERLAP: " << originalSubOverlapAreaID << "\tTOTAL TIME: " << endTime - initialTime).str());
 
         sendGhostAgentsInMap(agentsByTypeAndNode, originalSubOverlapAreaID);
     }
@@ -1239,15 +1236,15 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
         }
     }
 
-    AgentsList::const_iterator OpenMPIMultiNode::getAgentIteratorFromID(const std::string& agentID)
-    {
-        for (AgentsList::const_iterator it = _world->beginAgents(); it != _world->endAgents(); ++it)
-        {
-            Agent* agent = it->get();
-            if (agent->getId() == agentID) return it;
-        }
-        return _world->endAgents();
-    }
+    // AgentsList::const_iterator OpenMPIMultiNode::getAgentIteratorFromID(const std::string& agentID)
+    // {
+    //     for (AgentsMap::const_iterator it = _world->beginAgents(); it != _world->endAgents(); ++it)
+    //     {
+    //         Agent* agent = it->get();
+    //         if (agent->getId() == agentID) return it;
+    //     }
+    //     return _world->endAgents();
+    // }
 
     /** RUN PUBLIC METHODS (INHERIT) **/
 
@@ -1366,31 +1363,27 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, totalSimu
 
     void OpenMPIMultiNode::removeAgents()
     {
-        std::list<std::string> agentIDsToBeRemoved;
-        for (AgentsList::const_iterator it = _world->beginAgents(); it != _world->endAgents(); ++it)
-        {
-            Agent* agent = it->get();
-            if (not agent->exists()) agentIDsToBeRemoved.push_back(agent->getId());
-        }
-
-        removeAgentsFromID(agentIDsToBeRemoved);
+        removeAgentsInVector(_agentsToBeRemoved);
+        _agentsToBeRemoved.clear();
     }
 
-    void OpenMPIMultiNode::removeAgent(Agent* agent)
+    void OpenMPIMultiNode::addAgentToBeRemoved(Agent* agent)
     {
-        AgentsList::const_iterator agentIt = getAgentIteratorFromID(agent->getId());
-        if (agentIt == _world->endAgents())
-            throw Exception(CreateStringStream("[Process # " << getId() <<  "] OpenMPIMultiNode::removeAgent(id) - agent: " << agentIt->get()->getId() << " not found.\n").str());
+        AgentsMap agentsByID = _world->getAgentsMap();
+        if (agentsByID.find(agent->getId()) == agentsByID.end())
+            throw Exception(CreateStringStream("[Process # " << getId() <<  "] OpenMPIMultiNode::removeAgent(id) - agent: " << agent->getId() << " not found.\n").str());
+
         agent->setExists(false);
+        _agentsToBeRemoved.push_back(agent);
     }
 
     Agent* OpenMPIMultiNode::getAgent(const std::string& id)
     {
-        AgentsList::const_iterator agentIt = getAgentIteratorFromID(id);
-        if (agentIt == _world->endAgents() or not agentIt->get()->exists())
-            throw Exception(CreateStringStream("[Process # " << getId() <<  "] OpenMPIMultiNode::getAgent(id) - agent: " << agentIt->get()->getId() << " not found.").str());
-
-        return agentIt->get();
+        AgentsMap agentsByID = _world->getAgentsMap();
+        if (agentsByID.find(id) != agentsByID.end())
+            return agentsByID.at(id).get();
+        else
+            throw Exception(CreateStringStream("[Process # " << getId() <<  "] OpenMPIMultiNode::getAgent(id) - agent: " << id << " not found.").str());
     }
 
     AgentsVector OpenMPIMultiNode::getAgent(const Point2D<int>& position, const std::string& type)
@@ -1400,12 +1393,12 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, totalSimu
 
     int OpenMPIMultiNode::countNeighbours(Agent* target, const double& radius, const std::string& type)
     {
-        return for_each(_world->beginAgents(), _world->endAgents(), aggregatorCount<std::shared_ptr<Agent>>(radius, *target, type))._count;
+        return for_each(_world->beginAgents(), _world->endAgents(), aggregatorCount<std::pair<std::string, AgentPtr>>(radius, *target, type))._count;
     }
 
     AgentsVector OpenMPIMultiNode::getNeighbours(Agent* target, const double& radius, const std::string& type)
     {
-        AgentsVector agentsVector = for_each(_world->beginAgents(), _world->endAgents(), aggregatorGet<std::shared_ptr<Agent>>(radius, *target, type))._neighbors;
+        AgentsVector agentsVector = for_each(_world->beginAgents(), _world->endAgents(), aggregatorGet<std::pair<std::string, AgentPtr>>(radius, *target, type))._neighbors;
         GeneralState::statistics().shuffleWithinIterators(agentsVector.begin(), agentsVector.end());
         return agentsVector;
     }
@@ -1413,9 +1406,9 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, totalSimu
     size_t OpenMPIMultiNode::getNumberOfTypedAgents(const std::string& type) const
     {
         size_t numberOfAgents = 0;
-        for (AgentsList::const_iterator it = _world->beginAgents(); it != _world->endAgents(); ++it)
+        for (AgentsMap::const_iterator it = _world->beginAgents(); it != _world->endAgents(); ++it)
         {
-            AgentPtr agentPtr = *it;
+            AgentPtr agentPtr = it->second;
             if (agentPtr->isType(type)) ++numberOfAgents;
         }
         size_t distributedNumberOfAgents;

@@ -65,10 +65,10 @@ namespace Engine {
     {
         AgentsVector result;
 
-        AgentsList agentsAtPosition = _world->getAgentsMatrix()[position.getX()][position.getY()];
-        for (AgentsList::const_iterator it = agentsAtPosition.begin(); it != agentsAtPosition.end(); ++it)
+        AgentsMap agentsAtPosition = _world->getAgentsMatrix()[position.getX()][position.getY()];
+        for (AgentsMap::const_iterator it = agentsAtPosition.begin(); it != agentsAtPosition.end(); ++it)
         {
-            AgentPtr agentPtr = *it;
+            AgentPtr agentPtr = it->second;
             if (type.compare("all") == 0 or agentPtr->isType(type)) result.push_back(agentPtr);
         }
         return result;
@@ -160,9 +160,9 @@ namespace Engine {
     double LoadBalanceTree::getAllAgentsWeight() const
     {
         double totalWeight = 0;
-        for (AgentsList::iterator it = _world->beginAgents(); it != _world->endAgents(); ++it)
+        for (AgentsMap::iterator it = _world->beginAgents(); it != _world->endAgents(); ++it)
         {
-            Agent* agent = it->get();
+            Agent* agent = it->second.get();
             totalWeight += agent->getWeight();
         }
         return totalWeight;

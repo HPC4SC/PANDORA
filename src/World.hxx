@@ -39,7 +39,6 @@ namespace Engine
 {
 class Scheduler;
 class Agent;
-class OpenMPSingleNode;
 
 class World
 {
@@ -48,9 +47,8 @@ public:
 protected:
     std::shared_ptr<Config> _config; //! Pointer to the configuration of the world.
 
-    AgentsList _agents;                             //! Global list of agents.
-    AgentsMatrix _agentsMatrix;                     //! Global matrix of agents (used to find agents by position).
-    std::map<std::string, AgentPtr> _agentsByID;    //! Global map of agents by ID.
+    AgentsMap _agentsByID;          //! Global map of agents by ID.
+    AgentsMatrix _agentsMatrix;     //! Global matrix of agents (used to find agents by position).
 
     bool _allowMultipleAgentsPerCell; //! False if each cell can have just one agent.
 
@@ -79,6 +77,20 @@ protected:
      * @param index Index of the raster in the _rasters vector.
      */
     void updateRasterToMaxValues( const int & index );
+
+    /**
+     * @brief Erases the 'agent' from the _agentsByID member.
+     * 
+     * @param agent 
+     */
+    void eraseAgentFromMapByIDs(Agent* agent);
+
+    /**
+     * @brief Erases the 'agent' from the _agentsMatrix member.
+     * 
+     * @param agent Agent*
+     */
+    void eraseAgentFromMatrixOfPositions(Agent* agent);
 
     /**
      * @brief Updates the _currentStepOriginalPosition member for all the current agents of *this World.
@@ -130,11 +142,18 @@ public:
     void run( );
 
     /**
-     * @brief Gets a const reference of the internal _agentsMatrix.
+     * @brief Gets a const reference of the internal _agentsMatrix member.
      * 
      * @return const AgentsMatrix&
      */
     const AgentsMatrix& getAgentsMatrix();
+
+    /**
+     * @brief Gets a const reference of the internal _agentsByID member.
+     * 
+     * @return const AgentsMap& 
+     */
+    const AgentsMap& getAgentsMap();
 
     /**
      * @brief Changes the position of the 'agent' to its current coordinates. 'oldX' and 'oldY' are used to erase it from it previous position. NOTE: It assumes that _agents member already contain 'agent'.
@@ -142,20 +161,6 @@ public:
      * @param agent Agent*
      */
     void changeAgentInMatrixOfPositions(Agent* agent);
-
-    /**
-     * @brief Erases the 'agent' from the _agentsByID member.
-     * 
-     * @param agent 
-     */
-    void eraseAgentFromMapByIDs(Agent* agent);
-
-    /**
-     * @brief Erases the 'agent' from the _agentsMatrix member.
-     * 
-     * @param agent Agent*
-     */
-    void eraseAgentFromMatrixOfPositions(Agent* agent);
 
     /**
      * @brief Add an agent to the world, and remove it from overlap agents if exist.
@@ -445,39 +450,31 @@ public:
      */
     Point2D<int> getRandomPosition( );
 
-    /** Get the boundaries of the world. For sequential executions it will be the boundaries of the entire simulation,
-      * but if this is not the case it is the area owned by the instance plus the overlaps.
-      */
-    const Rectangle<int> & getBoundaries( ) const;
-
     /**
-     * @brief Get the _agents member.
+     * @brief Get the boundaries of the world. For sequential executions it will be the boundaries of the entire simulation, but if this is not the case it is the area owned by the instance plus the overlaps.
      * 
-     * @return AgentsList* 
+     * @return const Rectangle<int>& 
      */
-    AgentsList getAgentsList()
-    {
-        return _agents;
-    }
+    const Rectangle<int> & getBoundaries( ) const;
 
     /**
      * @brief Returns the iteratior pointing to the first Agent in the _agents vector.
      * 
-     * @return AgentsList::iterator 
+     * @return AgentsMap::iterator 
      */
-    AgentsList::iterator beginAgents( ) 
+    AgentsMap::iterator beginAgents( ) 
     {
-        return _agents.begin( );
+        return _agentsByID.begin();
     }
     
     /**
      * @brief Returns the iteratior pointing to the last Agent in the _agents vector.
      * 
-     * @return AgentsList::iterator 
+     * @return AgentsMap::iterator 
      */
-    AgentsList::iterator endAgents( ) 
+    AgentsMap::iterator endAgents( ) 
     {
-        return _agents.end( );
+        return _agentsByID.end();
     }
     
     /**
@@ -542,7 +539,7 @@ public:
      */
     size_t getNumberOfAgents( ) const
     {
-        return _agents.size( );
+        return _agentsByID.size();
     }
     
     /**
@@ -553,36 +550,40 @@ public:
      */
     size_t getNumberOfTypedAgents( const std::string & type ) const;
 
-    /**
-     * @brief Erases Agent pointed by "it" form the _agents AgentList.
-     * 
-     * @param it pointed Agent to be removed.
-     */
-    void eraseAgent( AgentsList::iterator & it ) 
-    { 
-        _agents.erase( it ); 
-    }
+    // /**
+    //  * @brief Erases Agent pointed by "it" form the _agents AgentList.
+    //  * 
+    //  * @param it AgentsMap::const_iterator&
+    //  */
+    // void eraseAgent( AgentsMap::iterator & it );
+
+    // /**
+    //  * @brief Erases the Agent pointed by 'it' from all the agent structures of the World.
+    //  * 
+    //  * @param it AgentsMap::const_iterator&
+    //  */
+    // void eraseAgent(AgentsMap::const_iterator& it);
 
     /**
-     * @brief Erases the Agent pointed by 'it' from the _agents member.
+     * @brief Erases the Agent 'agent' from all the structures in this World.
      * 
-     * @param it AgentsList::const_iterator&
+     * @param agent Agent* 
      */
-    void eraseAgent(AgentsList::const_iterator& it);
+    void eraseAgent(Agent* agent);
 
     /**
-     * @brief Removes the specified agent from the simulation.
+     * @brief Adds the Agent *'agent' to the list of agents to be removed at the end of the step.
      * 
-     * @param agent Agent to be removed.
+     * @param agent Pointer to the agent to be removed.
      */
-    void removeAgent( Agent * agent );
+    void addAgentToBeRemoved( Agent * agent );
     
     /**
-     * @brief Removes the agent pointed to bu the given pointer.
+     * @brief Adds the agent pointed by 'agentPtr' to the list of agents to be removed at the end of the step.
      * 
-     * @param agentPtr Pointe rto the agent to be removed.
+     * @param agentPtr Pointer to the agent to be removed.
      */
-    void removeAgent( std::shared_ptr<Agent> agentPtr );
+    void addAgentToBeRemoved( std::shared_ptr<Agent> agentPtr );
 
     /**
      * @brief Get the agent of the given id.
@@ -649,7 +650,7 @@ public:
 	 * 
 	 * @return Scheduler* 
 	 */
-    static Scheduler * useOpenMPSingleNode( );
+    //static Scheduler * useOpenMPSingleNode( );
 
     /**
      * @brief Get the identifier of the world.

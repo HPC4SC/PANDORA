@@ -3,6 +3,8 @@
 
 #include <EarthConfig.hxx>
 #include <Human.hxx>
+
+#include <Agent.hxx>
 #include <DynamicRaster.hxx>
 #include <Point2D.hxx>
 #include <GeneralState.hxx>
@@ -113,22 +115,24 @@ void Earth::stepEnvironment()
     	setValue(eHumans, index, 0);
 	    setValue(eZombies, index, 0);
 	}
-	for(Engine::AgentsList::const_iterator it=beginAgents(); it!=endAgents(); ++it)
+	for(Engine::AgentsMap::const_iterator it=beginAgents(); it!=endAgents(); ++it)
 	{
-		if(!(*it)->exists() || !getBoundaries().contains((*it)->getPosition()))
+		Engine::Agent* agent = it->second.get();
+
+		if(!agent->exists() || !getBoundaries().contains(agent->getPosition()))
 		{
 			continue;
 		}
-		if((*it)->isType("Human"))
+		if(agent->isType("Human"))
 		{
-			int previousHumans = getValue(eHumans, (*it)->getPosition());
-			setValue(eHumans, (*it)->getPosition(), previousHumans+1);
+			int previousHumans = getValue(eHumans, agent->getPosition());
+			setValue(eHumans, agent->getPosition(), previousHumans+1);
 			totalHumans++;
 		}
 		else
 		{	
-			int previousZombies = getValue(eZombies, (*it)->getPosition());
-			setValue(eZombies, (*it)->getPosition(), previousZombies+1);
+			int previousZombies = getValue(eZombies, agent->getPosition());
+			setValue(eZombies, agent->getPosition(), previousZombies+1);
 			totalZombies++;
 		}
 	}
