@@ -8,8 +8,8 @@ namespace Examples
 
 HumanBeeing::HumanBeeing(const std::string& id, const bool& sick, const int& encounterRadius, 
     const int& phoneT1, const int& phoneT2, const bool& phoneApp, const int& signalRadius) 
-: Agent(id), _countInfected(0), _phoneActiveCount(0), _sick(sick), _infected(false),
-    _timeSpentWithOthers(0), _encounterRadius(encounterRadius), _infectionTime(-1), _timeInSimulation(0)  {
+: Agent(id), _countInfected(0), _infectionTime(-1), _phoneActiveCount(0), _timeInSimulation(0), _sick(sick), 
+    _infected(false),_timeSpentWithOthers(0), _encounterRadius(encounterRadius)  {
     createPhone(phoneT1,phoneT2,phoneApp,signalRadius);
 }
 
