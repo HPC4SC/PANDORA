@@ -9,7 +9,7 @@ namespace Examples
 HumanBeeing::HumanBeeing(const std::string& id, const bool& sick, const int& encounterRadius, 
     const int& phoneT1, const int& phoneT2, const bool& phoneApp, const int& signalRadius) 
 : Agent(id), _countInfected(0), _phoneActiveCount(0), _sick(sick), _infected(false),
-    _timeSpentWithOthers(0), _encounterRadius(encounterRadius) {
+    _timeSpentWithOthers(0), _encounterRadius(encounterRadius), _infectionTime(-1), _timeInSimulation(0)  {
     createPhone(phoneT1,phoneT2,phoneApp,signalRadius);
 }
 
@@ -127,7 +127,7 @@ void HumanBeeing::registerAttributes() {
     registerIntAttribute("infectionTime");
     registerIntAttribute("sick");
     registerIntAttribute("infected");
-    registerIntAttribute("timeInSimularion");
+    registerIntAttribute("timeInSimulation");
     registerIntAttribute("firstBucketNotifications");
     registerIntAttribute("combinedBucketsNotifications");
     registerIntAttribute("SICKfirstBucketNotifications");
@@ -139,7 +139,7 @@ void HumanBeeing::serialize() {
     serializeAttribute("infectionTime",_infectionTime);
     serializeAttribute("sick",_sick);
     serializeAttribute("infected",_infected);
-    serializeAttribute("timeInSimularion",_timeInSimulation);
+    serializeAttribute("timeInSimulation",_timeInSimulation);
     serializeAttribute("firstBucketNotifications",_phone->getFirstBucketNotifications());
     serializeAttribute("combinedBucketsNotifications",_phone->getCombinedNotifications());
     serializeAttribute("SICKfirstBucketNotifications",_phone->getFirstBucketSickNotifications());
