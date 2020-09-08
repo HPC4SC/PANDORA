@@ -19,13 +19,10 @@ Client::~Client() {}
 
 void Client::selectActions() {
     _actions.push_back(new InfectAction());
-    if (_purchaseFinished) {
-        _targetPosition = _super->getRandomExit();
-    }
+    if (_purchaseFinished) _targetPosition = _super->getRandomExit();
     else if (not _purchaseDecided) {
         int currentZone = getWorld()->getStaticRaster("layout").getValue(getPosition());
         if (currentZone >= 10 and currentZone < 100) currentZone += 100;
-        //if (currentZone == 201) currentZone++;
         if (currentZone != 202) {
             std::map<int,double> probabilities = _super->getTransitionProbabilities(currentZone);
             double sumOfWeights = 0;
