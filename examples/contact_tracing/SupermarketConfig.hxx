@@ -4,6 +4,7 @@
 #include <Config.hxx>
 
 #include <iostream>
+#include <string>
 
 namespace Examples 
 {
