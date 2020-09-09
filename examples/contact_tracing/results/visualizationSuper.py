@@ -78,9 +78,45 @@ def read_agents(agent_route):
             steps_dfs.append(step_df)
         return steps_dfs
 
+def generateOutput(steps_dfs,concat):
+    total_people = concat['id'].nunique()
+    steps = len(steps_dfs) - 1
+    aggregation_functions = {'SICKcombinedBucketsNotifications': 'last', 'SICKfirstBucketNotifications': 'last', 'combinedBucketsNotifications': 'last', 'countInfected' : 'last', 'firstBucketNotifications' : 'last', 'infected' : 'last', 'infectionTime' : 'last', 'sick' : 'last', 'timeInSimulation' : 'last'}
+    agent_records = concat.groupby(concat['id']).aggregate(aggregation_functions)
+
+    agent_records['infected'] = agent_records.apply(lambda x: x['infected'] > 0, axis=1)
+    agent_records['SICKcombinedBucketsNotifications'] = agent_records.apply(lambda x: x['SICKcombinedBucketsNotifications'] > 0, axis=1)
+
+    agent_records['truePositives'] = agent_records['SICKcombinedBucketsNotifications'] & agent_records['infected']
+    agent_records['falseNegatives'] = ~agent_records['SICKcombinedBucketsNotifications'] & agent_records['infected']
+    agent_records['falsePositives'] = agent_records['SICKcombinedBucketsNotifications'] & ~agent_records['infected']
+    agent_records['trueNegatives'] = ~agent_records['SICKcombinedBucketsNotifications'] & ~agent_records['infected']
+
+    infected = len(agent_records[agent_records['infected']>0])
+
+    return {
+        'meanTimeInStore': agent_records['timeInSimulation'].mean(),
+        'medianTimeInStore': agent_records['timeInSimulation'].median(),
+        'avgPeoplePerMinute': total_people/(steps/60),
+        'totalPeople': total_people,
+        'previouslySick': sum(agent_records['sick']),
+        'infected': infected,
+        'infectionRate': infected/(total_people-sum(agent_records['sick'])),
+        'firstBucketNotifications': sum(agent_records['firstBucketNotifications']),
+        'combinedBucketsNotifications': sum(agent_records['combinedBucketsNotifications']),
+        'SICKfirstBucketNotifications': sum(agent_records['SICKfirstBucketNotifications']),
+        'SICKcombinedBucketsNotifications': sum(agent_records['SICKcombinedBucketsNotifications']),
+        'truePositives': sum(agent_records['truePositives'])/total_people,
+        'trueNegatives': sum(agent_records['trueNegatives'])/total_people,
+        'falseNegatives': sum(agent_records['falseNegatives'])/total_people,
+        'falsePositives': sum(agent_records['falsePositives'])/total_people 
+    }
+
 def print_agents(steps_dfs):
-    result = pd.concat(steps_dfs)
-    result.to_csv('./output.csv')
+    concat = pd.concat(steps_dfs)
+    result = []
+    result.append(generateOutput(steps_dfs,concat))
+    pd.DataFrame(result).to_csv('./output.csv')
 
     img = plt.imread("../maps/spar2.png")
     fig, ax = plt.subplots()
