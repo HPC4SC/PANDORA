@@ -17,18 +17,35 @@ private:
 	int _stopTime; //MpiBasicAttribute
 	int _stopCounter; //MpiBasicAttribute
 	int _entryTime; //MpiBasicAttribute
-	float _wander; //MpiBasicAttribute
+	float _drifting; //MpiBasicAttribute
+	float _speed; //MpiBasicAttribute
     Street* _street;
+	bool _directionTop;
 
 public:
     Walker(const std::string& id, const bool& sick, const int& encounterRadius, 
     const int& phoneT1, const int& phoneT2, const bool& phoneApp, const int& signalRadius, const float& stopping,
-	const int& stopTime, const int& entryTime, const float& wander, Street* street);
+	const int& stopTime, const int& entryTime, const float& drifting, const float& speed, Street* street);
 
     ~Walker();
 
     void selectActions();
 
+	void setDirectionTop();
+
+	void setDirectionBot();
+
+	float getStopping();
+
+	void setStopCount(const int& count);
+
+	int getStopTime();
+
+	bool directionTop();
+
+	float getDrifting();
+
+	float getSpeed();
 
 	////////////////////////////////////////////////
 	// This code has been automatically generated //

@@ -16,7 +16,7 @@ void StreetConfig::loadParams() {
     _speed = getParamInt("Walker","speed");
     _initialDensity = getParamFloat("Walker","initialDensity");
 
-    _infectiosness = getParamFloat("Epidemiology","infectiosness");
+    _infectiousness = getParamFloat("Epidemiology","infectiousness");
     _infectoinRadius = getParamInt("Epidemiology","infectoinRadius");
     _sickRate = getParamFloat("Epidemiology","sickRate");
     _encounterRadius = getParamInt("Epidemiology","encounterRadius");
@@ -29,7 +29,7 @@ void StreetConfig::loadParams() {
 }
 
 float StreetConfig::getInfectiousness() const {
-    return _infectiosness;
+    return _infectiousness;
 }
 
 }

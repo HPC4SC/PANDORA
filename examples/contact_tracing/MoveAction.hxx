@@ -15,15 +15,14 @@ namespace Examples
 {
 
 class MoveAction : public Engine::Action {
-    public:
+public:
+    MoveAction();
 
-        MoveAction();
+    ~MoveAction();
 
-        ~MoveAction();
-
-        void execute(Engine::Agent & agent);
-
-        std::string describe() const;
+    void execute(Engine::Agent & agent);
+    
+    std::string describe() const;
 };
 
 }
