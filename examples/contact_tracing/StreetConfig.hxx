@@ -20,7 +20,7 @@ private:
     int _speed;
     float _initialDensity;
 
-    float _infectiosness;
+    float _infectiousness;
     int _infectoinRadius;
     float _sickRate;
     int _encounterRadius;

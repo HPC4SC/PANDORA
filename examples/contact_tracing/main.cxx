@@ -23,19 +23,20 @@ int main(int argc, char* argv[])
 		{
 			fileName = argv[1];
 		}
-		if (*argv[2] == 0) {
+		if (*argv[2] == '0') {
 			Examples::Supermarket super(new Examples::SupermarketConfig(fileName), super.useOpenMPIMultiNode());
 			super.initialize(argc, argv);
 			super.setParallelism(true, false);
 			super.run();
 		}
-		else if (*argv[2] == 1) {
+		else if (*argv[2] == '1') {
+			std::cout << "Going to execute street scenario" << std::endl;
 			Examples::Street street(new Examples::StreetConfig(fileName), street.useOpenMPIMultiNode());
 			street.initialize(argc, argv);
 			street.setParallelism(true, false);
 			street.run();
 		}
-		/*else if (argc[2] == 2) {
+		/*else if (argc[2] == '2') {
 			Examples::Train train(new Examples::SupermarketConfig(fileName), train.useOpenMPIMultiNode());
 			train.initialize(argc, argv);
 			train.setParallelism(true, false);
