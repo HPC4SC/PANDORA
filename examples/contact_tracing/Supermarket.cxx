@@ -41,7 +41,7 @@ void Supermarket::createCashier() {
     if (_currentSickCashiers < _supermarketConfig._sickCashiers and _supermarketConfig._sickCashiers != -1) sick = true;
     int initWorkedTime = _supermarketConfig._cashierShift * Engine::GeneralState::statistics().getUniformDistValue(0.,1.);
     bool hasApp = Engine::GeneralState::statistics().getUniformDistValue(0.,1.) * _supermarketConfig._applicationRate;
-    Cashier *cashier = new Cashier(oss.str(),sick,_supermarketConfig._cashierShift,initWorkedTime,
+    Cashier* cashier = new Cashier(oss.str(),sick,_supermarketConfig._cashierShift,initWorkedTime,
         _supermarketConfig._phoneThreshold1,_supermarketConfig._phoneThreshold2,hasApp,_supermarketConfig._signalRadius,_supermarketConfig._encounterRadius);
     addAgent(cashier);
     int spawnIndex = Engine::GeneralState::statistics().getUniformDistValue(0,_cashierWorkplace.size() - 1);
@@ -58,12 +58,12 @@ void Supermarket::createClient() {
     oss << "Client_" << _clientId;
     _clientId++;
     bool sick = false;
-    if (Engine::GeneralState::statistics().getUniformDistValue(0.,1.) < _supermarketConfig._sickRate) sick = true;
-    float purchaseSpeed = Engine::GeneralState::statistics().getUniformDistValue(0.,1.);
-    float stopping = Engine::GeneralState::statistics().getUniformDistValue(0.,1.) * _supermarketConfig._stopping;
-    int stopTime = (int)Engine::GeneralState::statistics().getUniformDistValue(0.,1.) * _supermarketConfig._stopTime;
-    bool hasApp = Engine::GeneralState::statistics().getUniformDistValue(0.,1.) * _supermarketConfig._applicationRate;
-    Client *client = new Client(oss.str(),sick,purchaseSpeed,stopping,stopTime,_step,
+    if (Engine::GeneralState::statistics().getUniformDistValue() < _supermarketConfig._sickRate) sick = true;
+    float purchaseSpeed = Engine::GeneralState::statistics().getUniformDistValue();
+    float stopping = Engine::GeneralState::statistics().getUniformDistValue() * _supermarketConfig._stopping;
+    int stopTime = (int)Engine::GeneralState::statistics().getUniformDistValue() * _supermarketConfig._stopTime;
+    bool hasApp = Engine::GeneralState::statistics().getUniformDistValue() < _supermarketConfig._applicationRate;
+    Client* client = new Client(oss.str(),sick,purchaseSpeed,stopping,stopTime,_step,
         _supermarketConfig._phoneThreshold1,_supermarketConfig._phoneThreshold2,hasApp,_supermarketConfig._signalRadius,_supermarketConfig._encounterRadius,this,
         _supermarketConfig._wander);
     addAgent(client);

@@ -13,8 +13,8 @@ void StreetConfig::loadParams() {
     _stopping = getParamFloat("Walker","stopping");
     _stopTime = getParamInt("Walker","stopTime");
     _wander = getParamFloat("Walker","wander");
-
-    _mapRoute = getParamStr("Raster","mapRoute");
+    _speed = getParamInt("Walker","speed");
+    _initialDensity = getParamFloat("Walker","initialDensity");
 
     _infectiosness = getParamFloat("Epidemiology","infectiosness");
     _infectoinRadius = getParamInt("Epidemiology","infectoinRadius");

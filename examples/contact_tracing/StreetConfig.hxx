@@ -17,8 +17,8 @@ private:
     float _stopping;
     int _stopTime;
     float _wander;
-
-    std::string _mapRoute;
+    int _speed;
+    float _initialDensity;
 
     float _infectiosness;
     int _infectoinRadius;
