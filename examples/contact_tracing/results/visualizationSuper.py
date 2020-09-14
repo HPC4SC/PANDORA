@@ -168,7 +168,7 @@ def print_agents(steps_dfs,scenario):
         plt.scatter(x[i],y[i],s=4,color=agentColor,marker='o')
         camera.snap()
     anim = camera.animate(blit=True)
-    anim.save('animation.htm')
+    anim.save('animation' + type + '.htm')
 
 def view_agents(espai_agents,scenario):
     steps_dfs = read_agents(espai_agents,scenario)

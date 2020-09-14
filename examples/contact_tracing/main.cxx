@@ -2,6 +2,8 @@
 #include <SupermarketConfig.hxx>
 #include <Street.hxx>
 #include <StreetConfig.hxx>
+#include <Train.hxx>
+#include <TrainConfig.hxx>
 
 #include <Exception.hxx>
 #include <Config.hxx>
@@ -35,12 +37,12 @@ int main(int argc, char* argv[])
 			street.setParallelism(true, false);
 			street.run();
 		}
-		/*else if (fileName == "configTrain.xml") {
+		else if (fileName == "configTrain.xml") {
 			Examples::Train train(new Examples::SupermarketConfig(fileName), train.useOpenMPIMultiNode());
 			train.initialize(argc, argv);
 			train.setParallelism(true, false);
 			train.run();
-		}*/
+		}
 		else throw Engine::Exception("Not a known scenario");
 	}
 	catch( std::exception & exceptionThrown ) 

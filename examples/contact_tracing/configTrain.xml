@@ -5,7 +5,12 @@
 	<seed value="0"/>
 	<overlapSizeMPI value="3"/>
 	<size width="9" height="258"/>
-	<Walker walkerRate="3" drifting="0.09" stopping="0.02" stopTime="900" wander="0.15" speed="1" initialDensity="0.01"/>
-    <Epidemiology infectiousness="0.00371" infectoinRadius="2" sickRate="0.3" encounterRadius="2" maxSick="-1"/>
+	<Raster mapRoute="./maps/train_layout.png" 
+		travelTimes="76 182 373 497 605 703 808 909 1002 1100 1178 1269 1366 1510 1592 1676 1761 1832 1906 1992 2101 2114"
+		seatCapacity="1"/>
+	<Passanger move="0.8" sittingPreference="0.85"
+		passangerEntry="44 42 42 39 41 34 39 23 38 17 44 7 12 14 6 3 1 3 35 17 0 0"
+		passangerExit="44 42 42 39 41 34 39 23 38 17 44 7 12 14 6 3 1 3 35 17 0 0"/>
+    <Epidemiology infectiousness="0.00371" infectoinRadius="2" sickRate="0.3" encounterRadius="2"/>
 	<Phone signalRadius="3" applicationRate="1.0" phoneThreshold1="63" phoneThreshold2="74"/>
 </config>

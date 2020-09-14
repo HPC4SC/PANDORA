@@ -24,7 +24,6 @@ private:
     int _infectoinRadius;
     float _sickRate;
     int _encounterRadius;
-    int _maxSick;
 
     int _signalRadius;
     float _applicationRate;
