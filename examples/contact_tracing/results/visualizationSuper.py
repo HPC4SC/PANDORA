@@ -37,7 +37,7 @@ def read_agents(agent_route,scenario):
             timeInSimulation = np.array(G1_items[9][1])
             x_coords = np.array(G1_items[10][1])
             y_coords = np.array(G1_items[11][1])
-            if scenario == '0':    
+            if scenario == '0':
                 G2 = hdf.get('/Cashier/step' + str(i))
                 G2_items = list(G2.items())
                 SICKcombinedBucketsNotifications_cashier = np.array(G2_items[0][1])
@@ -117,37 +117,37 @@ def generateOutput(steps_dfs,concat):
         'truePositives': sum(agent_records['truePositives'])/total_people,
         'trueNegatives': sum(agent_records['trueNegatives'])/total_people,
         'falseNegatives': sum(agent_records['falseNegatives'])/total_people,
-        'falsePositives': sum(agent_records['falsePositives'])/total_people 
+        'falsePositives': sum(agent_records['falsePositives'])/total_people
     }
 
 def print_agents(steps_dfs,scenario):
+    concat = pd.concat(steps_dfs)
+    result = []
+    result.append(generateOutput(steps_dfs,concat))
     if scenario == '0':
         x1 = 0
         y1 = 40
         x2 = 40
         y2 = 0
+        type = 'Supermarket'
+        img = plt.imread("../maps/spar2.png")
+        agentColor = 'white'
     elif scenario == '1':
         x1 = 0
         y1 = 100
         x2 = 10
         y2 = 0
+        type = 'Street'
+        img = plt.imread("../maps/street_layout.png")
+        agentColor = 'red'
     elif scenario == '2':
         x1 = 0
         y1 = 258
         x2 = 9
         y2 = 0
-    concat = pd.concat(steps_dfs)
-    result = []
-    result.append(generateOutput(steps_dfs,concat))
-    if scenario == '0':
-        type = 'Supermarket'
-        img = plt.imread("../maps/spar2.png")
-    elif scenario == '1':
-        type = 'Street'
-        img = plt.imread("../maps/street_layout.png")
-    elif scenario == '2':
         type = 'Train' 
         img = plt.imread("../maps/train_layout.png")
+        agentColor = 'white'
     pd.DataFrame(result).to_csv('./' + type + 'Output.csv')
 
     fig, ax = plt.subplots()
@@ -165,7 +165,7 @@ def print_agents(steps_dfs,scenario):
         ax.imshow(img)
         plt.xlim(x1,x2)
         plt.ylim(y1,y2)
-        plt.scatter(x[i],y[i],s=4,color='grey',marker='o')
+        plt.scatter(x[i],y[i],s=4,color=agentColor,marker='o')
         camera.snap()
     anim = camera.animate(blit=True)
     anim.save('animation.htm')
