@@ -1,11 +1,11 @@
 <?xml version="1.0" ?>
 <config>
-	<output resultsFile="./data/contact_tracingStreet.h5" logsDir="./logs"/>
+	<output resultsFile="./data/contact_tracingTrain.h5" logsDir="./logs"/>
 	<numSteps value="3600" serializeResolution="1"/>
 	<seed value="0"/>
 	<overlapSizeMPI value="3"/>
-	<size width="10" height="100"/>
+	<size width="9" height="258"/>
 	<Walker walkerRate="3" drifting="0.09" stopping="0.02" stopTime="900" wander="0.15" speed="1" initialDensity="0.01"/>
     <Epidemiology infectiousness="0.00371" infectoinRadius="2" sickRate="0.3" encounterRadius="2" maxSick="-1"/>
-	<Phone signalRadius="6" applicationRate="1.0" phoneThreshold1="63" phoneThreshold2="74"/>
+	<Phone signalRadius="3" applicationRate="1.0" phoneThreshold1="63" phoneThreshold2="74"/>
 </config>
