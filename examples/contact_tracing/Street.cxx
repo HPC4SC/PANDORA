@@ -12,8 +12,12 @@ Street::Street(Engine::Config* config, Engine::Scheduler* scheduler) : World(con
 Street::~Street() {}
 	
 void Street::createAgents() {
-    if (_step == 0) setupLimits();
-    createWalker();
+    if (_step == 0) {
+        setupLimits();
+        int initialAgents = getBoundaries().getSize().getHeight() * getBoundaries().getSize().getWidth() * _streetConfig._initialDensity;
+        for (int i = 0; i < initialAgents - 1; i++) createWalker();
+    }
+    if (_step%_streetConfig._walkerRate == 0) createWalker();
 }
 
 void Street::createWalker() {
@@ -31,18 +35,26 @@ void Street::createWalker() {
     _streetConfig._phoneThreshold2,hasApp,_streetConfig._signalRadius,stopping,stopTime,_step,drifting,speed,this);
     addAgent(walker);
     Engine::Point2D<int> spawn;
-    if (Engine::GeneralState::statistics().getUniformDistValue() < 0.5) {
-        int randIndex = Engine::GeneralState::statistics().getUniformDistValue(0,_topLimit.size() - 1);
-        while (not this->checkPosition(_topLimit[randIndex])) randIndex = Engine::GeneralState::statistics().getUniformDistValue(0,_topLimit.size() - 1);
-        spawn = _topLimit[randIndex];
-        walker->setDirectionTop();
+    if (_initialAgentsCreated) {
+        if (Engine::GeneralState::statistics().getUniformDistValue() < 0.5) {
+            int randIndex = Engine::GeneralState::statistics().getUniformDistValue(0,_topLimit.size() - 1);
+            while (not this->checkPosition(_topLimit[randIndex])) randIndex = Engine::GeneralState::statistics().getUniformDistValue(0,_topLimit.size() - 1);
+            spawn = _topLimit[randIndex];
+            walker->setDirectionTop();
+        }
+        else {
+            int randIndex = Engine::GeneralState::statistics().getUniformDistValue(0,_botLimit.size() - 1);
+            while (not this->checkPosition(_botLimit[randIndex])) randIndex = Engine::GeneralState::statistics().getUniformDistValue(0,_botLimit.size() - 1);
+            spawn = _botLimit[randIndex];
+            walker->setDirectionBot();
+        }
     }
     else {
-        int randIndex = Engine::GeneralState::statistics().getUniformDistValue(0,_botLimit.size() - 1);
-        while (not this->checkPosition(_botLimit[randIndex])) randIndex = Engine::GeneralState::statistics().getUniformDistValue(0,_botLimit.size() - 1);
-        spawn = _botLimit[randIndex];
-        walker->setDirectionBot();
+        spawn = getRandomPosition();
+        if (Engine::GeneralState::statistics().getUniformDistValue() < 0.5) walker->setDirectionTop();
+        else walker->setDirectionBot();
     }
+    
     walker->setPosition(spawn);
 }
 

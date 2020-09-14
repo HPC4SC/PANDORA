@@ -16,13 +16,15 @@ class Street : public Engine::World
 
 private:
 
-    const StreetConfig &_streetConfig = (const StreetConfig &) getConfig();
+    const StreetConfig& _streetConfig = (const StreetConfig &) getConfig();
 
     int _walkerId = 0;
 
     std::vector<Engine::Point2D<int>> _topLimit;
 
     std::vector<Engine::Point2D<int>> _botLimit;
+
+    bool _initialAgentsCreated = false;
 
 public:
         
