@@ -1,11 +1,9 @@
 #ifndef __Client_hxx__
 #define __Client_hxx__
 
-#include <Phone.hxx>
 #include <HumanBeeing.hxx>
 #include <Supermarket.hxx>
 
-#include <Action.hxx>
 #include <Point2D.hxx>
 
 #include <vector>

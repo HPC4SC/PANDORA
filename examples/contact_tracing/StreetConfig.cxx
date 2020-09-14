@@ -20,7 +20,6 @@ void StreetConfig::loadParams() {
     _infectoinRadius = getParamInt("Epidemiology","infectoinRadius");
     _sickRate = getParamFloat("Epidemiology","sickRate");
     _encounterRadius = getParamInt("Epidemiology","encounterRadius");
-    _maxSick = getParamInt("Epidemiology","maxSick");
 
     _signalRadius = getParamInt("Phone","signalRadius");
     _applicationRate = getParamFloat("Phone","applicationRate");
