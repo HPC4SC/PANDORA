@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
 			street.run();
 		}
 		else if (fileName == "configTrain.xml") {
-			Examples::Train train(new Examples::SupermarketConfig(fileName), train.useOpenMPIMultiNode());
+			Examples::Train train(new Examples::TrainConfig(fileName), train.useOpenMPIMultiNode());
 			train.initialize(argc, argv);
 			train.setParallelism(true, false);
 			train.run();

@@ -39,8 +39,8 @@ void Supermarket::createCashier() {
     _cashierId++;
     bool sick = false;
     if (_currentSickCashiers < _supermarketConfig._sickCashiers and _supermarketConfig._sickCashiers != -1) sick = true;
-    int initWorkedTime = _supermarketConfig._cashierShift * Engine::GeneralState::statistics().getUniformDistValue(0.,1.);
-    bool hasApp = Engine::GeneralState::statistics().getUniformDistValue(0.,1.) * _supermarketConfig._applicationRate;
+    int initWorkedTime = _supermarketConfig._cashierShift * Engine::GeneralState::statistics().getUniformDistValue();
+    bool hasApp = Engine::GeneralState::statistics().getUniformDistValue() < _supermarketConfig._applicationRate;
     Cashier* cashier = new Cashier(oss.str(),sick,_supermarketConfig._cashierShift,initWorkedTime,
         _supermarketConfig._phoneThreshold1,_supermarketConfig._phoneThreshold2,hasApp,_supermarketConfig._signalRadius,_supermarketConfig._encounterRadius);
     addAgent(cashier);
