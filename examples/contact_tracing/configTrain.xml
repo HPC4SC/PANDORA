@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <config>
 	<output resultsFile="./data/contact_tracingTrain.h5" logsDir="./logs"/>
-	<numSteps value="1" serializeResolution="1"/>
+	<numSteps value="2114" serializeResolution="1"/>
 	<seed value="0"/>
 	<overlapSizeMPI value="3"/>
 	<size width="258" height="9"/>

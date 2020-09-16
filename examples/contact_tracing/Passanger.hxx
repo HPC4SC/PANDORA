@@ -33,6 +33,12 @@ class Passanger : public Examples::HumanBeeing
 
 		void goingToLeave();
 
+		void setPath();
+
+		Engine::Point2D<int> nextPosition();
+
+		void popCurrentPosition();
+
 	////////////////////////////////////////////////
 	// This code has been automatically generated //
 	/////// Please do not modify it ////////////////

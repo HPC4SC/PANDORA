@@ -109,4 +109,73 @@ void Train::setupTimes() {
     }
 }
 
+std::list<Engine::Point2D<int>> Train::getShortestPath(const Engine::Point2D<int>& pos, const Engine::Point2D<int>& target) {
+    std::queue<int> rowQueue;
+    std::queue<int> columnQueue;
+    std::vector<std::vector<bool>> visited(_trainConfig.getSize().getHeight(), std::vector<bool>(_trainConfig.getSize().getWidth(),false));
+    std::vector<std::vector<Engine::Point2D<int>>> prev(_trainConfig.getSize().getHeight(), std::vector<Engine::Point2D<int>>(_trainConfig.getSize().getWidth(),Engine::Point2D<int>(-1,-1)));
+
+    rowQueue.push(pos._x);
+    columnQueue.push(pos._y);
+    visited[pos._x][pos._y] = true;
+    while (not rowQueue.empty()) {
+        int r = rowQueue.front();
+        int c = columnQueue.front();
+        rowQueue.pop();
+        columnQueue.pop();
+        if (r == target._x and c == target._y) break;
+        exploreNeighbours(r,c,visited, rowQueue, columnQueue, prev);
+    }
+
+    return reconstructPath(pos,target,prev);
+}
+
+void Train::exploreNeighbours(int& r, int& c, std::vector<std::vector<bool>>& visited, std::queue<int>& rowQueue, std::queue<int>& columnQueue, std::vector<std::vector<Engine::Point2D<int>>>& prev) {
+    std::vector<int> rowDirection = {1,-1,0,0,-1,1,1,-1};
+    std::vector<int> columnDirection = {0,0,1,-1,-1,1,-1,1};
+    for (int i = 0; i < 8; i++) {
+        int rr = r + rowDirection[i];
+        int cc = c + columnDirection[i];
+        if (validPosition(rr,cc,visited)) {
+            rowQueue.push(rr);
+            columnQueue.push(cc);
+            visited[rr][cc] = true;
+            prev[rr][cc] = Engine::Point2D<int>(r,c);
+        }
+    }
+}
+
+bool Train::validPosition(const int& rr, const int& cc, const std::vector<std::vector<bool>>& visited) {
+    bool res = rr >= 0 and cc >= 0  and rr < _trainConfig.getSize().getHeight() and cc < _trainConfig.getSize().getWidth() and (not visited[rr][cc]); 
+    return res;
+}
+
+std::list<Engine::Point2D<int>> Train::reconstructPath(const Engine::Point2D<int>& pos, const Engine::Point2D<int>& target, const std::vector<std::vector<Engine::Point2D<int>>>& prev) {
+    std::list<Engine::Point2D<int>> path;
+    for (Engine::Point2D<int> at = target; at != Engine::Point2D<int>(-1,-1); at = prev[at._x][at._y]) path.push_back(at);
+    path.reverse();
+    if (path.front() == pos) return path;
+    return {};
+}
+
+Engine::Point2D<int> Train::findClosestDoor(Engine::Point2D<int> pos) {
+    double minDistance = pos.distance(_doors[0]);
+    int minIdx = 0;
+    for (unsigned int i = 1; i < _doors.size(); i++) {
+        if (minDistance > pos.distance(_doors[i])) {
+            minDistance = pos.distance(_doors[i]);
+            minIdx = i;
+        }
+    }
+    return _doors[minIdx];
+}
+
+std::vector<Engine::Point2D<int>> Train::getAvaliableSeats() {
+    std::vector<Engine::Point2D<int>> avaliableSeats;
+    for (unsigned int i = 0; i < _seats.size(); i++) {
+        if (getAgent(_seats[i]).empty()) avaliableSeats.push_back(_seats[i]);
+    }
+    return avaliableSeats;
+}
+
 }
