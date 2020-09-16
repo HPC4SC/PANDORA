@@ -59,7 +59,7 @@ void Street::createWalker() {
 }
 
 void Street::setupLimits() {
-    for (unsigned int i = 0; i < _streetConfig.getSize().getWidth(); i++) {
+    for (int i = 0; i < _streetConfig.getSize().getWidth(); i++) {
         _topLimit.push_back(Engine::Point2D<int>(i,0));
         _botLimit.push_back(Engine::Point2D<int>(i,_streetConfig.getSize().getHeight() - 1));
     }
