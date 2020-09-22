@@ -50,7 +50,12 @@ namespace Engine
             _scheduler = useOpenMPIMultiNode( );
         }
         _scheduler->setWorld( this );
+
+        _scheduler->setPrintInConsole(config->getPrintInConsole());
+        _scheduler->setPrintInstrumentation(config->getPrintInstrumentation());
+
         _scheduler->setOverlapSize(config->getOverlapSize());
+        _scheduler->setSubpartitioningMode(config->getSubpartitioningMode());
     }
 
     World::~World( )

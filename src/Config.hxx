@@ -40,13 +40,17 @@ protected:
     TiXmlDocument * _doc; 
     TiXmlElement * _root;
 
-    std::string _resultsFile; //! File where simulation results will be stored.
-    Size<int> _size; //! Space of simulation.
-    int _numSteps; //! Number of time steps of the simulation.
-    int _serializeResolution; //! Number of steps to execute before serializing the state of the simulation.
-    std::string _configFile; //! XML config file ( if it exists ).
-    int _seed;          //! Seed to be used for the RNG (Statistics class).
-    int _overlapSize;   //! [Only for MPI scheduler] Overlap size in number of cells, defined for partition rectangles.
+    std::string _resultsFile;   //! File where simulation results will be stored.
+    Size<int> _size;            //! Space of simulation.
+    int _numSteps;              //! Number of time steps of the simulation.
+    int _serializeResolution;   //! Number of steps to execute before serializing the state of the simulation.
+    std::string _configFile;    //! XML config file ( if it exists ).
+    int _seed;                  //! Seed to be used for the RNG (Statistics class).
+    int _overlapSize;           //! [Only for MPI scheduler] Overlap size in number of cells, defined for partition rectangles.
+    int _subpartitioningMode;   //! [Only for MPI scheduler] Subpartitioning mode 9 = 9 subpartitions per node, 4 = 4 subpartitions per node.
+
+    bool _printInConsole;       //! For logging purposes
+    bool _printInstrumentation; //! For logging purposes
     
     /**
      * @brief Finds an element in a config file.
@@ -131,6 +135,27 @@ public:
      * @return const int& 
      */
     const int& getOverlapSize() const;
+
+    /**
+     * @brief Gets the _printInConsole member.
+     * 
+     * @return const bool& 
+     */
+    const bool& getPrintInConsole() const;
+
+    /**
+     * @brief Gets the _printInstrumentation member.
+     * 
+     * @return const bool& 
+     */
+    const bool& getPrintInstrumentation() const;
+
+    /**
+     * @brief Get the _subPartitioningMode member.
+     * 
+     * @return const int& 
+     */
+    const int& getSubpartitioningMode() const;
 
     /**
      * @brief Get the _numSteps object.

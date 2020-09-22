@@ -40,12 +40,19 @@ void MoveAction::moveBestPos(int &new_x,int &new_y, Engine::World * world, const
 	int ini_j = new_y - maxBugMovement;
 	int last_j = new_y + maxBugMovement;
 	// the bug looks around and compares the food in the cells within its reach
-// std::string lookedupBugID = "Bug_11";
+
+// std::string lookedupBugID = "Bug_5";
 // if (world->getCurrentStep() == 0 and bug.getId() == lookedupBugID)
 // {
-// 	std::cout << CreateStringStream("[Process # " << world->getId() <<  "] Agent:" << bug.getId() << " BEFORE ; " << " new_x:" << new_x << " new_y:" << new_y << "\n").str();
-// 	new_x = 9;
-// 	new_y = 9;
+// 	std::cout << CreateStringStream("[Process # " << world->getId() <<  "] Agent:" << bug.getId() << " BEFORE ; " << " at step: " << world->getCurrentStep() << "\n").str();
+// 	new_x = 7;
+// 	new_y = 14;
+// }
+// else if (world->getCurrentStep() == 1 and bug.getId() == lookedupBugID)
+// {
+// 	std::cout << CreateStringStream("[Process # " << world->getId() <<  "] Agent:" << bug.getId() << " BEFORE ; " << " at step: " << world->getCurrentStep() << "\n").str();
+// 	new_x = 6;
+// 	new_y = 16;
 // }
 // else
 // {
