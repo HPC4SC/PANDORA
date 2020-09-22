@@ -62,6 +62,10 @@ protected:
     std::vector<bool> _dynamicRasters; //! True if the raster is dynamic, false the raster is static.
     std::vector<bool> _serializeRasters; //! True if the raster must be serialized, false otherwise.
 
+    /**
+     * @brief Initializes the _agentsMatrix for the first time.
+     * 
+     */
     void initializeAgentsMatrix();
 
     /**

@@ -2,7 +2,7 @@
 <config>  
 	<!-- Global simulation parameters -->
 	<output resultsFile="./data/stupidModel.h5" logsDir="./logs"/>
-	<numSteps value="10" serializeResolution="1"/>
+	<numSteps value="5" serializeResolution="1"/>
 	<seed value="1234"/>
 	<overlapSizeMPI value="2"/>
 	<size width="1000" height="1000"/>
