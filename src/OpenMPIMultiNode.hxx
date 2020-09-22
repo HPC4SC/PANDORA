@@ -52,7 +52,6 @@ namespace Engine
                 std::map<int, std::list<int>> innerSubOverlapsNeighbours;   //! Sub-overlaps neighbouring nodes. Map<subOverlapID, list<nodeID>>. Used for efficient agents and rasters communication. // Filled up to depth 0 (from neighbours->second).
             };
 
-            typedef std::map<int, std::map<std::string, AgentsList>> NeighbouringAgentsMap;
             typedef std::map<int, MPINode> MPINodesMap;
 
             typedef std::map<Point2D<int>, int> MapOfPositionsAndValues;
@@ -66,7 +65,6 @@ namespace Engine
             LoadBalanceTree* _tree;
 
             MPINodesMap _mpiNodesMapToSend;                                 //! Map<nodeId, nodeInformation> containing the leafs of _tree, where the 'value' field is now the 'ownedArea', and the IDs of the 'neighbours' are mapped with their coordinates.
-            NeighbouringAgentsMap _neighbouringAgents;                      //! <nodeID, <agentsType, agentsList>> with the neighbouring agents, classified first by their belonging nodes. Used to send/receive agents from master to the rest of the nodes.
 
             /** Node own data structures (nodes0..n) **/
             MPINode _nodeSpace;                                             //! Areas and neighbours information for this node.
@@ -77,7 +75,6 @@ namespace Engine
 
             /** MPI Data Structures **/
             int _masterNodeID;                                              //! ID of the master node. Used for communication.
-            bool _assignLoadToMasterNode;                                   //! True if the master node also processes agents, false if it's only used for partitioning and communication.
 
             struct Coordinates {
                 int top, left, bottom, right;
@@ -230,29 +227,6 @@ namespace Engine
             void receiveNeighboursFromNode(const int& masterNodeID, MPINode& mpiNodeInfo) const;
 
             /**
-             * @brief Gets the ID of the nodes that should take care of 'agent', leaving them in the 'agentNodes'.
-             * 
-             * @param agent const Agent&
-             * @param agentNodes std::list<int>&
-             */
-            void getBelongingNodesOfAgent(const Agent& agent, std::list<int>& agentNodes) const;
-
-            /**
-             * @brief Classify the agents of the simulation in their corresponding neighbourhood (node).
-             * 
-             */
-            void createNeighbouringAgents();
-
-            /**
-             * @brief Sends the agents in list 'agentsToSend' to 'currentNode'. All the sent agents are 'agentType'.
-             * 
-             * @param agentsToSend const AgentsList&
-             * @param currentNode const inst&
-             * @param agentsTypeName const std::string&
-             */
-            void sendAgentsToNodeByType(const AgentsList& agentsToSend, const int& currentNode, const std::string& agentsTypeName) const;
-
-            /**
              * @brief Check whether 'agent' is within the 'agentsList'
              * 
              * @param agent const Agent&
@@ -269,24 +243,23 @@ namespace Engine
             void removeAgentsInVector(const std::vector<Agent*>& agentsToRemove);
 
             /**
-             * @brief Keeps all the agents in the list 'agentsToKeep'. All the remaining agents of the simulation are discarded!
-             * 
-             * @param agentsToKeepconst AgentsList& 
-             */
-            void keepAgentsInNode(const AgentsList& agentsToKeep);
-
-            /**
-             * @brief Sends the agents corresponding to each node from _masterNodeID to all of the other nodes. Agents belonging to _masterNodeID are kept in the master node, the rest are discarded.
-             * 
-             */
-            void sendInitialAgentsToNodes();
-
-            /**
              * @brief From the 'masterNodeID', it receives the agents that should consider for its assigned space.
              * 
              * @param masterNodeID const int&
              */
             void receiveInitialAgentsFromNode(const int& masterNodeID);
+
+            /**
+             * @brief Discards the agents that does not belong to the node calling this method.
+             * 
+             */
+            void filterOutInitialAgents();
+
+            /**
+             * @brief Discards the raster cells that does not belong to the node calling this method.
+             * 
+             */
+            void filterOutInitialRasters();
 
             /**
              * @brief Stablishes boundaries (_boundaries member) for the node calling this method.
@@ -356,12 +329,6 @@ namespace Engine
              * 
              */
             void printOwnNodeStructureAfterMPI() const;
-
-            /**
-             * @brief Prints the neighbourhoods (agents belonging to nodes).
-             * 
-             */
-            void printNeighbouringAgentsPerTypes() const;
 
             /**
              * @brief Prints the agents for the current node executing this method.
@@ -600,13 +567,6 @@ namespace Engine
              * @param masterNode const int&
              */
             void setMasterNode(const int& masterNode);
-
-            /**
-             * @brief Sets the _assignLoadToMasterNode member.
-             * 
-             * @param loadToMasterNode const bool&
-             */
-            void assignLoadToMasterNode(const bool& loadToMasterNode);
 
             /** INITIALIZATION PUBLIC METHODS (INHERIT) **/
 

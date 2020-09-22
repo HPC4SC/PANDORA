@@ -94,14 +94,6 @@ namespace Engine
             std::string getString_OwnNodeStructureAfterMPI(const OpenMPIMultiNode& schedulerInstance) const;
 
             /**
-             * @brief Gets the string representing: the neighbourhoods (agents belonging to nodes).
-             * 
-             * @param schedulerInstance const OpenMPIMultiNode&
-             * @return std::string 
-             */
-            std::string getString_NeighbouringAgentsPerTypes(const OpenMPIMultiNode& schedulerInstance) const;
-
-            /**
              * @brief Gets the string representing: the agents for the current node executing this method.
              * 
              * @param schedulerInstance const OpenMPIMultiNode&
@@ -140,14 +132,7 @@ namespace Engine
              * @param schedulerInstance const OpenMPIMultiNode&
              */
             void printOwnNodeStructureAfterMPIInDebugFile(const OpenMPIMultiNode& schedulerInstance) const;
-
-            /**
-             * @brief Prints in the node's debug file: the neighbourhoods (agents belonging to nodes).
-             * 
-             * @param schedulerInstance const OpenMPIMultiNode&
-             */
-            void printNeighbouringAgentsPerTypesInDebugFile(const OpenMPIMultiNode& schedulerInstance) const;
-
+            
             /**
              * @brief Prints in the node's debug file: the agents for the current node executing this method.
              * 
