@@ -59,7 +59,7 @@ namespace Engine {
         std::stringstream ss;
         //ss << "TS = " << schedulerInstance.getWallTime() << ":" << std::endl;
         ss << "Number of real tasks: " << schedulerInstance._numTasks << std::endl;
-        ss << "Number of working nodes: " << schedulerInstance._numTasks - int(not schedulerInstance._assignLoadToMasterNode) << std::endl;
+        ss << "Number of working nodes: " << schedulerInstance._numTasks << std::endl;
         ss << "Overlap size: " << schedulerInstance._overlapSize << std::endl << std::endl;
         ss << "PARTITIONS BEFORE MPI:" << std::endl;
         for (std::map<int, OpenMPIMultiNode::MPINode>::const_iterator it = schedulerInstance._mpiNodesMapToSend.begin(); it != schedulerInstance._mpiNodesMapToSend.end(); ++it) 
@@ -108,29 +108,6 @@ namespace Engine {
 
         return ss.str();
     }
-
-    std::string OpenMPIMultiNodeLogs::getString_NeighbouringAgentsPerTypes(const OpenMPIMultiNode& schedulerInstance) const
-    {
-        std::stringstream ss;
-        ss << "NEIGHBOURING AGENTS PER TYPE:" << std::endl;
-        //ss << "TS = " << schedulerInstance.getWallTime() << ":" << std::endl;
-        for (OpenMPIMultiNode::NeighbouringAgentsMap::const_iterator it = schedulerInstance._neighbouringAgents.begin(); it != schedulerInstance._neighbouringAgents.end(); ++it)
-        {
-            ss << "Node: " << it->first << std::endl;
-            for (std::map<std::string, AgentsList>::const_iterator it2 = it->second.begin(); it2 != it->second.end(); ++it2) 
-            {
-                ss << "\tType: " << it2->first << std::endl;
-                ss << "\t  ";
-                for (AgentsList::const_iterator it3 = it2->second.begin(); it3 != it2->second.end(); ++it3)
-                {
-                    ss << it3->get()->getId() << ", ";
-                }
-                ss << std::endl;
-            }
-        }
-
-        return ss.str();
-    }
     
     std::string OpenMPIMultiNodeLogs::getString_NodeAgents(const OpenMPIMultiNode& schedulerInstance, const bool& fullDescription) const
     {
@@ -139,10 +116,14 @@ namespace Engine {
         ss << "NODE AGENTS (" << schedulerInstance._world->getNumberOfAgents() << "):" << std::endl;
         for (AgentsMap::const_iterator it = schedulerInstance._world->beginAgents(); it != schedulerInstance._world->endAgents(); ++it)
         {
-            if (fullDescription)
-                ss << it->second.get() << std::endl;
-            else
-                ss << it->second.get()->getId() << ", ";
+            AgentPtr agentPtr = it->second;
+            if (agentPtr.get()->exists())
+            {
+                if (fullDescription)
+                    ss << agentPtr.get() << std::endl;
+                else
+                    ss << agentPtr.get()->getId() << ", ";
+            }
         }
         ss << std::endl;
 
@@ -226,11 +207,6 @@ namespace Engine {
     void OpenMPIMultiNodeLogs::printOwnNodeStructureAfterMPIInDebugFile(const OpenMPIMultiNode& schedulerInstance) const
     {
         log_DEBUG(_logFileNames.at(schedulerInstance.getId()), getString_OwnNodeStructureAfterMPI(schedulerInstance));
-    }
-
-    void OpenMPIMultiNodeLogs::printNeighbouringAgentsPerTypesInDebugFile(const OpenMPIMultiNode& schedulerInstance) const
-    {
-        log_DEBUG(_logFileNames.at(schedulerInstance.getId()), getString_NeighbouringAgentsPerTypes(schedulerInstance));
     }
 
     void OpenMPIMultiNodeLogs::printNodeAgentsInDebugFile(const OpenMPIMultiNode& schedulerInstance, const bool& fullDescription) const
