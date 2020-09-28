@@ -4,7 +4,7 @@
 	<output resultsFile="./data/stupidModel.h5" logsDir="./logs"/>
 	<seed value="1234"/>
 	<logs printInConsole="false" printInstrumentation="true"/>
-	<mpi overlapSizeMPI="2" subpartitioningMode="4"/>
+	<mpi overlapSizeMPI="2" subpartitioningMode="4" rebalancingFreq="10"/>
 
 	<numSteps value="5" serializeResolution="1"/>
 	<size width="20" height="20"/>

@@ -61,11 +61,13 @@ protected:
     std::string _fileName;
 
     // Class variables
-    std::vector<std::vector<int>> _values; //! Matrix of values of the raster.
-    std::vector<std::vector<int>> _discreteValues; //! Matrix of discrete values of the raster (current step 'i', not 'i+1').
+    std::vector<std::vector<int>> _values;          //! Matrix of values of the raster.
+    std::vector<std::vector<int>> _discreteValues;  //! Matrix of discrete values of the raster (current step 'i', not 'i+1').
 
-    int _minValue; //! Minimum value of the raster.
-    int _maxValue; //! Maximum value of the raster.
+    int _layer;                                     //! Layer which this raster belongs to.
+
+    int _minValue;                                  //! Minimum value of the raster.
+    int _maxValue;                                  //! Maximum value of the raster.
 
     bool _hasColorTable; //! True the raster has a color table, otherwise a color table is not set.
     std::vector< ColorEntry > _colorTable; //! Color pallet of the raster.
@@ -115,6 +117,13 @@ public:
     std::string getFileName() const;
 
     /**
+     * @brief Gets the _layer member.
+     * 
+     * @return const int& 
+     */
+    const int& getLayer() const;
+
+    /**
      * @brief Get the _serialize member.
      * 
      * @return bool
@@ -127,6 +136,13 @@ public:
      * @param fileName Set the _fileName member.
      */
     void setFileName(const std::string& fileName);
+
+    /**
+     * @brief Sets the _layer member.
+     * 
+     * @param layer 
+     */
+    void setLayer(const int& layer);
 
     /**
      * @brief Equality operator between two rasters.

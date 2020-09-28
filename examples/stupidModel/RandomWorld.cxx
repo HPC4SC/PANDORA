@@ -29,6 +29,7 @@ void RandomWorld::createRasters() {
 	int maxI = randomConfig.getSize().getHeight();
 	int maxJ = randomConfig.getSize().getWidth();
 	getDynamicRaster("food").setInitValues(0, std::max(maxI, maxJ),0);
+	getDynamicRaster("food").setLayer(0);
 	for (int i = 0; i < maxI; ++i)
 	{
 		for (int j = 0; j < maxJ; ++j)
@@ -56,6 +57,7 @@ void RandomWorld::createAgents() {
 			Bug * bug = new Bug(oss.str(), randomConfig._maxBugMovement, randomConfig._bugMaxConsumptionRate, randomConfig._survivalProbability, (int)size);
 			addAgent(bug);
 			bug->setRandomPosition();
+			bug->setLayer(0);
 			// all of this steps are registered in the log files
 	        log_DEBUG(logName.str(), getWallTime() << " new bug: " << bug);
 	}

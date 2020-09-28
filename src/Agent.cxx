@@ -82,6 +82,16 @@ const Point2D<int>& Agent::getDiscretePosition() const
     return _discretePosition;
 }
 
+const int& Agent::getLayer() const
+{
+    return _layer;
+}
+
+const int& Agent::getDiscreteLayer() const
+{
+    return _discreteLayer;
+}
+
 void Agent::setPosition( const Point2D<int> & position )
 {
     _position = position;
@@ -89,6 +99,11 @@ void Agent::setPosition( const Point2D<int> & position )
         _discretePosition = _position;
 
     _world->changeAgentInMatrixOfPositions(this);
+}
+
+void Agent::setLayer(const int& layer)
+{
+    _layer = layer;
 }
 
 void Agent::serializeAttribute( const std::string & name, const int & value )
@@ -144,7 +159,7 @@ bool Agent::hasTheSameAttributes(const Agent& other) const
 }
 
 std::ostream& Agent::print( std::ostream& os ) const {
-    os << "id: " << getId( ) << " pos: " << getPosition( ) << " discrete pos: " << getDiscretePosition() << " exists: " << exists( );
+    os << "id: " << getId( ) << " pos: " << getPosition( ) << " discrete pos: " << getDiscretePosition() << "\tlayer: " << _layer << " discrete layer: " << _discreteLayer << "\texists: " << exists( );
     return getWorld( ) ? os << " at world: " << getWorld( )->getId( ) : os << " without world";
 }
 
@@ -208,6 +223,7 @@ void Agent::changeType( const std::string & type )
 void Agent::copyContinuousValuesToDiscreteOnes()
 {
     _discretePosition = _position;
+    _discreteLayer = _layer;
 }
 
 } // namespace Engine

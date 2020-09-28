@@ -204,6 +204,15 @@ namespace Engine
         // );
     }
 
+    void World::rebalanceSpace()
+    {
+        if ((_step % _config->getRebalancingFrequency()) == 0)
+        {
+            // send/recv to _masterNode the number of agents in each node. if unbalanced with a 25% (for instance), then repartition.
+            
+        }
+    }
+
     void World::updateDiscreteStateStructures() const
     {
         for (AgentsMap::const_iterator it = _agentsByID.begin(); it != _agentsByID.end(); ++it)
@@ -222,6 +231,7 @@ namespace Engine
 
     void World::engineStep()
     {
+        rebalanceSpace();
         updateDiscreteStateStructures();
     }
 

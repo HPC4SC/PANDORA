@@ -29,11 +29,11 @@
 namespace Engine
 {
 
-StaticRaster::StaticRaster( ) : _minValue( std::numeric_limits<int>::max( ) ), _maxValue( std::numeric_limits<int>::min( ) ), _hasColorTable( false )
+StaticRaster::StaticRaster( ) : _layer(0), _minValue( std::numeric_limits<int>::max( ) ), _maxValue( std::numeric_limits<int>::min( ) ), _hasColorTable( false )
 {
 }
 
-StaticRaster::StaticRaster(const int& id, const std::string& name, const bool& serialize) : _minValue( std::numeric_limits<int>::max( ) ), _maxValue( std::numeric_limits<int>::min( ) ), _hasColorTable( false )
+StaticRaster::StaticRaster(const int& id, const std::string& name, const bool& serialize) : _layer(0), _minValue( std::numeric_limits<int>::max( ) ), _maxValue( std::numeric_limits<int>::min( ) ), _hasColorTable( false )
 {
     _id = id;
     _name = name;
@@ -59,6 +59,11 @@ std::string StaticRaster::getFileName() const
     return _fileName;
 }
 
+const int& StaticRaster::getLayer() const
+{
+    return _layer;
+}
+
 bool StaticRaster::getSerialize() const
 {
     return _serialize;
@@ -67,6 +72,11 @@ bool StaticRaster::getSerialize() const
 void StaticRaster::setFileName(const std::string& fileName)
 {
     _fileName = fileName;
+}
+
+void StaticRaster::setLayer(const int& layer)
+{
+    _layer = layer;
 }
 
 bool StaticRaster::operator==( const StaticRaster& other ) const {

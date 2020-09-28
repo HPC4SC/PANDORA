@@ -99,6 +99,7 @@ void Config::loadBaseParams( )
 
     _overlapSize = getParamInt("mpi", "overlapSizeMPI");
     _subpartitioningMode = getParamInt("mpi", "subpartitioningMode");
+    _rebalancingFreq = getParamInt("mpi", "rebalancingFreq");
 }
 
 void Config::loadFile( )
@@ -233,6 +234,11 @@ const bool& Config::getPrintInstrumentation() const
 const int& Config::getSubpartitioningMode() const
 {
     return _subpartitioningMode;
+}
+
+const int& Config::getRebalancingFrequency() const
+{
+    return _rebalancingFreq;
 }
 
 } // namespace Engine
