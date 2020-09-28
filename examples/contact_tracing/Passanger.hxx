@@ -22,6 +22,7 @@ class Passanger : public Examples::HumanBeeing
         bool _entering;
         std::list<Engine::Point2D<int>> _targetPath;
         Engine::Point2D<int> _targetPosition;
+		bool _outDoorSelected = false;
 
     public:
         Passanger(const std::string& id, const bool& sick, const int& encounterRadius, const int& phoneT1, 
@@ -38,6 +39,8 @@ class Passanger : public Examples::HumanBeeing
 		Engine::Point2D<int> nextPosition();
 
 		void popCurrentPosition();
+
+		bool getExiting();
 
 	////////////////////////////////////////////////
 	// This code has been automatically generated //

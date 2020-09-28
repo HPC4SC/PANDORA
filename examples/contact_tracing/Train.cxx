@@ -20,18 +20,17 @@ void Train::createRasters() {
 }
 
 void Train::createAgents() {
-    if (_step == _nextStop - 14) { // TODO refactor per crear agents durant 14 s 
+    _avaliableSeats.clear();
+    if (_step == _nextStop - 14) { // TODO refactor per crear agents durant 14 s
         for (int i = 0; i < _passangerEntry.front(); i++) createPassanger();
         _passangerEntry.pop_front();
-        for (int i = 0; i < _passangerExit.front(); i++) {
-            std::ostringstream oss;
-            oss << "Passanger_" << Engine::GeneralState::statistics().getUniformDistValue(0, _agents.size()-1);
-            Engine::Agent* agent = getAgent(oss.str());
-            Passanger* leavingPassanger = (Passanger*)agent;
-            leavingPassanger->goingToLeave();
+        if (not _passangerExit.empty()) {
+            _agentsToLeave = _passangerExit.front();
+            _passangerExit.pop_front();
         }
-        _passangerExit.pop_front();
+        else _agentsToLeave = _agents.size();
     }
+    setupAvaliableSeats();
 }
 
 void Train::createPassanger() {
@@ -44,6 +43,7 @@ void Train::createPassanger() {
     bool willSeat = Engine::GeneralState::statistics().getUniformDistValue() < _trainConfig._sittingPreference;
     Passanger* passanger = new Passanger(oss.str(),sick,_trainConfig._encounterRadius,_trainConfig._phoneThreshold1,_trainConfig._phoneThreshold2,hasApp,
         _trainConfig._signalRadius,_trainConfig._move,willSeat,this);
+    addAgent(passanger);
     int spawnIndex = Engine::GeneralState::statistics().getUniformDistValue(0,_doors.size() - 1);
     while (not this->checkPosition(_doors[spawnIndex])) spawnIndex = Engine::GeneralState::statistics().getUniformDistValue(0,_doors.size() - 1);
     passanger->setPosition(_doors[spawnIndex]);
@@ -61,16 +61,16 @@ void Train::setupRasters() {
 
 void Train::step() {
     std::cout << "Executing step: " << _step << std::endl;
-    
     if (_step%_config->getSerializeResolution() == 0) {
         _scheduler->serializeRasters(_step);
         _scheduler->serializeAgents(_step);
     }
-    if (_step == _nextStop) {
+    if (_step == _nextStop and not _travelTimes.empty()) {
         _nextStop = _travelTimes.front();
         _travelTimes.pop_front();
     }
     if (_step < _nextStop - 14) _atStop = false;
+    else if (_passangerExit.empty()) _atStop = true;
     else _atStop = true;
     createAgents();
     _scheduler->updateEnvironmentState();
@@ -79,7 +79,7 @@ void Train::step() {
 }
 
 bool Train::atStop() {
-    return _step < _nextStop - 14;
+    return _atStop;
 }
 
 void Train::setupTimes() {
@@ -109,11 +109,11 @@ void Train::setupTimes() {
     }
 }
 
-std::list<Engine::Point2D<int>> Train::getShortestPath(const Engine::Point2D<int>& pos, const Engine::Point2D<int>& target) {
+std::list<Engine::Point2D<int>> Train::getShortestPath(const Engine::Point2D<int>& pos, const Engine::Point2D<int>& target, const bool& exiting) {
     std::queue<int> rowQueue;
     std::queue<int> columnQueue;
-    std::vector<std::vector<bool>> visited(_trainConfig.getSize().getHeight(), std::vector<bool>(_trainConfig.getSize().getWidth(),false));
-    std::vector<std::vector<Engine::Point2D<int>>> prev(_trainConfig.getSize().getHeight(), std::vector<Engine::Point2D<int>>(_trainConfig.getSize().getWidth(),Engine::Point2D<int>(-1,-1)));
+    std::vector<std::vector<bool>> visited(_trainConfig.getSize().getWidth(), std::vector<bool>(_trainConfig.getSize().getHeight(),false));
+    std::vector<std::vector<Engine::Point2D<int>>> prev(_trainConfig.getSize().getWidth(), std::vector<Engine::Point2D<int>>(_trainConfig.getSize().getHeight(),Engine::Point2D<int>(-1,-1)));
 
     rowQueue.push(pos._x);
     columnQueue.push(pos._y);
@@ -124,19 +124,18 @@ std::list<Engine::Point2D<int>> Train::getShortestPath(const Engine::Point2D<int
         rowQueue.pop();
         columnQueue.pop();
         if (r == target._x and c == target._y) break;
-        exploreNeighbours(r,c,visited, rowQueue, columnQueue, prev);
+        exploreNeighbours(r,c,visited,rowQueue,columnQueue,prev,exiting);
     }
-
     return reconstructPath(pos,target,prev);
 }
 
-void Train::exploreNeighbours(int& r, int& c, std::vector<std::vector<bool>>& visited, std::queue<int>& rowQueue, std::queue<int>& columnQueue, std::vector<std::vector<Engine::Point2D<int>>>& prev) {
+void Train::exploreNeighbours(int& r, int& c, std::vector<std::vector<bool>>& visited, std::queue<int>& rowQueue, std::queue<int>& columnQueue, std::vector<std::vector<Engine::Point2D<int>>>& prev, const bool& exiting) {
     std::vector<int> rowDirection = {1,-1,0,0,-1,1,1,-1};
     std::vector<int> columnDirection = {0,0,1,-1,-1,1,-1,1};
     for (int i = 0; i < 8; i++) {
         int rr = r + rowDirection[i];
         int cc = c + columnDirection[i];
-        if (validPosition(rr,cc,visited)) {
+        if (validPosition(rr,cc,visited,exiting)) {
             rowQueue.push(rr);
             columnQueue.push(cc);
             visited[rr][cc] = true;
@@ -145,8 +144,9 @@ void Train::exploreNeighbours(int& r, int& c, std::vector<std::vector<bool>>& vi
     }
 }
 
-bool Train::validPosition(const int& rr, const int& cc, const std::vector<std::vector<bool>>& visited) {
-    bool res = rr >= 0 and cc >= 0  and rr < _trainConfig.getSize().getHeight() and cc < _trainConfig.getSize().getWidth() and (not visited[rr][cc]); 
+bool Train::validPosition(const int& rr, const int& cc, const std::vector<std::vector<bool>>& visited, const bool& exiting) {
+    bool res = rr >= 0 and cc >= 0  and rr < _trainConfig.getSize().getWidth() and cc < _trainConfig.getSize().getHeight() and (not visited[rr][cc]);
+    //if (not exiting) res = res and getStaticRaster("layout").getValue(Engine::Point2D<int>(rr,cc)) == 255;
     return res;
 }
 
@@ -170,12 +170,22 @@ Engine::Point2D<int> Train::findClosestDoor(Engine::Point2D<int> pos) {
     return _doors[minIdx];
 }
 
-std::vector<Engine::Point2D<int>> Train::getAvaliableSeats() {
-    std::vector<Engine::Point2D<int>> avaliableSeats;
+void Train::setupAvaliableSeats() {
     for (unsigned int i = 0; i < _seats.size(); i++) {
-        if (getAgent(_seats[i]).empty()) avaliableSeats.push_back(_seats[i]);
+        if (getAgent(_seats[i]).empty()) _avaliableSeats.push_back(_seats[i]);
     }
-    return avaliableSeats;
+}
+
+int Train::getAgentsToLeave() {
+    return _agentsToLeave;
+}
+
+void Train::agentLeaves() {
+    _agentsToLeave--;
+}
+
+std::vector<Engine::Point2D<int>> Train::getAvaliableSeats() {
+    return _avaliableSeats;
 }
 
 }
