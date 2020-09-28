@@ -97,6 +97,12 @@ protected:
     void eraseAgentFromMatrixOfPositions(Agent* agent);
 
     /**
+     * @brief Rebalances the whole space if it is necessary.
+     * 
+     */
+    void rebalanceSpace();
+
+    /**
      * @brief Updates the _currentStepOriginalPosition member for all the current agents of *this World.
      * 
      */

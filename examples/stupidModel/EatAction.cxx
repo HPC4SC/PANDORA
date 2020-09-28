@@ -20,6 +20,7 @@ void EatAction::execute( Engine::Agent & agent ) {
 	int foodAvaliable = world->getValue("food", agent.getPosition());
 	int foodConsumed = std::min(bugAgent.getMaxConsumptionRate(),foodAvaliable);
 	bugAgent.setSize(bugAgent.getSize() + foodConsumed);
+	//bugAgent.setLayer(bugAgent.getLayer() + 1);
 	// then the food in the cell is updated
 	world->setValue("food", agent.getPosition(), foodAvaliable - foodConsumed);
 }

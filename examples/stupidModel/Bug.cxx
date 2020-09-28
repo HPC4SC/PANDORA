@@ -30,7 +30,7 @@ void Bug::selectActions() {
 	/* the bugs must be executed before the predateors.
 	 * therefore they are executed in even timesteps
 	 */
-	//if (step%2 == 0) { 
+	//if (world->getCurrentStep() % 2 == 0) {
 		_actions.push_back(new MoveAction());
 		_actions.push_back(new EatAction());
 		//_actions.push_back(new DieAction());

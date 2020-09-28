@@ -48,6 +48,7 @@ protected:
     int _seed;                  //! Seed to be used for the RNG (Statistics class).
     int _overlapSize;           //! [Only for MPI scheduler] Overlap size in number of cells, defined for partition rectangles.
     int _subpartitioningMode;   //! [Only for MPI scheduler] Subpartitioning mode 9 = 9 subpartitions per node, 4 = 4 subpartitions per node.
+    int _rebalancingFreq;       //! [Only for MPI scheduler] Rebalancing frequency check in number of steps.
 
     bool _printInConsole;       //! For logging purposes
     bool _printInstrumentation; //! For logging purposes
@@ -151,11 +152,18 @@ public:
     const bool& getPrintInstrumentation() const;
 
     /**
-     * @brief Get the _subPartitioningMode member.
+     * @brief Gets the _subPartitioningMode member.
      * 
      * @return const int& 
      */
     const int& getSubpartitioningMode() const;
+
+    /**
+     * @brief Gets the _rebalancingFreq member.
+     * 
+     * @return const int& 
+     */
+    const int& getRebalancingFrequency() const;
 
     /**
      * @brief Get the _numSteps object.

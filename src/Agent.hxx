@@ -46,13 +46,16 @@ namespace Engine
 
     protected:
         
-        std::string _id; //! Agent identifier.
-        bool _exists; //! Flag to control if agent is "dead" or "alive". it is used in analyzer in order to know if agent must be painted.
-        Point2D<int> _position; //! Up-to-date position of the agent, in global coordinates.
+        std::string _id;                //! Agent identifier.
+        bool _exists;                   //! Flag to control if agent is "dead" or "alive". it is used in analyzer in order to know if agent must be painted.
+        Point2D<int> _position;         //! Up-to-date position of the agent, in global coordinates.
         Point2D<int> _discretePosition; //! Position in the current step 'i', not 'i+1'. Only updated at the beginning of each step.
-        World * _world; //! Pointer to the world that owns this agent.
+        int _layer;                     //! Layer in which the agent currently is.
+        int _discreteLayer;             //! Layer in which the agent was at the beginning of the current step.
 
-        std::list<Action*> _actions; //! list of actions to be executed by the Agent.
+        World * _world;                 //! Pointer to the world that owns this agent.
+
+        std::list<Action*> _actions;    //! list of actions to be executed by the Agent.
 
         /**
          * @brief used in child class. Serializes a float attribute.
@@ -172,11 +175,32 @@ namespace Engine
         const Point2D<int>& getDiscretePosition() const;
 
         /**
+         * @brief Gets the _layer member.
+         * 
+         * @return const int& 
+         */
+        const int& getLayer() const;
+
+        /**
+         * @brief Gets the _discreteLayer member.
+         * 
+         * @return const int& 
+         */
+        const int& getDiscreteLayer() const;
+
+        /**
          * @brief Sets the _position member attribute.
          * 
          * @param position new value of the position attribute.
          */
         void setPosition( const Point2D<int> & position );
+
+        /**
+         * @brief Sets the _layer member.
+         * 
+         * @param layer const int&
+         */
+        void setLayer(const int& layer);
 
         /**
          * @brief delete the Agent from world.
