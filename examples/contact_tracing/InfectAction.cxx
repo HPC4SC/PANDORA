@@ -20,7 +20,7 @@ void InfectAction::execute(Engine::Agent & agent) {
     Engine::Agent* p_agent = agent.getWorld()->getAgent(agent.getId());
     Engine::AgentsVector neighbours = person.getWorld()->getNeighbours(p_agent, person.getEncounterRadius(),"all");
     Engine::World* world = agent.getWorld();
-    if (neighbours.size() > 0 and person.isSick()) {    
+    if (neighbours.size() > 0 and person.isSick()) {
         Engine::AgentsVector::iterator neighbour = neighbours.begin();
         while (neighbour != neighbours.end()) {
             Engine::Agent* candidate = neighbour->get();

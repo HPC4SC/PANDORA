@@ -16,7 +16,7 @@ def read_agents(agent_route,scenario):
         elif scenario == '1':
             agentType = 'Walker'
         elif scenario == '2':
-            agentType = 'Passenger'
+            agentType = 'Passanger'
 
         simulation = hdf.get(agentType)
         #print(len(simulation))
@@ -142,9 +142,9 @@ def print_agents(steps_dfs,scenario):
         agentColor = 'red'
     elif scenario == '2':
         x1 = 0
-        y1 = 258
-        x2 = 9
-        y2 = 0
+        y1 = 0
+        x2 = 258
+        y2 = 9
         type = 'Train' 
         img = plt.imread("../maps/train_layout.png")
         agentColor = 'white'
