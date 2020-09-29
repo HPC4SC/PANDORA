@@ -4,6 +4,7 @@
 #include <Config.hxx>
 
 #include <iostream>
+#include <string>
 
 namespace Examples 
 {
@@ -27,7 +28,6 @@ class SupermarketConfig : public Engine::Config {
         int _infectoinRadius;
         float _sickRate;
         int _encounterRadius;
-        int _maxSick;
 
         int _signalRadius;
         float _applicationRate;
@@ -36,11 +36,13 @@ class SupermarketConfig : public Engine::Config {
 
     public:
 
-        SupermarketConfig(const std::string & xmlFile);
+        SupermarketConfig(const std::string& xmlFile);
 
         virtual ~SupermarketConfig();
 
         void loadParams();
+
+        float getInfectiousness() const;
 
         friend class Supermarket;
 };

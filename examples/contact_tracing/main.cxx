@@ -1,5 +1,9 @@
 #include <Supermarket.hxx>
 #include <SupermarketConfig.hxx>
+#include <Street.hxx>
+#include <StreetConfig.hxx>
+#include <Train.hxx>
+#include <TrainConfig.hxx>
 
 #include <Exception.hxx>
 #include <Config.hxx>
@@ -8,7 +12,7 @@
 #include <iostream>
 #include <cstdlib>
 
-int main(int argc, char *argv[]) 
+int main(int argc, char* argv[]) 
 {
 	try 
 	{	
@@ -21,11 +25,25 @@ int main(int argc, char *argv[])
 		{
 			fileName = argv[1];
 		}
-		Examples::Supermarket world(new Examples::SupermarketConfig(fileName), world.useOpenMPIMultiNode());
-	
-		world.initialize(argc, argv);
-		world.setParallelism(false, false);
-		world.run();
+		if (fileName == "configSupermarket.xml") {
+			Examples::Supermarket super(new Examples::SupermarketConfig(fileName), super.useOpenMPIMultiNode());
+			super.initialize(argc, argv);
+			super.setParallelism(true, false);
+			super.run();
+		}
+		else if (fileName == "configStreet.xml") {
+			Examples::Street street(new Examples::StreetConfig(fileName), street.useOpenMPIMultiNode());
+			street.initialize(argc, argv);
+			street.setParallelism(true, false);
+			street.run();
+		}
+		else if (fileName == "configTrain.xml") {
+			Examples::Train train(new Examples::TrainConfig(fileName), train.useOpenMPIMultiNode());
+			train.initialize(argc, argv);
+			train.setParallelism(true, false);
+			train.run();
+		}
+		else throw Engine::Exception("Not a known scenario");
 	}
 	catch( std::exception & exceptionThrown ) 
 	{
