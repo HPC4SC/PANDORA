@@ -10,6 +10,10 @@
 #include <Scheduler.hxx>
 #include <Logger.hxx>
 #include <RNGNormal.hxx>
+#include <Exception.hxx>
+#include <typedefs_public.hxx>
+
+#include <math.h>
 
 namespace Examples  
 {
@@ -22,10 +26,14 @@ void RandomWorld::createRasters() {
 	const RandomWorldConfig & randomConfig = (const RandomWorldConfig&)getConfig();
 	// the raster of the food is created and initialized with value 0 and maximum value 100
 	registerDynamicRaster("food", true);
-	getDynamicRaster("food").setInitValues(0,100,0);
-	for (int i = 0; i < randomConfig.getSize().getHeight(); ++i)
+
+	int maxI = randomConfig.getSize().getHeight();
+	int maxJ = randomConfig.getSize().getWidth();
+	getDynamicRaster("food").setInitValues(0, std::max(maxI, maxJ),0);
+	getDynamicRaster("food").setLayer(0);
+	for (int i = 0; i < maxI; ++i)
 	{
-		for (int j = 0; j < randomConfig.getSize().getWidth(); ++j)
+		for (int j = 0; j < maxJ; ++j)
 		{
 			Engine::Point2D<int> point = Engine::Point2D<int>(i, j);
 			getDynamicRaster("food").setValue(point, std::abs(j-i));
@@ -50,10 +58,13 @@ void RandomWorld::createAgents() {
 			Bug * bug = new Bug(oss.str(), randomConfig._maxBugMovement, randomConfig._bugMaxConsumptionRate, randomConfig._survivalProbability, (int)size);
 			addAgent(bug);
 			bug->setRandomPosition();
+			bug->setLayer(0);
+			bug->setHeading(Engine::eNorth);
 			// all of this steps are registered in the log files
-	        log_INFO(logName.str(), getWallTime() << " new bug: " << bug);
+	        log_DEBUG(logName.str(), getWallTime() << " new bug: " << bug);
 	}
-	for (int i = 0; i < randomConfig._numPredators; i++) { // 200 predators are created and placed randomly
+
+	for (int i = 0; i < randomConfig._numPredators; i++) {
 			std::ostringstream oss;
 			oss << "Predator_" << i;
 			Predator * predator = new Predator(oss.str(), randomConfig._maxPredatorHuntDistance);
@@ -68,7 +79,6 @@ void RandomWorld::step() {
 	std::stringstream logName;
 	logName << "simulation_" << getId();
 	log_INFO(logName.str(), getWallTime() << " executing step: " << _step);
-	
 	if (_step%_config->getSerializeResolution() == 0) {
 		_scheduler->serializeRasters(_step);
 		_scheduler->serializeAgents(_step);
@@ -85,14 +95,18 @@ void RandomWorld::step() {
 }
 
 void RandomWorld::stepEnvironment() {
+	const RandomWorldConfig& randomConfig = (const RandomWorldConfig&) getConfig();
+	int maxValue = std::max(randomConfig.getSize().getHeight(), randomConfig.getSize().getWidth());
+
 	// for all of the cells they grow a random quantity of food wihtin the stipulated range
 	for(auto index : getBoundaries()) {
 		float oldFood = getValue("food",index);
 		//float foodProduced = Engine::GeneralState::statistics().getUniformDistValue(0,_maxProductionRate);
 		float foodProduced = _maxProductionRate;
+
 		// also we must check if the food value is more than the maximum and update it correcly
-		if ((oldFood + foodProduced) > 100) setValue("food",index,100);
-		else setValue("food",index,oldFood + foodProduced);
+		if ((oldFood + foodProduced) > maxValue) setValue("food", index, maxValue);
+		else setValue("food", index, oldFood + foodProduced);
 	}
 }
 

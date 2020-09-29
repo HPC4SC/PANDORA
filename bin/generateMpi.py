@@ -51,6 +51,26 @@ def writeCreateAndFillAgents(f, listAgents, namespaces):
     f.write('\n')
     return None
 
+def writeGetSizeOfPackage(f, listAgents):
+    f.write('int MpiFactory::getSizeOfPackage(const std::string& type) const\n')
+    f.write('{\n')
+    for i, agent in enumerate(listAgents):
+        f.write('\t')
+        if (i > 0): f.write('else ')
+        f.write('if(type.compare("' + agent + '") == 0)\n')
+        f.write('\t{\n')
+        f.write('\t\t' + agent + 'Package* ' + agent.lower() + 'Package = new ' + agent + 'Package;\n')
+        f.write('\t\treturn sizeof(*' + agent.lower() + 'Package);\n')
+        f.write('\t}\n')
+    f.write('\n')
+    f.write('\tstd::stringstream oss;\n')
+    f.write('\toss << "MpiFactory::getSizeOfPackage - unknown agent type: " << type;\n')
+    f.write('\tthrow Engine::Exception(oss.str());\n')
+
+    f.write('}\n')
+    f.write('\n')
+    return None
+
 def writeFreePackage(f, listAgents):
     f.write('void MpiFactory::freePackage(void* package, const std::string& type) const\n')
     f.write('{\n')
@@ -65,7 +85,7 @@ def writeFreePackage(f, listAgents):
         f.write('\t}\n')
     f.write('\n')
     f.write('\tstd::stringstream oss;\n')
-    f.write('\toss << "MpiFactory::createDefaultPackage - unknown agent type: " << type;\n')
+    f.write('\toss << "MpiFactory::freePackage - unknown agent type: " << type;\n')
     f.write('\tthrow Engine::Exception(oss.str());\n')
 
     f.write('}\n')
@@ -80,8 +100,8 @@ def getMpiTypeAttribute(typeAttribute):
 
 
 def writeCreateType(f, nameAgent, attributesMap):
-    # we have to send 6 basic attributes (_id, _position._x, _position._y, _discretePosition._x, _discretePosition._y & _exists + the number of dynamic attributes
-    numBasicAttributes = 6
+    # we have to send 6 basic attributes (_id, _position._x, _position._y, _discretePosition._x, _discretePosition._y, _layer, _discreteLayer & _exists + the number of dynamic attributes
+    numBasicAttributes = 8
     numAttributes = numBasicAttributes + len(attributesMap)
     f.write('MPI_Datatype * create' + nameAgent + 'Type()\n')
     f.write('{\n')
@@ -107,9 +127,15 @@ def writeCreateType(f, nameAgent, attributesMap):
     f.write('\t// _discretePosition._y\n')
     f.write('\tblockLengths[4] = 1;\n')
     f.write('\ttypeList[4] = MPI_INT;\n')
-    f.write('\t// _exists\n')
+    f.write('\t// _layer\n')
     f.write('\tblockLengths[5] = 1;\n')
     f.write('\ttypeList[5] = MPI_INT;\n')
+    f.write('\t// _discreteLayer\n')
+    f.write('\tblockLengths[6] = 1;\n')
+    f.write('\ttypeList[6] = MPI_INT;\n')
+    f.write('\t// _exists\n')
+    f.write('\tblockLengths[7] = 1;\n')
+    f.write('\ttypeList[7] = MPI_INT;\n')
 
     # dynamic params
     index = numBasicAttributes
@@ -150,9 +176,17 @@ def writeCreateType(f, nameAgent, attributesMap):
     f.write('\tMPI_Address(&package._discretePositionMpi._y, &address);\n')
     f.write('\tdisplacements[4] = address-startAddress;\n')
 
+    f.write('\t// _layer\n')
+    f.write('\tMPI_Address(&package._layerMpi, &address);\n')
+    f.write('\tdisplacements[5] = address-startAddress;\n')
+
+    f.write('\t// _discreteLayer\n')
+    f.write('\tMPI_Address(&package._discreteLayerMpi, &address);\n')
+    f.write('\tdisplacements[6] = address-startAddress;\n')
+
     f.write('\t// _exists\n')
     f.write('\tMPI_Address(&package._existsMpi, &address);\n')
-    f.write('\tdisplacements[5] = address-startAddress;\n')
+    f.write('\tdisplacements[7] = address-startAddress;\n')
 
     # dynamic params
     index = numBasicAttributes
@@ -198,6 +232,7 @@ def createFactoryMethods(listAgents, factoryFile, namespaces, listAttributesMaps
     writeRegisterTypes(f, listAgents)
     writeCreateDefaultPackage(f, listAgents)
     writeCreateAndFillAgents(f, listAgents, namespaces)
+    writeGetSizeOfPackage(f, listAgents)
     writeFreePackage(f, listAgents)
 
     # close header & namespace
@@ -225,6 +260,8 @@ def createMpiHeader(agentName, source, header, attributesMap):
     f.write('\tbool _existsMpi;\n')
     f.write('\tEngine::Point2D<int> _positionMpi;\n')
     f.write('\tEngine::Point2D<int> _discretePositionMpi;\n')
+    f.write('\tint _layerMpi;\n')
+    f.write('\tint _discreteLayerMpi;\n')
     f.write('\n')
     # dynamic params
     for nameAttribute, typeAttribute in attributesMap.items():
@@ -243,7 +280,7 @@ def createMpiHeader(agentName, source, header, attributesMap):
 
 
 def writeFillPackage(f, agentName, attributesMap):
-    f.write('void * ' + agentName + '::fillPackage()\n')
+    f.write('void * ' + agentName + '::fillPackage() const\n')
     f.write('{\n')
     # basic params: _id, _position, _discretePosition & _exists
     f.write('\t' + agentName + 'Package * package = new ' + agentName + 'Package;\n')
@@ -253,6 +290,8 @@ def writeFillPackage(f, agentName, attributesMap):
     f.write('\tpackage->_existsMpi = _exists;\n')
     f.write('\tpackage->_positionMpi = _position;\n')
     f.write('\tpackage->_discretePositionMpi = _discretePosition;\n')
+    f.write('\tpackage->_layerMpi = _layer;\n')
+    f.write('\tpackage->_discreteLayerMpi = _discreteLayer;\n')
     f.write('\n')
     # dynamic params
     for nameAttribute, typeAttribute in attributesMap.items():
@@ -286,6 +325,8 @@ def writeConstructor(f, agentName, parent, attributesMap):
     f.write('\t_exists = particularPackage->_existsMpi;\n')
     f.write('\t_position = particularPackage->_positionMpi;\n')
     f.write('\t_discretePosition = particularPackage->_discretePositionMpi;\n')
+    f.write('\t_layer = particularPackage->_layerMpi;\n')
+    f.write('\t_discreteLayer = particularPackage->_discreteLayerMpi;\n')
     f.write('\n')
     # dynamic params
     for nameAttribute in attributesMap.keys():
@@ -481,7 +522,7 @@ def checkHeader(agentName, headerName, parentName):
             fTmp.write('\t/////// Please do not modify it ////////////////\n')
             fTmp.write('\t////////////////////////////////////////////////\n')
             fTmp.write('\t' + agentName + '( void * );\n')
-            fTmp.write('\tvoid * fillPackage();\n')
+            fTmp.write('\tvoid * fillPackage() const;\n')
             fTmp.write('\tvoid freePackage(void* package) const override;\n')
             fTmp.write('\tbool hasTheSameAttributes(const'+ parentName +'&) const override;\n')
             fTmp.write('\tvoid sendVectorAttributes(int);\n')

@@ -146,6 +146,19 @@ public:
 	 */
 	double getBetaDistributionValue(std::string name);
 
+	/**
+	 * @brief Shuffles the objets within 'iteratorBegin' and 'iteratorEnd' using the _randomGenerator member.
+	 * 
+	 * @tparam T A iterator or const_iterator for std::vector, std::list, std::map or std::set.
+	 * @param iteratorBegin const T&
+	 * @param iteratorEnd const T&
+	 */
+	template <typename T>
+	void shuffleWithinIterators(const T& iteratorBegin, const T& iteratorEnd)
+	{
+		std::shuffle(iteratorBegin, iteratorEnd, _randomGenerator);
+	}
+
 };
 
 } // namespace Engine

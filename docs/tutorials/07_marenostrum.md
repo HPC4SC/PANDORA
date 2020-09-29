@@ -100,7 +100,7 @@ $ source ~/.bashrc
 
 **IMPORTANT!** Consider that the ~/.bashrc file is shared between the Singularity image and your MN profile.
 
-From here on, the compilation steps are exactly the same ones than those used when compiling in local ([Compile and Install (using CMAKE)](00_installing_cmake.md)). 
+From here on, the compilation steps are exactly the same ones than those used when compiling in local ([Compile and Install (using CMAKE)](00_installing_cmake.md)). You can use the scripts at PANDORA/scripts/compileAndExecScripts/, which allow you to rapidly clean everything, deploy and run any model at examples/.
 
 ### Creating scripts
 

@@ -93,7 +93,13 @@ void Config::loadBaseParams( )
     _size._height = getParamInt( "size", "height" );
 
     _seed = getParamInt("seed", "value");
-    _overlapSize = getParamInt("overlapSizeMPI", "value");
+
+    _printInConsole = getParamBool("logs", "printInConsole");
+    _printInstrumentation = getParamBool("logs", "printInstrumentation");
+
+    _overlapSize = getParamInt("mpi", "overlapSizeMPI");
+    _subpartitioningMode = getParamInt("mpi", "subpartitioningMode");
+    _rebalancingFreq = getParamInt("mpi", "rebalancingFreq");
 }
 
 void Config::loadFile( )
@@ -213,6 +219,26 @@ const int& Config::getSeed() const
 const int& Config::getOverlapSize() const
 {
     return _overlapSize;
+}
+
+const bool& Config::getPrintInConsole() const
+{
+    return _printInConsole;
+}
+
+const bool& Config::getPrintInstrumentation() const
+{
+    return _printInstrumentation;
+}
+
+const int& Config::getSubpartitioningMode() const
+{
+    return _subpartitioningMode;
+}
+
+const int& Config::getRebalancingFrequency() const
+{
+    return _rebalancingFreq;
 }
 
 } // namespace Engine

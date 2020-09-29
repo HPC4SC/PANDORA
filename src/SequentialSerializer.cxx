@@ -256,17 +256,18 @@ void SequentialSerializer::init( World & world )
     serializeStaticRasters( staticRasters );
 }
 
-void SequentialSerializer::serializeAgents( const int & step, const AgentsList::const_iterator & beginAgents, const AgentsList::const_iterator & endAgents )
+void SequentialSerializer::serializeAgents( const int & step, const AgentsMap::const_iterator & beginAgents, const AgentsMap::const_iterator & endAgents )
 {
     int i=0;
-    for ( AgentsList::const_iterator it=beginAgents; it!=endAgents; ++it )
+    for ( AgentsMap::const_iterator it=beginAgents; it!=endAgents; ++it )
     {
-        if ( !( *it )->exists( ) )
+        Agent* agent = it->second.get();
+        if ( !agent->exists( ) )
         {
             continue;
         }
 
-        serializeAgent( it->get( ), step, i );
+        serializeAgent( agent, step, i );
         i++;
     }
     // serialize remaining agents
@@ -283,9 +284,16 @@ void SequentialSerializer::serializeAgent( Agent * agent, const int & step, int 
         registerType( agent );
     }
 
-    addStringAttribute( type, "id", agent->getId( ) );
-    addIntAttribute( type, "x", agent->getPosition( )._x );
-    addIntAttribute( type, "y", agent->getPosition( )._y );
+    addStringAttribute(type, "id", agent->getId());
+    addIntAttribute(type, "x", agent->getPosition()._x);
+    addIntAttribute(type, "y", agent->getPosition()._y);
+    // addIntAttribute(type, "x_discrete", agent->getDiscretePosition().getX());
+    // addIntAttribute(type, "y_discrete", agent->getDiscretePosition().getY());
+    addIntAttribute(type, "layer", agent->getLayer());
+    // addIntAttribute(type, "layer_discrete", agent->getDiscreteLayer());
+    // addIntAttribute(type, "heading", agent->getHeading());
+    // addIntAttribute(type, "heading_discrete", agent->getDiscreteHeading());
+
     agent->serialize( );
 
     if ( getDataSize( type )>=20000 ) //TODO preguntar que es esto

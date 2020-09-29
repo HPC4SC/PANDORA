@@ -52,7 +52,6 @@ namespace Engine
                 std::map<int, std::list<int>> innerSubOverlapsNeighbours;   //! Sub-overlaps neighbouring nodes. Map<subOverlapID, list<nodeID>>. Used for efficient agents and rasters communication. // Filled up to depth 0 (from neighbours->second).
             };
 
-            typedef std::map<int, std::map<std::string, AgentsList>> NeighbouringAgentsMap;
             typedef std::map<int, MPINode> MPINodesMap;
 
             typedef std::map<Point2D<int>, int> MapOfPositionsAndValues;
@@ -65,40 +64,46 @@ namespace Engine
             /** Base data structures for the space partitioning (master node only) **/
             LoadBalanceTree* _tree;
 
-            MPINodesMap _mpiNodesMapToSend;                         //! Map<nodeId, nodeInformation> containing the leafs of _tree, where the 'value' field is now the 'ownedArea', and the IDs of the 'neighbours' are mapped with their coordinates.
-            NeighbouringAgentsMap _neighbouringAgents;              //! <nodeID, <agentsType, agentsList>> with the neighbouring agents, classified first by their belonging nodes. Used to send/receive agents from master to the rest of the nodes.
+            MPINodesMap _mpiNodesMapToSend;                                 //! Map<nodeId, nodeInformation> containing the leafs of _tree, where the 'value' field is now the 'ownedArea', and the IDs of the 'neighbours' are mapped with their coordinates.
 
             /** Node own data structures (nodes0..n) **/
-            MPINode _nodeSpace;                                     //! Areas and neighbours information for this node.
+            MPINode _nodeSpace;                                             //! Areas and neighbours information for this node.
 
-            std::set<std::string> _executedAgentsInStep;            //! Set containing the IDs of the agents that have been already executed in the current step.
-            MapOfValuesByRaster _sentRastersInStep;                 //! <rasterIndex, list<rasterPosition,positionValue>>. Map containing the mapped list of already sent positions in the current step, by raster.
+            std::set<std::string> _executedAgentsInStep;                    //! Set containing the IDs of the agents that have been already executed in the current step.
+
+            std::vector<std::pair<int, Point2D<int>>> _changedRastersCells; //! Raster cells changed in the current step.
 
             /** MPI Data Structures **/
-            int _masterNodeID;                                      //! ID of the master node. Used for communication.
-            bool _assignLoadToMasterNode;                           //! True if the master node also processes agents, false if it's only used for partitioning and communication.
+            int _masterNodeID;                                              //! ID of the master node. Used for communication.
 
             struct Coordinates {
                 int top, left, bottom, right;
-            };                                                      //! Struct used to parse in/out the to-be-send/received coordinates.
-            MPI_Datatype* _coordinatesDatatype;                     //! Own MPI Datatype used to send/receive the coordinates of a neighbouring node.
+            };                                                              //! Struct used to parse in/out the to-be-send/received coordinates.
+            MPI_Datatype* _coordinatesDatatype;                             //! Own MPI Datatype used to send/receive the coordinates of a neighbouring node.
 
             struct PositionAndValue {
                 int x, y, value;
-            };                                                      //! Struct used to parse in/out the to-be-send/received raster positions and values.
-            MPI_Datatype* _positionAndValueDatatype;                //! Own MPI Datatype used to send/receive the positions and values of an updated raster.
+            };                                                              //! Struct used to parse in/out the to-be-send/received raster positions and values.
+            MPI_Datatype* _positionAndValueDatatype;                        //! Own MPI Datatype used to send/receive the positions and values of an updated raster.
 
             std::list<MPI_Request*> _sendRequests;
 
             /** Other structures **/
             OpenMPIMultiNodeLogs* _schedulerLogs;
-            bool _printInConsole;
 
-            double _initialTime;                                    //! Initial running time.
+            std::vector<Agent*> _agentsToBeRemoved;                         //! Vector or Agents to be removed at the end of the step.
 
-            Serializer _serializer;                                 //! Serializer instance.
+            double _initialTime;                                            //! Initial running time.
+
+            Serializer _serializer;                                         //! Serializer instance.
 
             /** INITIALIZATION PROTECTED METHODS **/
+
+            /**
+             * @brief Aborts all the MPI processes associated with the current Communicator.
+             * 
+             */
+            void terminateAllMPIProcesses() const;
 
             /**
              * @brief Creates the names of the log files for each of the MPI processes, appending them in the _logFileNames member.
@@ -119,6 +124,18 @@ namespace Engine
             void registerMPIStructs();
 
             /**
+             * @brief Calls the creation of the rasters.
+             * 
+             */
+            void createRasters();
+
+            /**
+             * @brief Calls the creation of the agents.
+             * 
+             */
+            void createAgents();
+
+            /**
              * @brief It creates the binary tree '_root' representing the partitions of the world for each of the MPI tasks. Besides, it creates the nodes structs to be send to each one of the slaves.
              * 
              */
@@ -128,14 +145,14 @@ namespace Engine
              * @brief It fills own structures for _masterNodeID and sends the created spaces to the rest of MPI processes.
              * 
              */
-            void sendSpacesToNodes();
+            void sendInitialSpacesToNodes();
 
             /**
              * @brief It receives the created spaces from the MPI master node identified by 'masterNodeID'.
              * 
              * @param const int&
              */
-            void receiveSpacesFromNode(const int& masterNodeID);
+            void receiveInitialSpacesFromNode(const int& masterNodeID);
 
             /**
              * @brief Generates and fills the 'mpiNode'.ownedAreaWithoutInnerOverlap and the 'mpiNode'.ownedAreaWithOuterOverlaps, based on the 'mpiNode'.ownedArea.
@@ -210,29 +227,6 @@ namespace Engine
             void receiveNeighboursFromNode(const int& masterNodeID, MPINode& mpiNodeInfo) const;
 
             /**
-             * @brief Gets the ID of the nodes that should take care of 'agent', leaving them in the 'agentNodes'.
-             * 
-             * @param agent const Agent&
-             * @param agentNodes std::list<int>&
-             */
-            void getBelongingNodesOfAgent(const Agent& agent, std::list<int>& agentNodes) const;
-
-            /**
-             * @brief Classify the agents of the simulation in their corresponding neighbourhood (node).
-             * 
-             */
-            void createNeighbouringAgents();
-
-            /**
-             * @brief Sends the agents in list 'agentsToSend' to 'currentNode'. All the sent agents are 'agentType'.
-             * 
-             * @param agentsToSend const AgentsList&
-             * @param currentNode const inst&
-             * @param agentType const std::string&
-             */
-            void sendAgentsToNodeByType(const AgentsList& agentsToSend, const int& currentNode, const std::string& agentType) const;
-
-            /**
              * @brief Check whether 'agent' is within the 'agentsList'
              * 
              * @param agent const Agent&
@@ -242,103 +236,30 @@ namespace Engine
             bool isAgentInList(const Agent& agent, const AgentsList& agentsList) const;
 
             /**
-             * @brief Gets the agent in _world that are identified by 'agentID'.
+             * @brief Removes Agents in 'agentsToRemove' from the node's _world.
              * 
-             * @param agentID const std::string&
-             * @return AgentsList::const_iterator 
+             * @param agentsToRemove const std::vector<Agent*>&
              */
-            AgentsList::const_iterator getAgentInWorldFromID(const std::string& agentID) const;
-
-            /**
-             * @brief Removes agents in the node's _world, based on their IDs.
-             * 
-             * @param agentIDsToRemove const std::list<std::string>&
-             */
-            void removeAgentsFromID(const std::list<std::string>& agentIDsToRemove);
-
-            /**
-             * @brief Keeps all the agents in the list 'agentsToKeep'. All the remaining agents of the simulation are discarded!
-             * 
-             * @param agentsToKeepconst AgentsList& 
-             */
-            void keepAgentsInNode(const AgentsList& agentsToKeep);
-
-            /**
-             * @brief Sends the agents corresponding to each node from _masterNodeID to all of the other nodes. Agents belonging to _masterNodeID are kept in the master node, the rest are discarded.
-             * 
-             */
-            void sendAgentsToNodes();
+            void removeAgentsInVector(const std::vector<Agent*>& agentsToRemove);
 
             /**
              * @brief From the 'masterNodeID', it receives the agents that should consider for its assigned space.
              * 
              * @param masterNodeID const int&
              */
-            void receiveAgentsFromNode(const int& masterNodeID);
+            void receiveInitialAgentsFromNode(const int& masterNodeID);
 
             /**
-             * @brief Sends the base data (StaticRaster info) of 'raster' to 'nodeID'. Intenteded to use only at the beginning of the simulation, when distributing load.
+             * @brief Discards the agents that does not belong to the node calling this method.
              * 
-             * @param raster const DynamicRaster&
              */
-            void sendRasterBaseInfoToNode(const DynamicRaster& raster, const int& nodeID) const;
+            void filterOutInitialAgents();
 
             /**
-             * @brief Sends the 'raster' fileName to 'nodeID'.
-             * 
-             * @param raster const DynamicRaster&
-             * @param nodeID const int&
-             */
-            void sendRasterFileNameToNode(const DynamicRaster& raster, const int& nodeID) const;
-
-            /**
-             * @brief Sends the dynamic information of 'raster' from the master node to all the rest of the nodes. Intenteded to use only at the beginning of the simulation, when distributing load.
-             * 
-             * @param raster const DynamicRaster&
-             */
-            void sendRasterDynamicInfoToNode(const DynamicRaster& raster, const int& nodeID) const;
-
-            /**
-             * @brief Sends the rasters corresponding to each node from _masterNodeID to all of the other nodes.
+             * @brief Discards the raster cells that does not belong to the node calling this method.
              * 
              */
-            void sendRastersToNodes() const;
-
-            /**
-             * @brief Receives the incoming data from 'node' identified by 'tag'.
-             * 
-             * @param nodeID const int&
-             * @param tag const int&
-             * @return std::string
-             */
-            std::string receiveStringFromNode(const int& nodeID, const int& tag) const;
-
-            /**
-             * @brief Receive the incoming static raster base info.
-             * 
-             * @param masterNodeID const int&
-             * @param rasterID int&
-             * @param rasterName std::string&
-             * @param rasterSerialize bool&
-             */
-            void receiveRasterBaseInfo(const int& masterNodeID, int& rasterID, std::string& rasterName, bool& rasterSerialize) const;
-
-            /**
-             * @brief Receive the incoming dynamic info of a raster.
-             * 
-             * @param masterNodeID const int& masterNodeID
-             * @param minValue int&
-             * @param maxValue int&
-             * @param defaultValue int&
-             */
-            void receiveRasterDynamicInfo(const int& masterNodeID, int& minValue, int& maxValue, int& defaultValue) const;
-
-            /**
-             * @brief From the 'masterNodeID', it receives the rasters that should consider for its assigned space.
-             * 
-             * @param masterNodeID 
-             */
-            void receiveRastersFromNode(const int& masterNodeID);
+            void filterOutInitialRasters();
 
             /**
              * @brief Stablishes boundaries (_boundaries member) for the node calling this method.
@@ -374,7 +295,7 @@ namespace Engine
             bool doOverlap(const Rectangle<int>& rectangleA, const Rectangle<int>& rectangleB) const;
 
             /**
-             * @brief Check whether 'rectangleA' and 'rectangleB' are adjacent.
+             * @brief Check whether areas of influence of 'rectangleA' and 'rectangleB' collides.
              * 
              * @param rectangleA const Rectangle<int>&
              * @param rectangleB const Rectangle<int>&
@@ -408,12 +329,6 @@ namespace Engine
              * 
              */
             void printOwnNodeStructureAfterMPI() const;
-
-            /**
-             * @brief Prints the neighbourhoods (agents belonging to nodes).
-             * 
-             */
-            void printNeighbouringAgentsPerTypes() const;
 
             /**
              * @brief Prints the agents for the current node executing this method.
@@ -451,83 +366,116 @@ namespace Engine
             bool hasBeenExecuted(const std::string& agentID) const;
 
             /**
-             * @brief Gathers all the agents inside 'areaToExecute', executes them in random order and leave them up-to-date in 'agentsList'.
+             * @brief Gathers all the agents inside sub-overlap identified by 'subOverlapID', executes them in random order and leave them up-to-date in 'agentsVector'.
              * 
-             * @param areaToExecute const Rectangle<int>&
              * @param agentsVector AgentsVector&
+             * @param subOverlapID const int&
              */
-            void executeAgentsInArea(const Rectangle<int>& areaToExecute, AgentsVector& agentsVector);
+            void executeAgentsInSubOverlap(AgentsVector& agentsVector, const int& subOverlapID);
 
             /**
-             * @brief Initializes the passed-by-reference map 'agentsByNode', with the neighbouring nodes in the key, and an empty list in the value.
+             * @brief Initializes the passed-by-reference map 'agentsByTypeAndNode', with the neighbouring nodes in the key, and an empty map <typeName, agentsList>.
              * 
-             * @param agentsByNode std::map<int, std::list<Agent*>>&
+             * @param agentsByNode std::map<int, std::map<std::string, AgentsList>>&
              */
-            void initializeAgentsToSendMap(std::map<int, std::list<Agent*>>& agentsByNode) const;
+            void initializeAgentsToSendMap(std::map<int, std::map<std::string, AgentsList>>& agentsByTypeAndNode) const;
 
             /**
-             * @brief Sends a non-blocking request of 'data' typed as 'mpiDataType, to 'destinationNode', tagged with 'tag'.
+             * @brief Sends a non-blocking request of 'numberOfElements', from 'data' typed as 'mpiDataType, to 'destinationNode', tagged with 'tag'.
              * 
              * @param data void*
+             * @param numberOfElements const int&
              * @param mpiDatatype const MPI_Datatype&
              * @param destinationNode const int&
              * @param tag const int&
              */
-            void sendDataRequestToNode(void* data, const MPI_Datatype& mpiDatatype, const int& destinationNode, const int& tag);
+            void sendDataRequestToNode(void* data, const int& numberOfElements, const MPI_Datatype& mpiDatatype, const int& destinationNode, const int& tag);
 
             /**
-             * @brief Sends agents in 'agentsToSend'. The corresponding node is indicated in the key of the map.
+             * @brief Sends agents in 'agentsByTypeAndNode'. The corresponding node is indicated in the key of the map. 'subOverlapID' is only used for instrumentation purposes.
              * 
-             * @param agentsToSend const std::map<int, std::list<Agent*>>&
+             * @param agentsByTypeAndNode const std::map<int, std::map<std::string, AgentsList>>&
+             * @param subOverlapID const int&
              */
-            void sendGhostAgentsInMap(const std::map<int, std::list<Agent*>>& agentsByNode);
+            void sendGhostAgentsInMap(const std::map<int, std::map<std::string, AgentsList>>& agentsByTypeAndNode, const int& subOverlapID);
 
             /**
-             * @brief Non-blockingly receives agents from the neighbouring nodes.
+             * @brief Non-blockingly receives agents from the neighbouring nodes. 'subOverlapID' is only used for instrumentation purposes.
              * 
+             * @param subOverlapID const int&
              */
-            void receiveGhostAgentsFromNeighbouringNodes();
+            void receiveGhostAgentsFromNeighbouringNodes(const int& subOverlapID);
 
             /**
-             * @brief Gets the neighbours from 'potentialNeighbours' that contains the 'agentPosition'.
+             * @brief Retrieves the neighbours from 'potentialNeighbours' that contains the 'agentPosition', letting the result in 'subOverlapNeighboursIDs'.
              * 
              * @param potentialNeighbours const std::list<int>&
              * @param agentPosition const Point2D<int>& 
-             * @return std::list<int> 
+             * @param subOverlapNeighboursIDs std::list<int> 
              */
-            std::list<int> getRealNeighboursForAgent(const std::list<int>& potentialNeighbours, const Point2D<int>& agentPosition) const;
+            void getRealNeighboursForAgent(std::list<int>& subOverlapNeighboursIDs, const std::list<int>& potentialNeighbours, const Point2D<int>& agentPosition) const;
 
             /**
-             * @brief Gets the neighbouring node IDs that the agent should be sent to (by its current position).
+             * @brief Gets the neighbouring node IDs that the agent should be sent to (by its current position). It assumes it is inside the inner overlap of the node calling this method, so it only look in the sub-overlap list.
              * 
+             * @param neighbouringNodeIDs std::list<int>&
              * @param agent const Agent&
-             * @return std::list<int> 
              */
-            std::list<int> getNeighboursToSendAgent(const Agent& agent) const;
+            void getNeighboursToSendAgentInsideInnerSubOverlap(std::list<int>& neighbouringNodeIDs, const Agent& agent) const;
 
             /**
-             * @brief Sends agents in 'agentsVector' and receives them, if it is necessary (i.e. if they are currently in some suboverlap area).
+             * @brief Sends agents in 'agentsVector' and receives them, if it is necessary (i.e. if they are currently in some suboverlap area). 'subOverlapID' is only used for instrumentation purposes.
              * 
              * @param agentsVector const AgentsVector&
+             * @param subOverlapID const int&
              */
-            void synchronizeAgentsIfNecessary(const AgentsVector& agentsVector);
+            void synchronizeAgentsIfNecessary(const AgentsVector& agentsVector, const int& subOverlapID);
 
             /**
-             * @brief Checks neighbours of sub-overlap 'subOverlapID', and add to the passed-by-ref list 'subOverlapNeighboursIDs' only those that contains the 'agentPosition'. 'subOverlapID' needs to be between [1,eNumberOfSubOverlaps].
+             * @brief Checks neighbours of sub-overlap 'subOverlapID', and add to the passed-by-ref list 'subOverlapNeighboursIDs' only those that contains the 'agentPosition'. 'subOverlapID' needs to be between [eMinSubOverlaps_Mode9, eMaxSubOverlaps_Mode9] in mode9, or in [eMinSubOverlaps_Mode4, eMaxSubOverlaps_Mode4] in mode4.
              * 
              * @param subOverlapNeighboursIDs 
              * @param subOverlapID 
              * @param agentPosition const Point2D<int>&
              */
-            void addSubOverlapNeighboursToList(std::list<int>& subOverlapNeighboursIDs, const int& subOverlapID, const Point2D<int>& agentPosition) const;
+            void addSubOverlapNeighboursFromPosition(std::list<int>& subOverlapNeighboursIDs, const int& subOverlapID, const Point2D<int>& agentPosition) const;
+
+            /**
+             * @brief Gets the neighbouring nodes that the agent needs to be send to (for deletion).
+             * 
+             * @param subOverlapNeighboursIDs std::list<int>&
+             * @param originalSubOverlapAreaID const int&
+             * @param agent const Agent&
+             */
+            void getNeighboursThatNeedToRemoveAgent(std::list<int>& subOverlapNeighboursIDs, const int& originalSubOverlapAreaID, const Agent& agent) const;
+            
+            /**
+             * @brief Gets the neighbouring nodes that the agent needs to be send to (for addition).
+             * 
+             * @param subOverlapNeighboursIDs std::list<int>&
+             * @param originalSubOverlapAreaID const int&
+             * @param agent const Agent&
+             */
+            void getNeighboursThatNeedToAddAgent(std::list<int>& subOverlapNeighboursIDs, const int& originalSubOverlapAreaID, const Agent& agent) const;
+
+            /**
+             * @brief Gets the neighbours that 'agent' needs to be send to, using the 'subpartitionMode' and the 'originalSubOverlapAreaID'. Lets the result in 'neighbouringNodeIDs'.
+             * 
+             * @param neighbouringNodeIDs std::list<int>&
+             * @param originalSubOverlapAreaID const int&
+             * @param agent const Agent&
+             * @param subpartitioningMode const int&
+             */
+            void getNeighboursForAgentAccordingToSubpartitioningMode(std::list<int>& neighbouringNodeIDs, const int& originalSubOverlapAreaID, const Agent& agent, const int& subpartitioningMode) const;
 
             /**
              * @brief Non-blockingly sends the agents in 'agentsVector' to the corresponding neighbours of the overlap area identified by 'originalSubOverlapAreaID' and the suboverlap to which the agent has just moved to (currently is).
              * 
              * @param agentsVector const AgentsVector&
              * @param originalSubOverlapAreaID const int&
+             * @param subpartitioningMode const int&
              */
-            void sendGhostAgentsToNeighbours(const AgentsVector& agentsVector, const int& originalSubOverlapAreaID);
+            void sendGhostAgentsToNeighbours(const AgentsVector& agentsVector, const int& originalSubOverlapAreaID, const int& subpartitioningMode);
 
             /**
              * @brief Initializes the passed-by-reference map 'rasterValuesByNode', with the neighbouring nodes in the key, and an map in the value, which contains in turn the rasterIndex in the key, and a list of empty pair<position,value> in the value which are the modified values.
@@ -537,30 +485,12 @@ namespace Engine
             void initializeRasterValuesToSendMap(std::map<int, MapOfValuesByRaster>& rasterValuesByNode) const;
 
             /**
-             * @brief Checks whether 'position' is in the area of influence of 'area' (i.e. 'area'.expanded(overlapSize).contains('position')).
-             * 
-             * @param position const Point2D<int>&
-             * @param area const Rectangle<int>&
-             * @return bool
-             */
-            bool isPointInAreaOfInfluence(const Point2D<int>& position, const Rectangle<int>& area);
-
-            /**
-             * @brief Check whether 'positionToCheck' has changed since the last time rasters were sent to neighbours.
-             * 
-             * @param positionToCheck const Point2D<int>&
-             * @param raster const DynamicRaster&
-             * @return bool
-             */
-            bool hasPositionChangedInRaster(const Point2D<int>& positionToCheck, const DynamicRaster& raster) const;
-
-            /**
              * @brief Gets the list of the neighour IDs, which need to know about the recently changed raster value at 'point'. 'point' should be inside the current's node inner sub-overlap area.
              * 
              * @param point const Point2D<int>&
              * @return std::list<int> 
              */
-            std::list<int> getNeighbourIDsInInnerSubOverlap(const Point2D<int>& point) const;
+            void getNeighbourIDsInInnerSubOverlap(const Point2D<int>& point, std::list<int>& neighbourIDs) const;
 
             /**
              * @brief Gets the list of the neighour IDs, which need to know about the recently changed raster value at 'point'. 'point' should be insde the current's node outer sub-overlap area.
@@ -568,7 +498,7 @@ namespace Engine
              * @param point const Point2D<int>&
              * @return std::list<int> 
              */
-            std::list<int> getNeighbourIDsInOuterSubOverlap(const Point2D<int>& point) const;
+            void getNeighbourIDsInOuterSubOverlap(const Point2D<int>& point, std::list<int>& neighbourIDs) const;
 
             /**
              * @brief Securely adds the pair <position,value> in the 'map'.
@@ -580,11 +510,12 @@ namespace Engine
             void addPositionAndValueToMap(MapOfPositionsAndValues& map, const Point2D<int>& position, const int& value);
 
             /**
-             * @brief Sends rasters in 'rasterValuesByNode'. Check 'initializeRasterValuesToSendMap(...)' documentation to know what is exactly the map.
+             * @brief Sends rasters in 'rasterValuesByNode'. Check 'initializeRasterValuesToSendMap(...)' documentation to know what is exactly the map. 'subOverlapID' is only used for instrumentation purposes.
              * 
              * @param rasterValuesByNode std::map<int, std::map<int, std::list<std::pair<Point2D<int>, int>>>>&
+             * @param subOverlapID const int&
              */
-            void sendRasterValuesInMap(const std::map<int, MapOfValuesByRaster>& rasterValuesByNode);
+            void sendRasterValuesInMap(const std::map<int, MapOfValuesByRaster>& rasterValuesByNode, const int& subOverlapID);
 
             /**
              * @brief Non-blockingly sends rasters to the other nodes. It only takes into account those positions around the sub-overlap area identifed by 'subOverlapAreaID' (i.e. the area expanded _overlapSize).
@@ -594,10 +525,11 @@ namespace Engine
             void sendRastersToNeighbours(const int& subOverlapAreaID = -1);
 
             /**
-             * @brief Non-blockingly receives rasters from the other nodes.
+             * @brief Non-blockingly receives rasters from the other nodes. 'subOverlapID' is only used for instrumentation purposes.
              * 
+             * @param subOverlapID const int&
              */
-            void receiveRasters();
+            void receiveRasters(const int& subOverlapID = -1);
 
             /**
              * @brief Waits for the send/receive messages to complete and free the communication buffers (in _sendRequests).
@@ -635,13 +567,6 @@ namespace Engine
              * @param masterNode const int&
              */
             void setMasterNode(const int& masterNode);
-
-            /**
-             * @brief Sets the _assignLoadToMasterNode member.
-             * 
-             * @param loadToMasterNode const bool&
-             */
-            void assignLoadToMasterNode(const bool& loadToMasterNode);
 
             /** INITIALIZATION PUBLIC METHODS (INHERIT) **/
 
@@ -704,7 +629,7 @@ namespace Engine
              * 
              * @param agent 
              */
-            void removeAgent(Agent* agent);
+            void addAgentToBeRemoved(Agent* agent);
 
             /**
              * @brief Get the agent identified by 'id'. It should be able to be seen by the calling MPI node (i.e. it should be an agent within _nodeSpace.ownedAreaWithOuterOverlaps). Otherwise, it returns an iterator pointing to _world->endAgents().
