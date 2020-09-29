@@ -32,14 +32,22 @@
 #include <GeneralState.hxx>
 #include <Statistics.hxx>
 
+#include <typedefs_public.hxx>
+
 namespace Engine
 {
 
 Agent::Agent( const std::string & id ) : _id( id ), _exists( true ), _position( -1, -1 ), _discretePosition(-1, -1), _world( 0 )
 {
-    _stringAttributes.push_back( "id" );
-    _intAttributes.push_back( "x" );
-    _intAttributes.push_back( "y" );
+    _stringAttributes.push_back("id");
+    _intAttributes.push_back("x");
+    _intAttributes.push_back("y");
+    _intAttributes.push_back("x_discrete");
+    _intAttributes.push_back("y_discrete");
+    _intAttributes.push_back("layer");
+    _intAttributes.push_back("layer_discrete");
+    _intAttributes.push_back("heading");
+    _intAttributes.push_back("heading_discrete");
 }
 
 Agent::~Agent( )
@@ -92,18 +100,45 @@ const int& Agent::getDiscreteLayer() const
     return _discreteLayer;
 }
 
+const int& Agent::getHeading() const
+{
+    return _heading;
+}
+
+const int& Agent::getDiscreteHeading() const
+{
+    return _discreteHeading;
+}
+
 void Agent::setPosition( const Point2D<int> & position )
 {
-    _position = position;
-    if (_discretePosition.getX() == -1 and _discretePosition.getY() == -1)
-        _discretePosition = _position;
+    if (_position.distanceOctile(position) <= _world->getConfig().getOverlapSize())
+    {
+        _position = position;
+        if (_discretePosition.getX() == -1 and _discretePosition.getY() == -1)
+            _discretePosition = _position;
 
-    _world->changeAgentInMatrixOfPositions(this);
+        _world->changeAgentInMatrixOfPositions(this);
+    }
+    else
+        throw(CreateStringStream("Agent::setPosition() - agent cannot move from " << _position << " to " << position << ": distance exceeds overlapSize.").str());
 }
 
 void Agent::setLayer(const int& layer)
 {
     _layer = layer;
+}
+
+void Agent::setHeading(const int& heading)
+{
+    if (heading >= eNorth and heading <= eNorthWest)
+        _heading = heading;
+    else
+    {
+        std::stringstream ss;
+        ss << "Agent::setHeading - heading not valid.";
+        throw Exception(ss.str());
+    }
 }
 
 void Agent::serializeAttribute( const std::string & name, const int & value )
@@ -224,6 +259,7 @@ void Agent::copyContinuousValuesToDiscreteOnes()
 {
     _discretePosition = _position;
     _discreteLayer = _layer;
+    _discreteHeading = _heading;
 }
 
 } // namespace Engine

@@ -48,10 +48,13 @@ namespace Engine
         
         std::string _id;                //! Agent identifier.
         bool _exists;                   //! Flag to control if agent is "dead" or "alive". it is used in analyzer in order to know if agent must be painted.
+
         Point2D<int> _position;         //! Up-to-date position of the agent, in global coordinates.
         Point2D<int> _discretePosition; //! Position in the current step 'i', not 'i+1'. Only updated at the beginning of each step.
         int _layer;                     //! Layer in which the agent currently is.
         int _discreteLayer;             //! Layer in which the agent was at the beginning of the current step.
+        int _heading;                   //! Heading of the agent (can be ignored).
+        int _discreteHeading;           //! Heading of the agent at the beginning of the current step.
 
         World * _world;                 //! Pointer to the world that owns this agent.
 
@@ -189,6 +192,20 @@ namespace Engine
         const int& getDiscreteLayer() const;
 
         /**
+         * @brief Gets the _heading member.
+         * 
+         * @return const int& 
+         */
+        const int& getHeading() const;
+
+        /**
+         * @brief Gets the _discreteHeading member.
+         * 
+         * @return const int& 
+         */
+        const int& getDiscreteHeading() const;
+
+        /**
          * @brief Sets the _position member attribute.
          * 
          * @param position new value of the position attribute.
@@ -201,6 +218,13 @@ namespace Engine
          * @param layer const int&
          */
         void setLayer(const int& layer);
+
+        /**
+         * @brief Sets the _heading member.
+         * 
+         * @param heading const int&
+         */
+        void setHeading(const int& heading);
 
         /**
          * @brief delete the Agent from world.
