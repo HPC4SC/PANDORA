@@ -131,14 +131,20 @@ void Agent::setLayer(const int& layer)
 
 void Agent::setHeading(const int& heading)
 {
-    if (heading >= eNorth and heading <= eNorthWest)
+    if (heading >= eMinDegree and heading <= eMaxDegree)
         _heading = heading;
     else
     {
         std::stringstream ss;
-        ss << "Agent::setHeading - heading not valid.";
+        ss << "Agent::setHeading - heading degree not valid.";
         throw Exception(ss.str());
     }
+}
+
+void Agent::rotate(const int& degrees)
+{
+    _heading = (_heading + degrees) % 360;
+    if (_heading < 0) _heading = 360 + _heading;
 }
 
 void Agent::serializeAttribute( const std::string & name, const int & value )
