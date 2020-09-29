@@ -5,13 +5,13 @@
 ##### please fill with information about your model ##
 ######################################################
 
-nameProgram = 'contactTracing'
+nameProgram = 'contact_tracing'
 
-agents = ['Client','Cashier']
-namespaceAgents = ['Examples','Examples']
+agents = ['Client','Cashier','HumanBeeing','Walker','Passanger']
+namespaceAgents = ['Examples','Examples','Examples','Examples','Examples']
 world = 'Supermarket'
 
-srcFiles = Split('main.cxx Client.cxx Cashier.cxx Supermarket.cxx SupermarketConfig.cxx')
+srcFiles = Split('main.cxx Client.cxx Cashier.cxx HumanBeeing.cxx Supermarket.cxx SupermarketConfig.cxx Phone.cxx InfectAction.cxx MoveAction.cxx LeaveAction.cxx Street.cxx StreetConfig.cxx Walker.cxx WalkAction.cxx Passanger.cxx Train.cxx TrainConfig.cxx SeatAction.cxx RandomMoveAction.cxx')
 
 ###################################################
 ########## END OF CUSTOM INFORMATION  #############

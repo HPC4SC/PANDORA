@@ -1,26 +1,34 @@
 #ifndef __Cashier_hxx__
 #define __Cashier_hxx__
 
-#include <Agent.hxx>
+#include <Phone.hxx>
+#include <HumanBeeing.hxx>
+
 #include <Action.hxx>
+
+#include <vector>
+#include <utility>
 
 namespace Examples 
 {
 
-class Cashier : public Engine::Agent 
+class Cashier : public Examples::HumanBeeing 
 {
     private:
 
-        bool _sick;
-        bool _infected;
+		int _shift; //MpiBasicAttribute
+		int _workedTime; //MpiBasicAttribute
 
     public:
     
-        Cashier(const std::string &id);
+        Cashier(const std::string& id, const int& sick, const int& shift, const int& workedTime, 
+		const int& phoneT1, const int& phoneT2, const bool& phoneApp, const int& signalRaius, const int& encounterRadius);
 
         ~Cashier();
 
         void selectActions();
+
+		void updateKnowledge();
 
 	////////////////////////////////////////////////
 	// This code has been automatically generated //
@@ -28,8 +36,8 @@ class Cashier : public Engine::Agent
 	////////////////////////////////////////////////
 	Cashier( void * );
 	void * fillPackage();
-	void freePackage(void* package) const override;
-	bool hasTheSameAttributes(const Engine::Agent&) const override;
+	void freePackage(void* package) const;
+	bool hasTheSameAttributes(const Examples::HumanBeeing&) const;
 	void sendVectorAttributes(int);
 	void receiveVectorAttributes(int);
 	////////////////////////////////////////////////

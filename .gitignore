@@ -70,3 +70,4 @@ examples/IoTwins/out.txt
 examples/IoTwins/IoTwin
 
 examples/flocking/flocking
+examples/contact_tracing/contact_tracing
