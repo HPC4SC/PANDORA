@@ -205,7 +205,7 @@ void PanicAgent::updateState()
 	if(_world->getValue(eExits, _position)==1)
 	{
 		_exited = true;	
-		_world->removeAgent(this);
+		_world->addAgentToBeRemoved(this);
 	}
 
     const ScenarioConfig & scenarioConfig = (const ScenarioConfig &)getWorld()->getConfig();
@@ -214,7 +214,7 @@ void PanicAgent::updateState()
 		_world->setValue(eDeaths, _position, _world->getValue(eDeaths, _position)+1);		
 		_world->setValue(eNumAgents, _position, _world->getValue(eNumAgents, _position)-1);		
 		_world->setValue(eCompression, _position, std::max(0, _world->getValue(eCompression, _position)-scenarioConfig._compressionThreshold));
-		_world->removeAgent(this);
+		_world->addAgentToBeRemoved(this);
 	}
 
 	if(!_panicked && _world->getValue(ePanic, _position)==1)

@@ -242,7 +242,7 @@ void GujaratAgent::checkAgentRemoval()
 	if(_populationAges[0] == -1 && _populationAges[1] == -1)
 	{
 		_exists = false;
-		_world->removeAgent(this);
+		_world->addAgentToBeRemoved(this);
 	}
 }
 

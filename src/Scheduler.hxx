@@ -19,10 +19,14 @@ namespace Engine
         Engine::Rectangle<int>  _boundaries;    //! Limits of the simulation space.
         World                  *_world;         //! Pointer to the World of the simulation
 
+        bool _printInConsole;                   //! For logging purposes
+        bool _printInstrumentation;             //! For logging purposes
+
         bool _updateKnowledgeInParallel;        //! 
         bool _executeActionsInParallel;         //! Initialized to False by default in the init() method.
         omp_lock_t _ompLock;                    //! Lock object of OpenMP management
         int _overlapSize;                       //! [Only for MPI scheduler] Overlap size in number of cells, defined for partition rectangles.
+        int _subpartitioningMode;               //! [Only for MPI scheduler] Subpartitioning mode 9 = 9 subpartitions per node, 4 = 4 subpartitions per node.
 
         /**
          * @brief This method returns a list with the list of agents in euclidean distance radius of position. If include center is false, position is not checked.
@@ -38,17 +42,18 @@ namespace Engine
             virtual ~aggregator( ){}
             void operator( )( T neighbor )
             {
-                if ( neighbor->getId( )==_center.getId( ) || !neighbor->exists( ) )
+                Agent* agent = neighbor.second.get();
+                if (agent->getId() == _center.getId() or not agent->exists( ) )
                 {
                     return;
                 }
-                if ( _particularType && !neighbor->isType( _type ))
+                if (_particularType and not agent->isType(_type))
                 {
                     return;
                 }
-                if ( _center.getPosition( ).distance( neighbor->getPosition( ) )-_radius<= 0.0001 )
+                if (_center.getPosition().distance(agent->getPosition()) - _radius <= 0.0001)
                 {
-                        execute( neighbor );
+                    execute( neighbor );
                 }
             }
             virtual void execute( T neighbor )=0;
@@ -71,7 +76,8 @@ namespace Engine
             aggregatorGet( double radius, Agent & center, const std::string & type ) : aggregator<T>( radius, center, type ) {}
             void execute( T neighbor )
             {
-                _neighbors.push_back( neighbor );
+                 AgentPtr agentPtr = neighbor.second;
+                _neighbors.push_back(agentPtr);
             }
             AgentsVector _neighbors;
         };
@@ -187,7 +193,7 @@ namespace Engine
          * 
          * @param agent Pointer to the removed Agent.
          */
-        virtual void removeAgent( Agent * agent ) = 0;
+        virtual void addAgentToBeRemoved( Agent * agent ) = 0;
 
         /**
          * @brief This method will return an agent, both looking at owned and ghost agents
@@ -312,11 +318,32 @@ namespace Engine
         virtual void serializeRasters( const int & step ) = 0;
 
         /**
+         * @brief For logging purposes.
+         * 
+         * @param printInConsole 
+         */
+        void setPrintInConsole(bool printInConsole) { _printInConsole = printInConsole; }
+
+        /**
+         * @brief For logging purposes.
+         * 
+         * @param printInstrumentation 
+         */
+        void setPrintInstrumentation(bool printInstrumentation) { _printInstrumentation = printInstrumentation; }
+
+        /**
          * @brief [Only implemented in MPI scheduler] Sets the _overlapSize member.
          * 
          * @param overlapSize int
          */
-        void setOverlapSize(int overlapSize) { _overlapSize = overlapSize; }
+        void setOverlapSize(const int& overlapSize) { _overlapSize = overlapSize; }
+
+        /**
+         * @brief [Only implemented in MPI scheduler] Sets the _subpartitioningMode member.
+         * 
+         * @param subpartitioningMode int
+         */
+        void setSubpartitioningMode(const int& subpartitioningMode) { _subpartitioningMode = subpartitioningMode; }
 
         /**
          * @brief [OpenMP] Method to enable/disable the OpenMP paralellism.

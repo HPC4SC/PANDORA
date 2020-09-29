@@ -14,6 +14,8 @@ namespace Engine
     typedef std::shared_ptr<Agent> AgentPtr;
     typedef std::list< AgentPtr > AgentsList;
     typedef std::vector< AgentPtr > AgentsVector;
+    typedef std::map<std::string, AgentPtr> AgentsMap;
+    typedef std::vector<std::vector<AgentsMap>> AgentsMatrix;
 
     //! List of Mpi messages sent by the scheduler
     enum MpiMessageType
@@ -41,9 +43,10 @@ namespace Engine
         eDynamicRasterMaxValue = 30,
         eDynamicRasterDefaultValue = 31,
 
-        eNumGhostAgents = 40,
-        eGhostAgentType = 41,
-        eGhostAgent = 42,
+        eNumGhostAgentsType = 40, 
+        eGhostAgentsType = 41,
+        eNumGhostAgents = 42,
+        eGhostAgents = 43,
 
         eNumRasters = 50,
         eRasterIndex = 51,
@@ -61,15 +64,25 @@ namespace Engine
 
     enum SubOverlapType
     {
-        eTopCenter = 1,
-        eBottomCenter = 2,
-        eLeftCenter = 3,
-        eRightCenter = 4,
-        eTopLeft = 5,
-        eTopRight = 6,
-        eBottomLeft = 7,
-        eBottomRight = 8,
-        eNumberOfSubOverlaps = 8
+        eTopLeft_Mode4 = 41,
+        eTopRight_Mode4 = 42,
+        eBottomLeft_Mode4 = 43,
+        eBottomRight_Mode4 = 44,
+
+        eTopCenter_Mode9 = 91,
+        eBottomCenter_Mode9 = 92,
+        eLeftCenter_Mode9 = 93,
+        eRightCenter_Mode9 = 94,
+        eTopLeft_Mode9 = 95,
+        eTopRight_Mode9 = 96,
+        eBottomLeft_Mode9 = 97,
+        eBottomRight_Mode9 = 98
+    };
+
+    enum SubpartitioningMode
+    {
+        eMode4 = 4,
+        eMode9 = 9
     };
 
 } // namespace Engine

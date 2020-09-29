@@ -32,14 +32,22 @@
 #include <GeneralState.hxx>
 #include <Statistics.hxx>
 
+#include <typedefs_public.hxx>
+
 namespace Engine
 {
 
-Agent::Agent( const std::string & id ) : _id( id ), _exists( true ), _position( -1, -1 ), _world( 0 )
+Agent::Agent( const std::string & id ) : _id( id ), _exists( true ), _position( -1, -1 ), _discretePosition(-1, -1), _world( 0 )
 {
-    _stringAttributes.push_back( "id" );
-    _intAttributes.push_back( "x" );
-    _intAttributes.push_back( "y" );
+    _stringAttributes.push_back("id");
+    _intAttributes.push_back("x");
+    _intAttributes.push_back("y");
+    _intAttributes.push_back("x_discrete");
+    _intAttributes.push_back("y_discrete");
+    _intAttributes.push_back("layer");
+    _intAttributes.push_back("layer_discrete");
+    _intAttributes.push_back("heading");
+    _intAttributes.push_back("heading_discrete");
 }
 
 Agent::~Agent( )
@@ -82,9 +90,55 @@ const Point2D<int>& Agent::getDiscretePosition() const
     return _discretePosition;
 }
 
+const int& Agent::getLayer() const
+{
+    return _layer;
+}
+
+const int& Agent::getDiscreteLayer() const
+{
+    return _discreteLayer;
+}
+
+const int& Agent::getHeading() const
+{
+    return _heading;
+}
+
+const int& Agent::getDiscreteHeading() const
+{
+    return _discreteHeading;
+}
+
 void Agent::setPosition( const Point2D<int> & position )
 {
-    _position = position;
+    if (_position.distanceOctile(position) <= _world->getConfig().getOverlapSize())
+    {
+        _position = position;
+        if (_discretePosition.getX() == -1 and _discretePosition.getY() == -1)
+            _discretePosition = _position;
+
+        _world->changeAgentInMatrixOfPositions(this);
+    }
+    else
+        throw(CreateStringStream("Agent::setPosition() - agent cannot move from " << _position << " to " << position << ": distance exceeds overlapSize.").str());
+}
+
+void Agent::setLayer(const int& layer)
+{
+    _layer = layer;
+}
+
+void Agent::setHeading(const int& heading)
+{
+    if (heading >= eNorth and heading <= eNorthWest)
+        _heading = heading;
+    else
+    {
+        std::stringstream ss;
+        ss << "Agent::setHeading - heading not valid.";
+        throw Exception(ss.str());
+    }
 }
 
 void Agent::serializeAttribute( const std::string & name, const int & value )
@@ -123,6 +177,11 @@ bool Agent::operator==(const Agent& other) const
     return hasTheSameAttributes(other);
 }
 
+bool Agent::operator<(const Agent& other) const
+{
+    return _id < other._id;
+}
+
 bool Agent::hasTheSameAttributes(const Agent& other) const
 {
     return  _intAttributes == other._intAttributes and
@@ -135,7 +194,7 @@ bool Agent::hasTheSameAttributes(const Agent& other) const
 }
 
 std::ostream& Agent::print( std::ostream& os ) const {
-    os << "id: " << getId( ) << " pos: " << getPosition( ) << " discrete pos: " << getDiscretePosition() << " exists: " << exists( );
+    os << "id: " << getId( ) << " pos: " << getPosition( ) << " discrete pos: " << getDiscretePosition() << "\tlayer: " << _layer << " discrete layer: " << _discreteLayer << "\texists: " << exists( );
     return getWorld( ) ? os << " at world: " << getWorld( )->getId( ) : os << " without world";
 }
 
@@ -148,7 +207,7 @@ void Agent::remove( )
         oss << "Agent::remove - removing agent without assigned World";
         throw Exception( oss.str( ) );
     }
-    _world->removeAgent( this );
+    _world->addAgentToBeRemoved( this );
 }
 
 bool Agent::isType( const std::string & type ) const
@@ -182,7 +241,11 @@ void Agent::executeActions( )
 
 void Agent::setRandomPosition( )
 {
-    _position = _world->getRandomPosition( );
+    _position = _world->getRandomPosition();
+    if (_discretePosition.getX() == -1 and _discretePosition.getY() == -1)
+        _discretePosition = _position;
+
+    _world->changeAgentInMatrixOfPositions(this);
 }
 
 void Agent::changeType( const std::string & type )
@@ -195,6 +258,8 @@ void Agent::changeType( const std::string & type )
 void Agent::copyContinuousValuesToDiscreteOnes()
 {
     _discretePosition = _position;
+    _discreteLayer = _layer;
+    _discreteHeading = _heading;
 }
 
 } // namespace Engine

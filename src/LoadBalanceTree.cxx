@@ -64,11 +64,12 @@ namespace Engine {
     AgentsVector LoadBalanceTree::getAgentsInPosition(const Point2D<int>& position, const std::string& type) const
     {
         AgentsVector result;
-        for (AgentsList::iterator it = _world->beginAgents(); it != _world->endAgents(); ++it)
+
+        AgentsMap agentsAtPosition = _world->getAgentsMatrix()[position.getX()][position.getY()];
+        for (AgentsMap::const_iterator it = agentsAtPosition.begin(); it != agentsAtPosition.end(); ++it)
         {
-            AgentPtr agent = *it;
-            if (agent->getPosition().isEqual(position) and (type.compare("all") == 0 or agent->isType(type)))
-                result.push_back(agent);
+            AgentPtr agentPtr = it->second;
+            if (type.compare("all") == 0 or agentPtr->isType(type)) result.push_back(agentPtr);
         }
         return result;
     }
@@ -159,9 +160,9 @@ namespace Engine {
     double LoadBalanceTree::getAllAgentsWeight() const
     {
         double totalWeight = 0;
-        for (AgentsList::iterator it = _world->beginAgents(); it != _world->endAgents(); ++it)
+        for (AgentsMap::iterator it = _world->beginAgents(); it != _world->endAgents(); ++it)
         {
-            Agent* agent = it->get();
+            Agent* agent = it->second.get();
             totalWeight += agent->getWeight();
         }
         return totalWeight;
@@ -179,7 +180,7 @@ namespace Engine {
 
     double LoadBalanceTree::getAgentsWeightFromCell(const int& row, const int& column) const
     {
-        Point2D<int> position(row, column);
+        Point2D<int> position(column, row);
         AgentsVector agentsVector = getAgentsInPosition(position);
         return getAgentsWeight(agentsVector);
     }
@@ -187,17 +188,14 @@ namespace Engine {
     void LoadBalanceTree::exploreHorizontallyAndKeepDividing(node<Rectangle<int>>* treeNode, const double& totalWeight, const int& currentHeight)
     {
         double leftChildTotalWeight = 0;
-        bool stopExploration = false;
 
-        for (int i = treeNode->value.left(); i <= treeNode->value.right() and not stopExploration; ++i)
+        for (int i = treeNode->value.left(); i <= treeNode->value.right(); ++i)
         {
-            for (int j = treeNode->value.top(); j <= treeNode->value.bottom(); ++j) 
+            for (int j = treeNode->value.top(); j <= treeNode->value.bottom(); ++j)
                 leftChildTotalWeight += getAgentsWeightFromCell(j, i);
 
             if (leftChildTotalWeight >= totalWeight / 2)
             {
-                stopExploration = true;
-
                 Rectangle<int> leftRectangle(treeNode->value.left(), treeNode->value.top(), i, treeNode->value.bottom());
                 Rectangle<int> rightRectangle(i + 1, treeNode->value.top(), treeNode->value.right(), treeNode->value.bottom());
                 node<Rectangle<int>>* leftChildNode = insertNode(leftRectangle, treeNode);
@@ -205,6 +203,8 @@ namespace Engine {
 
                 divideSpaceRecursively(leftChildNode, leftChildTotalWeight, currentHeight - 1);
                 divideSpaceRecursively(rightChildNode, totalWeight - leftChildTotalWeight, currentHeight - 1);
+
+                break;
             }
         }
     }
@@ -212,17 +212,14 @@ namespace Engine {
     void LoadBalanceTree::exploreVerticallyAndKeepDividing(node<Rectangle<int>>* treeNode, const double& totalWeight, const int& currentHeight)
     {
         double leftChildTotalWeight = 0;
-        bool stopExploration = false;
 
-        for (int i = treeNode->value.top(); i < treeNode->value.bottom() and not stopExploration; ++i) 
+        for (int i = treeNode->value.top(); i < treeNode->value.bottom(); ++i) 
         {
             for (int j = treeNode->value.left(); j < treeNode->value.right(); ++j)
                 leftChildTotalWeight += getAgentsWeightFromCell(i, j);
 
             if (leftChildTotalWeight >= totalWeight / 2)
             {
-                stopExploration = true;
-
                 Rectangle<int> topRectangle(treeNode->value.left(), treeNode->value.top(), treeNode->value.right(), i);
                 Rectangle<int> bottomRectangle(treeNode->value.left(), i + 1, treeNode->value.right(), treeNode->value.bottom());
                 node<Rectangle<int>>* leftChildNode = insertNode(topRectangle, treeNode);
@@ -230,6 +227,8 @@ namespace Engine {
 
                 divideSpaceRecursively(leftChildNode, leftChildTotalWeight, currentHeight - 1);
                 divideSpaceRecursively(rightChildNode, totalWeight - leftChildTotalWeight, currentHeight - 1);
+
+                break;
             }
         }
     }

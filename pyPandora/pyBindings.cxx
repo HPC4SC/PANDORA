@@ -49,8 +49,8 @@
 
 #include <analysis/RasterSum.hxx>
 #include <analysis/RasterMean.hxx>
-#include <SpacePartition.hxx>
-#include <OpenMPSingleNode.hxx>
+//#include <SpacePartition.hxx>
+//#include <OpenMPSingleNode.hxx>
 #include <Scheduler.hxx>
 #include <GeneralState.hxx>
 #include <ShpLoader.hxx>
@@ -116,7 +116,7 @@ public:
 		Engine::Agent::updateState();
 	}
 
-	void * fillPackage()
+	void * fillPackage() const
 	{
 		return 0;
 	}
@@ -236,7 +236,7 @@ public:
 	void addAgentSimple( std::shared_ptr<AgentWrap> agent)
 	{
         agent->setWorld(this);
-    	_agents.push_back(agent);
+    	//_agents.push_back(agent);
 	}
 
     void configureSharedPtr( std::shared_ptr<ConfigWrap> config )
@@ -495,8 +495,8 @@ BOOST_PYTHON_MODULE(libpyPandora)
 		.def("run", &Engine::World::run)
 		// .def("useSpacePartition", &Engine::World::useSpacePartition, boost::python::return_value_policy<boost::python::reference_existing_object>())
 		// .staticmethod("useSpacePartition")
-		.def("useOpenMPSingleNode", &Engine::World::useOpenMPSingleNode, boost::python::return_value_policy<boost::python::reference_existing_object>())
-		.staticmethod("useOpenMPSingleNode")
+		// .def("useOpenMPSingleNode", &Engine::World::useOpenMPSingleNode, boost::python::return_value_policy<boost::python::reference_existing_object>())
+		// .staticmethod("useOpenMPSingleNode")
 		.def("addAgent", &WorldWrap::addAgentSimple,boost::python::with_custodian_and_ward<1,2>())
 		.def("setValue", setValue)
 		.def("setMaxValue", setMaxValue)
@@ -511,15 +511,15 @@ BOOST_PYTHON_MODULE(libpyPandora)
 		.add_property("config", boost::python::make_function(&Engine::World::getConfig, boost::python::return_value_policy<boost::python::reference_existing_object>()))
 	;	
 	
-	boost::python::class_< Engine::SpacePartition, std::shared_ptr<Engine::SpacePartition> >("SpacePartitionStub", boost::python::init< const int &, bool >())
-	;
+	// boost::python::class_< Engine::SpacePartition, std::shared_ptr<Engine::SpacePartition> >("SpacePartitionStub", boost::python::init< const int &, bool >())
+	// ;
 	
-	boost::python::implicitly_convertible< std::shared_ptr< Engine::SpacePartition >, std::shared_ptr< Engine::Scheduler > >();	
+	// boost::python::implicitly_convertible< std::shared_ptr< Engine::SpacePartition >, std::shared_ptr< Engine::Scheduler > >();	
 
-	boost::python::class_< Engine::OpenMPSingleNode, std::shared_ptr<Engine::OpenMPSingleNode> >("OpenMPSingleNodeStub", boost::python::init<>())
-	;
+	// boost::python::class_< Engine::OpenMPSingleNode, std::shared_ptr<Engine::OpenMPSingleNode> >("OpenMPSingleNodeStub", boost::python::init<>())
+	// ;
 	
-	boost::python::implicitly_convertible< std::shared_ptr< Engine::OpenMPSingleNode >, std::shared_ptr< Engine::Scheduler > >();	
+	// boost::python::implicitly_convertible< std::shared_ptr< Engine::OpenMPSingleNode >, std::shared_ptr< Engine::Scheduler > >();	
 
 
 	boost::python::class_< Engine::SimulationRecord>("SimulationRecordStub", boost::python::init< int, bool >())
