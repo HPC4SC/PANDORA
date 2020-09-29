@@ -308,6 +308,14 @@ namespace Engine
                 double valueY = _y-point._y;
                 return sqrt( valueX*valueX + valueY*valueY );
             }
+
+            int distanceOctile(const Point2D<Type>& point) const
+            {
+                Type diffX = std::abs(_x - point.getX());
+                Type diffY = std::abs(_y - point.getY());
+                return std::max(diffX, diffY);
+            }
+
     };
 
 } // namespace Engine

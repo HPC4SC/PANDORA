@@ -626,9 +626,16 @@ void Serializer::serializeAgent( Agent * agent, const int & step, int index )
         registerType( agent );
     }
 
-    addStringAttribute( type, "id", agent->getId( ) );
-    addIntAttribute( type, "x", agent->getPosition( )._x );
-    addIntAttribute( type, "y", agent->getPosition( )._y );
+    addStringAttribute(type, "id", agent->getId());
+    addIntAttribute(type, "x", agent->getPosition()._x);
+    addIntAttribute(type, "y", agent->getPosition()._y);
+    // addIntAttribute(type, "x_discrete", agent->getDiscretePosition().getX());
+    // addIntAttribute(type, "y_discrete", agent->getDiscretePosition().getY());
+    addIntAttribute(type, "layer", agent->getLayer());
+    // addIntAttribute(type, "layer_discrete", agent->getDiscreteLayer());
+    // addIntAttribute(type, "heading", agent->getHeading());
+    // addIntAttribute(type, "heading_discrete", agent->getDiscreteHeading());
+
     agent->serialize( );
 
     if ( getDataSize( type )>=20000 )

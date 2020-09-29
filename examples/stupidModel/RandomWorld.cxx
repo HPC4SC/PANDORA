@@ -11,6 +11,7 @@
 #include <Logger.hxx>
 #include <RNGNormal.hxx>
 #include <Exception.hxx>
+#include <typedefs_public.hxx>
 
 #include <math.h>
 
@@ -58,6 +59,7 @@ void RandomWorld::createAgents() {
 			addAgent(bug);
 			bug->setRandomPosition();
 			bug->setLayer(0);
+			bug->setHeading(Engine::eNorth);
 			// all of this steps are registered in the log files
 	        log_DEBUG(logName.str(), getWallTime() << " new bug: " << bug);
 	}
