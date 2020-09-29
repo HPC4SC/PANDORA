@@ -34,7 +34,9 @@ namespace Engine
         eSouth = 5,
         eSouthWest = 6,
         eWest = 7,
-        eNorthWest = 8
+        eNorthWest = 8,
+        eMinDegree = 0,
+        eMaxDegree = 360
     };
 
 } // namespace Engine
