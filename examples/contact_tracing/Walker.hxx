@@ -12,47 +12,47 @@ namespace Examples
 class Walker : public Examples::HumanBeeing
 {
     
-private:
-    float _stopping; //MpiBasicAttribute
-	int _stopTime; //MpiBasicAttribute
-	int _stopCounter; //MpiBasicAttribute
-	int _entryTime; //MpiBasicAttribute
-	float _drifting; //MpiBasicAttribute
-	float _speed; //MpiBasicAttribute
-    Street* _street;
-	bool _directionTop;
+	private:
+		float _stopping; //MpiBasicAttribute
+		int _stopTime; //MpiBasicAttribute
+		int _stopCounter; //MpiBasicAttribute
+		int _entryTime; //MpiBasicAttribute
+		float _drifting; //MpiBasicAttribute
+		float _speed; //MpiBasicAttribute
+		Street* _street;
+		bool _directionTop;
 
-public:
-    Walker(const std::string& id, const bool& sick, const int& encounterRadius, const int& phoneT1, 
-	const int& phoneT2, const bool& phoneApp, const int& signalRadius, const float& stopping,
-	const int& stopTime, const int& entryTime, const float& drifting, const float& speed, Street* street);
+	public:
+		Walker(const std::string& id, const bool& sick, const int& encounterRadius, const int& phoneT1, 
+		const int& phoneT2, const bool& phoneApp, const int& signalRadius, const float& stopping,
+		const int& stopTime, const int& entryTime, const float& drifting, const float& speed, Street* street);
 
-    ~Walker();
+		~Walker();
 
-    void selectActions();
+		void selectActions();
 
-	void setDirectionTop();
+		void setDirectionTop();
 
-	void setDirectionBot();
+		void setDirectionBot();
 
-	float getStopping();
+		float getStopping();
 
-	void setStopCount(const int& count);
+		void setStopCount(const int& count);
 
-	int getStopTime();
+		int getStopTime();
 
-	bool directionTop();
+		bool directionTop();
 
-	float getDrifting();
+		float getDrifting();
 
-	float getSpeed();
+		float getSpeed();
 
 	////////////////////////////////////////////////
 	// This code has been automatically generated //
 	/////// Please do not modify it ////////////////
 	////////////////////////////////////////////////
 	Walker( void * );
-	void * fillPackage();
+	void * fillPackage() const;
 	void freePackage(void* package) const;
 	bool hasTheSameAttributes(const Examples::HumanBeeing&) const;
 	void sendVectorAttributes(int);

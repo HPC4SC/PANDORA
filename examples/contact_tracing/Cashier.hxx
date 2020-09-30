@@ -35,7 +35,7 @@ class Cashier : public Examples::HumanBeeing
 	/////// Please do not modify it ////////////////
 	////////////////////////////////////////////////
 	Cashier( void * );
-	void * fillPackage();
+	void * fillPackage() const;
 	void freePackage(void* package) const;
 	bool hasTheSameAttributes(const Examples::HumanBeeing&) const;
 	void sendVectorAttributes(int);

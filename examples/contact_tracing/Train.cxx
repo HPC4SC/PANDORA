@@ -28,7 +28,7 @@ void Train::createAgents() {
             _agentsToLeave = _passangerExit.front();
             _passangerExit.pop_front();
         }
-        else _agentsToLeave = _agents.size();
+        else _agentsToLeave = _agentsByID.size();
     }
     setupAvaliableSeats();
 }
