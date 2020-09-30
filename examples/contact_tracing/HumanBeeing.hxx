@@ -76,7 +76,7 @@ namespace Examples
 	/////// Please do not modify it ////////////////
 	////////////////////////////////////////////////
 	HumanBeeing( void * );
-	void * fillPackage();
+	void * fillPackage() const;
 	void freePackage(void* package) const;
 	bool hasTheSameAttributes(const Engine::Agent&) const;
 	void sendVectorAttributes(int);
