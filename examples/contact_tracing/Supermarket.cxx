@@ -26,6 +26,7 @@ void Supermarket::createRasters() {
 }
 
 void Supermarket::createAgents() {
+    std::cout << "AgentCreation" << std::endl;
     if (not _first) {
         if (_step == 0) for (int i = 0; i < _supermarketConfig._numCashiers; i++) createCashier();
         if (_step%_supermarketConfig._clientRate == 0) createClient();
@@ -34,6 +35,7 @@ void Supermarket::createAgents() {
 }
 
 void Supermarket::createCashier() {
+    std::cout << "Create Cashier" << std::endl;
     std::ostringstream oss;
     oss << "Cashier_" << _cashierId;
     _cashierId++;
@@ -54,6 +56,7 @@ void Supermarket::createCashier() {
 }
 
 void Supermarket::createClient() {
+    std::cout << "Create Client" << std::endl;
     std::ostringstream oss;
     oss << "Client_" << _clientId;
     _clientId++;
@@ -74,18 +77,6 @@ void Supermarket::createClient() {
         spawn = _entry[spawnIndex];
     }
     client->setPosition(spawn);
-}
-
-void Supermarket::step() {
-    std::cout << "Executing step: " << _step << std::endl;
-    if (_step%_config->getSerializeResolution() == 0) {
-        _scheduler->serializeRasters(_step);
-        _scheduler->serializeAgents(_step);
-    }
-    createAgents();
-    _scheduler->updateEnvironmentState();
-    _scheduler->executeAgents();
-    _scheduler->removeAgents();
 }
 
 void Supermarket::devideLayout() {
@@ -116,6 +107,26 @@ void Supermarket::devideLayout() {
     calculateTransitionProbabilities();
     normalizeTransitionProbabilities();
 }
+
+void Supermarket::step( )
+    {
+        std::stringstream logName;
+        logName << "simulation_" << getId( );
+        log_INFO( logName.str( ), getWallTime( ) << " executing step: " << _step );
+
+        if ( _step%_config->getSerializeResolution( )==0 )
+        {
+            _scheduler->serializeRasters( _step );
+            _scheduler->serializeAgents( _step );
+            log_DEBUG( logName.str( ), getWallTime( ) << " step: " << _step << " serialization done" );
+        }
+        stepEnvironment( );
+        log_DEBUG( logName.str( ), getWallTime( ) << " step: " << _step << " has executed step environment" );
+        _scheduler->updateEnvironmentState();
+        _scheduler->executeAgents( );
+        _scheduler->removeAgents( );
+        log_INFO( logName.str( ), getWallTime( ) << " finished step: " << _step );
+    }
 
 bool Supermarket::isObstacle(Engine::Point2D<int> point) {
     std::vector<Engine::Point2D<int>>::iterator it = find(_obstacles.begin(),_obstacles.end(),point);
