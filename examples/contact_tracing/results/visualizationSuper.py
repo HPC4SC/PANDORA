@@ -9,8 +9,8 @@ import csv
 
 def read_agents(agent_route,scenario):
     with h5py.File(agent_route, 'r') as hdf:
-        #base_items = list(hdf.items())
-        #print('Items in the base directory:', base_items)
+        base_items = list(hdf.items())
+        print('Items in the base directory:', base_items)
         if scenario == '0':
             agentType = 'Client'
         elif scenario == '1':
