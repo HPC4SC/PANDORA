@@ -42,12 +42,12 @@ Agent::Agent( const std::string & id ) : _id( id ), _exists( true ), _position( 
     _stringAttributes.push_back("id");
     _intAttributes.push_back("x");
     _intAttributes.push_back("y");
-    _intAttributes.push_back("x_discrete");
-    _intAttributes.push_back("y_discrete");
+    // _intAttributes.push_back("x_discrete");
+    // _intAttributes.push_back("y_discrete");
     _intAttributes.push_back("layer");
-    _intAttributes.push_back("layer_discrete");
-    _intAttributes.push_back("heading");
-    _intAttributes.push_back("heading_discrete");
+    // _intAttributes.push_back("layer_discrete");
+    // _intAttributes.push_back("heading");
+    // _intAttributes.push_back("heading_discrete");
 }
 
 Agent::~Agent( )
@@ -112,7 +112,9 @@ const int& Agent::getDiscreteHeading() const
 
 void Agent::setPosition( const Point2D<int> & position )
 {
-    if (_position.distanceOctile(position) <= _world->getConfig().getOverlapSize())
+    bool firstTime = _position.getX() == -1 and _position.getY() == -1;
+
+    if (firstTime or _position.distanceOctile(position) <= _world->getConfig().getOverlapSize())
     {
         _position = position;
         if (_discretePosition.getX() == -1 and _discretePosition.getY() == -1)
@@ -120,8 +122,9 @@ void Agent::setPosition( const Point2D<int> & position )
 
         _world->changeAgentInMatrixOfPositions(this);
     }
-    else
-        throw(CreateStringStream("Agent::setPosition() - agent cannot move from " << _position << " to " << position << ": distance exceeds overlapSize.").str());
+    else {
+        throw Exception(CreateStringStream("Agent::setPosition() - agent cannot move from " << _position << " to " << position << ": distance exceeds overlapSize.\n").str());
+    }
 }
 
 void Agent::setLayer(const int& layer)
