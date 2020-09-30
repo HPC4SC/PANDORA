@@ -42,12 +42,12 @@ Agent::Agent( const std::string & id ) : _id( id ), _exists( true ), _position( 
     _stringAttributes.push_back("id");
     _intAttributes.push_back("x");
     _intAttributes.push_back("y");
-    _intAttributes.push_back("x_discrete");
-    _intAttributes.push_back("y_discrete");
+    // _intAttributes.push_back("x_discrete");
+    // _intAttributes.push_back("y_discrete");
     _intAttributes.push_back("layer");
-    _intAttributes.push_back("layer_discrete");
-    _intAttributes.push_back("heading");
-    _intAttributes.push_back("heading_discrete");
+    // _intAttributes.push_back("layer_discrete");
+    // _intAttributes.push_back("heading");
+    // _intAttributes.push_back("heading_discrete");
 }
 
 Agent::~Agent( )
@@ -112,7 +112,9 @@ const int& Agent::getDiscreteHeading() const
 
 void Agent::setPosition( const Point2D<int> & position )
 {
-    if (_position.distanceOctile(position) <= _world->getConfig().getOverlapSize())
+    bool firstTime = _position.getX() == -1 and _position.getY() == -1;
+
+    if (firstTime or _position.distanceOctile(position) <= _world->getConfig().getOverlapSize())
     {
         _position = position;
         if (_discretePosition.getX() == -1 and _discretePosition.getY() == -1)
@@ -120,8 +122,9 @@ void Agent::setPosition( const Point2D<int> & position )
 
         _world->changeAgentInMatrixOfPositions(this);
     }
-    else
-        throw(CreateStringStream("Agent::setPosition() - agent cannot move from " << _position << " to " << position << ": distance exceeds overlapSize.").str());
+    else {
+        throw Exception(CreateStringStream("Agent::setPosition() - agent cannot move from " << _position << " to " << position << ": distance exceeds overlapSize.\n").str());
+    }
 }
 
 void Agent::setLayer(const int& layer)
@@ -131,14 +134,20 @@ void Agent::setLayer(const int& layer)
 
 void Agent::setHeading(const int& heading)
 {
-    if (heading >= eNorth and heading <= eNorthWest)
+    if (heading >= eMinDegree and heading <= eMaxDegree)
         _heading = heading;
     else
     {
         std::stringstream ss;
-        ss << "Agent::setHeading - heading not valid.";
+        ss << "Agent::setHeading - heading degree not valid.";
         throw Exception(ss.str());
     }
+}
+
+void Agent::rotate(const int& degrees)
+{
+    _heading = (_heading + degrees) % 360;
+    if (_heading < 0) _heading = 360 + _heading;
 }
 
 void Agent::serializeAttribute( const std::string & name, const int & value )
