@@ -59,7 +59,7 @@ class Supermarket : public Engine::World
 
         void createRasters();
 	
-	    void createAgents();
+	    void newAgents();
 
         void createCashier();
 
