@@ -37,7 +37,7 @@
 namespace Engine
 {
 
-Agent::Agent( const std::string & id ) : _id( id ), _exists( true ), _position( -1, -1 ), _discretePosition(-1, -1), _world( 0 )
+Agent::Agent( const std::string & id ) : _id( id ), _exists( true ), _position( -1, -1 ), _discretePosition(-1, -1), _layer(0), _discreteLayer(0), _heading(0), _discreteHeading(0), _world( 0 )
 {
     _stringAttributes.push_back("id");
     _intAttributes.push_back("x");
@@ -123,7 +123,7 @@ void Agent::setPosition( const Point2D<int> & position )
         _world->changeAgentInMatrixOfPositions(this);
     }
     else {
-        throw Exception(CreateStringStream("Agent::setPosition() - agent cannot move from " << _position << " to " << position << ": distance exceeds overlapSize.\n").str());
+        throw Exception(CreateStringStream("Agent::setPosition() - agent " << _id << " cannot move from " << _position << " to " << position << ": distance exceeds overlapSize.\n").str());
     }
 }
 

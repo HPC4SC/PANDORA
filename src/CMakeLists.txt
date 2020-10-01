@@ -13,6 +13,8 @@ set( PANDORA_FILES
      OpenMPIMultiNode.cxx
      RasterLoader.cxx
      RNGNormal.cxx
+     RNGUniformInt.cxx
+     RNGUniformDouble.cxx
      SequentialSerializer.cxx
      Serializer.cxx
      ShpLoader.cxx
