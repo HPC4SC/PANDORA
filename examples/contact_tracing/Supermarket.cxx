@@ -25,13 +25,10 @@ void Supermarket::createRasters() {
     devideLayout();
 }
 
-void Supermarket::createAgents() {
+void Supermarket::newAgents() {
     std::cout << "AgentCreation" << std::endl;
-    if (not _first) {
-        if (_step == 0) for (int i = 0; i < _supermarketConfig._numCashiers; i++) createCashier();
-        if (_step%_supermarketConfig._clientRate == 0) createClient();
-    }
-    else _first = false;
+    if (_step == 0) for (int i = 0; i < _supermarketConfig._numCashiers; i++) createCashier();
+    if (_step%_supermarketConfig._clientRate == 0) createClient();
 }
 
 void Supermarket::createCashier() {
@@ -120,6 +117,7 @@ void Supermarket::step( )
             _scheduler->serializeAgents( _step );
             log_DEBUG( logName.str( ), getWallTime( ) << " step: " << _step << " serialization done" );
         }
+        newAgents();
         stepEnvironment( );
         log_DEBUG( logName.str( ), getWallTime( ) << " step: " << _step << " has executed step environment" );
         _scheduler->updateEnvironmentState();
