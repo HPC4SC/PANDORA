@@ -179,32 +179,32 @@ public:
         configureSharedPtr(config);
 	}
 
-	void createRasters()
+	void createInitialRasters()
 	{      
-        if (boost::python::override createRasters = this->get_override("createRasters"))
+        if (boost::python::override createInitialRasters = this->get_override("createInitialRasters"))
 		{
-			createRasters();
+			createInitialRasters();
 			return;
 		}
-		Engine::World::createRasters();
+		Engine::World::createInitialRasters();
 	}	
-    void default_createRasters()
+    void default_createInitialRasters()
     {
-        World::createRasters();
+        World::createInitialRasters();
     }
 
-	void createAgents()
+	void createInitialAgents()
 	{
-        if (boost::python::override createAgents = this->get_override("createAgents"))
+        if (boost::python::override createInitialAgents = this->get_override("createInitialAgents"))
 		{
-			createAgents();
+			createInitialAgents();
 			return;
 		}
-		Engine::World::createAgents();
+		Engine::World::createInitialAgents();
 	}
-    void default_createAgents()
+    void default_createInitialAgents()
     {
-        World::createAgents();
+        World::createInitialAgents();
     }
 
 	void stepEnvironment()
@@ -483,8 +483,8 @@ BOOST_PYTHON_MODULE(libpyPandora)
 	boost::python::class_< std::vector<int> >("IntVector").def(boost::python::vector_indexing_suite< std::vector<int> >());
 	
 	boost::python::class_< WorldWrap, boost::noncopyable >("WorldStub", boost::python::init< std::shared_ptr<ConfigWrap>, Engine::Scheduler *, const bool & >()[boost::python::with_custodian_and_ward<1,2>(),boost::python::with_custodian_and_ward<1,3>()])
-		.def("createRasters", &Engine::World::createRasters, &WorldWrap::default_createRasters)
-		.def("createAgents", &Engine::World::createAgents, &WorldWrap::default_createAgents)
+		.def("createInitialRasters", &Engine::World::createInitialRasters, &WorldWrap::default_createInitialRasters)
+		.def("createInitialAgents", &Engine::World::createInitialAgents, &WorldWrap::default_createInitialAgents)
 		.def("stepEnvironment", &Engine::World::stepEnvironment, &WorldWrap::default_StepEnvironment)
 		.def("initialize", &WorldWrap::initializeNoArguments)
 		.def("checkPosition", &Engine::World::checkPosition)

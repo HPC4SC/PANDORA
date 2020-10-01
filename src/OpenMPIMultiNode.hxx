@@ -127,13 +127,13 @@ namespace Engine
              * @brief Calls the creation of the rasters.
              * 
              */
-            void createRasters();
+            void createInitialRasters();
 
             /**
              * @brief Calls the creation of the agents.
              * 
              */
-            void createAgents();
+            void createInitialAgents();
 
             /**
              * @brief It creates the binary tree '_root' representing the partitions of the world for each of the MPI tasks. Besides, it creates the nodes structs to be send to each one of the slaves.

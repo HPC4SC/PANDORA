@@ -414,7 +414,7 @@ public:
      * it is the method where agents are created and addAgents must be called.
      * 
      */
-    virtual void createAgents( )
+    virtual void createInitialAgents( )
     {
     }
    
@@ -422,7 +422,7 @@ public:
      * @brief To be defined in the subclass. Create the raster maps used in the simulation.
      * 
      */
-    virtual void createRasters( )
+    virtual void createInitialRasters( )
     {
     }
     

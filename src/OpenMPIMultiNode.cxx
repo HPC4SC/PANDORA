@@ -76,8 +76,8 @@ namespace Engine {
 
         MpiFactory::instance()->registerTypes();
 
-        createRasters();
-        createAgents();
+        createInitialRasters();
+        createInitialAgents();
 
         if (getId() == _masterNodeID) 
         {
@@ -131,25 +131,25 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
         MPI_Type_commit(_positionAndValueDatatype);
     }
 
-    void OpenMPIMultiNode::createRasters()
+    void OpenMPIMultiNode::createInitialRasters()
     {
         double initialTime = getWallTime();
 
-        _world->createRasters();
+        _world->createInitialRasters();
 
         double endTime = getWallTime();
-if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStringStream("[Process # " << getId() <<  "] createRasters()\tTOTAL TIME: " << endTime - initialTime).str());
+if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStringStream("[Process # " << getId() <<  "] createInitialRasters()\tTOTAL TIME: " << endTime - initialTime).str());
     }
 
-    void OpenMPIMultiNode::createAgents()
+    void OpenMPIMultiNode::createInitialAgents()
     {
         double initialTime = getWallTime();
 
-        _world->createAgents();
+        _world->createInitialAgents();
 
         double endTime = getWallTime();
 
-if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStringStream("[Process # " << getId() <<  "] createAgents()\tTOTAL TIME: " << endTime - initialTime).str());
+if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStringStream("[Process # " << getId() <<  "] createInitialAgents()\tTOTAL TIME: " << endTime - initialTime).str());
     }
 
     void OpenMPIMultiNode::divideSpace()
