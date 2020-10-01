@@ -18,7 +18,7 @@ Supermarket::Supermarket(Engine::Config* config, Engine::Scheduler* scheduler) :
 
 Supermarket::~Supermarket() {}
 
-void Supermarket::createRasters() {
+void Supermarket::createInitialRasters() {
     registerStaticRaster("layout", true, 0);
     Engine::GeneralState::rasterLoader().fillGDALRaster(getStaticRaster("layout"), _supermarketConfig._mapRoute,
                 getBoundaries());

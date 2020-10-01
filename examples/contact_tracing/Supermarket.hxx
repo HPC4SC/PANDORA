@@ -57,7 +57,7 @@ class Supermarket : public Engine::World
 
         ~Supermarket();
 
-        void createRasters();
+        void createInitialRasters();
 	
 	    void newAgents();
 
