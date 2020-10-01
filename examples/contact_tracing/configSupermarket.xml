@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <config>
 	<output resultsFile="./data/contact_tracingSupermarket.h5" logsDir="./logs"/>
-	<numSteps value="100" serializeResolution="1"/>
+	<numSteps value="3600" serializeResolution="1"/>
 	<seed value="0"/>
 	<logs printInConsole="false" printInstrumentation="false"/>
 	<mpi overlapSizeMPI="6" subpartitioningMode="9" rebalancingFreq="10"/>
