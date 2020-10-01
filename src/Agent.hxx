@@ -227,6 +227,13 @@ namespace Engine
         void setHeading(const int& heading);
 
         /**
+         * @brief Rotates the agent 'degrees' degrees. If 'degrees' > 0 then _heading is rotated clockwise, if 'degrees' < 0 then _heading is rotated counterclockwise.
+         * 
+         * @param degrees const int&
+         */
+        void rotate(const int& degrees);
+
+        /**
          * @brief delete the Agent from world.
          * 
          */
