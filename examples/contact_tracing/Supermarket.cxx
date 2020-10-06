@@ -26,13 +26,11 @@ void Supermarket::createInitialRasters() {
 }
 
 void Supermarket::newAgents() {
-    std::cout << "AgentCreation" << std::endl;
     if (_step == 0) for (int i = 0; i < _supermarketConfig._numCashiers; i++) createCashier();
     if (_step%_supermarketConfig._clientRate == 0) createClient();
 }
 
 void Supermarket::createCashier() {
-    std::cout << "Create Cashier" << std::endl;
     std::ostringstream oss;
     oss << "Cashier_" << _cashierId;
     _cashierId++;
@@ -53,7 +51,6 @@ void Supermarket::createCashier() {
 }
 
 void Supermarket::createClient() {
-    std::cout << "Create Client" << std::endl;
     std::ostringstream oss;
     oss << "Client_" << _clientId;
     _clientId++;
@@ -280,8 +277,8 @@ std::list<Engine::Point2D<int>> Supermarket::getShortestPath(const Engine::Point
 }
 
 void Supermarket::exploreNeighbours(int& r, int& c, std::vector<std::vector<bool>>& visited, std::queue<int>& rowQueue, std::queue<int>& columnQueue, std::vector<std::vector<Engine::Point2D<int>>>& prev) {
-    std::vector<int> rowDirection = {1,-1,0,0,-1,1,1,-1};
-    std::vector<int> columnDirection = {0,0,1,-1,-1,1,-1,1};
+    std::vector<int> rowDirection =    {1,-1,0, 0,1,-1,1,-1};
+    std::vector<int> columnDirection = {0, 0,1,-1,1,1,-1,-1};
     for (int i = 0; i < 8; i++) {
         int rr = r + rowDirection[i];
         int cc = c + columnDirection[i];

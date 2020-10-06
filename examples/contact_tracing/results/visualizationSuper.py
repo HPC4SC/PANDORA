@@ -9,8 +9,8 @@ import csv
 
 def read_agents(agent_route,scenario):
     with h5py.File(agent_route, 'r') as hdf:
-        base_items = list(hdf.items())
-        print('Items in the base directory:', base_items)
+        #base_items = list(hdf.items())
+        #print('Items in the base directory:', base_items)
         if scenario == '0':
             agentType = 'Client'
         elif scenario == '1':
@@ -33,10 +33,10 @@ def read_agents(agent_route,scenario):
             ids = np.array(G1_items[5][1])
             infected = np.array(G1_items[6][1])
             infectionTime = np.array(G1_items[7][1])
-            sick = np.array(G1_items[8][1])
-            timeInSimulation = np.array(G1_items[9][1])
-            x_coords = np.array(G1_items[10][1])
-            y_coords = np.array(G1_items[11][1])
+            sick = np.array(G1_items[9][1])
+            timeInSimulation = np.array(G1_items[10][1])
+            x_coords = np.array(G1_items[11][1])
+            y_coords = np.array(G1_items[12][1])
             if scenario == '0':
                 G2 = hdf.get('/Cashier/step' + str(i))
                 G2_items = list(G2.items())
@@ -48,10 +48,10 @@ def read_agents(agent_route,scenario):
                 ids_cashiers = np.array(G2_items[5][1])
                 infected_cashier = np.array(G2_items[6][1])
                 infectionTime_cashier = np.array(G2_items[7][1])
-                sick_cashier = np.array(G2_items[8][1])
-                timeInSimulation_cashier = np.array(G2_items[9][1])
-                x_cashiers = np.array(G2_items[10][1])
-                y_cashiers = np.array(G2_items[11][1])
+                sick_cashier = np.array(G2_items[9][1])
+                timeInSimulation_cashier = np.array(G2_items[8][1])
+                x_cashiers = np.array(G2_items[11][1])
+                y_cashiers = np.array(G2_items[12][1])
 
                 if ids.size != 0 and ids_cashiers.size != 0:
                     SICKcombinedBucketsNotifications = np.append(SICKcombinedBucketsNotifications,SICKcombinedBucketsNotifications_cashier)
