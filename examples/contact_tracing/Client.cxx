@@ -94,7 +94,9 @@ int Client::getStopTime() {
 }
 
 void Client::setMemory(const std::list<Engine::Point2D<int>>& path) {
+    //std::cout << getId() << std::endl;
     _memory = path;
+    //for (std::list<Engine::Point2D<int>>::iterator it=_memory.begin(); it != _memory.end(); ++it) std::cout << ' ' << *it << std::endl;
 }
 
 void Client::popFrontMemory() {
