@@ -19,8 +19,8 @@
  *
  */
 
-#ifndef __RNGNormal__hxx__
-#define __RNGNormal__hxx__
+#ifndef __RNGUniformDouble__hxx__
+#define __RNGUniformDouble__hxx__
 
 #include "RNG.hxx"
 
@@ -29,7 +29,7 @@
 namespace Engine
 {
 
-    class RNGNormal : public RNG<double>
+    class RNGUniformDouble : public RNG<double>
     {
         
         private: 
@@ -38,48 +38,49 @@ namespace Engine
 
         protected:
 
-            double _mean;
-            double _stdDev;
+            double _a;
+            double _b;
 
             RandomEngine _randomGenerator;
-            boost::normal_distribution<> _distributionType;
-	        boost::variate_generator< RandomEngine, boost::normal_distribution<> > _nextRandomNumber;
+
+            boost::uniform_real<> _distributionType;
+	        boost::variate_generator< RandomEngine, boost::uniform_real<> > _nextRandomNumber;
 
         public:
 
             /**
-             * @brief Construct a new RNGNormal object.
+             * @brief Constructs a new RNGUniform object.
              * 
              * @param seed const uint64_t&
-             * @param mean const double&
-             * @param stdDev const double&
+             * @param a const double&
+             * @param b const double&
              */
-            RNGNormal(const uint64_t& seed, const double& mean, const double& stdDev);
+            RNGUniformDouble(const uint64_t& seed, const double& a, const double& b);
 
             /**
-             * @brief Destroy the RNGNormal object.
+             * @brief Destroy the RNGUniform object.
              * 
              */
-            virtual ~RNGNormal();
+            virtual ~RNGUniformDouble();
 
             /**
-             * @brief Get the mean of the Normal distribution instance.
+             * @brief Gets the _a parameter of the uniform distribution.
              * 
-             * @return float
+             * @return int
              */
-            double getMean() const;
+            double getA() const;
 
             /**
-             * @brief Get the mean of the Normal distribution instance.
+             * @brief Gets the _b parameter of the uniform distribution.
              * 
-             * @return float 
+             * @return int
              */
-            double getStdDev() const;
+            double getB() const;
 
             /**
-             * @brief Get a normal distribution value.
+             * @brief Get a uniform distribution value.
              * 
-             * @return float 
+             * @return int
              */
             double draw();
 
@@ -87,4 +88,4 @@ namespace Engine
 
 }
 
-#endif // __RNGNormal__hxx__
+#endif // __RNGUniformDouble__hxx__
