@@ -49,6 +49,12 @@ namespace Engine
         public:
 
             /**
+             * @brief Default constructor for RNGUniformInt (_seed = 0; _a = 0, _b = 1).
+             * 
+             */
+            RNGUniformInt();
+
+            /**
              * @brief Constructs a new RNGUniform object.
              * 
              * @param seed const uint64_t&
