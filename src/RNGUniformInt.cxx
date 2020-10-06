@@ -19,30 +19,31 @@
  *
  */
 
-#include <RNGNormal.hxx>
+#include <RNGUniformInt.hxx>
 
 namespace Engine
 {
 
-    RNGNormal::RNGNormal(const uint64_t& seed, const double& mean, const double& stdDev) : RNG(seed), _mean(mean), _stdDev(stdDev), _randomGenerator(_seed), _distributionType(_mean, _stdDev), _nextRandomNumber(_randomGenerator, _distributionType)
-    {  
-    }
-
-    RNGNormal::~RNGNormal() 
+    RNGUniformInt::RNGUniformInt(const uint64_t& seed, const int& a, const int& b) : RNG(seed), _a(a), _b(b), _randomGenerator(_seed), _distributionType(_a, _b), _nextRandomNumber(_randomGenerator, _distributionType)
     {
     }
-    
-    double RNGNormal::getMean() const
+
+    RNGUniformInt::~RNGUniformInt()
     {
-        return _mean;
     }
 
-    double RNGNormal::getStdDev() const
+    int RNGUniformInt::getA() const
     {
-        return _stdDev;
+        return _a;
     }
 
-    double RNGNormal::draw() {
+    int RNGUniformInt::getB() const
+    {
+        return _b;
+    }
+
+    int RNGUniformInt::draw()
+    {
         return _nextRandomNumber();
     }
 
