@@ -7,7 +7,7 @@
 	<mpi overlapSizeMPI="6" subpartitioningMode="9" rebalancingFreq="10"/>
 	<size width="40" height="40"/>
 	<Raster mapRoute="./maps/spar2.png"/>
-	<Client clientRate="10" drifting="0.09" stopping="0.02" stopTime="20" wander="0.15"/>
+	<Client clientRate="30" drifting="0.09" stopping="0.02" stopTime="20" wander="0.15"/>
     <Cashier numCashiers="3" sickCashiers="0" cashierShift="1000"/>
     <Epidemiology infectiousness="0.00371" infectoinRadius="2" sickRate="0.3" encounterRadius="2" maxSick="-1"/>
 	<Phone signalRadius="6" applicationRate="1.0" phoneThreshold1="63" phoneThreshold2="74"/>

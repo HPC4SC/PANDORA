@@ -4,6 +4,8 @@
 #include <SupermarketConfig.hxx>
 
 #include <World.hxx>
+#include <RNGUniformDouble.hxx>
+#include <RNGUniformInt.hxx>
 
 #include <vector>
 #include <map>
@@ -50,6 +52,22 @@ class Supermarket : public Engine::World
     int _currentSickCashiers = 0;
 
     bool _first = true;
+
+    int _seedRun = _supermarketConfig.getSeed();
+
+    Engine::RNGUniformDouble _uniformZeroOne = Engine::RNGUniformDouble(_seedRun,0.,1.);
+
+    Engine::RNGUniformInt _uniMinusOneOne = Engine::RNGUniformInt(_seedRun,-1,1);
+
+    Engine::RNGUniformInt _uniCashierWorkplace = Engine::RNGUniformInt(_seedRun,0,(int)_cashierWorkplace.size() - 1);
+
+    Engine::RNGUniformInt _uniEntry = Engine::RNGUniformInt(_seedRun,0,_entry.size() - 1);
+
+    Engine::RNGUniformInt _uniExit = Engine::RNGUniformInt(_seedRun,0,_exit.size() - 1);
+
+    Engine::RNGUniformInt _uniZoneProbabilities = Engine::RNGUniformInt(_seedRun,0,(int)_zoneProbabilities.size() - 1);
+
+    Engine::RNGUniformInt _uniZoneTargets = Engine::RNGUniformInt(_seedRun,0,(int)_zoneTargets.size() - 1);
 
     public:
         
@@ -106,6 +124,12 @@ class Supermarket : public Engine::World
         bool validPosition(const int& rr, const int& cc, const std::vector<std::vector<bool>>& visited);
 
         std::list<Engine::Point2D<int>> reconstructPath(const Engine::Point2D<int>& pos, const Engine::Point2D<int>& target, const std::vector<std::vector<Engine::Point2D<int>>>& prev);
+
+        double getUniformZeroOne();
+
+        int getUniformMinusOneOne();
+
+        int getSeedRun();
 };
 
 }

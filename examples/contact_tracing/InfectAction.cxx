@@ -1,9 +1,11 @@
 #include <InfectAction.hxx>
 #include <SupermarketConfig.hxx>
 #include <Supermarket.hxx>
+#include <Client.hxx>
 
 #include <Exception.hxx>
 #include <GeneralState.hxx>
+#include <RNGNormal.hxx>
 
 #include <iostream>
 #include <vector>
@@ -16,7 +18,9 @@ InfectAction::InfectAction() {}
 InfectAction::~InfectAction() {}
 
 void InfectAction::execute(Engine::Agent & agent) {
+    Client& client = (Client&)agent;
     HumanBeeing& person = (HumanBeeing&)agent;
+    Supermarket* super = client.getSuper();
     Engine::Agent* p_agent = agent.getWorld()->getAgent(agent.getId());
     Engine::AgentsVector neighbours = person.getWorld()->getNeighbours(p_agent, person.getEncounterRadius(),"all");
     Engine::World* world = agent.getWorld();
@@ -26,8 +30,8 @@ void InfectAction::execute(Engine::Agent & agent) {
             Engine::Agent* candidate = neighbour->get();
 			HumanBeeing* other = dynamic_cast<HumanBeeing*>(candidate);
             const SupermarketConfig& config = (const SupermarketConfig &) world->getConfig();
-            float draw = Engine::GeneralState::statistics().getNormalDistValueMinMax(0.,1.);
-            if (not (other->isSick() or other->isInfected()) and not barrier(person,other,world) and draw < config.getInfectiousness()) {
+            Engine::RNGNormal normal = Engine::RNGNormal(super->getSeedRun(),0.,1.);
+            if (not (other->isSick() or other->isInfected()) and not barrier(person,other,world) and normal.draw() < config.getInfectiousness()) {
                 std::cout << "F " << person.getId() << " infected " << other->getId() << std::endl;
                 other->getInfected();
                 other->setInfectionTime(world->getCurrentStep());
