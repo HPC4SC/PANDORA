@@ -17,6 +17,4 @@ void Cashier::selectActions() {
     _actions.push_back(new InfectAction());
 }
 
-void Cashier::updateKnowledge() {}
-
 }

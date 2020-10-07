@@ -32,7 +32,8 @@ void Client::selectActions() {
                 sumOfWeights += it->second;
                 it++;
             }
-            double rnd = Engine::GeneralState::statistics().getUniformDistValue(0,sumOfWeights*100);
+            Engine::RNGUniformDouble distribution = Engine::RNGUniformDouble(_super->getSeedRun(),0.,sumOfWeights*100);
+            double rnd = distribution.draw();
             rnd /= 100;
             it = probabilities.begin();
             while (it != probabilities.end()) {
@@ -60,7 +61,7 @@ void Client::selectActions() {
         }
         if (_super->isExit(getPosition())) _actions.push_back(new LeaveAction());
         else {
-            if (Engine::GeneralState::statistics().getUniformDistValue() > 0.5) _purchaseDecided = false;
+            if (_super->getUniformZeroOne() > 0.5) _purchaseDecided = false;
         }
     }
 }
@@ -94,9 +95,7 @@ int Client::getStopTime() {
 }
 
 void Client::setMemory(const std::list<Engine::Point2D<int>>& path) {
-    //std::cout << getId() << std::endl;
     _memory = path;
-    //for (std::list<Engine::Point2D<int>>::iterator it=_memory.begin(); it != _memory.end(); ++it) std::cout << ' ' << *it << std::endl;
 }
 
 void Client::popFrontMemory() {

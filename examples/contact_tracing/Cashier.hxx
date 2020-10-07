@@ -28,8 +28,6 @@ class Cashier : public Examples::HumanBeeing
 
         void selectActions();
 
-		void updateKnowledge();
-
 	////////////////////////////////////////////////
 	// This code has been automatically generated //
 	/////// Please do not modify it ////////////////

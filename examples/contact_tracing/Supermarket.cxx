@@ -36,15 +36,15 @@ void Supermarket::createCashier() {
     _cashierId++;
     bool sick = false;
     if (_currentSickCashiers < _supermarketConfig._sickCashiers and _supermarketConfig._sickCashiers != -1) sick = true;
-    int initWorkedTime = _supermarketConfig._cashierShift * Engine::GeneralState::statistics().getUniformDistValue();
-    bool hasApp = Engine::GeneralState::statistics().getUniformDistValue() < _supermarketConfig._applicationRate;
+    int initWorkedTime = _supermarketConfig._cashierShift * _uniformZeroOne.draw();
+    bool hasApp = _uniformZeroOne.draw() < _supermarketConfig._applicationRate;
     Cashier* cashier = new Cashier(oss.str(),sick,_supermarketConfig._cashierShift,initWorkedTime,
         _supermarketConfig._phoneThreshold1,_supermarketConfig._phoneThreshold2,hasApp,_supermarketConfig._signalRadius,_supermarketConfig._encounterRadius);
     addAgent(cashier);
-    int spawnIndex = Engine::GeneralState::statistics().getUniformDistValue(0,_cashierWorkplace.size() - 1);
+    int spawnIndex = _uniCashierWorkplace.draw();
     Engine::Point2D<int> spawn = _cashierWorkplace[spawnIndex];
     while (not this->checkPosition(spawn)) {
-        spawnIndex = Engine::GeneralState::statistics().getUniformDistValue(0,_cashierWorkplace.size() - 1);
+        spawnIndex = _uniCashierWorkplace.draw();
         spawn = _cashierWorkplace[spawnIndex];
     }
     cashier->setPosition(spawn);
@@ -55,19 +55,19 @@ void Supermarket::createClient() {
     oss << "Client_" << _clientId;
     _clientId++;
     bool sick = false;
-    if (Engine::GeneralState::statistics().getUniformDistValue() < _supermarketConfig._sickRate) sick = true;
-    float purchaseSpeed = Engine::GeneralState::statistics().getUniformDistValue();
-    float stopping = Engine::GeneralState::statistics().getUniformDistValue() * _supermarketConfig._stopping;
-    int stopTime = (int)Engine::GeneralState::statistics().getUniformDistValue() * _supermarketConfig._stopTime;
-    bool hasApp = Engine::GeneralState::statistics().getUniformDistValue() < _supermarketConfig._applicationRate;
+    if (_uniformZeroOne.draw() < _supermarketConfig._sickRate) sick = true;
+    float purchaseSpeed = _uniformZeroOne.draw();
+    float stopping = _uniformZeroOne.draw() * _supermarketConfig._stopping;
+    int stopTime = (int)_uniformZeroOne.draw() * _supermarketConfig._stopTime;
+    bool hasApp = _uniformZeroOne.draw() < _supermarketConfig._applicationRate;
     Client* client = new Client(oss.str(),sick,purchaseSpeed,stopping,stopTime,_step,
         _supermarketConfig._phoneThreshold1,_supermarketConfig._phoneThreshold2,hasApp,_supermarketConfig._signalRadius,_supermarketConfig._encounterRadius,this,
         _supermarketConfig._wander);
     addAgent(client);
-    int spawnIndex = Engine::GeneralState::statistics().getUniformDistValue(0,_entry.size() - 1);
+    int spawnIndex = _uniEntry.draw();
     Engine::Point2D<int> spawn = _entry[spawnIndex];
     while (not this->checkPosition(spawn)) {
-        spawnIndex = Engine::GeneralState::statistics().getUniformDistValue(0,_entry.size() - 1);
+        spawnIndex = _uniEntry.draw();
         spawn = _entry[spawnIndex];
     }
     client->setPosition(spawn);
@@ -144,8 +144,7 @@ bool Supermarket::isCashier(Engine::Point2D<int> point) {
 }
 
 Engine::Point2D<int> Supermarket::getRandomExit() {
-    int index = Engine::GeneralState::statistics().getUniformDistValue(0,_exit.size()-1);
-    return _exit[index];
+    return _exit[_uniExit.draw()];
 }
 
 int Supermarket::getCurrentZone(const Engine::Point2D<int>& pos) {
@@ -190,8 +189,7 @@ void Supermarket::setupZoneProbabilities() {
     std::map<int,double>::iterator it = _zoneProbabilities.begin();
     while (it != _zoneProbabilities.end()) {
         if (it->second == 0 ) {
-            int expandZone = Engine::GeneralState::statistics().getUniformDistValue(0,_zoneProbabilities.size()-1);
-            std::map<int,double>::iterator it2 = _zoneProbabilities.find(zone_tragets[expandZone]);
+            std::map<int,double>::iterator it2 = _zoneProbabilities.find(zone_tragets[_uniZoneProbabilities.draw()]);
             double currentProb = it2->second;
             it2->second = currentProb/2.;
             it->second = currentProb/2.;
@@ -212,8 +210,8 @@ void Supermarket::calculateCentroids() {
     std::map<int,std::vector<Engine::Point2D<int>>>::iterator it = _zoneTargets.begin();
     while (it != _zoneTargets.end()) {
         std::vector<Engine::Point2D<int>> targets = it->second;
-        int randIndex = Engine::GeneralState::statistics().getUniformDistValue(0,targets.size()-1);
-        _centroids.insert(std::pair<int,Engine::Point2D<int>>(it->first,it->second[randIndex]));
+        Engine::RNGUniformInt uniTargets = Engine::RNGUniformInt(_seedRun,0,(int)targets.size() - 1);
+        _centroids.insert(std::pair<int,Engine::Point2D<int>>(it->first,it->second[uniTargets.draw()]));
         it++;
     }
 }
@@ -251,8 +249,7 @@ void Supermarket::normalizeTransitionProbabilities() {
 }
 
 Engine::Point2D<int> Supermarket::pickTargetFromZone(const int& zone) {
-    int randIdx = Engine::GeneralState::statistics().getUniformDistValue(0,_zoneTargets[zone].size()-1);
-    return _zoneTargets[zone][randIdx];
+    return _zoneTargets[zone][_uniZoneTargets.draw()];
 }
 
 std::list<Engine::Point2D<int>> Supermarket::getShortestPath(const Engine::Point2D<int>& pos, const Engine::Point2D<int>& target) {
@@ -303,6 +300,18 @@ std::list<Engine::Point2D<int>> Supermarket::reconstructPath(const Engine::Point
     path.reverse();
     if (path.front() == pos) return path;
     return {};
+}
+
+double Supermarket::getUniformZeroOne() {
+    return _uniformZeroOne.draw();
+}
+
+int Supermarket::getUniformMinusOneOne() {
+    return _uniMinusOneOne.draw();
+}
+
+int Supermarket::getSeedRun() {
+    return _seedRun;
 }
 
 }

@@ -1,5 +1,6 @@
 #include <MoveAction.hxx>
 #include <Client.hxx>
+#include <Supermarket.hxx>
 
 #include <Exception.hxx>
 #include <GeneralState.hxx>
@@ -15,10 +16,11 @@ MoveAction::~MoveAction() {}
 void MoveAction::execute(Engine::Agent & agent) {
 	Client& client = (Client&)agent;
 	Engine::World* world = agent.getWorld();
+	Supermarket* super = client.getSuper();
 	if (client.getStopCounter() > 0) client.decreaseStopCounter();
 	else {
-		if (Engine::GeneralState::statistics().getUniformDistValue() < client.getStopping()) {
-			client.setStopCounter((int)Engine::GeneralState::statistics().getUniformDistValue()*client.getStopTime());
+		if (super->getUniformZeroOne() < client.getStopping()) {
+			client.setStopCounter((int)super->getUniformZeroOne()*client.getStopTime());
 		}
 		else {
 			Engine::Point2D<int> newPosition;
@@ -29,17 +31,17 @@ void MoveAction::execute(Engine::Agent & agent) {
 			//std::cout << "nextmemoryposition is: " << nextMemoryPosition <<
 			newPosition = nextMemoryPosition;
 			//std::cout << "Agent: " << agent.getId() << " is in position " << agent.getPosition() << " is: " << newPosition << std::endl;
-			if (not world->checkPosition(newPosition) and Engine::GeneralState::statistics().getUniformDistValue() < client.getWander()) {
+			if (not world->checkPosition(newPosition) and super->getUniformZeroOne() < client.getWander()) {
 				newPosition = client.getPosition();
-				int modX = Engine::GeneralState::statistics().getUniformDistValue(-1,1);
-				int modY = Engine::GeneralState::statistics().getUniformDistValue(-1,1);
+				int modX = super->getUniformMinusOneOne();
+				int modY = super->getUniformMinusOneOne();
 				newPosition._x += modX;
 				newPosition._y += modY;
 				int count = 0;
 				while (not world->checkPosition(newPosition) or world->getStaticRaster("layout").getValue(newPosition) == 0) {
 					newPosition = client.getPosition();
-					modX = Engine::GeneralState::statistics().getUniformDistValue(-1,1);
-					modY = Engine::GeneralState::statistics().getUniformDistValue(-1,1);
+					modX = super->getUniformMinusOneOne();
+					modY = super->getUniformMinusOneOne();
 					newPosition._x += modX;
 					newPosition._y += modY;
 					count++;
