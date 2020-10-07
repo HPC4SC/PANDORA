@@ -38,14 +38,14 @@ void Train::createPassanger() {
     oss << "Passanger_" << _passangerId;
     _passangerId++;
     bool sick = false;
-    if (Engine::GeneralState::statistics().getUniformDistValue() < _trainConfig._sickRate) sick = true;
-    bool hasApp = Engine::GeneralState::statistics().getUniformDistValue() < _trainConfig._applicationRate;
-    bool willSeat = Engine::GeneralState::statistics().getUniformDistValue() < _trainConfig._sittingPreference;
+    if (_uniformZeroOne.draw() < _trainConfig._sickRate) sick = true;
+    bool hasApp = _uniformZeroOne.draw() < _trainConfig._applicationRate;
+    bool willSeat = _uniformZeroOne.draw() < _trainConfig._sittingPreference;
     Passanger* passanger = new Passanger(oss.str(),sick,_trainConfig._encounterRadius,_trainConfig._phoneThreshold1,_trainConfig._phoneThreshold2,hasApp,
         _trainConfig._signalRadius,_trainConfig._move,willSeat,this);
     addAgent(passanger);
-    int spawnIndex = Engine::GeneralState::statistics().getUniformDistValue(0,_doors.size() - 1);
-    while (not this->checkPosition(_doors[spawnIndex])) spawnIndex = Engine::GeneralState::statistics().getUniformDistValue(0,_doors.size() - 1);
+    int spawnIndex = _uniDoors.draw();
+    while (not this->checkPosition(_doors[spawnIndex])) spawnIndex = _uniDoors.draw();
     passanger->setPosition(_doors[spawnIndex]);
 }
 
@@ -146,7 +146,6 @@ void Train::exploreNeighbours(int& r, int& c, std::vector<std::vector<bool>>& vi
 
 bool Train::validPosition(const int& rr, const int& cc, const std::vector<std::vector<bool>>& visited, const bool& exiting) {
     bool res = rr >= 0 and cc >= 0  and rr < _trainConfig.getSize().getWidth() and cc < _trainConfig.getSize().getHeight() and (not visited[rr][cc]);
-    //if (not exiting) res = res and getStaticRaster("layout").getValue(Engine::Point2D<int>(rr,cc)) == 255;
     return res;
 }
 
@@ -187,5 +186,18 @@ void Train::agentLeaves() {
 std::vector<Engine::Point2D<int>> Train::getAvaliableSeats() {
     return _avaliableSeats;
 }
+
+double Train::getUniZeroOne() {
+    return _uniformZeroOne.draw();
+}
+
+int Train::getRandomIndexAvaliableSeats() {
+    return _uniAvaliableSeats.draw();
+}
+
+int Train::getUniMinusOneOne() {
+    return _uniMinusOneOne.draw();
+}
+
 
 }

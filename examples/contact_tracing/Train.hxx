@@ -6,6 +6,8 @@
 
 #include <World.hxx>
 #include <Point2D.hxx>
+#include<RNGUniformDouble.hxx>
+#include <RNGUniformInt.hxx>
 
 #include <vector>
 #include <string>
@@ -40,6 +42,16 @@ class Train : public Engine::World
         int _agentsToLeave = 0;
 
         std::vector<Engine::Point2D<int>> _avaliableSeats;
+
+        int _seedRun = _trainConfig.getSeed();
+
+        Engine::RNGUniformDouble _uniformZeroOne = Engine::RNGUniformDouble(_seedRun,0.,1.);
+
+        Engine::RNGUniformInt _uniMinusOneOne = Engine::RNGUniformInt(_seedRun,-1,1);
+
+        Engine::RNGUniformInt _uniAvaliableSeats = Engine::RNGUniformInt(_seedRun,0,(int)_avaliableSeats.size() - 1);
+
+        Engine::RNGUniformInt _uniDoors = Engine::RNGUniformInt(_seedRun,0,(int)_doors.size() - 1);
 
     public:
         Train(Engine::Config* config, Engine::Scheduler* scheduler = 0);
@@ -77,6 +89,12 @@ class Train : public Engine::World
         void agentLeaves();
 
         void setupAvaliableSeats();
+
+        double getUniZeroOne();
+
+        int getRandomIndexAvaliableSeats();
+
+        int getUniMinusOneOne();
 
 };
 
