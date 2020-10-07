@@ -48,6 +48,12 @@ namespace Engine
         public:
 
             /**
+             * @brief Default constructor for RNGNormal (_seed = 0; _mean = 0, _stdDev = 1).
+             * 
+             */
+            RNGNormal();
+
+            /**
              * @brief Construct a new RNGNormal object.
              * 
              * @param seed const uint64_t&

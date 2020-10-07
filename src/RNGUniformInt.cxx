@@ -24,6 +24,10 @@
 namespace Engine
 {
 
+    RNGUniformInt::RNGUniformInt() : RNG(), _a(0), _b(1), _randomGenerator(_seed), _distributionType(_a, _b), _nextRandomNumber(_randomGenerator, _distributionType)
+    {
+    }
+
     RNGUniformInt::RNGUniformInt(const uint64_t& seed, const int& a, const int& b) : RNG(seed), _a(a), _b(b), _randomGenerator(_seed), _distributionType(_a, _b), _nextRandomNumber(_randomGenerator, _distributionType)
     {
     }

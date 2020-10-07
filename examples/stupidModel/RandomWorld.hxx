@@ -3,6 +3,8 @@
 #define __RandomWorld_hxx
 
 #include <World.hxx>
+#include <RNGNormal.hxx>
+#include <RNGUniformDouble.hxx>
 
 namespace Examples 
 {
@@ -12,8 +14,6 @@ class RandomWorldConfig;
 class RandomWorld : public Engine::World {
 	
 	int _maxProductionRate; // attributhe that represents the maximum amount of food that each position can generate in one step
-	
-	
 	
 public:
 	// creates a RandomWorld instance

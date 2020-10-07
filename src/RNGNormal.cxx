@@ -24,6 +24,10 @@
 namespace Engine
 {
 
+    RNGNormal::RNGNormal() : RNG(), _mean(0), _stdDev(1), _randomGenerator(_seed), _distributionType(_mean, _stdDev), _nextRandomNumber(_randomGenerator, _distributionType)
+    {
+    }
+
     RNGNormal::RNGNormal(const uint64_t& seed, const double& mean, const double& stdDev) : RNG(seed), _mean(mean), _stdDev(stdDev), _randomGenerator(_seed), _distributionType(_mean, _stdDev), _nextRandomNumber(_randomGenerator, _distributionType)
     {  
     }

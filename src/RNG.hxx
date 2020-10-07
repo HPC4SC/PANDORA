@@ -38,6 +38,12 @@ namespace Engine
         public:
         
             /**
+             * @brief Default constructor for RNG class.
+             * 
+             */
+            RNG() : _seed(0) {}
+
+            /**
              * @brief Construct a new RNG object.
              * 
              */
