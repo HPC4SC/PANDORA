@@ -34,12 +34,12 @@ void Passanger::selectActions() {
             _actions.push_back(new SeatAction);
         }
         else if (_entering or _willSeat) {
-            if (not _willSeat and Engine::GeneralState::statistics().getUniformDistValue() < _move) _actions.push_back(new RandomMoveAction);
+            if (not _willSeat and _train->getUniZeroOne() < _move) _actions.push_back(new RandomMoveAction);
             else {
                 if (_targetPath.empty()) {
                     std::vector<Engine::Point2D<int>> avaliableSeats = _train->getAvaliableSeats();
                     if (not avaliableSeats.empty()) {
-                        _targetPosition = avaliableSeats[Engine::GeneralState::statistics().getUniformDistValue(0,avaliableSeats.size()-1)];
+                        _targetPosition = avaliableSeats[_train->getRandomIndexAvaliableSeats()];
                         setPath();
                         popCurrentPosition();
                     }
@@ -50,7 +50,7 @@ void Passanger::selectActions() {
                 } 
                 else {
                     _willSeat = false;
-                    if (Engine::GeneralState::statistics().getUniformDistValue() < _move) _actions.push_back(new RandomMoveAction);
+                    if (_train->getUniZeroOne() < _move) _actions.push_back(new RandomMoveAction);
                 }
             }
         }
@@ -76,6 +76,10 @@ void Passanger::popCurrentPosition() {
 
 bool Passanger::getExiting() {
     return _exiting;
+}
+
+Train* Passanger::getTrain() {
+    return _train;
 }
 
 }
