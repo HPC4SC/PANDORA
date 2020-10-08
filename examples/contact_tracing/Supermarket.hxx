@@ -6,6 +6,7 @@
 #include <World.hxx>
 #include <RNGUniformDouble.hxx>
 #include <RNGUniformInt.hxx>
+#include <RNGNormal.hxx>
 
 #include <vector>
 #include <map>
@@ -59,15 +60,17 @@ class Supermarket : public Engine::World
 
     Engine::RNGUniformInt _uniMinusOneOne = Engine::RNGUniformInt(_seedRun,-1,1);
 
-    Engine::RNGUniformInt _uniCashierWorkplace = Engine::RNGUniformInt(_seedRun,0,(int)_cashierWorkplace.size() - 1);
+    Engine::RNGNormal _normalZeroOne = Engine::RNGNormal(_seedRun,0.,1.);
 
-    Engine::RNGUniformInt _uniEntry = Engine::RNGUniformInt(_seedRun,0,_entry.size() - 1);
+    Engine::RNGUniformInt _uniCashierWorkplace;
 
-    Engine::RNGUniformInt _uniExit = Engine::RNGUniformInt(_seedRun,0,_exit.size() - 1);
+    Engine::RNGUniformInt _uniEntry;
 
-    Engine::RNGUniformInt _uniZoneProbabilities = Engine::RNGUniformInt(_seedRun,0,(int)_zoneProbabilities.size() - 1);
+    Engine::RNGUniformInt _uniExit;
 
-    Engine::RNGUniformInt _uniZoneTargets = Engine::RNGUniformInt(_seedRun,0,(int)_zoneTargets.size() - 1);
+    Engine::RNGUniformInt _uniZoneProbabilities;
+
+    std::map<double,Engine::RNGUniformDouble> _weights;
 
     public:
         
@@ -130,6 +133,12 @@ class Supermarket : public Engine::World
         int getUniformMinusOneOne();
 
         int getSeedRun();
+
+        double getNormalOneZero();
+
+        void createRNGDistributions();
+
+        double getRNGWeights(const double& weight);
 };
 
 }

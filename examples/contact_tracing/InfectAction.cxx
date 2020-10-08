@@ -5,7 +5,6 @@
 
 #include <Exception.hxx>
 #include <GeneralState.hxx>
-#include <RNGNormal.hxx>
 
 #include <iostream>
 #include <vector>
@@ -30,8 +29,7 @@ void InfectAction::execute(Engine::Agent & agent) {
             Engine::Agent* candidate = neighbour->get();
 			HumanBeeing* other = dynamic_cast<HumanBeeing*>(candidate);
             const SupermarketConfig& config = (const SupermarketConfig &) world->getConfig();
-            Engine::RNGNormal normal = Engine::RNGNormal(super->getSeedRun(),0.,1.);
-            if (not (other->isSick() or other->isInfected()) and not barrier(person,other,world) and normal.draw() < config.getInfectiousness()) {
+            if (not (other->isSick() or other->isInfected()) and not barrier(person,other,world) and super->getNormalOneZero() < config.getInfectiousness()) {
                 std::cout << "F " << person.getId() << " infected " << other->getId() << std::endl;
                 other->getInfected();
                 other->setInfectionTime(world->getCurrentStep());

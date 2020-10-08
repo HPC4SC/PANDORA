@@ -4,6 +4,7 @@
 
 #include <Exception.hxx>
 #include <GeneralState.hxx>
+#include <Logger.hxx>
 
 #include <list>
 namespace Examples 
@@ -53,7 +54,7 @@ void MoveAction::execute(Engine::Agent & agent) {
 				//std::cout << "newPosition is: " << nextMemoryPosition << " nextMemoryPosition " << nextMemoryPosition << " to " << newPosition << std::endl;
 				//if (newPosition != nextMemoryPosition) client.setMemory(client.getSuper()->getShortestPath(client.getPosition(),client.getTargetPosition()));
 				if (agent.getPosition().distance(newPosition) < 2) client.popFrontMemory();
-				if (agent.getPosition().distance(newPosition) >= 2) std::cout << "Agent " << agent.getId() << " moves form position " << agent.getPosition() << " to " << newPosition << " and distance is: " << agent.getPosition().distance(newPosition) << std::endl;
+				//if (agent.getPosition().distance(newPosition) >= 2) std::cout << "Agent " << agent.getId() << " moves form position " << agent.getPosition() << " to " << newPosition << " and distance is: " << agent.getPosition().distance(newPosition) << std::endl;
 				agent.setPosition(newPosition);
 			}
 		}

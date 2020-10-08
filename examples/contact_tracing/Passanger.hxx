@@ -42,6 +42,8 @@ class Passanger : public Examples::HumanBeeing
 
 		bool getExiting();
 
+		Train* getTrain();
+
 	////////////////////////////////////////////////
 	// This code has been automatically generated //
 	/////// Please do not modify it ////////////////

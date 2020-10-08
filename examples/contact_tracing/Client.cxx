@@ -5,6 +5,7 @@
 
 #include <World.hxx>
 #include <GeneralState.hxx>
+#include <Logger.hxx>
 
 namespace Examples
 {
@@ -32,8 +33,9 @@ void Client::selectActions() {
                 sumOfWeights += it->second;
                 it++;
             }
-            Engine::RNGUniformDouble distribution = Engine::RNGUniformDouble(_super->getSeedRun(),0.,sumOfWeights*100);
-            double rnd = distribution.draw();
+            //canviar i posar-ho al super
+            double rnd =  _super->getRNGWeights(sumOfWeights*100);
+            std::cout << "I'm " << getId() << " and rnd is: " << rnd << std::endl;
             rnd /= 100;
             it = probabilities.begin();
             while (it != probabilities.end()) {
@@ -48,7 +50,9 @@ void Client::selectActions() {
                 it--;
                 choice = it;
             }
+            std::cout << "I'm " << getId() << " and my next zone is: " << choice->first << " second: " << choice->second << std::endl;
             _targetPosition = _super->pickTargetFromZone(choice->first);
+            std::cout << "I'm " << getId() << " and my targetPosition is: " << _targetPosition << std::endl;
             _itemsPurchased++;
         }
         _purchaseDecided = true;

@@ -49,9 +49,9 @@ class Train : public Engine::World
 
         Engine::RNGUniformInt _uniMinusOneOne = Engine::RNGUniformInt(_seedRun,-1,1);
 
-        Engine::RNGUniformInt _uniAvaliableSeats = Engine::RNGUniformInt(_seedRun,0,(int)_avaliableSeats.size() - 1);
+        Engine::RNGUniformInt _uniAvaliableSeats;
 
-        Engine::RNGUniformInt _uniDoors = Engine::RNGUniformInt(_seedRun,0,(int)_doors.size() - 1);
+        Engine::RNGUniformInt _uniDoors;
 
     public:
         Train(Engine::Config* config, Engine::Scheduler* scheduler = 0);

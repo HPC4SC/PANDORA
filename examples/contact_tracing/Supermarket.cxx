@@ -95,6 +95,7 @@ void Supermarket::devideLayout() {
             }
         }
     }
+    createRNGDistributions();
     setupZoneProbabilities();
     addPurchaseProbability();
     calculateCentroids();
@@ -118,6 +119,7 @@ void Supermarket::step( )
         stepEnvironment( );
         log_DEBUG( logName.str( ), getWallTime( ) << " step: " << _step << " has executed step environment" );
         _scheduler->updateEnvironmentState();
+        log_DEBUG( logName.str( ), getWallTime( ) << " step: " << _step << " going to execute Agents" );
         _scheduler->executeAgents( );
         _scheduler->removeAgents( );
         log_INFO( logName.str( ), getWallTime( ) << " finished step: " << _step );
@@ -186,6 +188,7 @@ void Supermarket::setupZoneProbabilities() {
     std::vector<int> zone_tragets = {110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126};
     std::vector<double> probs = {14.7, 1.18, 2.88, 3.03, 2.93, 3.47, 9.08, 10.65, 28.3, 5.98, 15.76, 1.45, 0.59, 0, 0, 0, 0};
     for (unsigned int i = 0; i < probs.size(); i++) _zoneProbabilities.insert(std::pair<int,double>(zone_tragets[i],probs[i]));
+    _uniZoneProbabilities = Engine::RNGUniformInt(_seedRun,0,(int)_zoneProbabilities.size() - 1);
     std::map<int,double>::iterator it = _zoneProbabilities.begin();
     while (it != _zoneProbabilities.end()) {
         if (it->second == 0 ) {
@@ -249,7 +252,8 @@ void Supermarket::normalizeTransitionProbabilities() {
 }
 
 Engine::Point2D<int> Supermarket::pickTargetFromZone(const int& zone) {
-    return _zoneTargets[zone][_uniZoneTargets.draw()];
+    Engine::RNGUniformInt rng =  Engine::RNGUniformInt(_seedRun,0,(int)_zoneTargets[zone].size() - 1);
+    return _zoneTargets[zone][rng.draw()];
 }
 
 std::list<Engine::Point2D<int>> Supermarket::getShortestPath(const Engine::Point2D<int>& pos, const Engine::Point2D<int>& target) {
@@ -312,6 +316,25 @@ int Supermarket::getUniformMinusOneOne() {
 
 int Supermarket::getSeedRun() {
     return _seedRun;
+}
+
+void Supermarket::createRNGDistributions() {
+    _uniCashierWorkplace = Engine::RNGUniformInt(_seedRun,0,(int)_cashierWorkplace.size() - 1);
+    _uniEntry = Engine::RNGUniformInt(_seedRun,0,(int)_entry.size() - 1);
+    _uniExit = Engine::RNGUniformInt(_seedRun,0,(int)_exit.size() - 1);
+}
+
+double Supermarket::getNormalOneZero() {
+    return _normalZeroOne.draw();
+}
+
+double Supermarket::getRNGWeights(const double& weight) {
+    std::map<double,Engine::RNGUniformDouble>::iterator it = _weights.find(weight);
+    if (it == _weights.end()) {
+        _weights.insert(std::pair<double,Engine::RNGUniformDouble>(weight,Engine::RNGUniformDouble(_seedRun,0.,weight)));
+        it = _weights.find(weight);
+    }
+    return it->second.draw();
 }
 
 }
