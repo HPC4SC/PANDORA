@@ -57,6 +57,7 @@ void Train::setupRasters() {
             else if (getStaticRaster("layout").getValue(candidate) == 150) _seats.push_back(candidate);
         }
     }
+    _uniDoors = Engine::RNGUniformInt(_seedRun,0,(int)_doors.size() - 1);
 }
 
 void Train::step() {
@@ -173,6 +174,7 @@ void Train::setupAvaliableSeats() {
     for (unsigned int i = 0; i < _seats.size(); i++) {
         if (getAgent(_seats[i]).empty()) _avaliableSeats.push_back(_seats[i]);
     }
+    _uniAvaliableSeats = Engine::RNGUniformInt(_seedRun,0,(int)_avaliableSeats.size() - 1);
 }
 
 int Train::getAgentsToLeave() {
@@ -198,6 +200,5 @@ int Train::getRandomIndexAvaliableSeats() {
 int Train::getUniMinusOneOne() {
     return _uniMinusOneOne.draw();
 }
-
 
 }
