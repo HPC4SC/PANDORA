@@ -76,6 +76,9 @@ namespace Engine
             /** MPI Data Structures **/
             int _masterNodeID;                                              //! ID of the master node. Used for communication.
 
+            std::set<int> _activeProcesses;                                 //! Current active processes set.
+            MPI_Comm _activeProcessesComm, _inactiveProcessesComm;          //! Communicators for active and inactive MPI processes.
+
             struct Coordinates {
                 int top, left, bottom, right;
             };                                                              //! Struct used to parse in/out the to-be-send/received coordinates.
@@ -136,6 +139,27 @@ namespace Engine
             void createInitialAgents();
 
             /**
+             * @brief Updates the active and inactives communicators '_activeProcessesComm' and '_inactiveProcessesComm'.
+             * 
+             */
+            void updateActiveAndInactiveProcessingGroups();
+
+            /**
+             * @brief Enables 'numberOfProcessesToEnable' processes as active processes, sorted by their rank.
+             * 
+             * @param numberOfProcessesToEnable const int&
+             */
+            void enableOnlyProcesses(const int& numberOfProcessesToEnable);
+
+            /**
+             * @brief Initially block or let a process to continue executing its flow. Intented to be called at the beginning of the exeuction only.
+             * 
+             * @param masterNodeID const int&
+             * @return bool
+             */
+            bool processNeededAtTheBeginning(const int& masterNodeID);
+
+            /**
              * @brief It creates the binary tree '_root' representing the partitions of the world for each of the MPI tasks. Besides, it creates the nodes structs to be send to each one of the slaves.
              * 
              */
@@ -144,8 +168,9 @@ namespace Engine
             /**
              * @brief It fills own structures for _masterNodeID and sends the created spaces to the rest of MPI processes.
              * 
+             * @param masterNodeID const int&
              */
-            void sendInitialSpacesToNodes();
+            void sendInitialSpacesToNodes(const int& masterNodeID);
 
             /**
              * @brief It receives the created spaces from the MPI master node identified by 'masterNodeID'.

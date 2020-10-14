@@ -47,7 +47,8 @@ protected:
     std::string _configFile;    //! XML config file ( if it exists ).
     int _seed;                  //! Seed to be used for the RNG (Statistics class).
     int _overlapSize;           //! [Only for MPI scheduler] Overlap size in number of cells, defined for partition rectangles.
-    int _subpartitioningMode;   //! [Only for MPI scheduler] Subpartitioning mode 9 = 9 subpartitions per node, 4 = 4 subpartitions per node.
+    int _subpartitioningMode;   //! [Only for MPI scheduler] Subpartitioning mode 9 -> 9 subpartitions per node, 4 -> 4 subpartitions per node.
+    bool _initialPartitioning;  //! [Only for MPI scheduler] To perform an initial partitioning or not (used as "false" for models that do not create initial agents and/or having warm-up periods).
     int _rebalancingFreq;       //! [Only for MPI scheduler] Rebalancing frequency check in number of steps.
 
     bool _printInConsole;       //! For logging purposes
@@ -157,6 +158,13 @@ public:
      * @return const int& 
      */
     const int& getSubpartitioningMode() const;
+
+    /**
+     * @brief Gets the _initialPartitioning member.
+     * 
+     * @return const int& 
+     */
+    const bool& getInitialPartitioning() const;
 
     /**
      * @brief Gets the _rebalancingFreq member.
