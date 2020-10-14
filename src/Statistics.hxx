@@ -75,7 +75,19 @@ public:
 	 */
 	Statistics();
 
+	/**
+	 * @brief Sets the _seed member.
+	 * 
+	 * @param seed 
+	 */
 	void setSeed(uint64_t seed);
+
+	/**
+	 * @brief Gets the _seed member.
+	 * 
+	 * @return uint64_t 
+	 */
+	uint64_t getSeed() const;
 
 	/**
 	 * @brief Get an exponential distribution value.
