@@ -20,10 +20,10 @@ int main(int argc, char* argv[])
 			throw Engine::Exception("USAGE: contact_tracing [config file]");
 		}		
 	
-		std::string fileName("configSupermarket.xml");
+		std::string fileName("configTrain.xml");
 		if(argc!=1) // cambiar para mpi
 		{
-			fileName = "configSupermarket.xml";
+			fileName = "configTrain.xml";
 		}
 		if (fileName == "configSupermarket.xml") {
 			Examples::Supermarket super(new Examples::SupermarketConfig(fileName), super.useOpenMPIMultiNode());
