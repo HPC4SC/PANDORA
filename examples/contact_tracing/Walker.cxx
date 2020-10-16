@@ -51,4 +51,8 @@ float Walker::getSpeed() {
     return _speed;
 }
 
+Street* Walker::getStreet() {
+    return _street;
+}
+
 }

@@ -3,7 +3,8 @@
 	<output resultsFile="./data/contact_tracingTrain.h5" logsDir="./logs"/>
 	<numSteps value="2150" serializeResolution="1"/>
 	<seed value="0"/>
-	<overlapSizeMPI value="3"/>
+	<logs printInConsole="false" printInstrumentation="false"/>
+	<mpi overlapSizeMPI="3" subpartitioningMode="9" rebalancingFreq="10"/>
 	<size width="258" height="9"/>
 	<Raster mapRoute="./maps/train_layout.png" 
 		travelTimes="76 182 373 497 605 703 808 909 1002 1100 1178 1269 1366 1510 1592 1676 1761 1832 1906 1992 2101 2114"
