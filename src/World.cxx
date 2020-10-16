@@ -210,6 +210,10 @@ namespace Engine
         {
             // send/recv to _masterNode the number of agents in each node. if unbalanced with a 25% (for instance), then repartition.
             
+            //call methos in sched that look for which process you are and: 
+            // if you are the MASTER then send the signal to awake processes (if needed) and send the state to them
+            // if you have been JUST AWAKEN then prepare to receive the state from the master.
+
         }
     }
 
@@ -257,6 +261,8 @@ namespace Engine
 
     void World::run( )
     {
+        if (_scheduler->hasBeenTaggedAsFinished()) return;
+
         std::stringstream logName;
         logName << "simulation_" << getId( );
         log_INFO( logName.str( ), getWallTime( ) << " executing " << _config->getNumSteps( ) << " steps..." );

@@ -76,8 +76,9 @@ namespace Engine
             /** MPI Data Structures **/
             int _masterNodeID;                                              //! ID of the master node. Used for communication.
 
-            std::set<int> _activeProcesses;                                 //! Current active processes set.
-            MPI_Comm _activeProcessesComm, _inactiveProcessesComm;          //! Communicators for active and inactive MPI processes.
+            int _numberOfActiveProcesses;                                   //! Current number of active processes.
+            bool _justAwaken, _justFinished;
+            MPI_Comm _activeProcessesComm;                                  //! Communicator for active MPI processes.
 
             struct Coordinates {
                 int top, left, bottom, right;
@@ -139,25 +140,18 @@ namespace Engine
             void createInitialAgents();
 
             /**
-             * @brief Updates the active and inactives communicators '_activeProcessesComm' and '_inactiveProcessesComm'.
-             * 
-             */
-            void updateActiveAndInactiveProcessingGroups();
-
-            /**
-             * @brief Enables 'numberOfProcessesToEnable' processes as active processes, sorted by their rank.
+             * @brief Enables 'numberOfProcessesToEnable' processes as active processes, sorted by their rank. To do so, it updates the active processes communicator '_activeProcessesComm'.
              * 
              * @param numberOfProcessesToEnable const int&
              */
             void enableOnlyProcesses(const int& numberOfProcessesToEnable);
 
             /**
-             * @brief Initially block or let a process to continue executing its flow. Intented to be called at the beginning of the exeuction only.
+             * @brief Puts the calling process to sleep, waiting for an awake signal from the master node 'masterNodeID'.
              * 
              * @param masterNodeID const int&
-             * @return bool
              */
-            bool processNeededAtTheBeginning(const int& masterNodeID);
+            void putToSleep(const int& masterNodeID);
 
             /**
              * @brief It creates the binary tree '_root' representing the partitions of the world for each of the MPI tasks. Besides, it creates the nodes structs to be send to each one of the slaves.
@@ -166,7 +160,7 @@ namespace Engine
             void divideSpace();
 
             /**
-             * @brief It fills own structures for _masterNodeID and sends the created spaces to the rest of MPI processes.
+             * @brief It fills up own structures for _masterNodeID and sends the created spaces to the rest of MPI processes if necessray (_numTasks > 1).
              * 
              * @param masterNodeID const int&
              */
@@ -367,6 +361,12 @@ namespace Engine
              */
             void printNodeRasters() const;
 
+            /**
+             * @brief Prints the active and inactive processes at the current time.
+             * 
+             */
+            void printActiveAndInactiveProcesses() const;
+
             /** RUN PROTECTED METHODS (CALLED BY INHERIT METHODS) **/
 
             /**
@@ -563,12 +563,10 @@ namespace Engine
             void clearRequests();
 
             /**
-             * @brief Gets the iterator pointing to the agent identified by 'agentID'.
+             * @brief Finishes the currently sleeping processes.
              * 
-             * @param agentID const std::string&
-             * @return AgentsList::const_iterator 
              */
-            AgentsList::const_iterator getAgentIteratorFromID(const std::string& agentID);
+            void finishSleepingProcesses();
 
         public:
 
@@ -586,12 +584,7 @@ namespace Engine
              */
             virtual ~OpenMPIMultiNode();
 
-            /**
-             * @brief Sets the master node ('_masterNodeID' member)
-             * 
-             * @param masterNode const int&
-             */
-            void setMasterNode(const int& masterNode);
+            
 
             /** INITIALIZATION PUBLIC METHODS (INHERIT) **/
 
@@ -612,6 +605,13 @@ namespace Engine
             /** RUN PUBLIC METHODS (INHERIT) **/
 
             /**
+             * @brief Returns true if a signal has been sent from the master process to this process in order to finalize its flow. Controlled by the member variable _justFinished.
+             * 
+             * @return bool
+             */
+            bool hasBeenTaggedAsFinished() const override;
+
+            /**
              * @brief Updates the resources modified in the World::stepEnvironment() method.
              * 
              */
@@ -624,7 +624,7 @@ namespace Engine
             void executeAgents() override;
 
             /**
-             * @brief Executes needed after the simulation (e.g. finish communications for parallel nodes).
+             * @brief Executes everything needed to finalize the simulation (e.g. finish communications for parallel nodes).
              * 
              */
             void finish() override;

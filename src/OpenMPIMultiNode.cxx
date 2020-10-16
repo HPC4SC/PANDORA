@@ -36,17 +36,12 @@ namespace Engine {
 
     /** INITIALIZATION PUBLIC METHODS **/
 
-    OpenMPIMultiNode::OpenMPIMultiNode() : _initialTime(0.0f), _masterNodeID(0), _serializer(*this)
+    OpenMPIMultiNode::OpenMPIMultiNode() : _initialTime(0.0f), _masterNodeID(0), _justAwaken(false), _justFinished(false), _serializer(*this)
     {
     }
 
     OpenMPIMultiNode::~OpenMPIMultiNode()
     {
-    }
-
-    void OpenMPIMultiNode::setMasterNode(const int& masterNode)
-    {
-        _masterNodeID = masterNode;
     }
 
     void OpenMPIMultiNode::init(int argc, char *argv[]) 
@@ -69,38 +64,44 @@ namespace Engine {
 
         _tree = new LoadBalanceTree();
         _tree->setWorld(_world);
+        _tree->initializeTree();
+
+        _serializer.init(*_world);
+
+        MpiFactory::instance()->registerTypes();
     }
 
     void OpenMPIMultiNode::initData() 
     {
-        _serializer.init(*_world);
-
-        MpiFactory::instance()->registerTypes();
-
         createInitialRasters();
         createInitialAgents();
 
-        if (processNeededAtTheBeginning(_masterNodeID))
+        bool distributeFromTheBeginning = _world->getConfig().getInitialPartitioning();
+        if (not distributeFromTheBeginning)
+            _numTasks = 1;
+
+        _tree->setNumberOfPartitions(_numTasks);
+        enableOnlyProcesses(_numTasks);
+
+        if (getId() == _masterNodeID) 
         {
-            if (getId() == _masterNodeID) 
-            {
-                divideSpace();                                  printPartitionsBeforeMPI();
-                sendInitialSpacesToNodes(_masterNodeID);        printOwnNodeStructureAfterMPI();
-            }
-            else 
-            {
-                receiveInitialSpacesFromNode(_masterNodeID);    printOwnNodeStructureAfterMPI();
-            }
-
-            filterOutInitialAgents();                           printNodeAgents();
-            filterOutInitialRasters();                          printNodeRasters();
-
-    if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStringStream("\n").str());
-
-            stablishBoundaries();
-
-            //MPI_Barrier(MPI_COMM_WORLD);
+            divideSpace();                                  printPartitionsBeforeMPI();
+            sendInitialSpacesToNodes(_masterNodeID);        printOwnNodeStructureAfterMPI();
         }
+        else 
+        {
+            if (not distributeFromTheBeginning)
+                putToSleep(_masterNodeID);
+            else
+                receiveInitialSpacesFromNode(_masterNodeID);    printOwnNodeStructureAfterMPI();
+        }
+
+        filterOutInitialAgents();                           printNodeAgents();
+        filterOutInitialRasters();                          printNodeRasters();
+
+        stablishBoundaries();
+
+if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStringStream("\n").str());
     }
 
     /** INITIALIZATION PROTECTED METHODS **/
@@ -156,100 +157,65 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
 if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStringStream("[Process # " << getId() <<  "] createInitialAgents()\tTOTAL TIME: " << endTime - initialTime).str());
     }
 
-    void OpenMPIMultiNode::updateActiveAndInactiveProcessingGroups()
+    void OpenMPIMultiNode::enableOnlyProcesses(const int& numberOfProcessesToEnable)
     {
-        int totalNumberOfProcesses;
-        MPI_Comm_size(MPI_COMM_WORLD, &totalNumberOfProcesses);
+        _numberOfActiveProcesses = numberOfProcessesToEnable;
 
-        int activeGroupSize = _activeProcesses.size();
-        int inactiveGroupSize = totalNumberOfProcesses - _activeProcesses.size();
+        int* activeRanksArray = (int*) malloc(_numberOfActiveProcesses * sizeof(int));
 
-        int* activeRanksArray = (int*) malloc(activeGroupSize * sizeof(int));
-        int* inactiveRanksArray = (int*) malloc(inactiveGroupSize * sizeof(int));
+        for (int i = 0; i < _numberOfActiveProcesses; ++i)
+                activeRanksArray[i] = i;
 
-        int activeCounter = 0;
-        int inactiveCounter = 0;
-        for (int i = 0; i < totalNumberOfProcesses; ++i)
-        {
-            if (_activeProcesses.find(i) != _activeProcesses.end())
-                activeRanksArray[activeCounter++] = i;
-            else
-                inactiveRanksArray[inactiveCounter++] = i;
-        }
-
-        MPI_Group worldGroup;
+        MPI_Group worldGroup, activeGroup;
         MPI_Comm_group(MPI_COMM_WORLD, &worldGroup);
 
-        MPI_Group activeGroup, inactiveGroup;
-        MPI_Group_incl(worldGroup, activeGroupSize, activeRanksArray, &activeGroup);
-        MPI_Group_incl(worldGroup, inactiveGroupSize, inactiveRanksArray, &inactiveGroup);
+        MPI_Group_incl(worldGroup, _numberOfActiveProcesses, activeRanksArray, &activeGroup);
 
         MPI_Comm_create_group(MPI_COMM_WORLD, activeGroup, eCreateGroupActive, &_activeProcessesComm);
-        MPI_Comm_create_group(MPI_COMM_WORLD, inactiveGroup, eCreateGroupInactive, &_inactiveProcessesComm);
 
         MPI_Group_free(&worldGroup);
         MPI_Group_free(&activeGroup);
-        MPI_Group_free(&inactiveGroup);
-    }
-
-    void OpenMPIMultiNode::enableOnlyProcesses(const int& numberOfProcessesToEnable)
-    {
-        for (int processID = 0; processID < numberOfProcessesToEnable; ++processID)
-        {
-            if (_activeProcesses.find(processID) == _activeProcesses.end()) _activeProcesses.insert(processID);
-        }
-
-        updateActiveAndInactiveProcessingGroups();
 
         MPI_Barrier(MPI_COMM_WORLD);
-        int rank = -1;
-        if (_activeProcessesComm != MPI_COMM_NULL)
-        {
-            MPI_Comm_rank(_activeProcessesComm, &rank);
-            std::cout << CreateStringStream("[Process # " << getId() <<  "] active group rank: " << rank << " id: " << _id << "\n").str();
-        }
-        else if (_inactiveProcessesComm != MPI_COMM_NULL)
-        {
-            MPI_Comm_rank(_inactiveProcessesComm, &rank);
-            std::cout << CreateStringStream("[Process # " << getId() <<  "] inactive group rank: " << rank << " id: " << _id << "\n").str();
-        }
 
-        std::cout << CreateStringStream("\n\n").str();
+        printActiveAndInactiveProcesses();
     }
 
-    bool OpenMPIMultiNode::processNeededAtTheBeginning(const int& masterNodeID)
+    void OpenMPIMultiNode::putToSleep(const int& masterNodeID)
     {
-        if (not _world->getConfig().getInitialPartitioning())
+        bool wakeUp = false;
+        while (not wakeUp)
         {
-            _numTasks = 1;
-
-            if (getId() == masterNodeID)
+            int flag = 0;
+            while (flag == 0)
             {
-                enableOnlyProcesses(_numTasks);
-                enableOnlyProcesses(3);
+                int milisecondsToSleep = 10;
+                usleep(milisecondsToSleep * 1000);
+                MPI_Iprobe(masterNodeID, eProcessWakeUp, MPI_COMM_WORLD, &flag, MPI_STATUS_IGNORE);
             }
-            else    // Put non-master processes to sleep.
-            {
-                enableOnlyProcesses(_numTasks);
-                enableOnlyProcesses(3);
 
-                int flag = 0;
-                while (flag == 0)
+            int numberOfRequestedProcesses;
+            MPI_Recv(&numberOfRequestedProcesses, 1, MPI_INT, masterNodeID, eProcessWakeUp, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+            if (numberOfRequestedProcesses > getId())
+            {
+                int typeOfEventAfterWakeUp;
+                MPI_Recv(&typeOfEventAfterWakeUp, 1, MPI_INT, masterNodeID, eTypeOfEventAfterWakeUp, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                if (typeOfEventAfterWakeUp == eDie)
                 {
-                    usleep(10000);
-                    MPI_Iprobe(masterNodeID, eProcessWakeUp, MPI_COMM_WORLD, &flag, MPI_STATUS_IGNORE);
+                    finish();
+                    _justFinished = true;
+                    return;
                 }
-                int processID;
-                MPI_Recv(&processID, 1, MPI_INT, masterNodeID, eProcessWakeUp, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-                
-                return false;
+                else if (typeOfEventAfterWakeUp == ePrepareToReceiveUpdatedData)
+                {
+                    wakeUp = true;
+                    enableOnlyProcesses(numberOfRequestedProcesses);
+
+                    //receive state (rasters and agents)
+                }
             }
         }
-
-        _tree->setNumberOfPartitions(_numTasks);
-        _tree->initializeTree();
-
-        return true;
     }
 
     void OpenMPIMultiNode::divideSpace()
@@ -310,6 +276,8 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
 
     void OpenMPIMultiNode::filterOutInitialAgents()
     {
+        if (_justFinished) return;
+
         double initialTime = getWallTime();
 
         std::vector<Agent*> agentsToRemove;
@@ -331,6 +299,8 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
 
     void OpenMPIMultiNode::filterOutInitialRasters()
     {
+        if (_justFinished) return;
+
         double initialTime = getWallTime();
 
 
@@ -542,6 +512,8 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
 
     void OpenMPIMultiNode::stablishBoundaries()
     {
+        if (_justFinished) return;
+
         _boundaries = _nodeSpace.ownedArea;
     }
 
@@ -634,6 +606,8 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
 
     bool OpenMPIMultiNode::arePartitionsSuitable()
     {
+        if (_numTasks == 1) return true;
+
         for (MPINodesMap::const_iterator it = _mpiNodesMapToSend.begin(); it != _mpiNodesMapToSend.end(); ++it)
         {
             if (it->second.ownedArea.getSize().getWidth() < 4 * _overlapSize or
@@ -657,12 +631,33 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
     
     void OpenMPIMultiNode::printNodeAgents() const
     {
+        if (_justFinished) return;
+
         _schedulerLogs->printNodeAgentsInDebugFile(*this);
     }
 
     void OpenMPIMultiNode::printNodeRasters() const
     {
+        if (_justFinished) return;
+
         _schedulerLogs->printNodeRastersInDebugFile(*this);
+    }
+
+    void OpenMPIMultiNode::printActiveAndInactiveProcesses() const
+    {
+        int rank = -1;
+        if (_activeProcessesComm != MPI_COMM_NULL)
+        {
+            MPI_Comm_rank(_activeProcessesComm, &rank);
+            std::cout << CreateStringStream("[Process # " << getId() <<  "] active group rank: " << rank << " id: " << _id << "\n").str();
+        }
+        else if (MPI_COMM_WORLD != MPI_COMM_NULL)
+        {
+            MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+            std::cout << CreateStringStream("[Process # " << getId() <<  "] inactive group rank: " << rank << " id: " << _id << "\n").str();
+        }
+
+        std::cout << CreateStringStream("\n\n").str();
     }
 
     /** RUN PROTECTED METHODS (CALLED BY INHERIT METHODS) **/
@@ -880,9 +875,9 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
 
     void OpenMPIMultiNode::synchronizeAgentsIfNecessary(const AgentsVector& agentsVector, const int& subOverlapID)
     {
-        double initialTime = getWallTime();
-
         if (_numTasks == 1) return;
+
+        double initialTime = getWallTime();
 
         std::map<int, std::map<std::string, AgentsList>> agentsByTypeAndNode;
         initializeAgentsToSendMap(agentsByTypeAndNode);
@@ -1113,9 +1108,9 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
 
     void OpenMPIMultiNode::sendRastersToNeighbours(const int& subOverlapID)
     {
-        double initialTime = getWallTime();
-
         if (_numTasks == 1) return;
+
+        double initialTime = getWallTime();
 
         std::map<int, MapOfValuesByRaster> rastersValuesByNode;
         initializeRasterValuesToSendMap(rastersValuesByNode);
@@ -1156,9 +1151,9 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
 
     void OpenMPIMultiNode::receiveRasters(const int& subOverlapID)
     {
-        double initialTime = getWallTime();
-
         if (_numTasks == 1) return;
+
+        double initialTime = getWallTime();
 
         for (std::map<int, MPINode*>::const_iterator it = _nodeSpace.neighbours.begin(); it != _nodeSpace.neighbours.end(); ++it)
         {
@@ -1210,7 +1205,28 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
         }
     }
 
+    void OpenMPIMultiNode::finishSleepingProcesses()
+    {
+        if (getId() == _masterNodeID) 
+        {
+            int totalNumberOfProcesses;
+            MPI_Comm_size(MPI_COMM_WORLD, &totalNumberOfProcesses);
+            for (int processID = _numberOfActiveProcesses; processID < totalNumberOfProcesses; ++processID)
+            {
+                sendDataRequestToNode(&totalNumberOfProcesses, 1, MPI_INT, processID, eProcessWakeUp);
+
+                int endingEventType = eDie;
+                sendDataRequestToNode(&endingEventType, 1, MPI_INT, processID, eTypeOfEventAfterWakeUp);
+            }
+        }
+    }
+
     /** RUN PUBLIC METHODS (INHERIT) **/
+
+    bool OpenMPIMultiNode::hasBeenTaggedAsFinished() const
+    {
+        return _justFinished;
+    }
 
     void OpenMPIMultiNode::updateEnvironmentState()
     {
@@ -1221,7 +1237,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
         sendRastersToNeighbours();
         receiveRasters();
 
-        MPI_Barrier(MPI_COMM_WORLD);
+        MPI_Barrier(_activeProcessesComm);
     }
 
     void OpenMPIMultiNode::executeAgents()
@@ -1247,7 +1263,7 @@ _schedulerLogs->printNodeRastersInDebugFile(*this);
             receiveRasters(0);
 
             initialTime = getWallTime();
-            MPI_Barrier(MPI_COMM_WORLD);
+            MPI_Barrier(_activeProcessesComm);
             double endTime = getWallTime();
 if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStringStream("[Process # " << getId() <<  "] MPI_Barrier() AFTER OVERLAP: " << 0 << "\tTOTAL TIME: " << endTime - initialTime).str());
 
@@ -1282,7 +1298,7 @@ if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<
             //clearRequests(); // Is this really necessary?
 
             initialTime = getWallTime();
-            MPI_Barrier(MPI_COMM_WORLD);
+            MPI_Barrier(_activeProcessesComm);
             double endTime = getWallTime();
 if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStringStream("[Process # " << getId() <<  "] MPI_Barrier() AFTER OVERLAP: " << originalSubOverlapAreaID << "\tTOTAL TIME: " << endTime - initialTime).str());
 
@@ -1298,13 +1314,17 @@ if (_printInConsole) std::cout << CreateStringStream("\n").str();
 
 if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStringStream("\n").str());
     }
-    
+
     void OpenMPIMultiNode::finish() 
     {
+        finishSleepingProcesses();
+
         MpiFactory::instance()->cleanTypes();
 
         MPI_Type_free(_coordinatesDatatype);
         MPI_Type_free(_positionAndValueDatatype);
+
+        if (_numberOfActiveProcesses > getId()) MPI_Comm_free(&_activeProcessesComm);
 
 std::string totalSimulationTime = CreateStringStream("TotalSimulationTime: " << MPI_Wtime() - _initialTime << " seconds.\n").str();
 std::cout << totalSimulationTime;
