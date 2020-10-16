@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <vector>
+#include <cstdlib>
 
 namespace Examples 
 {
@@ -29,7 +30,8 @@ void InfectAction::execute(Engine::Agent & agent) {
             Engine::Agent* candidate = neighbour->get();
 			HumanBeeing* other = dynamic_cast<HumanBeeing*>(candidate);
             const SupermarketConfig& config = (const SupermarketConfig &) world->getConfig();
-            if (not (other->isSick() or other->isInfected()) and not barrier(person,other,world) and super->getNormalOneZero() < config.getInfectiousness()) {
+            double draw = std::abs(super->getUniformZeroOne());
+            if (not (other->isSick() or other->isInfected()) and not barrier(person,other,world) and draw < config.getInfectiousness()) {
                 std::cout << "F " << person.getId() << " infected " << other->getId() << std::endl;
                 other->getInfected();
                 other->setInfectionTime(world->getCurrentStep());

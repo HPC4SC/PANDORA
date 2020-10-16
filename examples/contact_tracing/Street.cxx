@@ -77,4 +77,8 @@ void Street::step() {
     _scheduler->removeAgents();
 }
 
+double Street::getUniZeroOne() {
+    return _uniformZeroOne.draw();
+}
+
 }

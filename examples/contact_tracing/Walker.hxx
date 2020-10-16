@@ -47,6 +47,8 @@ class Walker : public Examples::HumanBeeing
 
 		float getSpeed();
 
+		Street* getStreet();
+
 	////////////////////////////////////////////////
 	// This code has been automatically generated //
 	/////// Please do not modify it ////////////////

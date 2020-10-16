@@ -5,6 +5,7 @@
 
 #include <World.hxx>
 #include <Point2D.hxx>
+#include <RNGUniformDouble.hxx>
 
 #include <vector>
 
@@ -26,6 +27,10 @@ private:
 
     bool _initialAgentsCreated = false;
 
+    int _seedRun = _streetConfig.getSeed();
+
+    Engine::RNGUniformDouble _uniformZeroOne = Engine::RNGUniformDouble(_seedRun,0.,1.);
+
 public:
         
     Street(Engine::Config* config, Engine::Scheduler* scheduler = 0);
@@ -39,6 +44,8 @@ public:
     void setupLimits();
 
     void step();
+
+    double getUniZeroOne();
 };
 
 }
