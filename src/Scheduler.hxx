@@ -120,6 +120,13 @@ namespace Engine
         virtual void initData( ) = 0;
         
         /**
+         * @brief [Only implemented in MPI scheduler] Gets whether the MPI process has been tagged as finished.
+         * 
+         * @return bool
+         */
+        virtual bool hasBeenTaggedAsFinished() const = 0;
+
+        /**
          * @brief Updates the resources modified in the World::stepEnvironment() method. Must be implemented in child.
          * 
          */

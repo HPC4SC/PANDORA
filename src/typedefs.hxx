@@ -64,6 +64,13 @@ namespace Engine
         eCreateGroupInactive = 71,
         eProcessWakeUp = 72,
         eProcessSleep = 73,
+        eTypeOfEventAfterWakeUp = 74
+    };
+
+    enum TypeOfEventAfterWakeUpMPI
+    {
+        eDie = 1,
+        ePrepareToReceiveUpdatedData = 2
     };
 
     enum SubOverlapType
