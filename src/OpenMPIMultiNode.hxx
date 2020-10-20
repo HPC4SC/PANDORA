@@ -376,6 +376,42 @@ namespace Engine
             void initializeAgentsAndRastersState();
 
             /**
+             * @brief Updates the average time that agents have spent executing phase of type 'executingPhaseType'.
+             * 
+             * @param executingPhaseType const int&
+             * @param initialTime const double&
+             */
+            void updateAVGAccordingToExecutingPhase(const int& executingPhaseType, const double& initialTime);
+
+            /**
+             * @brief Calls and monitors the 'agent'::updateKnowledge method.
+             * 
+             * @param agent Agent*
+             */
+            void agent_updateKnowledge(Agent* agent);
+
+            /**
+             * @brief Calls and monitors the 'agent'::selectActions method.
+             * 
+             * @param agent Agent*
+             */
+            void agent_selectActions(Agent* agent);
+
+            /**
+             * @brief Calls and monitors the 'agent'::executeActions method.
+             * 
+             * @param agent Agent*
+             */
+            void agent_executeActions(Agent* agent);
+
+            /**
+             * @brief Calls and monitors the 'agent'::updateState method.
+             * 
+             * @param agent Agent*
+             */
+            void agent_updateState(Agent* agent);
+
+            /**
              * @brief Shuffles all the agents in 'agentsToExecute' and then call their executing methods. It uses OpenMP in case it has been stated so.
              * 
              * @param agentsToExecute AgentsVector&
@@ -584,8 +620,6 @@ namespace Engine
              */
             virtual ~OpenMPIMultiNode();
 
-            
-
             /** INITIALIZATION PUBLIC METHODS (INHERIT) **/
 
             /**
@@ -616,6 +650,20 @@ namespace Engine
              * 
              */
             void updateEnvironmentState() override;
+
+            /**
+             * @brief Checks whether the simulation must be rebalanced among all the active nodes beacause of unbalances.
+             * 
+             * @param nodesTime const std::vector<double>&
+             * @return bool
+             */
+            bool needToRebalanceByLoadDifferences(const std::vector<double>& nodesTime);
+
+            /**
+             * @brief Rebalances the space among all the available nodes if necessary.
+             * 
+             */
+            void checkForRebalancingSpace() override;
 
             /**
              * @brief Executes the agents and updates the world.

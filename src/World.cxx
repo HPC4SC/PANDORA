@@ -56,6 +56,8 @@ namespace Engine
 
         _scheduler->setOverlapSize(config->getOverlapSize());
         _scheduler->setSubpartitioningMode(config->getSubpartitioningMode());
+
+        resetVariablesForRebalance();
     }
 
     World::~World( )
@@ -204,19 +206,6 @@ namespace Engine
         // );
     }
 
-    void World::rebalanceSpace()
-    {
-        if ((_step % _config->getRebalancingFrequency()) == 0)
-        {
-            // send/recv to _masterNode the number of agents in each node. if unbalanced with a 25% (for instance), then repartition.
-            
-            //call methos in sched that look for which process you are and: 
-            // if you are the MASTER then send the signal to awake processes (if needed) and send the state to them
-            // if you have been JUST AWAKEN then prepare to receive the state from the master.
-
-        }
-    }
-
     void World::updateDiscreteStateStructures() const
     {
         for (AgentsMap::const_iterator it = _agentsByID.begin(); it != _agentsByID.end(); ++it)
@@ -235,7 +224,7 @@ namespace Engine
 
     void World::engineStep()
     {
-        rebalanceSpace();
+        if ((_step % _config->getRebalancingFrequency()) == 0) _scheduler->checkForRebalancingSpace();
         updateDiscreteStateStructures();
     }
 
@@ -522,6 +511,92 @@ namespace Engine
     AgentsVector World::getNeighbours( Agent * target, const double & radius, const std::string & type )
     {
         return _scheduler->getNeighbours( target, radius, type );
+    }
+
+    void World::resetVariablesForRebalance()
+    {
+        _updateKnowledgeAVGTime = _selectActionsAVGTime = _executeActionsAVGTime = _updateStateAVGTime = 0.0;
+        _updateKnowledgeNumberOfAgents = _selectActionsNumberOfAgents = _executeActionsNumberOfAgents = _updateStateNumberOfAgents = 0;
+    }
+
+    const double& World::getUpdateKnowledgeAVGTime() const
+    {
+        return _updateKnowledgeAVGTime;
+    }
+
+    const double& World::getSelectActionsAVGTime() const
+    {
+        return _selectActionsAVGTime;
+    }
+
+    const double& World::getExecuteActionsAVGTime() const
+    {
+        return _executeActionsAVGTime;
+    }
+
+    const double& World::getUpdateStateAVGTime() const
+    {
+        return _updateStateAVGTime;
+    }
+
+    void World::setUpdateKnowledgeAVGTime(const double& updateKnowledgeAVGTime)
+    {
+        _updateKnowledgeAVGTime = updateKnowledgeAVGTime;
+    }
+
+    void World::setSelectActionsAVGTime(const double& selectActionsAVGTime)
+    {
+        _selectActionsAVGTime = selectActionsAVGTime;
+    }
+
+    void World::setExecuteActionsAVGTime(const double& executeActionsAVGTime)
+    {
+        _executeActionsAVGTime = executeActionsAVGTime;
+    }
+
+    void World::setUpdateStateAVGTime(const double& updateStateAVGTime)
+    {
+        _updateStateAVGTime = updateStateAVGTime;
+    }
+
+    const int& World::getUpdateKnowledgeNumberOfAgents() const
+    {
+        return _updateKnowledgeNumberOfAgents;
+    }
+
+    const int& World::getSelectActionsNumberOfAgents() const
+    {
+        return _selectActionsNumberOfAgents;
+    }
+
+    const int& World::getExecuteActionsNumberOfAgents() const
+    {
+        return _executeActionsNumberOfAgents;
+    }
+
+    const int& World::getUpdateStateNumberOfAgents() const
+    {
+        return _updateStateNumberOfAgents;
+    }
+
+    void World::setUpdateKnowledgeNumberOfAgents(const int& updateKnowledgeNumberOfAgents)
+    {
+        _updateKnowledgeNumberOfAgents = updateKnowledgeNumberOfAgents;
+    }
+
+    void World::setSelectActionsNumberOfAgents(const int& selectActionsNumberOfAgents)
+    {
+        _selectActionsNumberOfAgents = selectActionsNumberOfAgents;
+    }
+
+    void World::setExecuteActionsNumberOfAgents(const int& executeActionsNumberOfAgents)
+    {
+        _executeActionsNumberOfAgents = executeActionsNumberOfAgents;
+    }
+
+    void World::setUpdateStateNumberOfAgents(const int& updateStateNumberOfAgents)
+    {
+        _updateStateNumberOfAgents = updateStateNumberOfAgents;
     }
 
     Point2D<int> World::getRandomPosition( )

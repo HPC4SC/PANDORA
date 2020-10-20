@@ -101,6 +101,7 @@ void Config::loadBaseParams( )
     _subpartitioningMode = getParamInt("mpi", "subpartitioningMode");
     _initialPartitioning = getParamBool("mpi", "initialPartitioning");
     _rebalancingFreq = getParamInt("mpi", "rebalancingFreq");
+    _maximumPercOfUnbalance = getParamFloat("mpi", "maximumPercOfUnbalance");
 }
 
 void Config::loadFile( )
@@ -245,6 +246,11 @@ const bool& Config::getInitialPartitioning() const
 const int& Config::getRebalancingFrequency() const
 {
     return _rebalancingFreq;
+}
+
+const double& Config::getMaximumPercOfUnbalance() const
+{
+    return _maximumPercOfUnbalance;
 }
 
 } // namespace Engine
