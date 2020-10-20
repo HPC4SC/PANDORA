@@ -50,6 +50,9 @@ protected:
     AgentsMap _agentsByID;          //! Global map of agents by ID.
     AgentsMatrix _agentsMatrix;     //! Global matrix of agents (used to find agents by position).
 
+    double _updateKnowledgeAVGTime, _selectActionsAVGTime, _executeActionsAVGTime, _updateStateAVGTime;
+    int _updateKnowledgeNumberOfAgents, _selectActionsNumberOfAgents, _executeActionsNumberOfAgents, _updateStateNumberOfAgents;
+
     bool _allowMultipleAgentsPerCell; //! False if each cell can have just one agent.
 
     int _step; //! Current simulation step.
@@ -95,12 +98,6 @@ protected:
      * @param agent Agent*
      */
     void eraseAgentFromMatrixOfPositions(Agent* agent);
-
-    /**
-     * @brief Rebalances the whole space if it is necessary.
-     * 
-     */
-    void rebalanceSpace();
 
     /**
      * @brief Updates the _currentStepOriginalPosition member for all the current agents of *this World.
@@ -205,7 +202,125 @@ public:
      * @return AgentsVector 
      */
     AgentsVector getNeighbours( Agent * target, const double & radius, const std::string & type="all" );
-    
+
+    /**
+     * @brief Resets all the variables needed for nodes rebalancing (XXXAVGs & XXXnumberOfAgents).
+     * 
+     */
+    void resetVariablesForRebalance();
+
+    /**
+     * @brief Gets the _updateKnowlegeAVGTime member.
+     * 
+     * @return const double& 
+     */
+    const double& getUpdateKnowledgeAVGTime() const;
+
+    /**
+     * @brief Gets the _selectActionaAVGTime member.
+     * 
+     * @return const double& 
+     */
+    const double& getSelectActionsAVGTime() const;
+
+    /**
+     * @brief Gets the _executeActionsAVGTime member.
+     * 
+     * @return const double&
+     */
+    const double& getExecuteActionsAVGTime() const;
+
+    /**
+     * @brief Gets the _updateStateAVGTime member.
+     * 
+     * @return const double& 
+     */
+    const double& getUpdateStateAVGTime() const;
+
+    /**
+     * @brief Sets the _updateKnowlegeAVGTime member.
+     * 
+     * @param updateKnowledgeAVGTime const double&
+     */
+    void setUpdateKnowledgeAVGTime(const double& updateKnowledgeAVGTime);
+
+    /**
+     * @brief Sets the _selectActionaAVGTime member.
+     * 
+     * @param selectActionsAVGTime const double&
+     */
+    void setSelectActionsAVGTime(const double& selectActionsAVGTime);
+
+    /**
+     * @brief Sets the _executeActionsAVGTime member.
+     * 
+     * @param executeActionsAVGTime const double&
+     */
+    void setExecuteActionsAVGTime(const double& executeActionsAVGTime);
+
+    /**
+     * @brief Sets the _updateStateAVGTime member.
+     * 
+     * @param executeActionsAVGTime const double&
+     */
+    void setUpdateStateAVGTime(const double& updateStateAVGTime);
+
+    /**
+     * @brief Gets the _updateKnowledgeNumberOfAgents member.
+     * 
+     * @return const int& 
+     */
+    const int& getUpdateKnowledgeNumberOfAgents() const;
+
+    /**
+     * @brief Gets the _selectActionsNumberOfAgents member.
+     * 
+     * @return const int& 
+     */
+    const int& getSelectActionsNumberOfAgents() const;
+
+    /**
+     * @brief Gets the _executeActionsNumberOfAgents member.
+     * 
+     * @return const int& 
+     */
+    const int& getExecuteActionsNumberOfAgents() const;
+
+    /**
+     * @brief Gets the _updateStateNumberOfAgents member.
+     * 
+     * @return const int& 
+     */
+    const int& getUpdateStateNumberOfAgents() const;
+
+    /**
+     * @brief Sets the _updateKnowledgeNumberOfAgents member.
+     * 
+     * @param updateKnowledgeNumberOfAgents const int&
+     */
+    void setUpdateKnowledgeNumberOfAgents(const int& updateKnowledgeNumberOfAgents);
+
+    /**
+     * @brief Sets the _selectActionsNumberOfAgents member.
+     * 
+     * @param selectActionsNumberOfAgents const int&
+     */
+    void setSelectActionsNumberOfAgents(const int& selectActionsNumberOfAgents);
+
+    /**
+     * @brief Sets the _executeActionsNumberOfAgents member.
+     * 
+     * @param executeActionsNumberOfAgents const int&
+     */
+    void setExecuteActionsNumberOfAgents(const int& executeActionsNumberOfAgents);
+
+    /**
+     * @brief Sets the _updateStateNumberOfAgents member.
+     * 
+     * @param updateStateNumberOfAgents const int&
+     */
+    void setUpdateStateNumberOfAgents(const int& updateStateNumberOfAgents);
+
     /**
      * @brief Returns an integer identifying the current step where the simulation is. The identifiers denote an order from older to newer steps.
      * 

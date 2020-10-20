@@ -120,7 +120,7 @@ namespace Engine
         virtual void initData( ) = 0;
         
         /**
-         * @brief [Only implemented in MPI scheduler] Gets whether the MPI process has been tagged as finished.
+         * @brief Gets whether the MPI process has been tagged as finished.
          * 
          * @return bool
          */
@@ -131,6 +131,12 @@ namespace Engine
          * 
          */
         virtual void updateEnvironmentState() = 0;
+
+        /**
+         * @brief Rebalances the space if the scheduler have this feature.
+         * 
+         */
+        virtual void checkForRebalancingSpace() = 0;
 
         /**
          * @brief Responsible for executing the agents and update world. Must be implemented in child.

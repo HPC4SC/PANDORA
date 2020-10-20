@@ -210,6 +210,8 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
                 else if (typeOfEventAfterWakeUp == ePrepareToReceiveUpdatedData)
                 {
                     wakeUp = true;
+
+                    _justAwaken = true;
                     enableOnlyProcesses(numberOfRequestedProcesses);
 
                     //receive state (rasters and agents)
@@ -667,6 +669,77 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
         _executedAgentsInStep.clear();
     }
 
+    void OpenMPIMultiNode::updateAVGAccordingToExecutingPhase(const int& executingPhaseType, const double& initialTime)
+    {
+        double endTime = getWallTime();
+        double currentAgentTime = endTime - initialTime;
+
+        double previousAgentsAvgTime;
+        int previousNumberAgents;
+
+        if (executingPhaseType == eUpdateKnowledge) {       previousAgentsAvgTime = _world->getUpdateKnowledgeAVGTime();    previousNumberAgents = _world->getUpdateKnowledgeNumberOfAgents(); }
+        else if (executingPhaseType == eSelectActions) {    previousAgentsAvgTime = _world->getSelectActionsAVGTime();      previousNumberAgents = _world->getSelectActionsNumberOfAgents(); }
+        else if (executingPhaseType == eExecuteActions) {   previousAgentsAvgTime = _world->getExecuteActionsAVGTime();     previousNumberAgents = _world->getExecuteActionsNumberOfAgents(); }
+        else if (executingPhaseType == eUpdateState) {      previousAgentsAvgTime = _world->getUpdateStateAVGTime();        previousNumberAgents = _world->getUpdateStateNumberOfAgents(); }
+
+        int currentNumberOfAgents = previousNumberAgents + 1;
+
+        double newAVGTime = (previousNumberAgents/currentNumberOfAgents) * previousAgentsAvgTime + (1/currentNumberOfAgents) * currentAgentTime;
+
+        if (executingPhaseType == eUpdateKnowledge) {       _world->setUpdateKnowledgeNumberOfAgents(currentNumberOfAgents);    _world->setUpdateKnowledgeAVGTime(newAVGTime); }
+        else if (executingPhaseType == eSelectActions) {    _world->setSelectActionsNumberOfAgents(currentNumberOfAgents);      _world->setSelectActionsAVGTime(newAVGTime); }
+        else if (executingPhaseType == eExecuteActions) {   _world->setExecuteActionsNumberOfAgents(currentNumberOfAgents);   _world->setExecuteActionsAVGTime(newAVGTime); }
+        else if (executingPhaseType == eUpdateState) {      _world->setUpdateStateNumberOfAgents(currentNumberOfAgents);        _world->setUpdateStateAVGTime(newAVGTime); }
+    }
+
+    void OpenMPIMultiNode::agent_updateKnowledge(Agent* agent)
+    {
+        double initialTime;
+
+        bool monitorIt = (_world->getCurrentStep() % _world->getConfig().getRebalancingFrequency() - 1) == 0;
+        if (monitorIt) initialTime = getWallTime();
+        
+        agent->updateKnowledge();
+
+        if (monitorIt) updateAVGAccordingToExecutingPhase(eUpdateKnowledge, initialTime);
+    }
+
+    void OpenMPIMultiNode::agent_selectActions(Agent* agent)
+    {
+        double initialTime;
+
+        bool monitorIt = (_world->getCurrentStep() % _world->getConfig().getRebalancingFrequency() - 1) == 0;
+        if (monitorIt) initialTime = getWallTime();
+
+        agent->selectActions();
+
+        if (monitorIt) updateAVGAccordingToExecutingPhase(eSelectActions, initialTime);
+    }
+
+    void OpenMPIMultiNode::agent_executeActions(Agent* agent)
+    {
+        double initialTime;
+
+        bool monitorIt = (_world->getCurrentStep() % _world->getConfig().getRebalancingFrequency() - 1) == 0;
+        if (monitorIt) initialTime = getWallTime();
+
+        agent->executeActions();
+
+        if (monitorIt) updateAVGAccordingToExecutingPhase(eExecuteActions, initialTime);
+    }
+
+    void OpenMPIMultiNode::agent_updateState(Agent* agent)
+    {
+        double initialTime;
+
+        bool monitorIt = (_world->getCurrentStep() % _world->getConfig().getRebalancingFrequency() - 1) == 0;
+        if (monitorIt) initialTime = getWallTime();
+
+        agent->updateState();
+
+        if (monitorIt) updateAVGAccordingToExecutingPhase(eUpdateState, initialTime);
+    }
+
     void OpenMPIMultiNode::randomlyExecuteAgents(AgentsVector& agentsToExecute)
     {
         GeneralState::statistics().shuffleWithinIterators(agentsToExecute.begin(), agentsToExecute.end());
@@ -675,16 +748,16 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
         for (int i = 0; i < agentsToExecute.size(); ++i)
         {
             Agent* agent = agentsToExecute[i].get();
-            agent->updateKnowledge();
-            agent->selectActions();
+            agent_updateKnowledge(agent);
+            agent_selectActions(agent);
         }
 
         #pragma omp parallel for schedule(dynamic) if(_executeActionsInParallel)
         for (int i = 0; i < agentsToExecute.size(); ++i)
         {
             Agent* agent = agentsToExecute[i].get();
-            agent->executeActions();
-            agent->updateState();
+            agent_executeActions(agent);
+            agent_updateState(agent);
         }
     }
 
@@ -1205,6 +1278,16 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
         }
     }
 
+    bool OpenMPIMultiNode::needToRebalanceByLoadDifferences(const std::vector<double>& nodesTime)
+    {
+        for (int j = 0; j < i; ++j)
+        {
+            if (100.0 * (std::abs(1.0 - (nodesTime[j+1]/nodesTime[j]))) > _world->getConfig().getMaximumPercOfUnbalance()) 
+                return true;
+        }
+        return false;
+    }
+
     void OpenMPIMultiNode::finishSleepingProcesses()
     {
         if (getId() == _masterNodeID) 
@@ -1238,6 +1321,57 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
         receiveRasters();
 
         MPI_Barrier(_activeProcessesComm);
+    }
+
+    void OpenMPIMultiNode::checkForRebalancingSpace()
+    {
+        if (getId() == _masterNodeID)
+        {
+            std::vector<double> nodesTime(_numberOfActiveProcesses);
+            double agentPhasesAVGTime = (_world->getUpdateKnowledgeAVGTime() + _world->getSelectActionsAVGTime() + _world->getExecuteActionsAVGTime() + _world->getUpdateStateAVGTime()) / 4;
+            nodesTime[_masterNodeID] = agentPhasesAVGTime;
+
+            bool needToRebalance = false;               // To check if a rebalancing is needed
+            double totalNodesAgentPhasesAVGTime = 0;    // To define the load threshold to add or remove processes to active ones
+            for (int i = 0; i < _numberOfActiveProcesses; ++i)
+            {
+                if (i != _masterNodeID)
+                {
+                    double nodeAgentPhasesAVGTime;
+                    MPI_Recv(&nodeAgentPhasesAVGTime, 1, MPI_DOUBLE, masterNodeID, eAgentPhasesAVGTime, _activeProcessesComm, MPI_STATUS_IGNORE);
+
+                    totalNodesAgentPhasesAVGTime += nodeAgentPhasesAVGTime;
+
+                    nodesTime[i] = nodeAgentPhasesAVGTime;
+                    if (needToRebalanceByLoadDifferences(nodesTime)) needToRebalance = true;
+                }
+            }
+
+            MPI_Barrier(_activeProcessesComm);
+            // double totalNodesLoad = totalAgentPhasesAVGTime / _numberOfActiveProcesses;
+            // recv avgs from all nodes (print them by the moment). then, based on these times:
+            // 1. if unbalanced with a 50% of diff (for instance) among nodes, then repartition
+            // 2. Stablish a load threshold to add more nodes or put them to sleep.
+        }
+        else
+        {
+            double agentPhasesAVGTime = (_world->getUpdateKnowledgeAVGTime() + _world->getSelectActionsAVGTime() + _world->getExecuteActionsAVGTime() + _world->getUpdateStateAVGTime()) / 4;
+            MPI_Send(&agentPhasesAVGTime, 1, MPI_DOUBLE, _masterNodeID, eAgentPhasesAVGTime, _activeProcessesComm);
+            
+            MPI_Barrier(_activeProcessesComm);
+
+
+        }
+        
+
+        // send/recv to _masterNode the number of agents in each node. if unbalanced with a 25% (for instance), then repartition.
+        
+        //call method in sched that look for which process you are and: 
+        // if you are the MASTER then send the signal to awake processes (if needed) and send the state to them
+        // if you have been JUST AWAKEN then prepare to receive the state from the master.
+
+
+        _world->resetVariablesForRebalance();
     }
 
     void OpenMPIMultiNode::executeAgents()

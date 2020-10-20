@@ -64,13 +64,25 @@ namespace Engine
         eCreateGroupInactive = 71,
         eProcessWakeUp = 72,
         eProcessSleep = 73,
-        eTypeOfEventAfterWakeUp = 74
+        eTypeOfEventAfterWakeUp = 74,
+
+        eDie = 80,
+        ePrepareToReceiveUpdatedData = 81,
+
+        eAgentPhasesAVGTime = 90
     };
 
     enum TypeOfEventAfterWakeUpMPI
     {
-        eDie = 1,
-        ePrepareToReceiveUpdatedData = 2
+        
+    };
+
+    enum ExecutingPhaseType
+    {
+        eUpdateKnowledge = 1,
+        eSelectActions = 2,
+        eExecuteActions = 3,
+        eUpdateState = 4
     };
 
     enum SubOverlapType
