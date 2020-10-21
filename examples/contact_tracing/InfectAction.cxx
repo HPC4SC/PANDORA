@@ -1,10 +1,9 @@
 #include <InfectAction.hxx>
-#include <SupermarketConfig.hxx>
 #include <Supermarket.hxx>
-#include <Client.hxx>
 
 #include <Exception.hxx>
 #include <GeneralState.hxx>
+#include<RNGUniformDouble.hxx>
 
 #include <iostream>
 #include <vector>
@@ -18,9 +17,7 @@ InfectAction::InfectAction() {}
 InfectAction::~InfectAction() {}
 
 void InfectAction::execute(Engine::Agent & agent) {
-    Client& client = (Client&)agent;
     HumanBeeing& person = (HumanBeeing&)agent;
-    Supermarket* super = client.getSuper();
     Engine::Agent* p_agent = agent.getWorld()->getAgent(agent.getId());
     Engine::AgentsVector neighbours = person.getWorld()->getNeighbours(p_agent, person.getEncounterRadius(),"all");
     Engine::World* world = agent.getWorld();
@@ -29,9 +26,8 @@ void InfectAction::execute(Engine::Agent & agent) {
         while (neighbour != neighbours.end()) {
             Engine::Agent* candidate = neighbour->get();
 			HumanBeeing* other = dynamic_cast<HumanBeeing*>(candidate);
-            const SupermarketConfig& config = (const SupermarketConfig &) world->getConfig();
-            double draw = std::abs(super->getUniformZeroOne());
-            if (not (other->isSick() or other->isInfected()) and not barrier(person,other,world) and draw < config.getInfectiousness()) {
+            double draw = Engine::RNGUniformDouble(agent.getWorld()->getConfig().getSeed(),0.,1.).draw();
+            if (not (other->isSick() or other->isInfected()) and not barrier(person,other,world) and draw < person.getInfectiousness()) {
                 std::cout << "F " << person.getId() << " infected " << other->getId() << std::endl;
                 other->getInfected();
                 other->setInfectionTime(world->getCurrentStep());

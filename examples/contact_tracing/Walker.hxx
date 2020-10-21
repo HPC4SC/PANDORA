@@ -23,7 +23,7 @@ class Walker : public Examples::HumanBeeing
 		bool _directionTop;
 
 	public:
-		Walker(const std::string& id, const bool& sick, const int& encounterRadius, const int& phoneT1, 
+		Walker(const std::string& id, const double& infectiousness, const bool& sick, const int& encounterRadius, const int& phoneT1, 
 		const int& phoneT2, const bool& phoneApp, const int& signalRadius, const float& stopping,
 		const int& stopTime, const int& entryTime, const float& drifting, const float& speed, Street* street);
 

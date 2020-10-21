@@ -154,6 +154,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
 
     void OpenMPIMultiNode::divideSpace()
     {
+        _schedulerLogs->printInstrumentation(*this, CreateStringStream("Going to devide space").str());
         double initialTime = getWallTime();
 
         _tree->divideSpace();
@@ -534,6 +535,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
 
     bool OpenMPIMultiNode::arePartitionsSuitable()
     {
+        if (_numTasks == 1) return true;
         for (MPINodesMap::const_iterator it = _mpiNodesMapToSend.begin(); it != _mpiNodesMapToSend.end(); ++it)
         {
             if (it->second.ownedArea.getSize().getWidth() < 4 * _overlapSize or

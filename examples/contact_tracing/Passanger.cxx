@@ -1,7 +1,8 @@
 #include <Passanger.hxx>
-#include <InfectAction.hxx>
+#include <InfectActionOutside.hxx>
 #include <SeatAction.hxx>
 #include <RandomMoveAction.hxx>
+#include <MoveAction.hxx>
 #include <LeaveAction.hxx>
 
 #include <GeneralState.hxx>
@@ -9,15 +10,15 @@
 namespace Examples
 {
 
-Passanger::Passanger(const std::string& id, const bool& sick, const int& encounterRadius, const int& phoneT1, 
+Passanger::Passanger(const std::string& id, const double& infectiousness, const bool& sick, const int& encounterRadius, const int& phoneT1, 
     const int& phoneT2, const bool& phoneApp, const int& signalRadius, const float& move, const bool& wilSeat, Train* train) : 
-    HumanBeeing(id,sick,encounterRadius,phoneT1,phoneT2,phoneApp,signalRadius), _move(move), _willSeat(wilSeat), _train(train),
+    HumanBeeing(id,infectiousness,sick,encounterRadius,phoneT1,phoneT2,phoneApp,signalRadius), _move(move), _willSeat(wilSeat), _train(train),
     _exiting(false), _entering(true) {}
 
 Passanger::~Passanger() {}
 
 void Passanger::selectActions() {
-    _actions.push_back(new InfectAction);
+    _actions.push_back(new InfectActionOutside);
     if (_train->getAgentsToLeave() > 0) {
         goingToLeave();
         _train->agentLeaves();
@@ -33,8 +34,15 @@ void Passanger::selectActions() {
             }
             _actions.push_back(new SeatAction);
         }
-        else if (_entering or _willSeat) {
-            if (not _willSeat and _train->getUniZeroOne() < _move) _actions.push_back(new RandomMoveAction);
+        else if (_entering) {
+            double draw = _train->getUniZeroOne();
+            if (_train->isDoor(getPosition())) {
+                _targetPosition = _train->randomClosePosition(getPosition());
+                setPath();
+                popCurrentPosition();
+                _actions.push_back(new SeatAction);
+            }
+            else if (not _willSeat and draw < _move and _targetPath.empty()) _actions.push_back(new SeatAction);
             else {
                 if (_targetPath.empty()) {
                     std::vector<Engine::Point2D<int>> avaliableSeats = _train->getAvaliableSeats();
@@ -43,9 +51,10 @@ void Passanger::selectActions() {
                         setPath();
                         popCurrentPosition();
                     }
+                    _actions.push_back(new SeatAction);
                 }
                 if (not _targetPath.empty()) {
-                    _actions.push_back(new RandomMoveAction);
+                    _actions.push_back(new SeatAction);
                     if (getPosition() == _targetPosition) _willSeat = false;
                 } 
                 else {
@@ -64,6 +73,9 @@ void Passanger::goingToLeave() {
 
 void Passanger::setPath() {
     _targetPath = _train->getShortestPath(getPosition(),_targetPosition,_exiting);
+    std::cout << getId() << " target path after set is the following one: " << std::endl;
+    for (std::list<Engine::Point2D<int>>::iterator it = _targetPath.begin(); it != _targetPath.end(); it++) std::cout << *it << ' ';
+    std::cout << std::endl;
 }
 
 Engine::Point2D<int> Passanger::nextPosition() {
@@ -80,6 +92,14 @@ bool Passanger::getExiting() {
 
 Train* Passanger::getTrain() {
     return _train;
+}
+
+bool Passanger::targetPathSet() {
+    return not _targetPath.empty();
+}
+
+std::list<Engine::Point2D<int>> Passanger::getTargetPath() {
+    return _targetPath;
 }
 
 }

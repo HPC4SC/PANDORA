@@ -7,9 +7,9 @@
 namespace Examples 
 {
 
-Cashier::Cashier(const std::string& id, const int& sick, const int& shift, const int& workedTime, 
+Cashier::Cashier(const std::string& id, const double& infectiousness, const int& sick, const int& shift, const int& workedTime, 
         const int& phoneT1, const int& phoneT2, const bool& phoneApp, const int& signalRadius, const int& encounterRadius) 
-    : HumanBeeing(id,sick,encounterRadius,phoneT1,phoneT2,phoneApp,signalRadius), _shift(shift), _workedTime(workedTime) {}
+    : HumanBeeing(id, infectiousness,sick,encounterRadius,phoneT1,phoneT2,phoneApp,signalRadius), _shift(shift), _workedTime(workedTime) {}
 
 Cashier::~Cashier() {}
 

@@ -21,7 +21,7 @@ class Cashier : public Examples::HumanBeeing
 
     public:
     
-        Cashier(const std::string& id, const int& sick, const int& shift, const int& workedTime, 
+        Cashier(const std::string& id, const double& infectiousness, const int& sick, const int& shift, const int& workedTime, 
 		const int& phoneT1, const int& phoneT2, const bool& phoneApp, const int& signalRaius, const int& encounterRadius);
 
         ~Cashier();

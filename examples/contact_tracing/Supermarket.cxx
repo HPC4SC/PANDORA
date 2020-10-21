@@ -38,7 +38,7 @@ void Supermarket::createCashier() {
     if (_currentSickCashiers < _supermarketConfig._sickCashiers and _supermarketConfig._sickCashiers != -1) sick = true;
     int initWorkedTime = _supermarketConfig._cashierShift * _uniformZeroOne.draw();
     bool hasApp = _uniformZeroOne.draw() < _supermarketConfig._applicationRate;
-    Cashier* cashier = new Cashier(oss.str(),sick,_supermarketConfig._cashierShift,initWorkedTime,
+    Cashier* cashier = new Cashier(oss.str(),_supermarketConfig._infectiosness,sick,_supermarketConfig._cashierShift,initWorkedTime,
         _supermarketConfig._phoneThreshold1,_supermarketConfig._phoneThreshold2,hasApp,_supermarketConfig._signalRadius,_supermarketConfig._encounterRadius);
     addAgent(cashier);
     int spawnIndex = _uniCashierWorkplace.draw();
@@ -60,7 +60,7 @@ void Supermarket::createClient() {
     float stopping = _uniformZeroOne.draw() * _supermarketConfig._stopping;
     int stopTime = (int)_uniformZeroOne.draw() * _supermarketConfig._stopTime;
     bool hasApp = _uniformZeroOne.draw() < _supermarketConfig._applicationRate;
-    Client* client = new Client(oss.str(),sick,purchaseSpeed,stopping,stopTime,_step,
+    Client* client = new Client(oss.str(),_supermarketConfig._infectiosness,sick,purchaseSpeed,stopping,stopTime,_step,
         _supermarketConfig._phoneThreshold1,_supermarketConfig._phoneThreshold2,hasApp,_supermarketConfig._signalRadius,_supermarketConfig._encounterRadius,this,
         _supermarketConfig._wander);
     addAgent(client);
