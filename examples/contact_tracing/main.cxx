@@ -16,12 +16,12 @@ int main(int argc, char* argv[])
 {
 	try 
 	{	
-		if(argc>2) {
-			throw Engine::Exception("USAGE: contact_tracing [config file]");
-		}		
+		if(argc>3) {
+			throw Engine::Exception("USAGE: contact_tracing [#cores] [config file]");
+		}
 	
-		std::string fileName("configTrain.xml");
-		if(argc!=1) // cambiar para mpi
+		std::string fileName(argv[2]);
+		if(argc!=2) // cambiar para mpi
 		{
 			fileName = "configTrain.xml";
 		}

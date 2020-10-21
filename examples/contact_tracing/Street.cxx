@@ -31,7 +31,7 @@ void Street::createWalker() {
     int stopTime = (int)Engine::GeneralState::statistics().getUniformDistValue() * _streetConfig._stopTime;
     float speed = 0.2 * (2 * Engine::GeneralState::statistics().getUniformDistValue() - 1) + _streetConfig._speed;
     bool hasApp = Engine::GeneralState::statistics().getUniformDistValue() < _streetConfig._applicationRate;
-    Walker* walker = new Walker(oss.str(),sick,_streetConfig._encounterRadius,_streetConfig._phoneThreshold1,
+    Walker* walker = new Walker(oss.str(),_streetConfig._infectiousness,sick,_streetConfig._encounterRadius,_streetConfig._phoneThreshold1,
     _streetConfig._phoneThreshold2,hasApp,_streetConfig._signalRadius,stopping,stopTime,_step,drifting,speed,this);
     addAgent(walker);
     Engine::Point2D<int> spawn;
@@ -66,7 +66,6 @@ void Street::setupLimits() {
 }
 
 void Street::step() {
-    std::cout << "Executing step: " << _step << std::endl;
     if (_step%_config->getSerializeResolution() == 0) {
         _scheduler->serializeRasters(_step);
         _scheduler->serializeAgents(_step);

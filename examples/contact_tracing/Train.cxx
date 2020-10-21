@@ -11,7 +11,7 @@ Train::Train(Engine::Config* config, Engine::Scheduler* scheduler) : World(confi
 
 Train::~Train() {}
 	
-void Train::createRasters() {
+void Train::createInitialRasters() {
     registerStaticRaster("layout", true, 0);
     Engine::GeneralState::rasterLoader().fillGDALRaster(getStaticRaster("layout"), _trainConfig._mapRoute,
                 getBoundaries());
@@ -41,11 +41,14 @@ void Train::createPassanger() {
     if (_uniformZeroOne.draw() < _trainConfig._sickRate) sick = true;
     bool hasApp = _uniformZeroOne.draw() < _trainConfig._applicationRate;
     bool willSeat = _uniformZeroOne.draw() < _trainConfig._sittingPreference;
-    Passanger* passanger = new Passanger(oss.str(),sick,_trainConfig._encounterRadius,_trainConfig._phoneThreshold1,_trainConfig._phoneThreshold2,hasApp,
+    Passanger* passanger = new Passanger(oss.str(),_trainConfig._infectiosness,sick,_trainConfig._encounterRadius,_trainConfig._phoneThreshold1,_trainConfig._phoneThreshold2,hasApp,
         _trainConfig._signalRadius,_trainConfig._move,willSeat,this);
     addAgent(passanger);
     int spawnIndex = _uniDoors.draw();
-    while (not this->checkPosition(_doors[spawnIndex])) spawnIndex = _uniDoors.draw();
+    while (not this->checkPosition(_doors[spawnIndex])) {
+        spawnIndex = _uniDoors.draw();
+        std::cout << "fuck my life" << std::endl;
+    }
     passanger->setPosition(_doors[spawnIndex]);
 }
 
@@ -61,7 +64,6 @@ void Train::setupRasters() {
 }
 
 void Train::step() {
-    std::cout << "Executing step: " << _step << std::endl;
     if (_step%_config->getSerializeResolution() == 0) {
         _scheduler->serializeRasters(_step);
         _scheduler->serializeAgents(_step);
@@ -73,9 +75,13 @@ void Train::step() {
     if (_step < _nextStop - 14) _atStop = false;
     else if (_passangerExit.empty()) _atStop = true;
     else _atStop = true;
+    std::cout << "Creating Agents" << std::endl;
     createAgents();
+    std::cout << "UpdateEnvState" << std::endl;
     _scheduler->updateEnvironmentState();
+    std::cout << "Executing Agents" << std::endl;
     _scheduler->executeAgents();
+    std::cout << "Remove Agents" << std::endl;
     _scheduler->removeAgents();
 }
 
@@ -174,7 +180,9 @@ void Train::setupAvaliableSeats() {
     for (unsigned int i = 0; i < _seats.size(); i++) {
         if (getAgent(_seats[i]).empty()) _avaliableSeats.push_back(_seats[i]);
     }
-    _uniAvaliableSeats = Engine::RNGUniformInt(_seedRun,0,(int)_avaliableSeats.size() - 1);
+    int avaliableSeats = (int)_avaliableSeats.size() - 1;
+    if (avaliableSeats < 0) avaliableSeats = 0;
+    _uniAvaliableSeats = Engine::RNGUniformInt(_seedRun,0,avaliableSeats);
 }
 
 int Train::getAgentsToLeave() {
@@ -200,5 +208,17 @@ int Train::getRandomIndexAvaliableSeats() {
 int Train::getUniMinusOneOne() {
     return _uniMinusOneOne.draw();
 }
+
+bool Train::isDoor(const Engine::Point2D<int> point) {
+    std::vector<Engine::Point2D<int>>::iterator it = std::find(_doors.begin(),_doors.end(),point);
+    return it != _doors.end();
+}
+
+Engine::Point2D<int> Train::randomClosePosition(const Engine::Point2D<int> origin) {
+    Engine::Point2D<int> position = getRandomPosition();
+    while (origin.distance(position) > 10 or origin.distance(position) < 4 or getStaticRaster("layout").getValue(position) == 255 or getStaticRaster("layout").getValue(position) == 155) position = getRandomPosition();
+    return position;
+}
+
 
 }

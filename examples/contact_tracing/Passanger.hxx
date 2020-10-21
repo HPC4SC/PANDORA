@@ -25,7 +25,7 @@ class Passanger : public Examples::HumanBeeing
 		bool _outDoorSelected = false;
 
     public:
-        Passanger(const std::string& id, const bool& sick, const int& encounterRadius, const int& phoneT1, 
+        Passanger(const std::string& id, const double& infectiousness, const bool& sick, const int& encounterRadius, const int& phoneT1, 
 	    const int& phoneT2, const bool& phoneApp, const int& signalRadius, const float& move, const bool& wilSeat, Train* train);
 
         ~Passanger();
@@ -43,6 +43,10 @@ class Passanger : public Examples::HumanBeeing
 		bool getExiting();
 
 		Train* getTrain();
+
+		bool targetPathSet();
+
+		std::list<Engine::Point2D<int>> getTargetPath();
 
 	////////////////////////////////////////////////
 	// This code has been automatically generated //

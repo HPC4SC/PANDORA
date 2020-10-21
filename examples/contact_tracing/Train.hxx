@@ -60,7 +60,7 @@ class Train : public Engine::World
 	
 	    void createAgents();
 
-        void createRasters();
+        void createInitialRasters();
 
         void createPassanger();
 
@@ -95,6 +95,10 @@ class Train : public Engine::World
         int getRandomIndexAvaliableSeats();
 
         int getUniMinusOneOne();
+
+        bool isDoor(const Engine::Point2D<int> point);
+
+        Engine::Point2D<int> randomClosePosition(const Engine::Point2D<int> origin);
 
 };
 

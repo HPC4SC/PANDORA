@@ -6,7 +6,7 @@ namespace Examples
 
 {
 
-HumanBeeing::HumanBeeing(const std::string& id, const bool& sick, const int& encounterRadius, 
+HumanBeeing::HumanBeeing(const std::string& id, const double& infectiousness, const bool& sick, const int& encounterRadius, 
     const int& phoneT1, const int& phoneT2, const bool& phoneApp, const int& signalRadius) 
 : Agent(id), _countInfected(0), _infectionTime(-1), _phoneActiveCount(0), _timeInSimulation(0), _sick(sick), 
     _infected(false),_timeSpentWithOthers(0), _encounterRadius(encounterRadius)  {
@@ -144,6 +144,10 @@ void HumanBeeing::serialize() {
     serializeAttribute("combinedBucketsNotifications",_phone->getCombinedNotifications());
     serializeAttribute("SICKfirstBucketNotifications",_phone->getFirstBucketSickNotifications());
     serializeAttribute("SICKcombinedBucketsNotifications",_phone->getCombinedSickNotifications());
+}
+
+double HumanBeeing::getInfectiousness() {
+    return _infectiousness;
 }
 
 }

@@ -33,7 +33,7 @@ class Client : public Examples::HumanBeeing
     
     public:
 
-        Client(const std::string& id, const int& sick, const float& purchaseSpeed, const float& stopping, const int& stopTime, 
+        Client(const std::string& id, const double& infectiousness, const int& sick, const float& purchaseSpeed, const float& stopping, const int& stopTime, 
 		const int& entryTime,const int& phoneT1, const int& phoneT2, const bool& phoneApp, const int& signalRadius, const int& encounterRadius,
 		Supermarket* super, const float& wander);
 

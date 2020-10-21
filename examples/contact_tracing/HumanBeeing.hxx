@@ -24,6 +24,7 @@ namespace Examples
             int _infectionTime;
             int _phoneActiveCount;
             int _timeInSimulation;
+            double _infectiousness;
 
         protected:
         
@@ -34,7 +35,7 @@ namespace Examples
 
         public:
 
-            HumanBeeing(const std::string& id, const bool& sick, const int& encounterRadius, const int& phoneT1, 
+            HumanBeeing(const std::string& id, const double& infectiousness, const bool& sick, const int& encounterRadius, const int& phoneT1, 
                 const int& phoneT2, const bool& phoneApp, const int& signalRadius);
 
             ~HumanBeeing();
@@ -70,6 +71,8 @@ namespace Examples
             void registerAttributes();
 
 		    void serialize();
+
+            double getInfectiousness();
 
 	////////////////////////////////////////////////
 	// This code has been automatically generated //
