@@ -22,9 +22,9 @@ public:
 	virtual ~RandomWorld();
 	
 	// method that creates and initializes the rasters of the simulation
-	void createRasters();
+	void createInitialRasters();
 	// method that creates and initializes the agents of the simulation
-	void createAgents();
+	void createInitialAgents();
 	
 	// getter of the _maxProductionRate attribute
 	int getMaxProductionRate() const;

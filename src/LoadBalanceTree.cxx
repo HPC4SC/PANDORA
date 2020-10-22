@@ -39,11 +39,22 @@ namespace Engine {
         destroyTree(_root);
     }
 
-    void LoadBalanceTree::initializeTreeAndSetData(World* world, const int& numPartitions)
+    void LoadBalanceTree::setWorld(World* world)
     {
         _world = world;
-        _numPartitions = numPartitions;
-        initializeTree();
+    }
+
+    void LoadBalanceTree::setNumberOfPartitions(const int& numberOfPartitions)
+    {
+        _numPartitions = numberOfPartitions;
+    }
+
+    void LoadBalanceTree::initializeTree() 
+    {
+        _root = new node<Rectangle<int>>;
+        _root->value = Rectangle<int>(_world->getConfig().getSize());
+        _root->left = NULL;
+        _root->right = NULL;
     }
 
     void LoadBalanceTree::divideSpace()
@@ -75,14 +86,6 @@ namespace Engine {
     }
 
     /** PROTECTED METHODS **/
-
-    void LoadBalanceTree::initializeTree() 
-    {
-        _root = new node<Rectangle<int>>;
-        _root->value = Rectangle<int>(_world->getConfig().getSize());
-        _root->left = NULL;
-        _root->right = NULL;
-    }
 
     int LoadBalanceTree::numberOfNodesAtDepthRecursive(node<Rectangle<int>>* node, const int& desiredDepth, int currentDepth) const
     {

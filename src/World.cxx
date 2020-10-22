@@ -56,6 +56,8 @@ namespace Engine
 
         _scheduler->setOverlapSize(config->getOverlapSize());
         _scheduler->setSubpartitioningMode(config->getSubpartitioningMode());
+
+        resetVariablesForRebalance();
     }
 
     World::~World( )
@@ -204,15 +206,6 @@ namespace Engine
         // );
     }
 
-    void World::rebalanceSpace()
-    {
-        if ((_step % _config->getRebalancingFrequency()) == 0)
-        {
-            // send/recv to _masterNode the number of agents in each node. if unbalanced with a 25% (for instance), then repartition.
-            
-        }
-    }
-
     void World::updateDiscreteStateStructures() const
     {
         for (AgentsMap::const_iterator it = _agentsByID.begin(); it != _agentsByID.end(); ++it)
@@ -231,7 +224,7 @@ namespace Engine
 
     void World::engineStep()
     {
-        rebalanceSpace();
+        if (_step > 0 and (_step % _config->getRebalancingFrequency()) == 0) _scheduler->checkForRebalancingSpace();
         updateDiscreteStateStructures();
     }
 
@@ -257,6 +250,8 @@ namespace Engine
 
     void World::run( )
     {
+        if (_scheduler->hasBeenTaggedAsFinished()) return;
+
         std::stringstream logName;
         logName << "simulation_" << getId( );
         log_INFO( logName.str( ), getWallTime( ) << " executing " << _config->getNumSteps( ) << " steps..." );
@@ -516,6 +511,51 @@ namespace Engine
     AgentsVector World::getNeighbours( Agent * target, const double & radius, const std::string & type )
     {
         return _scheduler->getNeighbours( target, radius, type );
+    }
+
+    void World::resetVariablesForRebalance()
+    {
+        _updateKnowledgeTotalTime = _selectActionsTotalTime = _executeActionsTotalTime = _updateStateTotalTime = 0.0;
+    }
+
+    const double& World::getUpdateKnowledgeTotalTime() const
+    {
+        return _updateKnowledgeTotalTime;
+    }
+
+    const double& World::getSelectActionsTotalTime() const
+    {
+        return _selectActionsTotalTime;
+    }
+
+    const double& World::getExecuteActionsTotalTime() const
+    {
+        return _executeActionsTotalTime;
+    }
+
+    const double& World::getUpdateStateTotalTime() const
+    {
+        return _updateStateTotalTime;
+    }
+
+    void World::setUpdateKnowledgeTotalTime(const double& updateKnowledgeTotalTime)
+    {
+        _updateKnowledgeTotalTime = updateKnowledgeTotalTime;
+    }
+
+    void World::setSelectActionsTotalTime(const double& selectActionsTotalTime)
+    {
+        _selectActionsTotalTime = selectActionsTotalTime;
+    }
+
+    void World::setExecuteActionsTotalTime(const double& executeActionsTotalTime)
+    {
+        _executeActionsTotalTime = executeActionsTotalTime;
+    }
+
+    void World::setUpdateStateTotalTime(const double& updateStateTotalTime)
+    {
+        _updateStateTotalTime = updateStateTotalTime;
     }
 
     Point2D<int> World::getRandomPosition( )

@@ -50,6 +50,8 @@ protected:
     AgentsMap _agentsByID;          //! Global map of agents by ID.
     AgentsMatrix _agentsMatrix;     //! Global matrix of agents (used to find agents by position).
 
+    double _updateKnowledgeTotalTime, _selectActionsTotalTime, _executeActionsTotalTime, _updateStateTotalTime;
+
     bool _allowMultipleAgentsPerCell; //! False if each cell can have just one agent.
 
     int _step; //! Current simulation step.
@@ -95,12 +97,6 @@ protected:
      * @param agent Agent*
      */
     void eraseAgentFromMatrixOfPositions(Agent* agent);
-
-    /**
-     * @brief Rebalances the whole space if it is necessary.
-     * 
-     */
-    void rebalanceSpace();
 
     /**
      * @brief Updates the _currentStepOriginalPosition member for all the current agents of *this World.
@@ -205,7 +201,69 @@ public:
      * @return AgentsVector 
      */
     AgentsVector getNeighbours( Agent * target, const double & radius, const std::string & type="all" );
-    
+
+    /**
+     * @brief Resets all the variables needed for nodes rebalancing (XXXTotals).
+     * 
+     */
+    void resetVariablesForRebalance();
+
+    /**
+     * @brief Gets the _updateKnowlegeTotalTime member.
+     * 
+     * @return const double& 
+     */
+    const double& getUpdateKnowledgeTotalTime() const;
+
+    /**
+     * @brief Gets the _selectActionaTotalTime member.
+     * 
+     * @return const double& 
+     */
+    const double& getSelectActionsTotalTime() const;
+
+    /**
+     * @brief Gets the _executeActionsTotalTime member.
+     * 
+     * @return const double&
+     */
+    const double& getExecuteActionsTotalTime() const;
+
+    /**
+     * @brief Gets the _updateStateTotalTime member.
+     * 
+     * @return const double& 
+     */
+    const double& getUpdateStateTotalTime() const;
+
+    /**
+     * @brief Sets the _updateKnowlegeTotalTime member.
+     * 
+     * @param updateKnowledgeTotalTime const double&
+     */
+    void setUpdateKnowledgeTotalTime(const double& updateKnowledgeTotalTime);
+
+    /**
+     * @brief Sets the _selectActionaTotalTime member.
+     * 
+     * @param selectActionsTotalTime const double&
+     */
+    void setSelectActionsTotalTime(const double& selectActionsTotalTime);
+
+    /**
+     * @brief Sets the _executeActionsTotalTime member.
+     * 
+     * @param executeActionsTotalTime const double&
+     */
+    void setExecuteActionsTotalTime(const double& executeActionsTotalTime);
+
+    /**
+     * @brief Sets the _updateStateTotalTime member.
+     * 
+     * @param executeActionsTotalTime const double&
+     */
+    void setUpdateStateTotalTime(const double& updateStateTotalTime);
+
     /**
      * @brief Returns an integer identifying the current step where the simulation is. The identifiers denote an order from older to newer steps.
      * 
