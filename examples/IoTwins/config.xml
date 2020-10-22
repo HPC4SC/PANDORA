@@ -1,8 +1,10 @@
 <?xml version="1.0" ?>
 <config>
-    <output resultsFile="./scripts/experimentation/results/1dayexperiment.h5" logsDir="./logs"/>
+    <output resultsFile="./scripts/experimentation/results/IoTwins.h5" logsDir="./logs"/>
     <numSteps value="40500" serializeResolution="1"/>
     <seed value="4"/>
+    <logs printInConsole="false" printInstrumentation="false"/>
+    <mpi overlapSizeMPI="6" subpartitioningMode="9" rebalancingFreq="10"/>
     <size width="970" height="970"/>
     <inputData numAgents="1000" numCounters="3"/>
     <topology map="resources/bitmaps/buildings2.bmp" entrances="resources/bitmaps/noPartit/entrances.bmp" 

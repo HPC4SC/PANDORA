@@ -32,10 +32,6 @@ namespace Examples {
         void defineLoopBounds(int &firstI,int &firstJ, int &lastI, int &lastJ, const int &posX, const int &posY,
                           const int &velocity, Engine::World *world);
 
-        bool validPosition(const int& i, const int& j, Person& person);
-
-        bool pointAlignedWithHeading(const int& i,const int& j, Person& person);
-
     public:
         MoveAction();
 
