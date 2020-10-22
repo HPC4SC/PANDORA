@@ -120,10 +120,23 @@ namespace Engine
         virtual void initData( ) = 0;
         
         /**
+         * @brief Gets whether the MPI process has been tagged as finished.
+         * 
+         * @return bool
+         */
+        virtual bool hasBeenTaggedAsFinished() const = 0;
+
+        /**
          * @brief Updates the resources modified in the World::stepEnvironment() method. Must be implemented in child.
          * 
          */
         virtual void updateEnvironmentState() = 0;
+
+        /**
+         * @brief Rebalances the space if the scheduler have this feature.
+         * 
+         */
+        virtual void checkForRebalancingSpace() = 0;
 
         /**
          * @brief Responsible for executing the agents and update world. Must be implemented in child.

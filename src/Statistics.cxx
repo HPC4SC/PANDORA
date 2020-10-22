@@ -40,6 +40,16 @@ Statistics::Statistics() :  _randomGenerator(_seed), _randomNumbers(0, _distribu
 void Statistics::setSeed(uint64_t seed)
 {
 	_seed = seed;
+
+	//_nextRandomNumber.engine().seed(_seed);
+	//_nextRandomNumber.distribution().reset();
+	
+	//_next01Number = boost::uniform_01<RandomEngine>(_randomGenerator);
+}
+
+uint64_t Statistics::getSeed() const
+{
+	return _seed;
 }
 
 void Statistics::generateExponentialDistribution()

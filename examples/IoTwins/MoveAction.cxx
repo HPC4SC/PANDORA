@@ -20,18 +20,16 @@ namespace Examples {
         Engine::World *world = agent.getWorld();
         Person &person = dynamic_cast<Person&>(agent);
         Engine::Point2D<int> currentTarget;
-        if (person.getTarget().isEqual(Engine::Point2D<int>(-1,-1))) {
-            currentTarget = person.getFinalTarget();
-        }
+        if (person.getTarget().isEqual(Engine::Point2D<int>(-1,-1))) currentTarget = person.getFinalTarget();
         else currentTarget = person.getTarget();
         //std::cout << "I'm " << agent.getId() << " and my currentTarget is: " << currentTarget << " and my position is: " << person.getPosition() << std::endl;
         Engine::Point2D<int> newPosition = selectNextPosition(agent,world,currentTarget); //minDist A*-ish
         //std::cout << "newPosition is: " << newPosition << std::endl;
         if(world->checkPosition(newPosition)) {
+            //std::cout << "I'm " << agent.getId() <<  " and I move to "  << newPosition << " and my finalTarget is " << person.getFinalTarget() << " the distance to the target is: " << newPosition.distance(person.getFinalTarget()) << std::endl;
             agent.setPosition(newPosition);
             person.addVisited(newPosition);
             //person.printVisited();
-            std::cout << "I'm " << agent.getId() << " I'm heading to " << person.getHeading() <<  " and I move to "  << newPosition << " and my finalTarget is " << person.getFinalTarget() << " the distance to the target is: " << newPosition.distance(person.getFinalTarget()) << std::endl;
         }
     }
 

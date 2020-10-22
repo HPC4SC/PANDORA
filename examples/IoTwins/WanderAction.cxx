@@ -11,10 +11,10 @@ namespace Examples {
         //std::cout << "I'm going to wander now" << std::endl;
         Engine::World *world = agent.getWorld();
         Engine::Point2D<int> newPosition = selectNextPosition(agent,world);
-        Person &person = dynamic_cast<Person&>(agent);
+        //Person &person = dynamic_cast<Person&>(agent);
         if(world->checkPosition(newPosition)) {
+            //std::cout << "I'm " << agent.getId() << " and I wander to "  << newPosition << " and my finalTarget is "  << person.getFinalTarget() << " the distance to the target is: "  << newPosition.distance(person.getFinalTarget()) << std::endl;
             agent.setPosition(newPosition);
-            std::cout << "I'm " << agent.getId() << " and I wander to "  << newPosition << " and my finalTarget is "  << person.getFinalTarget() << " the distance to the target is: "  << newPosition.distance(person.getFinalTarget()) << std::endl;
         }
     }
 
