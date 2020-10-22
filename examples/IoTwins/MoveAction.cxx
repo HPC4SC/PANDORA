@@ -41,7 +41,7 @@ namespace Examples {
             int betterPositionIndex = 0;
             //std::cout << "I'm going to check the positions in reach, size: " << positionsInReach.size() << std::endl;
             int betterPositionPriority = positionsInReach[0].second;
-            for (int i = 1; i < positionsInReach.size(); i++) {
+            for (unsigned int i = 1; i < positionsInReach.size(); i++) {
                 //std::cout << "I consider position: " << positionsInReach[i].first << std::endl;
                 if (positionsInReach[i].second != -1 and (not person.haveVisited(positionsInReach[i].first))) {
                     if (positionsInReach[i].second < betterPositionPriority) {
@@ -97,7 +97,6 @@ namespace Examples {
     }
 
     int MoveAction::assignPriority(Engine::Point2D<int> point, Engine::Agent& agent, Engine::World* world, Engine::Point2D<int>& currentTarget) {
-        Person& person = dynamic_cast<Person&>(agent);
         const EspaiConfig& config = (const EspaiConfig &) world->getConfig();
         int priority = int(point.distance(currentTarget)) * config.getCostAlpha();
         int iniPrio = priority;
@@ -126,7 +125,7 @@ namespace Examples {
         Engine::Agent * p_agent = world->getAgent(agent.getId());
         Person &person = dynamic_cast<Person&>(agent);
         Engine::AgentsVector neighbours = world->getNeighbours(p_agent,person.getAgentDistance());
-        for (int i = 0; i < neighbours.size(); i++) {
+        for (unsigned int i = 0; i < neighbours.size(); i++) {
             if (point.distance(neighbours[i]->getPosition()) <= person.getAgentDistance()) return false;
         }
         return true;
@@ -167,51 +166,6 @@ namespace Examples {
         if (firstJ < boundaries.top()) firstJ = boundaries.top();
         if (lastI > boundaries.right()) lastI = boundaries.right();
         if (lastJ > boundaries.bottom()) lastJ = boundaries.bottom();
-    }
-
-    bool MoveAction::validPosition(const int& i, const int& j, Person& person) {
-        /*if (i == j) return false;
-        if (pointAlignedWithHeading(i,j,person)) return true;
-        else return false;*/
-    }
-
-    bool MoveAction::pointAlignedWithHeading(const int& i, const int&j, Person& person) {
-        /*Engine::Point2D<int> point = person.getPosition();
-        int heading = person.getHeading();
-        switch(heading) {
-            case 0: {
-                return (i <= point._x and j <= point._y);
-                break;
-            }
-            case 1: {
-                return i < point._x;
-                break;
-            }
-            case 2: {
-                return (i <= point._x and j >= point._y);
-                break;
-            }
-            case 3: {
-                return j < point._y;
-                break;
-            }
-            case 4: {
-                return j > point._y;
-                break;
-            }
-            case 5: {
-                return (i >= point._x and j <= point._y);
-                break;
-            }
-            case 6: {
-                return i > point._x;
-                break;
-            }
-            case 7: {
-                return (i >= point._x and j >= point._y);
-                break;
-            }
-        }*/
     }
 
     std::string MoveAction::describe() const {

@@ -35,7 +35,7 @@ namespace Examples {
         }
         Engine::Point2D<int> nextPosition = positionsInReach[0].first;
         int maxNearbyAgents = positionsInReach[0].second;
-        for (int i = 1; i < positionsInReach.size(); i++) {
+        for (unsigned int i = 1; i < positionsInReach.size(); i++) {
             if (positionsInReach[i].second > maxNearbyAgents) {
                nextPosition = positionsInReach[i].first;
                maxNearbyAgents = positionsInReach[i].second;
@@ -79,7 +79,7 @@ namespace Examples {
         Engine::Agent * p_agent = world->getAgent(agent.getId());
         Person &person = dynamic_cast<Person&>(agent);
         Engine::AgentsVector neighbours = world->getNeighbours(p_agent,person.getAgentDistance());
-        for (int i = 0; i < neighbours.size(); i++) {
+        for (unsigned int i = 0; i < neighbours.size(); i++) {
             if (point.distance(neighbours[i]->getPosition()) <= person.getAgentDistance()) return false;
         }
         return true;

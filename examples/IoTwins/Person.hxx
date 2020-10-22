@@ -1,6 +1,8 @@
 #ifndef __Person_hxx__
 #define __Person_hxx__
 
+#include <EspaiBarca.hxx>
+
 #include <Agent.hxx>
 #include <Action.hxx>
 #include <Point2D.hxx>
@@ -14,47 +16,30 @@ namespace Examples {
 
     private:
 
-        int _vision;
-
-        int _velocity;
-
-        int _age;
-
-        bool _isTourist;
-
-        bool _isInGroup;
-
-        int _group;
-
+        int _vision; //MpiBasicAttribute
+        int _velocity; //MpiBasicAttribute
+        int _age; //MpiBasicAttribute
+        bool _isTourist; //MpiBasicAttribute
+        bool _isInGroup; //MpiBasicAttribute
+        int _group; //MpiBasicAttribute
         Engine::Point2D<int> _finalTarget;
-
         Engine::Point2D<int> _target;
-
-        int _wallDistance;
-
-        int _agentDistance;
-
-        int _distanceBAgents;
-
+        int _wallDistance; //MpiBasicAttribute
+        int _agentDistance; //MpiBasicAttribute
+        int _distanceBAgents; //MpiBasicAttribute
         std::vector<Engine::Point2D<int>> _visitedPositions;
-
-        int _provFollow;
-
-        int _heading;
-
-        int _interest;
-
-        int _interestDecrease;
-
+        int _provFollow; //MpiBasicAttribute
+        int _interest; //MpiBasicAttribute
+        int _interestDecrease; //MpiBasicAttribute
         std::vector<Engine::Point2D<int>> _visitedInterestPoints; 
-
-        int _timeSpent;
+        EspaiBarca* _espai;
+        int _timeSpent; //MpiBasicAttribute
 
     public:
 
         Person(const std::string& id, const int& vision, const int& velocity, const int& age, const bool& tourist,
                const Engine::Point2D<int>& finalTarget, const Engine::Point2D<int>& target, const int& wallDistance, const int& agentDistance,
-               const int& maxDistanceBAgents, const int& provFollow, const int& interest, const int& interestDecrease);
+               const int& maxDistanceBAgents, const int& provFollow, const int& interest, const int& interestDecrease, EspaiBarca* espai);
 
         virtual ~Person();
 
@@ -84,8 +69,6 @@ namespace Examples {
 
         bool haveVisited(Engine::Point2D<int> newPosition);
 
-        int getHeading();
-
         void setGroup(const int& group);
 
         void setTarget(const Engine::Point2D<int>& target);
@@ -93,20 +76,6 @@ namespace Examples {
         void setFinalTarget(const Engine::Point2D<int>& finalTarget);
 
         void addVisited(Engine::Point2D<int> newPosition);
-
-        void setHeading(const int& heading);
-
-        void initialHeading();
-
-        void correctHeading();
-
-        void turnHeadingLeft();
-
-        void turnHeadingRight();
-
-        bool mustTurnLeft(const int& newHeading);
-
-        bool mustTurnRight(const int& newHeading);
 
         void printVisited();
 
@@ -128,13 +97,12 @@ namespace Examples {
         // This code has been automatically generated //
         /////// Please do not modify it ////////////////
         ////////////////////////////////////////////////
-        Person(void *);
-
-        void *fillPackage();
-
-        void sendVectorAttributes(int);
-
-        void receiveVectorAttributes(int);
+        Person( void * );
+	    void * fillPackage() const;
+	    void freePackage(void* package) const;
+	    bool hasTheSameAttributes(const Engine::Agent&) const;
+	    void sendVectorAttributes(int);
+	    void receiveVectorAttributes(int);
         ////////////////////////////////////////////////
         //////// End of generated code /////////////////
         ////////////////////////////////////////////////

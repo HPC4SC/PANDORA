@@ -17,9 +17,9 @@ int main(int argc, char *argv[])
         {
             fileName = argv[1];
         }
-        Examples::EspaiBarca world(new Examples::EspaiConfig(fileName), world.useOpenMPSingleNode());
-
+        Examples::EspaiBarca world(new Examples::EspaiConfig(fileName), world.useOpenMPIMultiNode());
         world.initialize(argc, argv);
+        world.setParallelism(true, false);
         world.run();
     }
     catch( std::exception & exceptionThrown )

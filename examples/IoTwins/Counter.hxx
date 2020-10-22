@@ -10,7 +10,7 @@ namespace Examples {
 
     private:
 
-    int _agentCount;
+    int _agentCount; //MpiBasicAttribute
 
     public:
 
@@ -29,8 +29,10 @@ namespace Examples {
 	// This code has been automatically generated //
 	/////// Please do not modify it ////////////////
 	////////////////////////////////////////////////
-	Counter( void * );
-	void * fillPackage();
+    Counter( void * );
+	void * fillPackage() const;
+	void freePackage(void* package) const;
+	bool hasTheSameAttributes(const Engine::Agent&) const;
 	void sendVectorAttributes(int);
 	void receiveVectorAttributes(int);
 	////////////////////////////////////////////////
