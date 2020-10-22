@@ -69,7 +69,7 @@ namespace Engine
         eDie = 80,
         ePrepareToReceiveUpdatedData = 81,
 
-        eAgentPhasesAVGTime = 90
+        eAgentPhasesTotalTime = 90
     };
 
     enum TypeOfEventAfterWakeUpMPI
