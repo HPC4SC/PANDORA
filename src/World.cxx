@@ -224,7 +224,7 @@ namespace Engine
 
     void World::engineStep()
     {
-        if ((_step % _config->getRebalancingFrequency()) == 0) _scheduler->checkForRebalancingSpace();
+        if (_step > 0 and (_step % _config->getRebalancingFrequency()) == 0) _scheduler->checkForRebalancingSpace();
         updateDiscreteStateStructures();
     }
 
@@ -515,88 +515,47 @@ namespace Engine
 
     void World::resetVariablesForRebalance()
     {
-        _updateKnowledgeAVGTime = _selectActionsAVGTime = _executeActionsAVGTime = _updateStateAVGTime = 0.0;
-        _updateKnowledgeNumberOfAgents = _selectActionsNumberOfAgents = _executeActionsNumberOfAgents = _updateStateNumberOfAgents = 0;
+        _updateKnowledgeTotalTime = _selectActionsTotalTime = _executeActionsTotalTime = _updateStateTotalTime = 0.0;
     }
 
-    const double& World::getUpdateKnowledgeAVGTime() const
+    const double& World::getUpdateKnowledgeTotalTime() const
     {
-        return _updateKnowledgeAVGTime;
+        return _updateKnowledgeTotalTime;
     }
 
-    const double& World::getSelectActionsAVGTime() const
+    const double& World::getSelectActionsTotalTime() const
     {
-        return _selectActionsAVGTime;
+        return _selectActionsTotalTime;
     }
 
-    const double& World::getExecuteActionsAVGTime() const
+    const double& World::getExecuteActionsTotalTime() const
     {
-        return _executeActionsAVGTime;
+        return _executeActionsTotalTime;
     }
 
-    const double& World::getUpdateStateAVGTime() const
+    const double& World::getUpdateStateTotalTime() const
     {
-        return _updateStateAVGTime;
+        return _updateStateTotalTime;
     }
 
-    void World::setUpdateKnowledgeAVGTime(const double& updateKnowledgeAVGTime)
+    void World::setUpdateKnowledgeTotalTime(const double& updateKnowledgeTotalTime)
     {
-        _updateKnowledgeAVGTime = updateKnowledgeAVGTime;
+        _updateKnowledgeTotalTime = updateKnowledgeTotalTime;
     }
 
-    void World::setSelectActionsAVGTime(const double& selectActionsAVGTime)
+    void World::setSelectActionsTotalTime(const double& selectActionsTotalTime)
     {
-        _selectActionsAVGTime = selectActionsAVGTime;
+        _selectActionsTotalTime = selectActionsTotalTime;
     }
 
-    void World::setExecuteActionsAVGTime(const double& executeActionsAVGTime)
+    void World::setExecuteActionsTotalTime(const double& executeActionsTotalTime)
     {
-        _executeActionsAVGTime = executeActionsAVGTime;
+        _executeActionsTotalTime = executeActionsTotalTime;
     }
 
-    void World::setUpdateStateAVGTime(const double& updateStateAVGTime)
+    void World::setUpdateStateTotalTime(const double& updateStateTotalTime)
     {
-        _updateStateAVGTime = updateStateAVGTime;
-    }
-
-    const int& World::getUpdateKnowledgeNumberOfAgents() const
-    {
-        return _updateKnowledgeNumberOfAgents;
-    }
-
-    const int& World::getSelectActionsNumberOfAgents() const
-    {
-        return _selectActionsNumberOfAgents;
-    }
-
-    const int& World::getExecuteActionsNumberOfAgents() const
-    {
-        return _executeActionsNumberOfAgents;
-    }
-
-    const int& World::getUpdateStateNumberOfAgents() const
-    {
-        return _updateStateNumberOfAgents;
-    }
-
-    void World::setUpdateKnowledgeNumberOfAgents(const int& updateKnowledgeNumberOfAgents)
-    {
-        _updateKnowledgeNumberOfAgents = updateKnowledgeNumberOfAgents;
-    }
-
-    void World::setSelectActionsNumberOfAgents(const int& selectActionsNumberOfAgents)
-    {
-        _selectActionsNumberOfAgents = selectActionsNumberOfAgents;
-    }
-
-    void World::setExecuteActionsNumberOfAgents(const int& executeActionsNumberOfAgents)
-    {
-        _executeActionsNumberOfAgents = executeActionsNumberOfAgents;
-    }
-
-    void World::setUpdateStateNumberOfAgents(const int& updateStateNumberOfAgents)
-    {
-        _updateStateNumberOfAgents = updateStateNumberOfAgents;
+        _updateStateTotalTime = updateStateTotalTime;
     }
 
     Point2D<int> World::getRandomPosition( )

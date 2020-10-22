@@ -102,6 +102,7 @@ void Config::loadBaseParams( )
     _initialPartitioning = getParamBool("mpi", "initialPartitioning");
     _rebalancingFreq = getParamInt("mpi", "rebalancingFreq");
     _maximumPercOfUnbalance = getParamFloat("mpi", "maximumPercOfUnbalance");
+    _loadThreshold = getParamFloat("mpi", "loadThreshold");
 }
 
 void Config::loadFile( )
@@ -251,6 +252,11 @@ const int& Config::getRebalancingFrequency() const
 const double& Config::getMaximumPercOfUnbalance() const
 {
     return _maximumPercOfUnbalance;
+}
+
+const double& Config::getLoadThreshold() const
+{
+    return _loadThreshold;
 }
 
 } // namespace Engine

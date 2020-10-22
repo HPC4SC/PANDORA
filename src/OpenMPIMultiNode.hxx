@@ -381,7 +381,7 @@ namespace Engine
              * @param executingPhaseType const int&
              * @param initialTime const double&
              */
-            void updateAVGAccordingToExecutingPhase(const int& executingPhaseType, const double& initialTime);
+            void updateTotalAccordingToExecutingPhase(const int& executingPhaseType, const double& initialTime);
 
             /**
              * @brief Calls and monitors the 'agent'::updateKnowledge method.
