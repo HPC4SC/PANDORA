@@ -75,13 +75,9 @@ void Train::step() {
     if (_step < _nextStop - 14) _atStop = false;
     else if (_passangerExit.empty()) _atStop = true;
     else _atStop = true;
-    std::cout << "Creating Agents" << std::endl;
     createAgents();
-    std::cout << "UpdateEnvState" << std::endl;
     _scheduler->updateEnvironmentState();
-    std::cout << "Executing Agents" << std::endl;
     _scheduler->executeAgents();
-    std::cout << "Remove Agents" << std::endl;
     _scheduler->removeAgents();
 }
 

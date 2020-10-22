@@ -43,6 +43,10 @@ namespace Examples {
         setupValidRasterPoints();
     }
 
+    void EspaiBarca::createInitialAgents() {
+        createAgents(); 
+    }
+
     void EspaiBarca::createAgents() {
         std::stringstream logName;
         logName << "agents_" << getId();
@@ -61,6 +65,7 @@ namespace Examples {
         //int agentsToCreate_15 = _distrAcces15.draw();
 
         int agentsToCreate_9 = _entradesAcces9[_creationIndex];
+        //std::cout << "creating " << agentsToCreate_9 << std::endl;
         int agentsToCreate_15 = _entradesAcces15[_creationIndex];
 
         int agentsToCreate = agentsToCreate_9 + agentsToCreate_15;
@@ -94,7 +99,7 @@ namespace Examples {
                 if (finalTargetisMuseum(finalTarget)) person->setTarget(_counters[_countersSize.draw()]);
                 agentsToCreate_15--;
             }
-            std::cout << "I spawn at: " << spawn << " and my final target is: " << finalTarget << std::endl;
+            //std::cout << "I spawn at: " << spawn << " and my final target is: " << finalTarget << std::endl;
             person->setPosition(spawn);
             log_INFO(logName.str(), getWallTime() << " new agent: " << person);
         }
@@ -111,13 +116,10 @@ namespace Examples {
             _scheduler->serializeAgents(_step);
             log_DEBUG(logName.str(), getWallTime() << " step: " << _step << " serialization done");
         }
-        if (_step%900 == 0 and not _firstCreation) {
-            createAgents();
-        }
-        _firstCreation = false;
+        if (_step%900 == 0) createAgents();
 
         log_DEBUG(logName.str(), getWallTime() << " step: " << _step << " has executed step enviroment");
-        std::cout <<  "Inici step: " << _step << std::endl;
+        _scheduler->updateEnvironmentState();
         _scheduler->executeAgents();
         _scheduler->removeAgents();
         log_INFO(logName.str(), getWallTime() << " finished step: " << _step);

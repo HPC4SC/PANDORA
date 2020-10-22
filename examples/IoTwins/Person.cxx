@@ -125,7 +125,7 @@ namespace Examples {
     }
 
     void Person::updateKnowledge() {
-        std::cout << "I'm " << _id << " going to updare my knowledge, my _position is: " << _position << " and my time spent is: " << _timeSpent << std::endl;
+        //std::cout << "I'm " << _id << " going to updare my knowledge, my _position is: " << _position << " and my time spent is: " << _timeSpent << std::endl;
         increaseTimeCount();
         if (_target.isEqual(Engine::Point2D<int>(-1,-1))) { 
             for (int i = _position._x - _vision; i < _position._x + _vision; i++) {
