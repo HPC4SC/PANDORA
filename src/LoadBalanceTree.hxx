@@ -46,12 +46,6 @@ namespace Engine
             int _numPartitions;                     //! Number of tasks in which the simulation should be split.
 
             /**
-             * @brief Initialize the tree starting at _root.
-             * 
-             */
-            void initializeTree();
-
-            /**
              * @brief Recursively return the number of nodes of the tree starting at 'node' at level 'desiredDepth'.
              * 
              * @param node node<Rectangle<int>>*
@@ -184,12 +178,24 @@ namespace Engine
             virtual ~LoadBalanceTree();
 
             /**
-             * @brief Initialize the tree, setting the 'world' (in which are the agents to consider the load of the space), and the number of tasks 'numTasks' in which the space must be split.
+             * @brief Sets the _world member.
              * 
-             * @param world World*
-             * @param numTasks const int&
+             * @param world 
              */
-            void initializeTreeAndSetData(World* world, const int& numPartitions);
+            void setWorld(World* world);
+
+            /**
+             * @brief Sets the number of tasks (_numPartitions member) in which the space must be split.
+             * 
+             * @param numberOfPartitions const int&
+             */
+            void setNumberOfPartitions(const int& numberOfPartitions);
+
+            /**
+             * @brief Initialize the tree starting at _root.
+             * 
+             */
+            void initializeTree();
 
             /**
              * @brief Makes a load balanced partition of the space, filling _root.

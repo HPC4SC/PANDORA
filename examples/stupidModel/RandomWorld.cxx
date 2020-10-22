@@ -22,7 +22,7 @@ RandomWorld::RandomWorld(Engine::Config * config, Engine::Scheduler * scheduler 
 
 RandomWorld::~RandomWorld() {}
 
-void RandomWorld::createRasters() {
+void RandomWorld::createInitialRasters() {
 	const RandomWorldConfig & randomConfig = (const RandomWorldConfig&)getConfig();
 	// the raster of the food is created and initialized with value 0 and maximum value 100
 	registerDynamicRaster("food", true);
@@ -43,7 +43,7 @@ void RandomWorld::createRasters() {
 	setMaxProductionRate(randomConfig._maxFoodProduction);
 }
 
-void RandomWorld::createAgents() {
+void RandomWorld::createInitialAgents() {
     std::stringstream logName;
 	logName << "agents_" << getId();
     const RandomWorldConfig & randomConfig = (const RandomWorldConfig&)getConfig();
@@ -97,7 +97,6 @@ void RandomWorld::step() {
 void RandomWorld::stepEnvironment() {
 	const RandomWorldConfig& randomConfig = (const RandomWorldConfig&) getConfig();
 	int maxValue = std::max(randomConfig.getSize().getHeight(), randomConfig.getSize().getWidth());
-
 	// for all of the cells they grow a random quantity of food wihtin the stipulated range
 	for(auto index : getBoundaries()) {
 		float oldFood = getValue("food",index);
