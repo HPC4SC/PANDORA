@@ -93,6 +93,8 @@ namespace Examples {
 
         bool targetInSight();
 
+        EspaiBarca* getEspai();
+
         ////////////////////////////////////////////////
         // This code has been automatically generated //
         /////// Please do not modify it ////////////////

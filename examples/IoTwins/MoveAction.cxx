@@ -1,8 +1,11 @@
 #include <MoveAction.hxx>
 #include <Person.hxx>
 #include <EspaiConfig.hxx>
+
 #include <GeneralState.hxx>
 #include <DynamicRaster.hxx>
+#include <RNGUniformInt.hxx>
+
 #include <vector>
 #include <tuple>
 
@@ -53,7 +56,8 @@ namespace Examples {
             Engine::Point2D<int> newPosition = positionsInReach[betterPositionIndex].first;
             //std::cout << "The better position is: " << newPosition << std::endl;
             if (newPosition.isEqual(agent.getPosition())) {
-                newPosition = positionsInReach[Engine::GeneralState::statistics().getUniformDistValue(0,positionsInReach.size() -1)].first;
+                Engine::RNGUniformInt distr = Engine::RNGUniformInt(person.getEspai()->getSeedRun(),0,positionsInReach.size() - 1);
+                newPosition = positionsInReach[distr.draw()].first;
                 //std::cout << "I selected " << newPosition << " at random" << std::endl;
             }
             return newPosition;

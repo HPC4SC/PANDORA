@@ -215,4 +215,12 @@ namespace Examples {
         return false;
     }
 
+    int EspaiBarca::getSeedRun() {
+        return _seedRun;
+    }
+
+    int EspaiBarca::getUniformZeroHundred() {
+        return _uniformZero100.draw();
+    }
+
 }

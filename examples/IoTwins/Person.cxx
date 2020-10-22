@@ -23,13 +23,13 @@ namespace Examples {
             _actions.push_back(new LeaveAction());
         }
         else if (targetInSight() and _interest > 0) {
-            if (Engine::GeneralState::statistics().getUniformDistValue(0,100) < 70) _actions.push_back(new WanderAction);
+            if (_espai->getUniformZeroHundred() < 70) _actions.push_back(new WanderAction);
             else _actions.push_back(new DoNothingAction);
             _interest -= _interestDecrease;
             _visitedInterestPoints.push_back(_target);
         }
         else {
-            if (Engine::GeneralState::statistics().getUniformDistValue(0,100) < _provFollow) {
+            if (_espai->getUniformZeroHundred() < _provFollow) {
                 _actions.push_back(new WanderAction());
             } else {
                 _actions.push_back(new MoveAction());
@@ -167,6 +167,10 @@ namespace Examples {
     bool Person::targetInSight() {
         if (_target.distance(this->getPosition()) < _vision) return true;
         return false;
+    }
+
+    EspaiBarca* Person::getEspai() {
+        return _espai;
     }
 
 }

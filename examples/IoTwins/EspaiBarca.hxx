@@ -82,6 +82,10 @@ namespace Examples {
 
         virtual ~EspaiBarca();
 
+        int getSeedRun();
+
+        int getUniformZeroHundred();
+
     };
 
 }
