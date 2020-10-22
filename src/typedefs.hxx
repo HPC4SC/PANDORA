@@ -53,13 +53,36 @@ namespace Engine
         eNumRasterPositions = 52,
         ePosAndValue = 53,
 
+        eRasterData = 60,
+        eRasterMaxData = 61,
+        eVectorAttribute = 62,
+        eSizeVector = 63,
+        eNumModifiedAgents = 64,
+        eModifiedAgent = 65,
 
-        eRasterData = 5,
-        eRasterMaxData = 6,
-        eVectorAttribute = 7,
-        eSizeVector = 8,
-        eNumModifiedAgents = 9,
-        eModifiedAgent = 10
+        eCreateGroupActive = 70,
+        eCreateGroupInactive = 71,
+        eProcessWakeUp = 72,
+        eProcessSleep = 73,
+        eTypeOfEventAfterWakeUp = 74,
+
+        eDie = 80,
+        ePrepareToReceiveUpdatedData = 81,
+
+        eAgentPhasesTotalTime = 90
+    };
+
+    enum TypeOfEventAfterWakeUpMPI
+    {
+        
+    };
+
+    enum ExecutingPhaseType
+    {
+        eUpdateKnowledge = 1,
+        eSelectActions = 2,
+        eExecuteActions = 3,
+        eUpdateState = 4
     };
 
     enum SubOverlapType

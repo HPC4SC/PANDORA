@@ -76,6 +76,10 @@ namespace Engine
             /** MPI Data Structures **/
             int _masterNodeID;                                              //! ID of the master node. Used for communication.
 
+            int _numberOfActiveProcesses;                                   //! Current number of active processes.
+            bool _justAwaken, _justFinished;
+            MPI_Comm _activeProcessesComm;                                  //! Communicator for active MPI processes.
+
             struct Coordinates {
                 int top, left, bottom, right;
             };                                                              //! Struct used to parse in/out the to-be-send/received coordinates.
@@ -136,16 +140,31 @@ namespace Engine
             void createInitialAgents();
 
             /**
+             * @brief Enables 'numberOfProcessesToEnable' processes as active processes, sorted by their rank. To do so, it updates the active processes communicator '_activeProcessesComm'.
+             * 
+             * @param numberOfProcessesToEnable const int&
+             */
+            void enableOnlyProcesses(const int& numberOfProcessesToEnable);
+
+            /**
+             * @brief Puts the calling process to sleep, waiting for an awake signal from the master node 'masterNodeID'.
+             * 
+             * @param masterNodeID const int&
+             */
+            void putToSleep(const int& masterNodeID);
+
+            /**
              * @brief It creates the binary tree '_root' representing the partitions of the world for each of the MPI tasks. Besides, it creates the nodes structs to be send to each one of the slaves.
              * 
              */
             void divideSpace();
 
             /**
-             * @brief It fills own structures for _masterNodeID and sends the created spaces to the rest of MPI processes.
+             * @brief It fills up own structures for _masterNodeID and sends the created spaces to the rest of MPI processes if necessray (_numTasks > 1).
              * 
+             * @param masterNodeID const int&
              */
-            void sendInitialSpacesToNodes();
+            void sendInitialSpacesToNodes(const int& masterNodeID);
 
             /**
              * @brief It receives the created spaces from the MPI master node identified by 'masterNodeID'.
@@ -342,6 +361,12 @@ namespace Engine
              */
             void printNodeRasters() const;
 
+            /**
+             * @brief Prints the active and inactive processes at the current time.
+             * 
+             */
+            void printActiveAndInactiveProcesses() const;
+
             /** RUN PROTECTED METHODS (CALLED BY INHERIT METHODS) **/
 
             /**
@@ -349,6 +374,42 @@ namespace Engine
              * 
              */
             void initializeAgentsAndRastersState();
+
+            /**
+             * @brief Updates the average time that agents have spent executing phase of type 'executingPhaseType'.
+             * 
+             * @param executingPhaseType const int&
+             * @param initialTime const double&
+             */
+            void updateTotalAccordingToExecutingPhase(const int& executingPhaseType, const double& initialTime);
+
+            /**
+             * @brief Calls and monitors the 'agent'::updateKnowledge method.
+             * 
+             * @param agent Agent*
+             */
+            void agent_updateKnowledge(Agent* agent);
+
+            /**
+             * @brief Calls and monitors the 'agent'::selectActions method.
+             * 
+             * @param agent Agent*
+             */
+            void agent_selectActions(Agent* agent);
+
+            /**
+             * @brief Calls and monitors the 'agent'::executeActions method.
+             * 
+             * @param agent Agent*
+             */
+            void agent_executeActions(Agent* agent);
+
+            /**
+             * @brief Calls and monitors the 'agent'::updateState method.
+             * 
+             * @param agent Agent*
+             */
+            void agent_updateState(Agent* agent);
 
             /**
              * @brief Shuffles all the agents in 'agentsToExecute' and then call their executing methods. It uses OpenMP in case it has been stated so.
@@ -538,12 +599,10 @@ namespace Engine
             void clearRequests();
 
             /**
-             * @brief Gets the iterator pointing to the agent identified by 'agentID'.
+             * @brief Finishes the currently sleeping processes.
              * 
-             * @param agentID const std::string&
-             * @return AgentsList::const_iterator 
              */
-            AgentsList::const_iterator getAgentIteratorFromID(const std::string& agentID);
+            void finishSleepingProcesses();
 
         public:
 
@@ -560,13 +619,6 @@ namespace Engine
              * 
              */
             virtual ~OpenMPIMultiNode();
-
-            /**
-             * @brief Sets the master node ('_masterNodeID' member)
-             * 
-             * @param masterNode const int&
-             */
-            void setMasterNode(const int& masterNode);
 
             /** INITIALIZATION PUBLIC METHODS (INHERIT) **/
 
@@ -587,10 +639,31 @@ namespace Engine
             /** RUN PUBLIC METHODS (INHERIT) **/
 
             /**
+             * @brief Returns true if a signal has been sent from the master process to this process in order to finalize its flow. Controlled by the member variable _justFinished.
+             * 
+             * @return bool
+             */
+            bool hasBeenTaggedAsFinished() const override;
+
+            /**
              * @brief Updates the resources modified in the World::stepEnvironment() method.
              * 
              */
             void updateEnvironmentState() override;
+
+            /**
+             * @brief Checks whether the simulation must be rebalanced among all the active nodes beacause of unbalances.
+             * 
+             * @param nodesTime const std::vector<double>&
+             * @return bool
+             */
+            bool needToRebalanceByLoadDifferences(const std::vector<double>& nodesTime);
+
+            /**
+             * @brief Rebalances the space among all the available nodes if necessary.
+             * 
+             */
+            void checkForRebalancingSpace() override;
 
             /**
              * @brief Executes the agents and updates the world.
@@ -599,7 +672,7 @@ namespace Engine
             void executeAgents() override;
 
             /**
-             * @brief Executes needed after the simulation (e.g. finish communications for parallel nodes).
+             * @brief Executes everything needed to finalize the simulation (e.g. finish communications for parallel nodes).
              * 
              */
             void finish() override;
