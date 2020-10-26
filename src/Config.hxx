@@ -51,7 +51,8 @@ protected:
     bool _initialPartitioning;      //! [Only for MPI scheduler] To perform an initial partitioning or not (used as "false" for models that do not create initial agents and/or having warm-up periods).
     int _rebalancingFreq;           //! [Only for MPI scheduler] Rebalancing frequency check in number of steps. If 0, then no frequency is stablished.
     double _maximumPercOfUnbalance; //! [Only for MPI scheduler] Maximum percentage allowed of unbalancing among nodes. From this value on, the space should be rebalanced. If 0, no rebalancing by unbalances are applied at all.
-    double _loadThreshold;          //! [Only for MPI scheduler] Load threshold to determine whether the simulation needs to add or to substract MPI processes.
+    double _loadLowerThreshold;     //! [Only for MPI scheduler] Lower load threshold to determine whether the simulation needs to add MPI processes.
+    double _loadUpperThreshold;     //! [Only for MPI scheduler] Upper load threshold to determine whether the simulation needs to subtract MPI processes.
 
     bool _printInConsole;       //! For logging purposes
     bool _printInstrumentation; //! For logging purposes
@@ -183,11 +184,18 @@ public:
     const double& getMaximumPercOfUnbalance() const;
 
     /**
-     * @brief Gets the _loadThreshold member.
+     * @brief Gets the _loadLowerThreshold member.
      * 
      * @return const double& 
      */
-    const double& getLoadThreshold() const;
+    const double& getLoadLowerThreshold() const;
+
+    /**
+     * @brief Gets the _loadUpperThreshold member.
+     * 
+     * @return const double& 
+     */
+    const double& getLoadUpperThreshold() const;
 
     /**
      * @brief Get the _numSteps object.
