@@ -168,7 +168,7 @@ namespace Engine {
         return ss.str();
     }
 
-    std::string OpenMPIMultiNodeLogs::getString_AgentsMatrix(const OpenMPIMultiNode& schedulerInstance) const
+    std::string OpenMPIMultiNodeLogs::getString_AgentsMatrix(const OpenMPIMultiNode& schedulerInstance, const bool& printAllMatrix) const
     {
         std::stringstream ss;
         ss << "AGENTS MATRIX:" << std::endl;
@@ -178,7 +178,7 @@ namespace Engine {
             for (int j = 0; j < agentsMatrix[i].size(); ++j)
             {
                 Point2D<int> point = Point2D<int>(j, i);
-                if (schedulerInstance._nodeSpace.ownedAreaWithOuterOverlaps.contains(point))
+                if (printAllMatrix or schedulerInstance._nodeSpace.ownedAreaWithOuterOverlaps.contains(point))
                 {
                     if (agentsMatrix[j][i].empty()) ss << "-----";
 
@@ -224,9 +224,9 @@ namespace Engine {
         log_DEBUG(_logFileNames.at(schedulerInstance.getId()), getString_NodeRasters(schedulerInstance, true));
     }
 
-    void OpenMPIMultiNodeLogs::printAgentsMatrixInDebugFile(const OpenMPIMultiNode& schedulerInstance) const
+    void OpenMPIMultiNodeLogs::printAgentsMatrixInDebugFile(const OpenMPIMultiNode& schedulerInstance, const bool& printAllMatrix) const
     {
-        log_DEBUG(_logFileNames.at(schedulerInstance.getId()), getString_AgentsMatrix(schedulerInstance));
+        log_DEBUG(_logFileNames.at(schedulerInstance.getId()), getString_AgentsMatrix(schedulerInstance, printAllMatrix));
     }
 
     void OpenMPIMultiNodeLogs::printInstrumentation(const OpenMPIMultiNode& schedulerInstance, const std::string& message)

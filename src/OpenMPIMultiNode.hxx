@@ -151,7 +151,7 @@ namespace Engine
              * 
              * @param masterNodeID const int&
              */
-            void putToSleep(const int& masterNodeID);
+            void waitSleeping(const int& masterNodeID);
 
             /**
              * @brief It creates the binary tree '_root' representing the partitions of the world for each of the MPI tasks. Besides, it creates the nodes structs to be send to each one of the slaves.
@@ -260,13 +260,6 @@ namespace Engine
              * @param agentsToRemove const std::vector<Agent*>&
              */
             void removeAgentsInVector(const std::vector<Agent*>& agentsToRemove);
-
-            /**
-             * @brief From the 'masterNodeID', it receives the agents that should consider for its assigned space.
-             * 
-             * @param masterNodeID const int&
-             */
-            void receiveInitialAgentsFromNode(const int& masterNodeID);
 
             /**
              * @brief Discards the agents that does not belong to the node calling this method.
@@ -442,7 +435,7 @@ namespace Engine
             void initializeAgentsToSendMap(std::map<int, std::map<std::string, AgentsList>>& agentsByTypeAndNode) const;
 
             /**
-             * @brief Sends a non-blocking request of 'numberOfElements', from 'data' typed as 'mpiDataType, to 'destinationNode', tagged with 'tag'.
+             * @brief Sends a non-blocking request of 'numberOfElements', from 'data' typed as 'mpiDataType, to 'destinationNode', tagged with 'tag', by the default communicator MPI_COMM_WORLD.
              * 
              * @param data void*
              * @param numberOfElements const int&
@@ -604,6 +597,79 @@ namespace Engine
              */
             void finishSleepingProcesses();
 
+            /** REBALANCE PROTECTED METHODS (CALLED BY INHERIT METHODS) **/
+
+            /**
+             * @brief Checks whether the simulation must be rebalanced among all the active nodes beacause of unbalances.
+             * 
+             * @param nodesTime const std::vector<double>&
+             * @return bool
+             */
+            bool rebalance_needToRebalanceByLoadDifferences(const std::vector<double>& nodesTime) const;
+
+            /**
+             * @brief Gets the total time for all the agents' execution phases, for all the nodes.
+             * 
+             * @param masterNodeID const int&
+             * @param allNodesAgentPhasesTotalTime double&
+             * @param needToRebalance bool&
+             */
+            void rebalance_getAllNodesAgentPhasesTotalTime(const int& masterNodeID, double& allNodesAgentPhasesTotalTime, bool& needToRebalance) const;
+
+            /**
+             * @brief Awakes from sleep all the necessary working nodes according the the 'numberOfRequestedProcesses'.
+             * 
+             * @param numberOfRequestedProcesses 
+             */
+            void rebalance_awakeWorkingNodesToRepartition(int numberOfRequestedProcesses);
+
+            /**
+             * @brief Receives the agents from the the working nodes in order to apply a new partitioning.
+             * 
+             */
+            void rebalance_receiveAllAgentsFromWorkingNodes(const int& workingNodeID);
+
+            /**
+             * @brief Repartitions all the space from the current state of the agents (which all of them are assumed to already be in this local memory).
+             * 
+             */
+            void rebalance_repartitionSpace();
+
+            /**
+             * @brief Sends the agents to the working nodes
+             * 
+             */
+            void rebalance_sendAllAgentsToWorkingNodes() const;
+
+            /**
+             * @brief Reajusts the number of active processes if necessary and rebalances the space. If 'mandatoryToRebalance' then the simulation space is just repartitioned.
+             * 
+             * @param totalNodesAgentPhasesTotalTime const double&
+             * @param mandatoryToRebalance const bool& 
+             */
+            void rebalance_readjustProcessesIfNecessary(const int& masterNodeID, const double& totalNodesAgentPhasesTotalTime, const bool& mandatoryToRebalance);
+
+            /**
+             * @brief Gets all the agents in the _nodeSpace.ownedArea classified by its type (key of the map).
+             * 
+             * @param agentsByType std::map<std::string, AgentsList>&
+             */
+            void rebalance_getAllOwnedAreaAgentsByType(std::map<std::string, AgentsList>& agentsByType) const;
+
+            /**
+             * @brief Sends all the agents in the local memory of the process to the master node.
+             * 
+             * @param masterNodeID const int&
+             */
+            void rebalance_sendAllAgentsToMasterNode(const int& masterNodeID);
+
+            /**
+             * @brief Waits for the master ('masterNodeID') to say whether a rebalance among all nodes is needed or not.
+             * 
+             * @param masterNodeID const int&
+             */
+            void rebalance_receiveReadjustmentIfNecessary(const int& masterNodeID);
+
         public:
 
             /** INITIALIZATION PUBLIC METHODS **/
@@ -652,14 +718,6 @@ namespace Engine
             void updateEnvironmentState() override;
 
             /**
-             * @brief Checks whether the simulation must be rebalanced among all the active nodes beacause of unbalances.
-             * 
-             * @param nodesTime const std::vector<double>&
-             * @return bool
-             */
-            bool needToRebalanceByLoadDifferences(const std::vector<double>& nodesTime);
-
-            /**
              * @brief Rebalances the space among all the available nodes if necessary.
              * 
              */
@@ -695,14 +753,14 @@ namespace Engine
              * @brief 
              * 
              */
-            void removeAgents();
+            void removeAgents() override;
 
             /**
              * @brief 
              * 
              * @param agent 
              */
-            void addAgentToBeRemoved(Agent* agent);
+            void addAgentToBeRemoved(Agent* agent) override;
 
             /**
              * @brief Get the agent identified by 'id'. It should be able to be seen by the calling MPI node (i.e. it should be an agent within _nodeSpace.ownedAreaWithOuterOverlaps). Otherwise, it returns an iterator pointing to _world->endAgents().

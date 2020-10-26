@@ -224,7 +224,12 @@ namespace Engine
 
     void World::engineStep()
     {
-        if (_step > 0 and (_step % _config->getRebalancingFrequency()) == 0) _scheduler->checkForRebalancingSpace();
+        if (_step > 0 and _config->getRebalancingFrequency() > 0 and (_step % _config->getRebalancingFrequency()) == 0) 
+        {
+            _scheduler->checkForRebalancingSpace();
+            resetVariablesForRebalance();
+        }
+
         updateDiscreteStateStructures();
     }
 
