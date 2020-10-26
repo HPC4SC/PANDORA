@@ -112,12 +112,13 @@ namespace Engine
             std::string getString_NodeRasters(const OpenMPIMultiNode& schedulerInstance, const bool& discrete) const;
 
             /**
-             * @brief Gets the string representing: the matrix of agents (_agentsMatrix member) for the current node executing this method.
+             * @brief Gets the string representing: the matrix of agents (_agentsMatrix member) for the current node executing this method. If 'printAllMatrix' == false (default) then it just prints the agents within the _nodeSpace.ownedAreaWithOuterOverlaps area of the calling process.
              * 
              * @param schedulerInstance const OpenMPIMultiNode&
+             * @param printAllMatrix const bool&
              * @return std::string 
              */
-            std::string getString_AgentsMatrix(const OpenMPIMultiNode& schedulerInstance) const;
+            std::string getString_AgentsMatrix(const OpenMPIMultiNode& schedulerInstance, const bool& printAllMatrix = false) const;
 
             /**
              * @brief Prints in the node's debug file: the nodes partitioning and neighbours for each one.
@@ -158,8 +159,9 @@ namespace Engine
              * @brief Prints in the node's debug file: the matrix of agents (_agentsMatrix member) for the current node executing this method.
              * 
              * @param schedulerInstance const OpenMPIMultiNode&
+             * @param printAllMatrix const bool&
              */
-            void printAgentsMatrixInDebugFile(const OpenMPIMultiNode& schedulerInstance) const;
+            void printAgentsMatrixInDebugFile(const OpenMPIMultiNode& schedulerInstance, const bool& printAllMatrix = false) const;
 
             /**
              * @brief Prints 'message' in the corresponding instrumentation log file of the calling process.
