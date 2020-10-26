@@ -27,8 +27,8 @@ namespace Engine
 
         eNumTypes = 10,
         eNumAgents = 11,
-        eAgent = 12,
-        eAgentTypeID = 13,
+        eAgents = 12,
+        eAgentsTypeID = 13,
 
         eNumberOfStaticRasters = 20,
         eNumberOfDynamicRasters = 21,
@@ -67,7 +67,7 @@ namespace Engine
         eTypeOfEventAfterWakeUp = 74,
 
         eDie = 80,
-        ePrepareToReceiveUpdatedData = 81,
+        ePrepareToRepartition = 81,
 
         eAgentPhasesTotalTime = 90
     };
