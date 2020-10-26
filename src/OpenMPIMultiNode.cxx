@@ -91,7 +91,7 @@ namespace Engine {
         else 
         {
             if (not distributeFromTheBeginning)
-                putToSleep(_masterNodeID);
+                waitSleeping(_masterNodeID);
             else
                 receiveInitialSpacesFromNode(_masterNodeID);    printOwnNodeStructureAfterMPI();
         }
@@ -181,7 +181,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
         printActiveAndInactiveProcesses();
     }
 
-    void OpenMPIMultiNode::putToSleep(const int& masterNodeID)
+    void OpenMPIMultiNode::waitSleeping(const int& masterNodeID)
     {
         bool wakeUp = false;
         while (not wakeUp)
@@ -207,7 +207,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
                     _justFinished = true;
                     return;
                 }
-                else if (typeOfEventAfterWakeUp == ePrepareToReceiveUpdatedData)
+                else if (typeOfEventAfterWakeUp == ePrepareToRepartition)
                 {
                     wakeUp = true;
 
@@ -415,12 +415,12 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
     void OpenMPIMultiNode::sendNeighboursToNode(const int& nodeID, const std::map<int, MPINode*>& neighbours) const
     {
         int numberOfNeighbours = neighbours.size();
-        MPI_Send(&numberOfNeighbours, 1, MPI_INTEGER, nodeID, eNumNeighbours, MPI_COMM_WORLD);
+        MPI_Send(&numberOfNeighbours, 1, MPI_INT, nodeID, eNumNeighbours, MPI_COMM_WORLD);
 
         for (std::map<int, MPINode*>::const_iterator it = neighbours.begin(); it != neighbours.end(); ++it)
         {
             int neighbourID = it->first;
-            MPI_Send(&neighbourID, 1, MPI_INTEGER, nodeID, eNeighbourID, MPI_COMM_WORLD);
+            MPI_Send(&neighbourID, 1, MPI_INT, nodeID, eNeighbourID, MPI_COMM_WORLD);
 
             Coordinates coordinates;
             coordinates.top = it->second->ownedArea.top();
@@ -442,12 +442,12 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
     void OpenMPIMultiNode::receiveNeighboursFromNode(const int& masterNodeID, MPINode& mpiNodeInfo) const
     {
         int numberOfNeighbours;
-        MPI_Recv(&numberOfNeighbours, 1, MPI_INTEGER, masterNodeID, eNumNeighbours, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        MPI_Recv(&numberOfNeighbours, 1, MPI_INT, masterNodeID, eNumNeighbours, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
         for (int i = 0; i < numberOfNeighbours; ++i)
         {
             int neighbourID;
-            MPI_Recv(&neighbourID, 1, MPI_INTEGER, masterNodeID, eNeighbourID, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Recv(&neighbourID, 1, MPI_INT, masterNodeID, eNeighbourID, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
             Coordinates coordinates;
             MPI_Recv(&coordinates, 1, *_coordinatesDatatype, masterNodeID, eCoordinatesNeighbour, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
@@ -474,42 +474,6 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
             Agent* agent = agentsToRemove[i];
             _world->eraseAgent(agent);
         }
-    }
-
-    void OpenMPIMultiNode::receiveInitialAgentsFromNode(const int& masterNodeID)
-    {
-        double initialTime = getWallTime();
-
-        int numberOfTypesOfAgents;
-        MPI_Recv(&numberOfTypesOfAgents, 1, MPI_INTEGER, masterNodeID, eNumTypes, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-        for (int i = 0; i < numberOfTypesOfAgents; ++i)
-        {
-            int agentsTypeID;
-            MPI_Recv(&agentsTypeID, 1, MPI_INTEGER, masterNodeID, eAgentTypeID, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            std::string agentsTypeName = MpiFactory::instance()->getNameFromTypeID(agentsTypeID);
-            MPI_Datatype* agentTypeMPI = MpiFactory::instance()->getMPIType(agentsTypeName);
-
-            int numberOfAgentsToReceive;
-            MPI_Recv(&numberOfAgentsToReceive, 1, MPI_INTEGER, masterNodeID, eNumAgents, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-            int sizeOfAgentPackage = MpiFactory::instance()->getSizeOfPackage(agentsTypeName);
-            void* agentsPackageArray = malloc(numberOfAgentsToReceive * sizeOfAgentPackage);
-
-            MPI_Recv(agentsPackageArray, numberOfAgentsToReceive, *agentTypeMPI, masterNodeID, eAgent, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-            for (int j = 0; j < numberOfAgentsToReceive; ++j)
-            {
-                void* package = (char*) agentsPackageArray + j * sizeOfAgentPackage;
-                Agent* agent = MpiFactory::instance()->createAndFillAgent(agentsTypeName, package);
-
-                _world->addAgent(agent, false);
-            }
-            free(agentsPackageArray);
-        }
-
-        double endTime = getWallTime();
-if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStringStream("[Process # " << getId() <<  "] receiveInitialAgentsFromNode()\tTOTAL TIME: " << endTime - initialTime).str());
     }
 
     void OpenMPIMultiNode::stablishBoundaries()
@@ -659,7 +623,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
             std::cout << CreateStringStream("[Process # " << getId() <<  "] inactive group rank: " << rank << " id: " << _id << "\n").str();
         }
 
-        std::cout << CreateStringStream("\n\n").str();
+        std::cout << CreateStringStream("\n").str();
     }
 
     /** RUN PROTECTED METHODS (CALLED BY INHERIT METHODS) **/
@@ -688,7 +652,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
     {
         double initialTime;
 
-        bool monitorIt = (_world->getCurrentStep() % _world->getConfig().getRebalancingFrequency() - 1) == 0;
+        bool monitorIt = _world->getConfig().getRebalancingFrequency() > 0 and _world->getCurrentStep() % _world->getConfig().getRebalancingFrequency() == 0;
         if (monitorIt) initialTime = getWallTime();
         
         agent->updateKnowledge();
@@ -700,7 +664,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
     {
         double initialTime;
 
-        bool monitorIt = (_world->getCurrentStep() % _world->getConfig().getRebalancingFrequency() - 1) == 0;
+        bool monitorIt = _world->getConfig().getRebalancingFrequency() > 0 and _world->getCurrentStep() % _world->getConfig().getRebalancingFrequency() == 0;
         if (monitorIt) initialTime = getWallTime();
 
         agent->selectActions();
@@ -712,7 +676,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
     {
         double initialTime;
 
-        bool monitorIt = (_world->getCurrentStep() % _world->getConfig().getRebalancingFrequency() - 1) == 0;
+        bool monitorIt = _world->getConfig().getRebalancingFrequency() > 0 and _world->getCurrentStep() % _world->getConfig().getRebalancingFrequency() == 0;
         if (monitorIt) initialTime = getWallTime();
 
         agent->executeActions();
@@ -724,7 +688,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
     {
         double initialTime;
 
-        bool monitorIt = (_world->getCurrentStep() % _world->getConfig().getRebalancingFrequency() - 1) == 0;
+        bool monitorIt = _world->getConfig().getRebalancingFrequency() > 0 and _world->getCurrentStep() % _world->getConfig().getRebalancingFrequency() == 0;
         if (monitorIt) initialTime = getWallTime();
 
         agent->updateState();
@@ -813,7 +777,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
             std::map<std::string, AgentsList> agentsByType = itNeighbourNode->second;
 
             int numberOfAgentTypesToSend = agentsByType.size();
-            sendDataRequestToNode(&numberOfAgentTypesToSend, 1, MPI_INTEGER, neighbourNodeID, eNumGhostAgentsType);
+            sendDataRequestToNode(&numberOfAgentTypesToSend, 1, MPI_INT, neighbourNodeID, eNumGhostAgentsType);
 
             for (std::map<std::string, AgentsList>::const_iterator itType = agentsByType.begin(); itType != agentsByType.end(); ++itType)
             {
@@ -821,10 +785,10 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
                 AgentsList agentsToSend = itType->second;
 
                 int agentsTypeID = MpiFactory::instance()->getIDFromTypeName(agentsTypeName);
-                sendDataRequestToNode(&agentsTypeID, 1, MPI_INTEGER, neighbourNodeID, eGhostAgentsType);
+                sendDataRequestToNode(&agentsTypeID, 1, MPI_INT, neighbourNodeID, eGhostAgentsType);
 
                 int numberOfAgentsToSend = agentsToSend.size();
-                sendDataRequestToNode(&numberOfAgentsToSend, 1, MPI_INTEGER, neighbourNodeID, eNumGhostAgents);
+                sendDataRequestToNode(&numberOfAgentsToSend, 1, MPI_INT, neighbourNodeID, eNumGhostAgents);
 
 if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTime() << " sending numberOfAgents: " << numberOfAgentsToSend << " of type: " << agentsTypeName << "\tto node: " << neighbourNodeID << "\n").str();
 
@@ -863,17 +827,17 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
             int sendingNodeID = it->first;
 
             int numberOfAgentTypesToReceive;
-            MPI_Recv(&numberOfAgentTypesToReceive, 1, MPI_INTEGER, sendingNodeID, eNumGhostAgentsType, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Recv(&numberOfAgentTypesToReceive, 1, MPI_INT, sendingNodeID, eNumGhostAgentsType, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
             for (int i = 0; i < numberOfAgentTypesToReceive; ++i)
             {
                 int agentTypeID;
-                MPI_Recv(&agentTypeID, 1, MPI_INTEGER, sendingNodeID, eGhostAgentsType, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                MPI_Recv(&agentTypeID, 1, MPI_INT, sendingNodeID, eGhostAgentsType, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
                 std::string agentsTypeName = MpiFactory::instance()->getNameFromTypeID(agentTypeID);
                 MPI_Datatype* agentTypeMPI = MpiFactory::instance()->getMPIType(agentsTypeName);
 
                 int numberOfAgentsToReceive;
-                MPI_Recv(&numberOfAgentsToReceive, 1, MPI_INTEGER, sendingNodeID, eNumGhostAgents, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                MPI_Recv(&numberOfAgentsToReceive, 1, MPI_INT, sendingNodeID, eNumGhostAgents, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
 if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTime() << " receiving numberOfAgentsToReceive: " << numberOfAgentsToReceive << " of type: " << agentsTypeName << "\tfrom node: " << sendingNodeID << "\n").str();
 
@@ -1136,17 +1100,17 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
             MapOfValuesByRaster valuesByRaster = rasterValuesByNodeIt->second;
 
             int numberOfRasters = valuesByRaster.size();
-            sendDataRequestToNode(&numberOfRasters, 1, MPI_INTEGER, neighbourNodeID, eNumRasters);
+            sendDataRequestToNode(&numberOfRasters, 1, MPI_INT, neighbourNodeID, eNumRasters);
 
             for (MapOfValuesByRaster::const_iterator valuesByRasterIt = valuesByRaster.begin(); valuesByRasterIt != valuesByRaster.end(); ++valuesByRasterIt)
             {
                 int rasterIndex = valuesByRasterIt->first;
                 MapOfPositionsAndValues positionsAndValues = valuesByRasterIt->second;
 
-                sendDataRequestToNode(&rasterIndex, 1, MPI_INTEGER, neighbourNodeID, eRasterIndex);
+                sendDataRequestToNode(&rasterIndex, 1, MPI_INT, neighbourNodeID, eRasterIndex);
 
                 int numberOfPositions = positionsAndValues.size();
-                sendDataRequestToNode(&numberOfPositions, 1, MPI_INTEGER, neighbourNodeID, eNumRasterPositions);
+                sendDataRequestToNode(&numberOfPositions, 1, MPI_INT, neighbourNodeID, eNumRasterPositions);
 
 if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTime() << " sending numberOfPositions: " << numberOfPositions << " of raster: " << rasterIndex << "\tto node: " << neighbourNodeID << "\n").str();
 
@@ -1224,12 +1188,12 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
         {
             int sendingNodeID = it->first;
             int numberOfRasters;
-            MPI_Recv(&numberOfRasters, 1, MPI_INTEGER, sendingNodeID, eNumRasters, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Recv(&numberOfRasters, 1, MPI_INT, sendingNodeID, eNumRasters, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
             for (int i = 0; i < numberOfRasters; ++i)
             {
                 int rasterIndex;
-                MPI_Recv(&rasterIndex, 1, MPI_INTEGER, sendingNodeID, eRasterIndex, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                MPI_Recv(&rasterIndex, 1, MPI_INT, sendingNodeID, eRasterIndex, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
                 if (not _world->rasterExists(rasterIndex))
                 { 
@@ -1238,7 +1202,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
                 }
 
                 int numberOfPositions;
-                MPI_Recv(&numberOfPositions, 1, MPI_INTEGER, sendingNodeID, eNumRasterPositions, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                MPI_Recv(&numberOfPositions, 1, MPI_INT, sendingNodeID, eNumRasterPositions, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
                 PositionAndValue positionAndValueArray[numberOfPositions];
                 MPI_Recv(positionAndValueArray, numberOfPositions, *_positionAndValueDatatype, sendingNodeID, ePosAndValue, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
@@ -1270,16 +1234,6 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
         }
     }
 
-    bool OpenMPIMultiNode::needToRebalanceByLoadDifferences(const std::vector<double>& nodesTime)
-    {
-        for (int j = 0; j < nodesTime.size() - 1; ++j)
-        {
-            if (100.0 * (std::abs(1.0 - (nodesTime[j+1]/nodesTime[j]))) > _world->getConfig().getMaximumPercOfUnbalance()) 
-                return true;
-        }
-        return false;
-    }
-
     void OpenMPIMultiNode::finishSleepingProcesses()
     {
         if (getId() == _masterNodeID) 
@@ -1294,6 +1248,205 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
                 sendDataRequestToNode(&endingEventType, 1, MPI_INT, processID, eTypeOfEventAfterWakeUp);
             }
         }
+    }
+
+    bool OpenMPIMultiNode::rebalance_needToRebalanceByLoadDifferences(const std::vector<double>& nodesTime) const
+    {
+        for (int j = 0; j < nodesTime.size() - 1; ++j)
+        {
+            if (100.0 * (std::abs(1.0 - (nodesTime[j+1]/nodesTime[j]))) > _world->getConfig().getMaximumPercOfUnbalance())
+                return true;
+        }
+        return false;
+    }
+
+    void OpenMPIMultiNode::rebalance_getAllNodesAgentPhasesTotalTime(const int& masterNodeID, double& allNodesAgentPhasesTotalTime, bool& needToRebalance) const
+    {
+        allNodesAgentPhasesTotalTime = _world->getUpdateKnowledgeTotalTime() + _world->getSelectActionsTotalTime() + _world->getExecuteActionsTotalTime() + _world->getUpdateStateTotalTime();
+        needToRebalance = false;
+
+std::cout << CreateStringStream("[Process # " << getId() <<  "] agentPhasesTotalTime: " << allNodesAgentPhasesTotalTime << "\n").str();
+
+        std::vector<double> nodesTime(_numberOfActiveProcesses);
+        nodesTime[masterNodeID] = allNodesAgentPhasesTotalTime;
+        
+        for (int processID = 0; processID < _numberOfActiveProcesses; ++processID)
+        {
+            if (processID != masterNodeID)
+            {
+                double nodeAgentPhasesTotalTime;
+                MPI_Recv(&nodeAgentPhasesTotalTime, 1, MPI_DOUBLE, processID, eAgentPhasesTotalTime, _activeProcessesComm, MPI_STATUS_IGNORE);
+
+std::cout << CreateStringStream("[Process # " << getId() <<  "] nodeAgentPhasesTotalTime (for process#" << processID << "): " << nodeAgentPhasesTotalTime << "\n").str();
+
+                allNodesAgentPhasesTotalTime += nodeAgentPhasesTotalTime;
+
+                nodesTime[processID] = nodeAgentPhasesTotalTime;
+                if (rebalance_needToRebalanceByLoadDifferences(nodesTime)) needToRebalance = true;
+            }
+        }
+    }
+
+    void OpenMPIMultiNode::rebalance_awakeWorkingNodesToRepartition(int numberOfRequestedProcesses)
+    {
+        for (int processID = _numberOfActiveProcesses; processID < numberOfRequestedProcesses; ++processID)
+        {
+            sendDataRequestToNode(&numberOfRequestedProcesses, 1, MPI_INT, processID, eProcessWakeUp);
+
+            int eventType = ePrepareToRepartition;
+            sendDataRequestToNode(&eventType, 1, MPI_INT, processID, eTypeOfEventAfterWakeUp);
+        }
+    }
+
+    void OpenMPIMultiNode::rebalance_receiveAllAgentsFromWorkingNodes(const int& workingNodeID)
+    {
+        int numberOfTypes;
+        MPI_Recv(&numberOfTypes, 1, MPI_INT, workingNodeID, eNumTypes, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+        for (int i = 0; i < numberOfTypes; ++i)
+        {
+            int agentsTypeID;
+            MPI_Recv(&agentsTypeID, 1, MPI_INT, workingNodeID, eAgentsTypeID, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            std::string agentsTypeName = MpiFactory::instance()->getNameFromTypeID(agentsTypeID);
+            MPI_Datatype* agentTypeMPI = MpiFactory::instance()->getMPIType(agentsTypeName);
+
+            int numberOfAgentsToReceive;
+            MPI_Recv(&numberOfAgentsToReceive, 1, MPI_INT, workingNodeID, eNumAgents, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+            int sizeOfAgentsPackage = MpiFactory::instance()->getSizeOfPackage(agentsTypeName);
+            void* agentsPackageArray = malloc(numberOfAgentsToReceive * sizeOfAgentsPackage);
+
+            MPI_Recv(agentsPackageArray, numberOfAgentsToReceive, *agentTypeMPI, workingNodeID, eAgents, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+            for (int j = 0; j < numberOfAgentsToReceive; ++j)
+            {
+                void* package = (char*) agentsPackageArray + j * sizeOfAgentsPackage;
+                Agent* agent = MpiFactory::instance()->createAndFillAgent(agentsTypeName, package);
+
+                _world->addAgent(agent, false);
+            }
+            free(agentsPackageArray);
+        }
+    }
+
+    void OpenMPIMultiNode::rebalance_repartitionSpace()
+    {
+
+
+
+
+
+
+        // send/recv to _masterNode the number of agents in each node. if unbalanced with a 25% (for instance), then repartition.
+        
+        //call method in sched that look for which process you are and: 
+        // if you are the MASTER then send the signal to awake processes (if needed) and send the state to them
+        // if you have been JUST AWAKEN then prepare to receive the state from the master.
+
+
+        // double totalNodesLoad = totalAgentPhasesTotalTime / _numberOfActiveProcesses;
+        // recv Totals from all nodes (print them by the moment). then, based on these times:
+        // 1. if unbalanced with a 50% of diff (for instance) among nodes, then repartition
+        // 2. Stablish a load threshold to add more nodes or put them to sleep.
+    }
+
+    void OpenMPIMultiNode::rebalance_sendAllAgentsToWorkingNodes() const
+    {
+        
+
+
+    }
+
+    void OpenMPIMultiNode::rebalance_readjustProcessesIfNecessary(const int& masterNodeID, const double& totalNodesAgentPhasesTotalTime, const bool& mandatoryToRebalance)
+    {
+        bool tooMuchLoad = false, tooLittleLoad = false;
+        int numberOfRequestedProcesses;
+        if (totalNodesAgentPhasesTotalTime > _world->getConfig().getLoadUpperThreshold())
+        {
+            tooMuchLoad = true;
+            numberOfRequestedProcesses = _numberOfActiveProcesses * 2;
+        }
+        else if (totalNodesAgentPhasesTotalTime < _world->getConfig().getLoadLowerThreshold())
+        {
+            tooLittleLoad = true;
+            numberOfRequestedProcesses = _numberOfActiveProcesses / 2;
+        }
+        if (tooMuchLoad or tooLittleLoad) rebalance_awakeWorkingNodesToRepartition(numberOfRequestedProcesses);
+
+        if (mandatoryToRebalance)
+        {
+            for (int i = 0; i < _numberOfActiveProcesses; ++i)
+                if (i != masterNodeID) rebalance_receiveAllAgentsFromWorkingNodes(i);
+
+            rebalance_repartitionSpace();
+            rebalance_sendAllAgentsToWorkingNodes();
+            // synchronize rasters among nodes (each node should know its "parent" and ask to it the rasters)
+        }
+    }
+
+    void OpenMPIMultiNode::rebalance_getAllOwnedAreaAgentsByType(std::map<std::string, AgentsList>& agentsByType) const
+    {
+        for (AgentsMap::const_iterator it = _world->beginAgents(); it != _world->endAgents(); ++it)
+        {
+            AgentPtr agentPtr = it->second;
+            Agent* agent = agentPtr.get();
+
+            if (_nodeSpace.ownedArea.contains(agent->getPosition()))
+            {
+                std::string agentType = agent->getType();
+                agentsByType[agentType].push_back(agentPtr);
+            }
+        }
+    }
+
+    void OpenMPIMultiNode::rebalance_sendAllAgentsToMasterNode(const int& masterNodeID)
+    {
+        std::map<std::string, AgentsList> agentsByType;
+        rebalance_getAllOwnedAreaAgentsByType(agentsByType);
+        
+        int numberOfTypes = agentsByType.size();
+        sendDataRequestToNode(&numberOfTypes, 1, MPI_INT, masterNodeID, eNumTypes);
+
+        for (std::map<std::string, AgentsList>::const_iterator it = agentsByType.begin(); it != agentsByType.end(); ++it)
+        {
+            std::string agentsType = it->first;
+            AgentsList agentsToSend = it->second;
+
+            int agentsTypeID = MpiFactory::instance()->getIDFromTypeName(agentsType);
+            sendDataRequestToNode(&agentsTypeID, 1, MPI_INT, masterNodeID, eAgentsTypeID);
+
+            int numberOfAgentsToSend = agentsToSend.size();
+            sendDataRequestToNode(&numberOfAgentsToSend, 1, MPI_INT, masterNodeID, eNumAgents);
+
+            int sizeOfAgentsPackage = MpiFactory::instance()->getSizeOfPackage(agentsType);
+            void* agentsPackageArray = malloc(numberOfAgentsToSend * sizeOfAgentsPackage);
+
+            int i = 0;
+            MPI_Datatype* agentTypeMPI = MpiFactory::instance()->getMPIType(agentsType);
+            for (AgentsList::const_iterator itAgent = agentsToSend.begin(); itAgent != agentsToSend.end(); ++itAgent)
+            {
+                Agent* agent = itAgent->get();
+
+                void* agentPackage = agent->fillPackage();
+                memcpy((char*) agentsPackageArray + i * sizeOfAgentsPackage, agentPackage, sizeOfAgentsPackage);
+                agent->freePackage(agentPackage);
+                ++i;
+            }
+            sendDataRequestToNode(&agentsPackageArray, numberOfAgentsToSend, *agentTypeMPI, masterNodeID, eAgents);
+
+            free(agentsPackageArray);
+        }
+    }
+
+    void OpenMPIMultiNode::rebalance_receiveReadjustmentIfNecessary(const int& masterNodeID)
+    {
+        //waitSleeping(masterNodeID);
+        rebalance_sendAllAgentsToMasterNode(masterNodeID);
+        
+        MPI_Barrier(_activeProcessesComm);
+
+        //rebalance_receiveCorrespondingAgentsFromMasterNode()
+
     }
 
     /** RUN PUBLIC METHODS (INHERIT) **/
@@ -1319,71 +1472,21 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(*this, CreateStr
     {
         if (getId() == _masterNodeID)
         {
-            std::vector<double> nodesTime(_numberOfActiveProcesses);
-            double agentPhasesTotalTime = (_world->getUpdateKnowledgeTotalTime() + _world->getSelectActionsTotalTime() + _world->getExecuteActionsTotalTime() + _world->getUpdateStateTotalTime()) / 4;
-            nodesTime[_masterNodeID] = agentPhasesTotalTime;
-
-            double totalNodesAgentPhasesTotalTime = agentPhasesTotalTime;   // 1st criteria: To define the load threshold to add or remove processes to active ones
-            bool needToRebalance = false;                                   // 2nd criteria: To check if a rebalancing is needed
-            for (int processID = 0; processID < _numberOfActiveProcesses; ++processID)
-            {
-                if (processID != _masterNodeID)
-                {
-                    double nodeAgentPhasesTotalTime;
-                    MPI_Recv(&nodeAgentPhasesTotalTime, 1, MPI_DOUBLE, processID, eAgentPhasesTotalTime, _activeProcessesComm, MPI_STATUS_IGNORE);
-
-std::cout << CreateStringStream("[Process # " << getId() <<  "] nodeAgentPhasesTotalTime (for process#" << processID << "): " << nodeAgentPhasesTotalTime << "\n").str();
-
-                    totalNodesAgentPhasesTotalTime += nodeAgentPhasesTotalTime;
-
-                    nodesTime[processID] = nodeAgentPhasesTotalTime;
-                    if (needToRebalanceByLoadDifferences(nodesTime)) needToRebalance = true;
-                }
-            }
-
-std::cout << CreateStringStream("[Process # " << getId() <<  "] agentPhasesTotalTime: " << agentPhasesTotalTime << "\n").str();
+            double allNodesAgentPhasesTotalTime;  // 1st criteria: To define the load threshold to add or remove processes to active ones
+            bool needToRebalance;                   // 2nd criteria: To check if a rebalancing is needed
+            rebalance_getAllNodesAgentPhasesTotalTime(_masterNodeID, allNodesAgentPhasesTotalTime, needToRebalance);
 
             MPI_Barrier(_activeProcessesComm);
-
-            if (totalNodesAgentPhasesTotalTime > _world->getConfig().getLoadThreshold())
-            {
-                //add processes
-                //repartition
-            }
-            else if (totalNodesAgentPhasesTotalTime < _world->getConfig().getLoadThreshold())
-            {
-                // substract processes
-                // repartition
-            }
-            else if (needToRebalance)
-            {
-                //repartition
-            }
-
-            // double totalNodesLoad = totalAgentPhasesTotalTime / _numberOfActiveProcesses;
-            // recv Totals from all nodes (print them by the moment). then, based on these times:
-            // 1. if unbalanced with a 50% of diff (for instance) among nodes, then repartition
-            // 2. Stablish a load threshold to add more nodes or put them to sleep.
+            rebalance_readjustProcessesIfNecessary(_masterNodeID, allNodesAgentPhasesTotalTime, needToRebalance);
         }
         else
         {
-            double agentPhasesTotalTime = (_world->getUpdateKnowledgeTotalTime() + _world->getSelectActionsTotalTime() + _world->getExecuteActionsTotalTime() + _world->getUpdateStateTotalTime()) / 4;
+            double agentPhasesTotalTime = _world->getUpdateKnowledgeTotalTime() + _world->getSelectActionsTotalTime() + _world->getExecuteActionsTotalTime() + _world->getUpdateStateTotalTime();
             MPI_Send(&agentPhasesTotalTime, 1, MPI_DOUBLE, _masterNodeID, eAgentPhasesTotalTime, _activeProcessesComm);
             
             MPI_Barrier(_activeProcessesComm);
-
-
+            rebalance_receiveReadjustmentIfNecessary(_masterNodeID);
         }
-        
-
-        // send/recv to _masterNode the number of agents in each node. if unbalanced with a 25% (for instance), then repartition.
-        
-        //call method in sched that look for which process you are and: 
-        // if you are the MASTER then send the signal to awake processes (if needed) and send the state to them
-        // if you have been JUST AWAKEN then prepare to receive the state from the master.
-
-
-        _world->resetVariablesForRebalance();
     }
 
     void OpenMPIMultiNode::executeAgents()
@@ -1392,7 +1495,7 @@ std::cout << CreateStringStream("[Process # " << getId() <<  "] agentPhasesTotal
         
         double initialTime;
 
-_schedulerLogs->printAgentsMatrixInDebugFile(*this);
+_schedulerLogs->printAgentsMatrixInDebugFile(*this, true);
 
         if (_numTasks == 1 or (_numTasks > 1 and _subpartitioningMode == 9))
         {
