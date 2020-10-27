@@ -4,7 +4,6 @@
  * COMPUTER APPLICATIONS IN SCIENCE & ENGINEERING
  * BARCELONA SUPERCOMPUTING CENTRE - CENTRO NACIONAL DE SUPERCOMPUTACI-N
  * http://www.bsc.es
-
  * This file is part of Pandora Library. This library is free software;
  * you can redistribute it and/or modify it under the terms of the
  * GNU General Public License as published by the Free Software Foundation;
@@ -789,4 +788,3 @@ public:
 } // namespace Engine
 
 #endif //__World_hxx__
-

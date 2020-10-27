@@ -73,9 +73,9 @@ void Passanger::goingToLeave() {
 
 void Passanger::setPath() {
     _targetPath = _train->getShortestPath(getPosition(),_targetPosition,_exiting);
-    std::cout << getId() << " target path after set is the following one: " << std::endl;
-    for (std::list<Engine::Point2D<int>>::iterator it = _targetPath.begin(); it != _targetPath.end(); it++) std::cout << *it << ' ';
-    std::cout << std::endl;
+    //std::cout << getId() << " target path after set is the following one: " << std::endl;
+    //for (std::list<Engine::Point2D<int>>::iterator it = _targetPath.begin(); it != _targetPath.end(); it++) std::cout << *it << ' ';
+    //std::cout << std::endl;
 }
 
 Engine::Point2D<int> Passanger::nextPosition() {

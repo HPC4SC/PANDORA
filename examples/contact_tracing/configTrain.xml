@@ -1,10 +1,11 @@
 <?xml version="1.0" ?>
 <config>
 	<output resultsFile="./data/contact_tracingTrain.h5" logsDir="./logs"/>
-	<numSteps value="2114" serializeResolution="1"/>
-	<seed value="0"/>
+	<seed value="1"/>
 	<logs printInConsole="false" printInstrumentation="false"/>
-	<mpi overlapSizeMPI="6" subpartitioningMode="9" rebalancingFreq="10"/>
+	<mpi overlapSizeMPI="6" subpartitioningMode="4" initialPartitioning="false" rebalancingFreq="3" maximumPercOfUnbalance="50.0" loadThreshold="0.05"/>
+
+	<numSteps value="2114" serializeResolution="1"/>
 	<size width="258" height="9"/>
 	<Raster mapRoute="./maps/train_layout.png" 
 		travelTimes="76 182 373 497 605 703 808 909 1002 1100 1178 1269 1366 1510 1592 1676 1761 1832 1906 1992 2101 2114"

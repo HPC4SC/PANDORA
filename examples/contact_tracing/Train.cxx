@@ -47,7 +47,7 @@ void Train::createPassanger() {
     int spawnIndex = _uniDoors.draw();
     while (not this->checkPosition(_doors[spawnIndex])) {
         spawnIndex = _uniDoors.draw();
-        std::cout << "fuck my life" << std::endl;
+        //std::cout << "fuck my life" << std::endl;
     }
     passanger->setPosition(_doors[spawnIndex]);
 }
@@ -56,9 +56,11 @@ void Train::setupRasters() {
     for (int i = 0;  i < getStaticRaster("layout").getSize().getWidth(); i++) {
         for (int j = 0; j < getStaticRaster("layout").getSize().getHeight(); j++) {
             Engine::Point2D<int> candidate = Engine::Point2D<int>(i,j);
+            std::cout << getStaticRaster("layout").getValue(candidate) << ' ';
             if (getStaticRaster("layout").getValue(candidate) == 255) _doors.push_back(candidate);
             else if (getStaticRaster("layout").getValue(candidate) == 150) _seats.push_back(candidate);
         }
+        std::cout << std::endl;
     }
     _uniDoors = Engine::RNGUniformInt(_seedRun,0,(int)_doors.size() - 1);
 }

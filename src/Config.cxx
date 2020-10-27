@@ -4,7 +4,6 @@
  * COMPUTER APPLICATIONS IN SCIENCE & ENGINEERING
  * BARCELONA SUPERCOMPUTING CENTRE - CENTRO NACIONAL DE SUPERCOMPUTACI-N
  * http://www.bsc.es
-
  * This file is part of Pandora Library. This library is free software;
  * you can redistribute it and/or modify it under the terms of the
  * GNU General Public License as published by the Free Software Foundation;
@@ -99,11 +98,10 @@ void Config::loadBaseParams( )
 
     _overlapSize = getParamInt("mpi", "overlapSizeMPI");
     _subpartitioningMode = getParamInt("mpi", "subpartitioningMode");
-    _initialPartitioning = getParamBool("mpiAutoAdjustment", "initialPartitioning");
-    _rebalancingFreq = getParamInt("mpiAutoAdjustment", "rebalancingFreq");
-    _maximumPercOfUnbalance = getParamFloat("mpiAutoAdjustment", "maximumPercOfUnbalance");
-    _loadLowerThreshold = getParamFloat("mpiAutoAdjustment", "loadLowerThreshold");
-    _loadUpperThreshold = getParamFloat("mpiAutoAdjustment", "loadUpperThreshold");
+    _initialPartitioning = getParamBool("mpi", "initialPartitioning");
+    _rebalancingFreq = getParamInt("mpi", "rebalancingFreq");
+    _maximumPercOfUnbalance = getParamFloat("mpi", "maximumPercOfUnbalance");
+    _loadThreshold = getParamFloat("mpi", "loadThreshold");
 }
 
 void Config::loadFile( )
@@ -255,14 +253,9 @@ const double& Config::getMaximumPercOfUnbalance() const
     return _maximumPercOfUnbalance;
 }
 
-const double& Config::getLoadLowerThreshold() const
+const double& Config::getLoadThreshold() const
 {
-    return _loadLowerThreshold;
-}
-
-const double& Config::getLoadUpperThreshold() const
-{
-    return _loadUpperThreshold;
+    return _loadThreshold;
 }
 
 } // namespace Engine

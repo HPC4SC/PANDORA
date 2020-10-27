@@ -4,7 +4,6 @@
  * COMPUTER APPLICATIONS IN SCIENCE & ENGINEERING
  * BARCELONA SUPERCOMPUTING CENTRE - CENTRO NACIONAL DE SUPERCOMPUTACI-N
  * http://www.bsc.es
-
  * This file is part of Pandora Library. This library is free software;
  * you can redistribute it and/or modify it under the terms of the
  * GNU General Public License as published by the Free Software Foundation;
@@ -51,8 +50,7 @@ protected:
     bool _initialPartitioning;      //! [Only for MPI scheduler] To perform an initial partitioning or not (used as "false" for models that do not create initial agents and/or having warm-up periods).
     int _rebalancingFreq;           //! [Only for MPI scheduler] Rebalancing frequency check in number of steps. If 0, then no frequency is stablished.
     double _maximumPercOfUnbalance; //! [Only for MPI scheduler] Maximum percentage allowed of unbalancing among nodes. From this value on, the space should be rebalanced. If 0, no rebalancing by unbalances are applied at all.
-    double _loadLowerThreshold;     //! [Only for MPI scheduler] Lower load threshold to determine whether the simulation needs to add MPI processes.
-    double _loadUpperThreshold;     //! [Only for MPI scheduler] Upper load threshold to determine whether the simulation needs to subtract MPI processes.
+    double _loadThreshold;          //! [Only for MPI scheduler] Load threshold to determine whether the simulation needs to add or to substract MPI processes.
 
     bool _printInConsole;       //! For logging purposes
     bool _printInstrumentation; //! For logging purposes
@@ -184,18 +182,11 @@ public:
     const double& getMaximumPercOfUnbalance() const;
 
     /**
-     * @brief Gets the _loadLowerThreshold member.
+     * @brief Gets the _loadThreshold member.
      * 
      * @return const double& 
      */
-    const double& getLoadLowerThreshold() const;
-
-    /**
-     * @brief Gets the _loadUpperThreshold member.
-     * 
-     * @return const double& 
-     */
-    const double& getLoadUpperThreshold() const;
+    const double& getLoadThreshold() const;
 
     /**
      * @brief Get the _numSteps object.
@@ -338,4 +329,3 @@ public:
 } // namespace Engine
 
 #endif // __Config__hxx__
-

@@ -4,7 +4,7 @@
 	<numSteps value="3600" serializeResolution="1"/>
 	<seed value="7"/>
 	<logs printInConsole="false" printInstrumentation="false"/>
-	<mpi overlapSizeMPI="6" subpartitioningMode="9" rebalancingFreq="10"/>
+	<mpi overlapSizeMPI="6" subpartitioningMode="4" initialPartitioning="false" rebalancingFreq="3" maximumPercOfUnbalance="50.0" loadThreshold="0.05"/>
 	<size width="40" height="40"/>
 	<Raster mapRoute="./maps/spar2.png"/>
 	<Client clientRate="30" drifting="0.09" stopping="0.02" stopTime="20" wander="0.15"/>
