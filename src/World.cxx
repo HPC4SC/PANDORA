@@ -23,7 +23,7 @@
 #include <Agent.hxx>
 #include <Exception.hxx>
 #include <Scheduler.hxx>
-#include <OpenMPIMultiNode.hxx>
+#include <MPIMultiNode.hxx>
 
 #include <GeneralState.hxx>
 
@@ -224,11 +224,8 @@ namespace Engine
 
     void World::engineStep()
     {
-        if (_step > 0 and _config->getRebalancingFrequency() > 0 and (_step % _config->getRebalancingFrequency()) == 0) 
-        {
-            _scheduler->checkForRebalancingSpace();
-            resetVariablesForRebalance();
-        }
+        _scheduler->checkForRebalancingSpace();
+        //resetVariablesForRebalance();
 
         updateDiscreteStateStructures();
     }
@@ -265,7 +262,8 @@ namespace Engine
 
         for ( _step=0; _step<_config->getNumSteps( ); _step++ )
         {
-            std::cout << CreateStringStream("step" << _step << "\n").str();
+            std::cout << CreateStringStream("[Process #" << getId() << "] step " << _step << "\n").str();
+
             step();
             engineStep();
         }
@@ -610,7 +608,7 @@ namespace Engine
 
     Scheduler* World::useOpenMPIMultiNode()
     {
-        return new OpenMPIMultiNode();
+        return new MPIMultiNode();
     }
 
     // Scheduler * World::useSpacePartition( int overlap, bool finalize )

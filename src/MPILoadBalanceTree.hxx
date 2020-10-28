@@ -19,15 +19,15 @@
  *
  */
 
-#ifndef __LoadBalanceTree_hxx__
-#define __LoadBalanceTree_hxx__
+#ifndef __MPILoadBalanceTree_hxx__
+#define __MPILoadBalanceTree_hxx__
 
 #include <World.hxx>
 
 namespace Engine
 {
 
-    class LoadBalanceTree
+    class MPILoadBalanceTree
     {
         public:
 
@@ -166,16 +166,16 @@ namespace Engine
         public:
 
             /**
-             * @brief Construct a new LoadBalanceTree object.
+             * @brief Construct a new MPILoadBalanceTree object.
              * 
              */
-            LoadBalanceTree();
+            MPILoadBalanceTree();
 
             /**
-             * @brief Destroy the LoadBalanceTree object.
+             * @brief Destroy the MPILoadBalanceTree object.
              * 
              */
-            virtual ~LoadBalanceTree();
+            virtual ~MPILoadBalanceTree();
 
             /**
              * @brief Sets the _world member.
@@ -229,4 +229,4 @@ namespace Engine
 
 } // namespace Engine
 
-#endif // __LoadBalanceTree_hxx__
+#endif // __MPILoadBalanceTree_hxx__

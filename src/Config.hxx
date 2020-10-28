@@ -49,10 +49,11 @@ protected:
     int _overlapSize;               //! [Only for MPI scheduler] Overlap size in number of cells, defined for partition rectangles.
     int _subpartitioningMode;       //! [Only for MPI scheduler] Subpartitioning mode 9 -> 9 subpartitions per node, 4 -> 4 subpartitions per node.
     bool _initialPartitioning;      //! [Only for MPI scheduler] To perform an initial partitioning or not (used as "false" for models that do not create initial agents and/or having warm-up periods).
-    int _rebalancingFreq;           //! [Only for MPI scheduler] Rebalancing frequency check in number of steps. If 0, then no frequency is stablished.
+    int _rebalancingFreq;           //! [Only for MPI scheduler] Rebalancing frequency check in number of steps. If < 1, then no frequency is stablished.
+    int _minimumLoadToRebalance;    //! [Only for MPI scheduler] Minimum load considered to apply rebalancing. If < 1, then rebalancing can potentially apply from the beginning of the simulation.
     double _maximumPercOfUnbalance; //! [Only for MPI scheduler] Maximum percentage allowed of unbalancing among nodes. From this value on, the space should be rebalanced. If 0, no rebalancing by unbalances are applied at all.
-    double _loadLowerThreshold;     //! [Only for MPI scheduler] Lower load threshold to determine whether the simulation needs to add MPI processes.
-    double _loadUpperThreshold;     //! [Only for MPI scheduler] Upper load threshold to determine whether the simulation needs to subtract MPI processes.
+    // double _loadLowerThreshold;     //! [Only for MPI scheduler] Lower load threshold to determine whether the simulation needs to add MPI processes.
+    // double _loadUpperThreshold;     //! [Only for MPI scheduler] Upper load threshold to determine whether the simulation needs to subtract MPI processes.
 
     bool _printInConsole;       //! For logging purposes
     bool _printInstrumentation; //! For logging purposes
@@ -177,25 +178,32 @@ public:
     const int& getRebalancingFrequency() const;
 
     /**
+     * @brief Gets the _minimumLoadToRebalance member.
+     * 
+     * @return const int&
+     */
+    const int& getMinimumLoadToRebalance() const;
+
+    /**
      * @brief Gets the _maximumPercOfUnbalance member.
      * 
      * @return const double& 
      */
     const double& getMaximumPercOfUnbalance() const;
 
-    /**
-     * @brief Gets the _loadLowerThreshold member.
-     * 
-     * @return const double& 
-     */
-    const double& getLoadLowerThreshold() const;
+    // /**
+    //  * @brief Gets the _loadLowerThreshold member.
+    //  * 
+    //  * @return const double& 
+    //  */
+    // const double& getLoadLowerThreshold() const;
 
-    /**
-     * @brief Gets the _loadUpperThreshold member.
-     * 
-     * @return const double& 
-     */
-    const double& getLoadUpperThreshold() const;
+    // /**
+    //  * @brief Gets the _loadUpperThreshold member.
+    //  * 
+    //  * @return const double& 
+    //  */
+    // const double& getLoadUpperThreshold() const;
 
     /**
      * @brief Get the _numSteps object.

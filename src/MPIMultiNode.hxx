@@ -19,13 +19,14 @@
  *
  */
 
-#ifndef __OpenMPIMultiNode_hxx__
-#define __OpenMPIMultiNode_hxx__
+#ifndef __MPIMultiNode_hxx__
+#define __MPIMultiNode_hxx__
 
 #include <World.hxx>
 #include <Scheduler.hxx>
-#include <LoadBalanceTree.hxx>
-#include <OpenMPIMultiNodeLogs.hxx>
+#include <MPILoadBalanceTree.hxx>
+#include <MPIMultiNodeLogs.hxx>
+#include <MPIAutoAdjustment.hxx>
 #include <Serializer.hxx>
 
 #include <set>
@@ -34,10 +35,11 @@
 namespace Engine
 {
 
-    class LoadBalanceTree;
-    class OpenMPIMultiNodeLogs;
+    class MPILoadBalanceTree;
+    class MPIMultiNodeLogs;
+    class MPIAutoAdjustment;
 
-    class OpenMPIMultiNode : public Scheduler
+    class MPIMultiNode : public Scheduler
     {
 
         public:
@@ -57,14 +59,16 @@ namespace Engine
             typedef std::map<Point2D<int>, int> MapOfPositionsAndValues;
             typedef std::map<int, MapOfPositionsAndValues> MapOfValuesByRaster;
 
-            friend class OpenMPIMultiNodeLogs;
+            friend class MPIMultiNodeLogs;
+            friend class MPIAutoAdjustment;
 
         protected:
 
             /** Base data structures for the space partitioning (master node only) **/
-            LoadBalanceTree* _tree;
+            MPILoadBalanceTree* _loadBalancetree;                           //! Tree used to divide the space and balance the load of the simulation.
+            MPIAutoAdjustment* _autoAdjustment;                             //! Instance for the autoadjustment in the number of used nodes.
 
-            MPINodesMap _mpiNodesMapToSend;                                 //! Map<nodeId, nodeInformation> containing the leafs of _tree, where the 'value' field is now the 'ownedArea', and the IDs of the 'neighbours' are mapped with their coordinates.
+            MPINodesMap _mpiNodesMapToSend;                                 //! Map<nodeId, nodeInformation> containing the leafs of _loadBalancetree, where the 'value' field is now the 'ownedArea', and the IDs of the 'neighbours' are mapped with their coordinates.
 
             /** Node own data structures (nodes0..n) **/
             MPINode _nodeSpace;                                             //! Areas and neighbours information for this node.
@@ -93,7 +97,7 @@ namespace Engine
             std::list<MPI_Request*> _sendRequests;
 
             /** Other structures **/
-            OpenMPIMultiNodeLogs* _schedulerLogs;
+            MPIMultiNodeLogs* _schedulerLogs;
 
             std::vector<Agent*> _agentsToBeRemoved;                         //! Vector or Agents to be removed at the end of the step.
 
@@ -114,6 +118,18 @@ namespace Engine
              * 
              */
             void initLogFileNames();
+
+            /**
+             * @brief Initializes the _loadBalanceTree instance.
+             * 
+             */
+            void initLoadBalanceTree();
+
+            /**
+             * @brief Initializes the _autoAdjustment instance.
+             * 
+             */
+            void initAutoAdjustment();
 
             /**
              * @brief Used just to initially stablish the _boundaries and the _ownedArea members, needed to let the model to first create the agents.
@@ -600,21 +616,21 @@ namespace Engine
             /** REBALANCE PROTECTED METHODS (CALLED BY INHERIT METHODS) **/
 
             /**
-             * @brief Checks whether the simulation must be rebalanced among all the active nodes beacause of unbalances.
+             * @brief Returns true if the last time added in 'nodesTime' (nodesTime[nodesTime.size() - 1]) exceeds the maximum percentage of unbalance with some of the previously added times.
              * 
              * @param nodesTime const std::vector<double>&
              * @return bool
              */
-            bool rebalance_needToRebalanceByLoadDifferences(const std::vector<double>& nodesTime) const;
+            bool needToRebalanceByLoadDifferences(const std::vector<double>& nodesTime) const;
 
             /**
-             * @brief Gets the total time for all the agents' execution phases, for all the nodes.
+             * @brief Receives the total time for all the agents' execution phases, for all the nodes, and computes their load differences. Then, it returns whether a rebalance is needed or not. Besides, it lets the total load from all the nodes in 'totalAgentPhasesTotalTime'.
              * 
              * @param masterNodeID const int&
-             * @param allNodesAgentPhasesTotalTime double&
-             * @param needToRebalance bool&
+             * @param totalAgentPhasesTotalTime double&
+             * @return bool
              */
-            void rebalance_getAllNodesAgentPhasesTotalTime(const int& masterNodeID, double& allNodesAgentPhasesTotalTime, bool& needToRebalance) const;
+            bool checkUnbalances(const int& masterNodeID, double& totalAgentPhasesTotalTime) const;
 
             /**
              * @brief Awakes from sleep all the necessary working nodes according the the 'numberOfRequestedProcesses'.
@@ -647,7 +663,16 @@ namespace Engine
              * @param totalNodesAgentPhasesTotalTime const double&
              * @param mandatoryToRebalance const bool& 
              */
-            void rebalance_readjustProcessesIfNecessary(const int& masterNodeID, const double& totalNodesAgentPhasesTotalTime, const bool& mandatoryToRebalance);
+            void rebalance_readjustProcessesIfNecessary(const int& masterNodeID, const double& totalNodesAgentPhasesTotalTime, bool& mandatoryToRebalance);
+
+            /**
+             * @brief Sends the total spent time for the 4 agents phases, for the calling process.
+             * 
+             * @param masterNodeID
+             * @param totalNodesAgentPhasesTotalTime const double&
+             * @param mandatoryToRebalance bool&
+             */
+            void rebalance_sendAgentPhasesTotalTime(const int& masterNodeID) const;
 
             /**
              * @brief Gets all the agents in the _nodeSpace.ownedArea classified by its type (key of the map).
@@ -675,16 +700,16 @@ namespace Engine
             /** INITIALIZATION PUBLIC METHODS **/
 
             /**
-             * @brief Construct a new OpenMPIMultiNode object.
+             * @brief Construct a new MPIMultiNode object.
              * 
              */
-            OpenMPIMultiNode();
+            MPIMultiNode();
 
             /**
-             * @brief Destroy the OpenMPIMultiNode object.
+             * @brief Destroy the MPIMultiNode object.
              * 
              */
-            virtual ~OpenMPIMultiNode();
+            virtual ~MPIMultiNode();
 
             /** INITIALIZATION PUBLIC METHODS (INHERIT) **/
 
@@ -904,4 +929,4 @@ namespace Engine
 
 } // namespace Engine
 
-#endif // __OpenMPIMultiNode_hxx__
+#endif // __MPIMultiNode_hxx__

@@ -39,7 +39,7 @@ class Agent;
 class StaticRaster;
 class Raster;
 class World;
-class OpenMPIMultiNode;
+class MPIMultiNode;
 
 class Serializer
 {
@@ -55,7 +55,7 @@ private:
     typedef std::map< std::string, StringMap * > StringAttributesMap;
 
     //const SpacePartition & _scheduler; //! Reference to the used Scheduler.
-    const OpenMPIMultiNode & _scheduler; //! Reference to the used Scheduler.
+    const MPIMultiNode & _scheduler; //! Reference to the used Scheduler.
     const Config * _config; //! Pointer to the Config instance.
 
     hid_t _fileId; //! Output file route.
@@ -136,7 +136,7 @@ public:
      * 
      * @param scheduler 
      */
-    Serializer(const OpenMPIMultiNode& scheduler);
+    Serializer(const MPIMultiNode& scheduler);
 
     /**
      * @brief Destroy the Serializer object.

@@ -250,20 +250,25 @@ const int& Config::getRebalancingFrequency() const
     return _rebalancingFreq;
 }
 
+const int& Config::getMinimumLoadToRebalance() const
+{
+    return _minimumLoadToRebalance;
+}
+
 const double& Config::getMaximumPercOfUnbalance() const
 {
     return _maximumPercOfUnbalance;
 }
 
-const double& Config::getLoadLowerThreshold() const
-{
-    return _loadLowerThreshold;
-}
+// const double& Config::getLoadLowerThreshold() const
+// {
+//     return _loadLowerThreshold;
+// }
 
-const double& Config::getLoadUpperThreshold() const
-{
-    return _loadUpperThreshold;
-}
+// const double& Config::getLoadUpperThreshold() const
+// {
+//     return _loadUpperThreshold;
+// }
 
 } // namespace Engine
 
