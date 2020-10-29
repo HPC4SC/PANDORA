@@ -616,23 +616,6 @@ namespace Engine
             /** REBALANCE PROTECTED METHODS (CALLED BY INHERIT METHODS) **/
 
             /**
-             * @brief Returns true if the last time added in 'nodesTime' (nodesTime[nodesTime.size() - 1]) exceeds the maximum percentage of unbalance with some of the previously added times.
-             * 
-             * @param nodesTime const std::vector<double>&
-             * @return bool
-             */
-            bool needToRebalanceByLoadDifferences(const std::vector<double>& nodesTime) const;
-
-            /**
-             * @brief Receives the total time for all the agents' execution phases, for all the nodes, and computes their load differences. Then, it returns whether a rebalance is needed or not. Besides, it lets the total load from all the nodes in 'totalAgentPhasesTotalTime'.
-             * 
-             * @param masterNodeID const int&
-             * @param totalAgentPhasesTotalTime double&
-             * @return bool
-             */
-            bool checkUnbalances(const int& masterNodeID, double& totalAgentPhasesTotalTime) const;
-
-            /**
              * @brief Awakes from sleep all the necessary working nodes according the the 'numberOfRequestedProcesses'.
              * 
              * @param numberOfRequestedProcesses 
@@ -640,22 +623,10 @@ namespace Engine
             void rebalance_awakeWorkingNodesToRepartition(int numberOfRequestedProcesses);
 
             /**
-             * @brief Receives the agents from the the working nodes in order to apply a new partitioning.
-             * 
-             */
-            void rebalance_receiveAllAgentsFromWorkingNodes(const int& workingNodeID);
-
-            /**
              * @brief Repartitions all the space from the current state of the agents (which all of them are assumed to already be in this local memory).
              * 
              */
             void rebalance_repartitionSpace();
-
-            /**
-             * @brief Sends the agents to the working nodes
-             * 
-             */
-            void rebalance_sendAllAgentsToWorkingNodes() const;
 
             /**
              * @brief Reajusts the number of active processes if necessary and rebalances the space. If 'mandatoryToRebalance' then the simulation space is just repartitioned.

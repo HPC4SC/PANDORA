@@ -212,13 +212,13 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
             {
                 int typeOfEventAfterWakeUp;
                 MPI_Recv(&typeOfEventAfterWakeUp, 1, MPI_INT, masterNodeID, eTypeOfEventAfterWakeUp, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-                if (typeOfEventAfterWakeUp == eDie)
+                if (typeOfEventAfterWakeUp == eMessage_Die)
                 {
                     finish();
                     _justFinished = true;
                     return;
                 }
-                else if (typeOfEventAfterWakeUp == ePrepareToRepartition)
+                else if (typeOfEventAfterWakeUp == eMessage_AwakeToRepartition)
                 {
                     wakeUp = true;
 
@@ -1254,53 +1254,10 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
             {
                 sendDataRequestToNode(&totalNumberOfProcesses, 1, MPI_INT, processID, eProcessWakeUp);
 
-                int endingEventType = eDie;
+                int endingEventType = eMessage_Die;
                 sendDataRequestToNode(&endingEventType, 1, MPI_INT, processID, eTypeOfEventAfterWakeUp);
             }
         }
-    }
-
-    bool MPIMultiNode::needToRebalanceByLoadDifferences(const std::vector<double>& nodesTime) const
-    {
-        double lastNodeTime = nodesTime[nodesTime.size() - 1]; 
-        for (int j = 0; j < nodesTime.size() - 1; ++j)
-        {
-            if (100.0 * (std::abs(1.0 - (lastNodeTime/nodesTime[j]))) > _world->getConfig().getMaximumPercOfUnbalance())
-                return true;
-        }
-        return false;
-    }
-
-    bool MPIMultiNode::checkUnbalances(const int& masterNodeID, double& totalAgentPhasesTotalTime) const
-    {
-        if (getId() == masterNodeID)
-        {
-            std::vector<double> nodesTime(_numberOfActiveProcesses);
-            double masterAgentPhasesTotalTime = _world->getUpdateKnowledgeTotalTime() + _world->getSelectActionsTotalTime() + _world->getExecuteActionsTotalTime() + _world->getUpdateStateTotalTime();
-
-            totalAgentPhasesTotalTime = masterAgentPhasesTotalTime;
-            nodesTime[masterNodeID] = masterAgentPhasesTotalTime;
-
-            for (int processID = 0; processID < _numberOfActiveProcesses; ++processID)
-            {
-                if (processID != masterNodeID)
-                {
-                    double nodeAgentPhasesTotalTime;
-                    MPI_Recv(&nodeAgentPhasesTotalTime, 1, MPI_DOUBLE, processID, eAgentPhasesTotalTime, _activeProcessesComm, MPI_STATUS_IGNORE);
-
-                    totalAgentPhasesTotalTime += nodeAgentPhasesTotalTime;
-
-                    nodesTime[processID] = nodeAgentPhasesTotalTime;
-                    if (needToRebalanceByLoadDifferences(nodesTime)) return true;
-                }
-            }
-        }
-        else
-        {
-            double agentPhasesTotalTime = _world->getUpdateKnowledgeTotalTime() + _world->getSelectActionsTotalTime() + _world->getExecuteActionsTotalTime() + _world->getUpdateStateTotalTime();
-            MPI_Send(&agentPhasesTotalTime, 1, MPI_DOUBLE, masterNodeID, eAgentPhasesTotalTime, _activeProcessesComm);
-        }
-        return false;
     }
 
     void MPIMultiNode::rebalance_awakeWorkingNodesToRepartition(int numberOfRequestedProcesses)
@@ -1309,40 +1266,8 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
         {
             sendDataRequestToNode(&numberOfRequestedProcesses, 1, MPI_INT, processID, eProcessWakeUp);
 
-            int eventType = ePrepareToRepartition;
+            int eventType = eMessage_AwakeToRepartition;
             sendDataRequestToNode(&eventType, 1, MPI_INT, processID, eTypeOfEventAfterWakeUp);
-        }
-    }
-
-    void MPIMultiNode::rebalance_receiveAllAgentsFromWorkingNodes(const int& workingNodeID)
-    {
-        int numberOfTypes;
-        MPI_Recv(&numberOfTypes, 1, MPI_INT, workingNodeID, eNumTypes, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-        for (int i = 0; i < numberOfTypes; ++i)
-        {
-            int agentsTypeID;
-            MPI_Recv(&agentsTypeID, 1, MPI_INT, workingNodeID, eAgentsTypeID, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-            std::string agentsTypeName = MpiFactory::instance()->getNameFromTypeID(agentsTypeID);
-            MPI_Datatype* agentTypeMPI = MpiFactory::instance()->getMPIType(agentsTypeName);
-
-            int numberOfAgentsToReceive;
-            MPI_Recv(&numberOfAgentsToReceive, 1, MPI_INT, workingNodeID, eNumAgents, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-            int sizeOfAgentsPackage = MpiFactory::instance()->getSizeOfPackage(agentsTypeName);
-            void* agentsPackageArray = malloc(numberOfAgentsToReceive * sizeOfAgentsPackage);
-
-            MPI_Recv(agentsPackageArray, numberOfAgentsToReceive, *agentTypeMPI, workingNodeID, eAgents, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-            for (int j = 0; j < numberOfAgentsToReceive; ++j)
-            {
-                void* package = (char*) agentsPackageArray + j * sizeOfAgentsPackage;
-                Agent* agent = MpiFactory::instance()->createAndFillAgent(agentsTypeName, package);
-
-                if (not _nodeSpace.ownedAreaWithOuterOverlaps.contains(agent->getPosition()))
-                    _world->addAgent(agent, false);
-            }
-            free(agentsPackageArray);
         }
     }
 
@@ -1352,42 +1277,35 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
         divideSpace();
     }
 
-    void MPIMultiNode::rebalance_sendAllAgentsToWorkingNodes() const
-    {
-        
-
-
-    }
-
     void MPIMultiNode::rebalance_readjustProcessesIfNecessary(const int& masterNodeID, const double& totalNodesAgentPhasesTotalTime, bool& mandatoryToRebalance)
     {
-        int numberOfRequestedProcesses = -1;
-        if (totalNodesAgentPhasesTotalTime > _world->getConfig().getLoadUpperThreshold())
-        {
-            numberOfRequestedProcesses = _numberOfActiveProcesses * 2;
-            rebalance_awakeWorkingNodesToRepartition(numberOfRequestedProcesses);
+        // int numberOfRequestedProcesses = -1;
+        // if (totalNodesAgentPhasesTotalTime > _world->getConfig().getLoadUpperThreshold())
+        // {
+        //     numberOfRequestedProcesses = _numberOfActiveProcesses * 2;
+        //     rebalance_awakeWorkingNodesToRepartition(numberOfRequestedProcesses);
 
-            mandatoryToRebalance = true;
-        }
-        else if (totalNodesAgentPhasesTotalTime < _world->getConfig().getLoadLowerThreshold())
-        {
-            numberOfRequestedProcesses = _numberOfActiveProcesses / 2;
-            rebalance_awakeWorkingNodesToRepartition(numberOfRequestedProcesses);
+        //     mandatoryToRebalance = true;
+        // }
+        // else if (totalNodesAgentPhasesTotalTime < _world->getConfig().getLoadLowerThreshold())
+        // {
+        //     numberOfRequestedProcesses = _numberOfActiveProcesses / 2;
+        //     rebalance_awakeWorkingNodesToRepartition(numberOfRequestedProcesses);
 
-            mandatoryToRebalance = true;
-        }
+        //     mandatoryToRebalance = true;
+        // }
 
-        if (mandatoryToRebalance)
-        {
-            for (int i = 0; i < _numberOfActiveProcesses; ++i)
-                if (i != masterNodeID) rebalance_receiveAllAgentsFromWorkingNodes(i);
+        // if (mandatoryToRebalance)
+        // {
+        //     for (int i = 0; i < _numberOfActiveProcesses; ++i)
+        //         if (i != masterNodeID) rebalance_receiveAllAgentsFromWorkingNodes(i);
 
-            if (numberOfRequestedProcesses != -1) _numberOfActiveProcesses = numberOfRequestedProcesses;
+        //     if (numberOfRequestedProcesses != -1) _numberOfActiveProcesses = numberOfRequestedProcesses;
 
-            rebalance_repartitionSpace();
-            rebalance_sendAllAgentsToWorkingNodes();
-            // synchronize rasters among nodes (each node should know its "parent" and ask to it the rasters)
-        }
+        //     rebalance_repartitionSpace();
+        //     rebalance_sendAllAgentsToWorkingNodes();
+        //     // synchronize rasters among nodes (each node should know its "parent" and ask to it the rasters)
+        // }
     }
 
     void MPIMultiNode::rebalance_sendAgentPhasesTotalTime(const int& masterNodeID) const
@@ -1396,58 +1314,9 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
         MPI_Send(&agentPhasesTotalTime, 1, MPI_DOUBLE, masterNodeID, eAgentPhasesTotalTime, _activeProcessesComm);
     }
 
-    void MPIMultiNode::rebalance_getAllOwnedAreaAgentsByType(std::map<std::string, AgentsList>& agentsByType) const
-    {
-        for (AgentsMap::const_iterator it = _world->beginAgents(); it != _world->endAgents(); ++it)
-        {
-            AgentPtr agentPtr = it->second;
-            Agent* agent = agentPtr.get();
-
-            if (_nodeSpace.ownedArea.contains(agent->getPosition()))
-            {
-                std::string agentType = agent->getType();
-                agentsByType[agentType].push_back(agentPtr);
-            }
-        }
-    }
-
     void MPIMultiNode::rebalance_sendAllAgentsToMasterNode(const int& masterNodeID)
     {
-        std::map<std::string, AgentsList> agentsByType;
-        rebalance_getAllOwnedAreaAgentsByType(agentsByType);
         
-        int numberOfTypes = agentsByType.size();
-        sendDataRequestToNode(&numberOfTypes, 1, MPI_INT, masterNodeID, eNumTypes);
-
-        for (std::map<std::string, AgentsList>::const_iterator it = agentsByType.begin(); it != agentsByType.end(); ++it)
-        {
-            std::string agentsTypeName = it->first;
-            AgentsList agentsToSend = it->second;
-
-            int agentsTypeID = MpiFactory::instance()->getIDFromTypeName(agentsTypeName);
-            sendDataRequestToNode(&agentsTypeID, 1, MPI_INT, masterNodeID, eAgentsTypeID);
-
-            int numberOfAgentsToSend = agentsToSend.size();
-            sendDataRequestToNode(&numberOfAgentsToSend, 1, MPI_INT, masterNodeID, eNumAgents);
-
-            int sizeOfAgentsPackage = MpiFactory::instance()->getSizeOfPackage(agentsTypeName);
-            void* agentsPackageArray = malloc(numberOfAgentsToSend * sizeOfAgentsPackage);
-
-            int i = 0;
-            MPI_Datatype* agentTypeMPI = MpiFactory::instance()->getMPIType(agentsTypeName);
-            for (AgentsList::const_iterator itAgent = agentsToSend.begin(); itAgent != agentsToSend.end(); ++itAgent)
-            {
-                Agent* agent = itAgent->get();
-
-                void* agentPackage = agent->fillPackage();
-                memcpy((char*) agentsPackageArray + i * sizeOfAgentsPackage, agentPackage, sizeOfAgentsPackage);
-                agent->freePackage(agentPackage);
-                ++i;
-            }
-            sendDataRequestToNode(agentsPackageArray, numberOfAgentsToSend, *agentTypeMPI, masterNodeID, eAgents);
-
-            free(agentsPackageArray);
-        }
     }
 
     void MPIMultiNode::rebalance_receiveReadjustmentIfNecessary(const int& masterNodeID)
@@ -1481,11 +1350,10 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
 
     void MPIMultiNode::checkForRebalancingSpace()
     {
-        bool unbalanced = checkUnbalances(_masterNodeID);
-        if (_step > 0 and _config->getRebalancingFrequency() > 0 and (_step % _config->getRebalancingFrequency()) == 0) 
-        {
-            _autoAdjustment->checkForRebalancingSpace();
-        }
+        if (_world->getCurrentStep() > 0 and 
+            _world->getConfig().getRebalancingFrequency() > 0 and 
+            _world->getCurrentStep() % _world->getConfig().getRebalancingFrequency() == 0) 
+                _autoAdjustment->checkForRebalancingSpace();
     }
 
     void MPIMultiNode::executeAgents()

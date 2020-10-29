@@ -64,10 +64,13 @@ namespace Engine
         eCreateGroupInactive = 71,
         eProcessWakeUp = 72,
         eProcessSleep = 73,
-        eTypeOfEventAfterWakeUp = 74,
+        ePrepareToRepartition = 74,
+        eTypeOfEventAfterWakeUp = 75,
 
-        eDie = 80,
-        ePrepareToRepartition = 81,
+        eMessage_Die = 80,
+        eMessage_PrepareToRepartition_true = 81,
+        eMessage_PrepareToRepartition_false = 82,
+        eMessage_AwakeToRepartition = 83,
 
         eAgentPhasesTotalTime = 90
     };

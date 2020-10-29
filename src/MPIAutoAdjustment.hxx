@@ -24,6 +24,8 @@
 
 #include <MPIMultiNode.hxx>
 
+#include <mpi.h>
+
 namespace Engine
 {
 
@@ -34,7 +36,82 @@ namespace Engine
 
         protected:
 
+            /** General structures **/
             const MPIMultiNode* _schedulerInstance;                 //! Instance of the scheduler containing all the variables needed for auto adjustment.
+
+            /** MPI Data Structures **/
+            std::list<MPI_Request*> _sendRequests;
+
+            /** PROTECTED METHODS **/
+
+            /**
+             * @brief Sends a non-blocking request of 'numberOfElements', from 'data' typed as 'mpiDataType, to 'destinationNode', tagged with 'tag', by the default communicator MPI_COMM_WORLD.
+             * 
+             * @param data void*
+             * @param numberOfElements const int&
+             * @param mpiDatatype const MPI_Datatype&
+             * @param destinationNode const int&
+             * @param tag const int&
+             * @param mpiComm const MPI_Comm&
+             */
+            void sendDataRequestToNode(void* data, const int& numberOfElements, const MPI_Datatype& mpiDatatype, const int& destinationNode, const int& tag, const MPI_Comm& mpiComm);
+
+            /**
+             * @brief Sends the initial signals to all the worker nodes in order to begin the rebalancing.
+             * 
+             * @param beginRebalance const bool&
+             */
+            void sendSignalsToBeginRebalance(const bool& beginRebalance);
+
+            /**
+             * @brief Receives the initial signal from the master nodes in order to begin the rebalancing. It returns false if no rebalancing is finally required.
+             * 
+             * @return bool
+             */
+            bool receiveSignalToBeginRebalance() const;
+
+            /**
+             * @brief Returns the total time for all the agent phases for the calling node.
+             * 
+             * @return double 
+             */
+            double getAgentPhasesTotalTime() const;
+
+            /**
+             * @brief Returns true if the last added time in 'nodesTime' is >= MaximumLoadPerNode. Also, returns true if the last time added in 'nodesTime' (nodesTime[nodesTime.size() - 1]) exceeds the maximum percentage of unbalance with some of the previously added times.
+             * 
+             * @param nodesTime const std::vector<double>&
+             * @return bool
+             */
+            bool needToRebalanceByLoad(const std::vector<double>& nodesTime) const;
+
+            /**
+             * @brief Receives the total time for all the agents' execution phases, for all the nodes, and computes their load differences. Then, it returns whether a rebalance is needed or not. Besides, it lets the total load from all the nodes in 'totalAgentPhasesTotalTime'.
+             * 
+             * @param masterNodeID const int&
+             * @param totalAgentPhasesTotalTime double&
+             * @return bool
+             */
+            bool needToRebalance(const int& masterNodeID, double& totalAgentPhasesTotalTime) const;
+
+            /**
+             * @brief Receives all the agents from all the active working nodes.
+             * 
+             */
+            void receiveAllAgentsFromWorkingNodes();
+
+            /**
+             * @brief Gets all the agents of the calling node and let them classified by type in 'agentsByType'.
+             * 
+             * @param agentsByType std::map<std::string, AgentsList>&
+             */
+            void getAllOwnedAreaAgentsByType(std::map<std::string, AgentsList>& agentsByType) const;
+
+            /**
+             * @brief Send all the agents of the calling node to the master node.
+             * 
+             */
+            void sendAllAgentsToMasterNode();
 
         public:
 
