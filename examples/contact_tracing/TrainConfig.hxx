@@ -18,6 +18,7 @@ class TrainConfig : public Engine::Config {
         float _sittingPreference;
         std::string _passangerEntry;
         std::string _passangerExit;
+        int _agentRate;
 
         float _infectiosness;
         int _infectoinRadius;

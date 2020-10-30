@@ -20,10 +20,10 @@ int main(int argc, char* argv[])
 			throw Engine::Exception("USAGE: contact_tracing [#cores] [config file]");
 		}
 	
-		std::string fileName("configStreet.xml");
+		std::string fileName("configTrainPlatform.xml");
 		if(argc!=2) // cambiar para mpi
 		{
-			fileName = "configStreet.xml";
+			fileName = "configTrainPlatform.xml";
 		}
 		if (fileName == "configSupermarket.xml") {
 			Examples::Supermarket super(new Examples::SupermarketConfig(fileName), super.useOpenMPIMultiNode());
@@ -37,7 +37,7 @@ int main(int argc, char* argv[])
 			street.setParallelism(true, false);
 			street.run();
 		}
-		else if (fileName == "configTrain.xml") {
+		else if (fileName == "configTrain.xml" or fileName == "configTrainPlatform.xml") {
 			Examples::Train train(new Examples::TrainConfig(fileName), train.useOpenMPIMultiNode());
 			train.initialize(argc, argv);
 			train.setParallelism(true, false);

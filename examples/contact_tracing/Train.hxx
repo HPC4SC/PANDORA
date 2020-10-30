@@ -29,6 +29,10 @@ class Train : public Engine::World
 
         std::vector<Engine::Point2D<int>> _doors;
 
+        std::vector<Engine::Point2D<int>> _entry;
+
+        std::list<Engine::Point2D<int>> _pickedSeats;
+
         std::list<int> _travelTimes;
 
         int _nextStop = 0;
@@ -52,6 +56,12 @@ class Train : public Engine::World
         Engine::RNGUniformInt _uniAvaliableSeats;
 
         Engine::RNGUniformInt _uniDoors;
+
+        Engine::RNGUniformInt _uniEntry;
+
+        int _stopAgents = -1;
+
+        int _remainingAgents = -1;
 
     public:
         Train(Engine::Config* config, Engine::Scheduler* scheduler = 0);
@@ -82,6 +92,8 @@ class Train : public Engine::World
 
         Engine::Point2D<int> findClosestDoor(Engine::Point2D<int> pos);
 
+        Engine::Point2D<int> findClosestSeat(Engine::Point2D<int> pos);
+
         std::vector<Engine::Point2D<int>> getAvaliableSeats();
 
         int getAgentsToLeave();
@@ -99,6 +111,8 @@ class Train : public Engine::World
         bool isDoor(const Engine::Point2D<int> point);
 
         Engine::Point2D<int> randomClosePosition(const Engine::Point2D<int> origin);
+
+        void createPassangerFromTrain();
 
 };
 

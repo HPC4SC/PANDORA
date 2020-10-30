@@ -146,7 +146,7 @@ def print_agents(steps_dfs,scenario):
         x2 = 258
         y2 = 9
         type = 'Train' 
-        img = plt.imread("../maps/train_layout.png")
+        img = plt.imread("../maps/platform_layout.png")
         agentColor = 'white'
     pd.DataFrame(result).to_csv('./' + type + 'Output.csv')
 

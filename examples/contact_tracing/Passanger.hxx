@@ -22,11 +22,14 @@ class Passanger : public Examples::HumanBeeing
         bool _entering;
         std::list<Engine::Point2D<int>> _targetPath;
         Engine::Point2D<int> _targetPosition;
-		bool _outDoorSelected = false;
+		bool _onPlatform;
 
     public:
         Passanger(const std::string& id, const double& infectiousness, const bool& sick, const int& encounterRadius, const int& phoneT1, 
-	    const int& phoneT2, const bool& phoneApp, const int& signalRadius, const float& move, const bool& wilSeat, Train* train);
+	    const int& phoneT2, const bool& phoneApp, const int& signalRadius, const float& move, const bool& wilSeat, Train* train, const bool& onPlatform);
+
+		Passanger(const std::string& id, const double& infectiousness, const bool& sick, const int& encounterRadius, const int& phoneT1, 
+    	const int& phoneT2, const bool& phoneApp, const int& signalRadius, const float& move, const bool& wilSeat, Train* train, const Engine::Point2D<int>& out);
 
         ~Passanger();
 

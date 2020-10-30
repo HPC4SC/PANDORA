@@ -16,6 +16,7 @@ void TrainConfig::loadParams() {
     _sittingPreference = getParamFloat("Passanger","sittingPreference");
     _passangerEntry = getParamStr("Passanger","passangerEntry");
     _passangerExit = getParamStr("Passanger","passangerExit");
+    _agentRate = getParamInt("Passanger","agentRate");
 
     _infectiosness = getParamFloat("Epidemiology","infectiousness");
     _infectoinRadius = getParamFloat("Epidemiology","infectoinRadius");
