@@ -89,10 +89,9 @@ namespace Engine
              * @brief Receives the total time for all the agents' execution phases, for all the nodes, and computes their load differences. Then, it returns whether a rebalance is needed or not. Besides, it lets the total load from all the nodes in 'totalAgentPhasesTotalTime'.
              * 
              * @param masterNodeID const int&
-             * @param totalAgentPhasesTotalTime double&
              * @return bool
              */
-            bool needToRebalance(const int& masterNodeID, double& totalAgentPhasesTotalTime) const;
+            bool needToRebalance(const int& masterNodeID) const;
 
             /**
              * @brief Receives all the agents from all the active working nodes.
@@ -112,6 +111,37 @@ namespace Engine
              * 
              */
             void sendAllAgentsToMasterNode();
+
+            /**
+             * @brief Awakes from sleep all the necessary working nodes according the the 'numberOfRequestedProcesses'.
+             * 
+             * @param numberOfRequestedProcesses const int&
+             */
+            void awakeWorkingNodesToRepartition(const int& numberOfRequestedProcesses);
+
+            /**
+             * @brief Divides and tests a whole test step for the indicated 'numberOfProcessesToTest'.
+             * 
+             * @param numberOfProcessesToTest const int&
+             * @return double 
+             */
+            double divideAndTestStep(const int& numberOfProcessesToTest);
+
+            /**
+             * @brief From the 'initialNumberOfProcesses', executes test steps in the direction marked by 't', returning the number of processes at the minimum cost.
+             * 
+             * @param initialNumberOfProcesses const int&
+             * @param cost const double&
+             * @param lambda const T&
+             * @return int 
+             */
+            template <typename T> int getNumberOfProcessesAtMinimumCost(const int& initialNumberOfProcesses, const double& cost, const T& lambda);
+
+            /**
+             * @brief Explores the minimum cost performing a step test for different number of nodes. Returns the number of processes that gets a local minimum cost. NOTE: at the end of this function, the optimal number of processes is awaken.
+             * 
+             */
+            void exploreMinimumCost();
 
         public:
 

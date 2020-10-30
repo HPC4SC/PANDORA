@@ -613,59 +613,6 @@ namespace Engine
              */
             void finishSleepingProcesses();
 
-            /** REBALANCE PROTECTED METHODS (CALLED BY INHERIT METHODS) **/
-
-            /**
-             * @brief Awakes from sleep all the necessary working nodes according the the 'numberOfRequestedProcesses'.
-             * 
-             * @param numberOfRequestedProcesses 
-             */
-            void rebalance_awakeWorkingNodesToRepartition(int numberOfRequestedProcesses);
-
-            /**
-             * @brief Repartitions all the space from the current state of the agents (which all of them are assumed to already be in this local memory).
-             * 
-             */
-            void rebalance_repartitionSpace();
-
-            /**
-             * @brief Reajusts the number of active processes if necessary and rebalances the space. If 'mandatoryToRebalance' then the simulation space is just repartitioned.
-             * 
-             * @param totalNodesAgentPhasesTotalTime const double&
-             * @param mandatoryToRebalance const bool& 
-             */
-            void rebalance_readjustProcessesIfNecessary(const int& masterNodeID, const double& totalNodesAgentPhasesTotalTime, bool& mandatoryToRebalance);
-
-            /**
-             * @brief Sends the total spent time for the 4 agents phases, for the calling process.
-             * 
-             * @param masterNodeID
-             * @param totalNodesAgentPhasesTotalTime const double&
-             * @param mandatoryToRebalance bool&
-             */
-            void rebalance_sendAgentPhasesTotalTime(const int& masterNodeID) const;
-
-            /**
-             * @brief Gets all the agents in the _nodeSpace.ownedArea classified by its type (key of the map).
-             * 
-             * @param agentsByType std::map<std::string, AgentsList>&
-             */
-            void rebalance_getAllOwnedAreaAgentsByType(std::map<std::string, AgentsList>& agentsByType) const;
-
-            /**
-             * @brief Sends all the agents in the local memory of the process to the master node.
-             * 
-             * @param masterNodeID const int&
-             */
-            void rebalance_sendAllAgentsToMasterNode(const int& masterNodeID);
-
-            /**
-             * @brief Waits for the master ('masterNodeID') to say whether a rebalance among all nodes is needed or not.
-             * 
-             * @param masterNodeID const int&
-             */
-            void rebalance_receiveReadjustmentIfNecessary(const int& masterNodeID);
-
         public:
 
             /** INITIALIZATION PUBLIC METHODS **/
