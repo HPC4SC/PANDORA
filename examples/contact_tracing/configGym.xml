@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+<config>
+	<output resultsFile="./data/contact_tracingTrain.h5" logsDir="./logs"/>
+	<seed value="1"/>
+	<logs printInConsole="false" printInstrumentation="false"/>
+	<mpi overlapSizeMPI="6" subpartitioningMode="4" initialPartitioning="false" rebalancingFreq="3" maximumPercOfUnbalance="50.0" loadThreshold="0.05"/>
+
+	<numSteps value="3600" serializeResolution="1"/>
+	<size width="100" height="100"/>
+	<Raster mapRoute="./maps/gym_layout.png"/>
+	<Athlete mintimeOfExercice="1200" agentRate="20"/>
+    <Epidemiology infectiousness="0.00371" infectoinRadius="2" sickRate="0.3" encounterRadius="2"/>
+	<Phone signalRadius="6" applicationRate="1.0" phoneThreshold1="63" phoneThreshold2="74"/>
+</config>
