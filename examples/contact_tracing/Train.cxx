@@ -22,7 +22,7 @@ void Train::createInitialRasters() {
 void Train::createAgents() {
     _avaliableSeats.clear();
     if (_step%_trainConfig._agentRate == 0 and not _entry.empty()) createPassanger();
-    if (_step == _nextStop - 14) { // TODO refactor per crear agents durant 14 s
+    if (_step == _nextStop - 14) {
         if (_entry.empty()) {
             for (int i = 0; i < _passangerEntry.front(); i++) createPassanger();
             _passangerEntry.pop_front();
@@ -35,7 +35,6 @@ void Train::createAgents() {
         else {
             _remainingAgents = _passangerExit.front();
             _passangerExit.pop_front();
-            std::cout << "create from train, size: " << _remainingAgents << std::endl;
             if (_remainingAgents > _doors.size()/2) {
                 for (int i = 0; i < _doors.size()/2; i++) createPassangerFromTrain();
                 _remainingAgents -= _doors.size()/2;
@@ -61,18 +60,12 @@ void Train::createPassanger() {
     addAgent(passanger);
     if (_entry.empty()) {
         int spawnIndex = _uniDoors.draw();
-        while (not this->checkPosition(_doors[spawnIndex])) {
-            std::cout << "fuck my live v1" << std::endl;
-            spawnIndex = _uniDoors.draw();
-        }
+        while (not this->checkPosition(_doors[spawnIndex])) spawnIndex = _uniDoors.draw();
         passanger->setPosition(_doors[spawnIndex]);
     }
     else {
         int spawnIndex = _uniEntry.draw();
-        while (not this->checkPosition(_entry[spawnIndex])) {
-            std::cout << "fuck my live entry" << std::endl;
-            spawnIndex = _uniEntry.draw();
-        }
+        while (not this->checkPosition(_entry[spawnIndex])) spawnIndex = _uniEntry.draw();
         passanger->setPosition(_entry[spawnIndex]);
     }
 }
@@ -80,7 +73,6 @@ void Train::createPassanger() {
 void Train::createPassangerFromTrain() {
     std::ostringstream oss;
     oss << "Passanger_" << _passangerId;
-    std::cout << oss.str() << " going out from" << std::endl;
     _passangerId++;
     bool sick = false;
     if (_uniformZeroOne.draw() < _trainConfig._sickRate) sick = true;
@@ -91,10 +83,7 @@ void Train::createPassangerFromTrain() {
         _trainConfig._signalRadius,_trainConfig._move,willSeat,this,target);
     addAgent(passanger);
     int spawnIndex = _uniDoors.draw();
-    while (not this->checkPosition(_doors[spawnIndex])) {
-        std::cout << "fuck my live v2" << std::endl;
-        spawnIndex = _uniDoors.draw();
-    }
+    while (not this->checkPosition(_doors[spawnIndex])) spawnIndex = _uniDoors.draw();
     passanger->setPosition(_doors[spawnIndex]);
 }
 

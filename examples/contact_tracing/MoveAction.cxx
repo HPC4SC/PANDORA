@@ -29,9 +29,7 @@ void MoveAction::execute(Engine::Agent & agent) {
 				client.setMemory(client.getSuper()->getShortestPath(client.getPosition(),client.getTargetPosition()));
 			}
 			Engine::Point2D<int> nextMemoryPosition = client.getMemory().front();
-			//std::cout << "nextmemoryposition is: " << nextMemoryPosition <<
 			newPosition = nextMemoryPosition;
-			//std::cout << "Agent: " << agent.getId() << " is in position " << agent.getPosition() << " is: " << newPosition << std::endl;
 			if (not world->checkPosition(newPosition) and super->getUniformZeroOne() < client.getWander()) {
 				newPosition = client.getPosition();
 				int modX = super->getUniformMinusOneOne();
@@ -51,10 +49,7 @@ void MoveAction::execute(Engine::Agent & agent) {
 				client.setMemory(client.getSuper()->getShortestPath(client.getPosition(),client.getTargetPosition()));
 			}
 			if (world->checkPosition(newPosition)) {
-				//std::cout << "newPosition is: " << nextMemoryPosition << " nextMemoryPosition " << nextMemoryPosition << " to " << newPosition << std::endl;
-				//if (newPosition != nextMemoryPosition) client.setMemory(client.getSuper()->getShortestPath(client.getPosition(),client.getTargetPosition()));
 				if (agent.getPosition().distance(newPosition) < 2) client.popFrontMemory();
-				//if (agent.getPosition().distance(newPosition) >= 2) std::cout << "Agent " << agent.getId() << " moves form position " << agent.getPosition() << " to " << newPosition << " and distance is: " << agent.getPosition().distance(newPosition) << std::endl;
 				agent.setPosition(newPosition);
 			}
 		}

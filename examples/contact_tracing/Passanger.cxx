@@ -27,7 +27,6 @@ Passanger::~Passanger() {}
 void Passanger::selectActions() {
     _actions.push_back(new InfectActionOutside);
     if (_train->getAgentsToLeave() > 0) {
-        std::cout << getId() << " have to leave" << std::endl;
         goingToLeave();
         _train->agentLeaves();
     }
@@ -100,10 +99,6 @@ void Passanger::selectActions() {
                         _actions.push_back(new SeatAction);
                         if (getPosition() == _targetPosition) _willSeat = false;
                     } 
-                    /*else {
-                        _willSeat = false;
-                        //if (_train->getUniZeroOne() < _move) _actions.push_back(new RandomMoveAction);
-                    }*/
                 }
             }
         }

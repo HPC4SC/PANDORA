@@ -11,7 +11,6 @@ namespace Examples
     RandomMoveAction::~RandomMoveAction() {}
 
     void RandomMoveAction::execute(Engine::Agent & agent) {
-        std::cout << agent.getId() << " executing RandomMove" << std::endl;
         Passanger& passanger = (Passanger&)agent;
         Train* train = passanger.getTrain();
         Engine::World * world = agent.getWorld();
