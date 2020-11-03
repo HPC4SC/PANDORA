@@ -4,6 +4,8 @@
 #include <StreetConfig.hxx>
 #include <Train.hxx>
 #include <TrainConfig.hxx>
+#include <Gym.hxx>
+#include <GymConfig.hxx>
 
 #include <Exception.hxx>
 #include <Config.hxx>
@@ -20,10 +22,10 @@ int main(int argc, char* argv[])
 			throw Engine::Exception("USAGE: contact_tracing [#cores] [config file]");
 		}
 	
-		std::string fileName("configTrainPlatform.xml");
+		std::string fileName("configGym.xml");
 		if(argc!=2) // cambiar para mpi
 		{
-			fileName = "configTrainPlatform.xml";
+			fileName = "configGym.xml";
 		}
 		if (fileName == "configSupermarket.xml") {
 			Examples::Supermarket super(new Examples::SupermarketConfig(fileName), super.useOpenMPIMultiNode());
@@ -42,6 +44,12 @@ int main(int argc, char* argv[])
 			train.initialize(argc, argv);
 			train.setParallelism(true, false);
 			train.run();
+		}
+		else if (fileName == "configGym.xml") {
+			Examples::Gym gym(new Examples::GymConfig(fileName), gym.useOpenMPIMultiNode());
+			gym.initialize(argc, argv);
+			gym.setParallelism(true, false);
+			gym.run();
 		}
 		else throw Engine::Exception("Not a known scenario");
 	}

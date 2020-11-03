@@ -20,15 +20,32 @@ private:
     std::list<int> _exerciceList;
     int _exerciceTime; //MpiBasicAttribute
     Gym* _gym;
+	int _totalExerciceTime; //MpiBasicAttribute
+	bool _directedClass; //MpiBasicAttribute
 
 public:
     Athlete(const std::string& id, const double& infectiousness, const int& sick, const int& entryTime, 
         const int& phoneT1, const int& phoneT2, const bool& phoneApp, const int& signalRadius, const int& encounterRadius,
-		Gym* gym, const std::list<int>& exerciceList);
+		Gym* gym, const std::list<int>& exerciceList, const int& totalExerciceTime, const bool& directedClass);
 
     ~Athlete();
 
     void selectActions();
+
+
+	////////////////////////////////////////////////
+	// This code has been automatically generated //
+	/////// Please do not modify it ////////////////
+	////////////////////////////////////////////////
+	Athlete( void * );
+	void * fillPackage() const;
+	void freePackage(void* package) const;
+	bool hasTheSameAttributes(const Examples::HumanBeeing&) const;
+	void sendVectorAttributes(int);
+	void receiveVectorAttributes(int);
+	////////////////////////////////////////////////
+	//////// End of generated code /////////////////
+	////////////////////////////////////////////////
 
 };
 

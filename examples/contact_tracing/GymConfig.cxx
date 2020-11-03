@@ -22,6 +22,17 @@ namespace Examples
         _applicationRate = getParamFloat("Phone","applicationRate");
         _phoneThreshold1 = getParamInt("Phone","phoneThreshold1");
         _phoneThreshold2 = getParamInt("Phone","phoneThreshold2");
+
+        _minWarmup = getParamInt("ExercieTime","minWarmup");
+        _maxWarmup = getParamInt("ExercieTime","maxWarmup");
+        _minLose = getParamInt("ExercieTime","minLose");
+        _maxLose = getParamInt("ExercieTime","maxLose");
+        _definition = getParamInt("ExercieTime","definition");
+        _volume = getParamInt("ExercieTime","volume");
+        _minCooldown = getParamInt("ExercieTime","minCooldown");
+        _maxCooldown = getParamInt("ExercieTime","maxCooldown");
+        _minDirected = getParamInt("ExercieTime","minDirected");
+        _maxDirected = getParamInt("ExercieTime","maxDirected");
     }
 
     float GymConfig::getInfectiousness() const {

@@ -25,18 +25,18 @@ void Street::createWalker() {
     oss << "Walker_" << _walkerId;
     _walkerId++;
     bool sick = false;
-    if (Engine::GeneralState::statistics().getUniformDistValue() < _streetConfig._sickRate) sick = true;
-    float drifting = Engine::GeneralState::statistics().getUniformDistValue() * _streetConfig._drifting;
-    float stopping = Engine::GeneralState::statistics().getUniformDistValue() * _streetConfig._stopping;
-    int stopTime = (int)Engine::GeneralState::statistics().getUniformDistValue() * _streetConfig._stopTime;
-    float speed = 0.2 * (2 * Engine::GeneralState::statistics().getUniformDistValue() - 1) + _streetConfig._speed;
-    bool hasApp = Engine::GeneralState::statistics().getUniformDistValue() < _streetConfig._applicationRate;
+    if (_uniformZeroOne.draw() < _streetConfig._sickRate) sick = true;
+    float drifting = _uniformZeroOne.draw() * _streetConfig._drifting;
+    float stopping = _uniformZeroOne.draw() * _streetConfig._stopping;
+    int stopTime = (int)_uniformZeroOne.draw() * _streetConfig._stopTime;
+    float speed = 0.2 * (2 * _uniformZeroOne.draw() - 1) + _streetConfig._speed;
+    bool hasApp = _uniformZeroOne.draw() < _streetConfig._applicationRate;
     Walker* walker = new Walker(oss.str(),_streetConfig._infectiousness,sick,_streetConfig._encounterRadius,_streetConfig._phoneThreshold1,
     _streetConfig._phoneThreshold2,hasApp,_streetConfig._signalRadius,stopping,stopTime,_step,drifting,speed,this);
     addAgent(walker);
     Engine::Point2D<int> spawn;
     if (_initialAgentsCreated) {
-        if (Engine::GeneralState::statistics().getUniformDistValue() < 0.5) {
+        if (_uniformZeroOne.draw() < 0.5) {
             int randIndex = Engine::GeneralState::statistics().getUniformDistValue(0,_topLimit.size() - 1);
             while (not this->checkPosition(_topLimit[randIndex])) randIndex = Engine::GeneralState::statistics().getUniformDistValue(0,_topLimit.size() - 1);
             spawn = _topLimit[randIndex];
@@ -51,7 +51,7 @@ void Street::createWalker() {
     }
     else {
         spawn = getRandomPosition();
-        if (Engine::GeneralState::statistics().getUniformDistValue() < 0.5) walker->setDirectionTop();
+        if (_uniformZeroOne.draw() < 0.5) walker->setDirectionTop();
         else walker->setDirectionBot();
     }
     
