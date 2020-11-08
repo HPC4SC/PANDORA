@@ -254,9 +254,12 @@ namespace Engine
     {
         if (_scheduler->hasBeenTaggedAsFinished()) return;
 
-        std::stringstream logName;
-        logName << "simulation_" << getId( );
-        log_INFO( logName.str( ), getWallTime( ) << " executing " << _config->getNumSteps( ) << " steps..." );
+        if (not _scheduler->hasBeenTaggedAsJustAwaken())
+        {
+            std::stringstream logName;
+            logName << "simulation_" << getId( );
+            log_INFO( logName.str( ), getWallTime( ) << " executing " << _config->getNumSteps( ) << " steps..." );
+        }
 
         engineStep();
 

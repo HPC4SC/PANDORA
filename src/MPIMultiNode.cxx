@@ -124,7 +124,7 @@ namespace Engine {
                 receiveInitialSpacesFromNode(_masterNodeID);    printOwnNodeStructureAfterMPI();
         }
 
-        if (not hasBeenTaggedAsJustFinished())
+        if (not hasBeenTaggedAsJustFinished() and not hasBeenTaggedAsJustAwaken())
         {
             filterOutInitialAgents();                           printNodeAgents();
             filterOutInitialRasters();                          printNodeRasters();
@@ -262,7 +262,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
         }
     }
 
-    void MPIMultiNode::divideSpace()x
+    void MPIMultiNode::divideSpace()
     {
         double initialTime = getWallTime();
 

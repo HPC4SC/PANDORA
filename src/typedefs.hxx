@@ -20,10 +20,11 @@ namespace Engine
     //! List of Mpi messages sent by the scheduler
     enum MpiMessageType
     {
-        eCoordinates = 1,
-        eNumNeighbours = 2,
-        eNeighbourID = 3,
-        eCoordinatesNeighbour = 4,
+        eNumProcesses = 1,
+        eCoordinates = 2,
+        eNumNeighbours = 3,
+        eNeighbourID = 4,
+        eCoordinatesNeighbour = 5,
 
         eNumTypes = 10,
         eNumAgents = 11,

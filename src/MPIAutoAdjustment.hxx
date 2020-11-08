@@ -169,17 +169,37 @@ namespace Engine
             int exploreMinimumCost();
 
             /**
-             * @brief Awakes from sleep all the necessary working nodes according the the 'numberOfRequestedProcesses'.
+             * @brief Sends the new number of processes 'numberOfProcesses' to all the working nodes.
+             * 
+             * @param newNumberOfProcesses const int&
+             */
+            void sendNumberOfProcessesToWorkingNodes(const int& newNumberOfProcesses) const;
+
+            /**
+             * @brief Receives the new number of processes 'newNumberOfProcesses' from the master node.
+             * 
+             * @param newNumberOfProcesses const int&
+             */
+            void receiveNumberOfProcessesFromMasterNode(const int& newNumberOfProcesses);
+
+            /**
+             * @brief Either awakes from sleep all the necessary nodes according the the 'numberOfRequestedProcesses', or puts to sleep processes that are no longer necessary for the incoming rebalance.
              * 
              * @param numberOfRequestedProcesses const int&
              */
-            void awakeWorkingNodesToRepartition(const int& numberOfRequestedProcesses); 
+            void awakeOrPutToSleepNodesToRepartition(const int& numberOfRequestedProcesses); 
 
             /**
              * @brief Sends all the just computed partitioning spaces to all nodes in order to let know them whether they need to send to other nodes or discard their in-local-memory agents and rasters.
              * 
              */
             void sendAllNewSpacesToAllNodes();
+
+            /**
+             * @brief Receives the new spaces resulting from the last partitining performed by the master node.
+             * 
+             */
+            void receiveNewSpacesFromMasterNode();
 
             /**
              * @brief Rebalances the current space with 'numberOfProcesses'.
