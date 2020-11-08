@@ -57,14 +57,37 @@ namespace Engine {
         _root->right = NULL;
     }
 
+    void MPILoadBalanceTree::resetTree()
+    {
+        if (_root != NULL) 
+        {
+            destroyTree(_root);
+            initializeTree();
+        }
+    }
+
+    MPILoadBalanceTree& MPILoadBalanceTree::operator=(const MPILoadBalanceTree& object)
+    {
+        _root = copyTree(object._root);
+        _world = object._world;
+        _numPartitions = object._numPartitions;
+
+        return *this;
+    }
+
     void MPILoadBalanceTree::divideSpace()
     {
         divideSpaceRecursively(_root, getAllAgentsWeight(), (int) std::ceil(std::log2(_numPartitions)));
     }
 
-    MPILoadBalanceTree::node<Rectangle<int>>* MPILoadBalanceTree::getTree()
+    const MPILoadBalanceTree::node<Rectangle<int>>& MPILoadBalanceTree::getTree() const
     {
-        return _root;
+        return *_root;
+    }
+
+    const World& MPILoadBalanceTree::getWorld() const
+    {
+        return *_world;
     }
 
     void MPILoadBalanceTree::getPartitionsFromTree(std::vector<Rectangle<int>>& partitions) const
@@ -86,6 +109,19 @@ namespace Engine {
     }
 
     /** PROTECTED METHODS **/
+
+    MPILoadBalanceTree::node<Rectangle<int>>* MPILoadBalanceTree::copyTree(node<Rectangle<int>>* nodeToBeCopied)
+    {
+        if (nodeToBeCopied == NULL) return NULL;
+
+        node<Rectangle<int>>* copiedNode = new node<Rectangle<int>>;
+        copiedNode->value = nodeToBeCopied->value;
+
+        copiedNode->left = copyTree(nodeToBeCopied->left);
+        copiedNode->right = copyTree(nodeToBeCopied->right);
+
+        return copiedNode;
+    }
 
     int MPILoadBalanceTree::numberOfNodesAtDepthRecursive(node<Rectangle<int>>* node, const int& desiredDepth, int currentDepth) const
     {

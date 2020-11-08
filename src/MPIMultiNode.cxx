@@ -44,6 +44,34 @@ namespace Engine {
     {
     }
 
+    int MPIMultiNode::performDivideTest(const int& numberOfProcesses)
+    {
+        MPILoadBalanceTree* testTree = new MPILoadBalanceTree();
+
+        testTree->setWorld(_world);
+        testTree->initializeTree();
+        testTree->setNumberOfPartitions(numberOfProcesses);
+
+        testTree->divideSpace();
+
+        return getTotalNumberOfOverlappingCells(*testTree);
+    }
+
+    void MPIMultiNode::resetPartitioning(const int& newNumberOfProcesses)
+    {
+        // Deleting map pointers up to 1 depth:
+        for (MPINodesMap::const_iterator it = _mpiNodesMapToSend.begin(); it != _mpiNodesMapToSend.end() ++it)
+        {
+            MPINode mpiNode = it->second;
+            for (std::map<int, MPINode*>::const_iterator itNeighbours = mpiNode.neighbours.begin(); itNeighbours != mpiNode.neighbours.end(); ++itNeighbours)
+                delete itNeighbours->second;
+        }
+        _mpiNodesMapToSend.clear();
+
+        _loadBalanceTree->resetTree();
+        _loadBalanceTree->setNumberOfPartitions(newNumberOfProcesses);
+    }
+
     void MPIMultiNode::init(int argc, char *argv[]) 
     {
         int alreadyInitialized;
@@ -54,6 +82,8 @@ namespace Engine {
 
         MPI_Comm_size(MPI_COMM_WORLD, &_numTasks);
         MPI_Comm_rank(MPI_COMM_WORLD, &_id);
+
+        _numTasksMax = _numTasks;
 
         initLogFileNames();
         initLoadBalanceTree();
@@ -78,7 +108,7 @@ namespace Engine {
         if (not distributeFromTheBeginning)
             _numTasks = 1;
 
-        _loadBalancetree->setNumberOfPartitions(_numTasks);
+        _loadBalanceTree->setNumberOfPartitions(_numTasks);
         enableOnlyProcesses(_numTasks);
 
         if (getId() == _masterNodeID) 
@@ -94,12 +124,15 @@ namespace Engine {
                 receiveInitialSpacesFromNode(_masterNodeID);    printOwnNodeStructureAfterMPI();
         }
 
-        filterOutInitialAgents();                           printNodeAgents();
-        filterOutInitialRasters();                          printNodeRasters();
+        if (not hasBeenTaggedAsJustFinished())
+        {
+            filterOutInitialAgents();                           printNodeAgents();
+            filterOutInitialRasters();                          printNodeRasters();
 
-        stablishBoundaries();
+            stablishBoundaries();
 
 if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStream("\n").str());
+        }
     }
 
     /** INITIALIZATION PROTECTED METHODS **/
@@ -118,9 +151,9 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
 
     void MPIMultiNode::initLoadBalanceTree()
     {
-        _loadBalancetree = new MPILoadBalanceTree();
-        _loadBalancetree->setWorld(_world);
-        _loadBalancetree->initializeTree();
+        _loadBalanceTree = new MPILoadBalanceTree();
+        _loadBalanceTree->setWorld(_world);
+        _loadBalanceTree->initializeTree();
     }
 
     void MPIMultiNode::initAutoAdjustment()
@@ -224,18 +257,16 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
 
                     _justAwaken = true;
                     enableOnlyProcesses(numberOfRequestedProcesses);
-
-                    //receive state (rasters and agents)
                 }
             }
         }
     }
 
-    void MPIMultiNode::divideSpace()
+    void MPIMultiNode::divideSpace()x
     {
         double initialTime = getWallTime();
 
-        _loadBalancetree->divideSpace();
+        _loadBalanceTree->divideSpace();
 
         double endTime = getWallTime();
 if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStream("[Process # " << getId() <<  "] divideSpace()\tTOTAL TIME: " << endTime - initialTime).str());
@@ -289,8 +320,6 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
 
     void MPIMultiNode::filterOutInitialAgents()
     {
-        if (_justFinished) return;
-
         double initialTime = getWallTime();
 
         std::vector<Agent*> agentsToRemove;
@@ -312,8 +341,6 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
 
     void MPIMultiNode::filterOutInitialRasters()
     {
-        if (_justFinished) return;
-
         double initialTime = getWallTime();
 
 
@@ -489,8 +516,6 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
 
     void MPIMultiNode::stablishBoundaries()
     {
-        if (_justFinished) return;
-
         _boundaries = _nodeSpace.ownedArea;
     }
 
@@ -508,8 +533,8 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
 
     void MPIMultiNode::expandRectangleConsideringLimits(Rectangle<int>& rectangle, const int& expansion, const bool& contractInTheLimits) const
     {
-        int topDifferenceAgainstLimits = rectangle.top() - _loadBalancetree->getTree()->value.top();
-        int leftDifferenceAgainstLimits = rectangle.left() - _loadBalancetree->getTree()->value.left();
+        int topDifferenceAgainstLimits = rectangle.top() - _loadBalanceTree->getTree().value.top();
+        int leftDifferenceAgainstLimits = rectangle.left() - _loadBalanceTree->getTree().value.left();
 
         int topMovement = std::min(topDifferenceAgainstLimits, expansion);
         if (not contractInTheLimits and topDifferenceAgainstLimits == 0) topMovement = 0;
@@ -520,11 +545,11 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
         rectangle.getOrigin().getY() -= topMovement;
         rectangle.getOrigin().getX() -= leftMovement;
 
-        if (rectangle.bottom() > _loadBalancetree->getTree()->value.bottom()) rectangle.getSize().getHeight() -= rectangle.bottom() - _loadBalancetree->getTree()->value.bottom();
-        if (rectangle.right() > _loadBalancetree->getTree()->value.right()) rectangle.getSize().getWidth() -= rectangle.right() - _loadBalancetree->getTree()->value.right();
+        if (rectangle.bottom() > _loadBalanceTree->getTree().value.bottom()) rectangle.getSize().getHeight() -= rectangle.bottom() - _loadBalanceTree->getTree().value.bottom();
+        if (rectangle.right() > _loadBalanceTree->getTree().value.right()) rectangle.getSize().getWidth() -= rectangle.right() - _loadBalanceTree->getTree().value.right();
 
-        int bottomDifferenceAgainstLimits = _loadBalancetree->getTree()->value.bottom() - rectangle.bottom();
-        int rightDifferenceAgainstLimits = _loadBalancetree->getTree()->value.right() - rectangle.right();
+        int bottomDifferenceAgainstLimits = _loadBalanceTree->getTree().value.bottom() - rectangle.bottom();
+        int rightDifferenceAgainstLimits = _loadBalanceTree->getTree().value.right() - rectangle.right();
 
         int heightMovement = std::min(bottomDifferenceAgainstLimits, expansion + topMovement);
         if (not contractInTheLimits and bottomDifferenceAgainstLimits == 0) heightMovement = 0;
@@ -559,7 +584,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
     void MPIMultiNode::createNodesInformationToSend()
     {
         std::vector<Rectangle<int>> partitions;
-        _loadBalancetree->getPartitionsFromTree(partitions);
+        _loadBalanceTree->getPartitionsFromTree(partitions);
 
         for (int i = 0; i < partitions.size(); ++i)
         {
@@ -607,15 +632,11 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
     
     void MPIMultiNode::printNodeAgents() const
     {
-        if (_justFinished) return;
-
         _schedulerLogs->printNodeAgentsInDebugFile();
     }
 
     void MPIMultiNode::printNodeRasters() const
     {
-        if (_justFinished) return;
-
         _schedulerLogs->printNodeRastersInDebugFile();
     }
 
@@ -1260,11 +1281,51 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
         }
     }
 
+    int MPIMultiNode::getTotalNumberOfOverlappingCells(const MPILoadBalanceTree& tree) const
+    {
+        int totalNumberOfOverlappingCells = 0;
+
+        int worldWidth = tree.getWorld().getConfig().getSize().getWidth();
+        int worldHeight = tree.getWorld().getConfig().getSize().getHeight();
+
+        int overlapSize = tree.getWorld().getConfig().getOverlapSize();
+
+        std::vector<Rectangle<int>> partitions;
+        tree.getPartitionsFromTree(partitions);
+        for (int i = 0; i < partitions.size(); ++i)
+        {
+            Rectangle<int> rectangle = partitions[i];
+
+            const int rectangleWidth = rectangle.getSize().getWidth();
+            const int rectangleHeight = rectangle.getSize().getHeight();
+
+            if (rectangle.left() == 0 and rectangle.top() == 0 or
+                rectangle.right() + 1 == worldWidth and rectangle.top() == 0 or
+                rectangle.right() + 1 == worldWidth and rectangle.bottom() + 1 == worldHeight or
+                rectangle.left() == 0 and rectangle.bottom() + 1 == worldHeight)
+                    totalNumberOfOverlappingCells += overlapSize * rectangleWidth + overlapSize * rectangleHeight - std::pow(overlapSize, 2);
+            else if (   rectangle.left() == 0 or
+                        rectangle.right() + 1 == worldWidth)
+                    totalNumberOfOverlappingCells += 2*(overlapSize * rectangleWidth) + overlapSize * rectangleHeight - 2*std::pow(overlapSize, 2);
+            else if (   rectangle.top() == 0 or
+                        rectangle.bottom() + 1 == worldHeight)
+                    totalNumberOfOverlappingCells += overlapSize * rectangleWidth + 2*(overlapSize * rectangleHeight) - 2*std::pow(overlapSize, 2);
+            else
+                    totalNumberOfOverlappingCells += 2*(overlapSize * rectangleWidth) + 2*(overlapSize * rectangleHeight) - 4*std::pow(overlapSize, 2);
+        }
+        return totalNumberOfOverlappingCells;
+    }
+
     /** RUN PUBLIC METHODS (INHERIT) **/
 
-    bool MPIMultiNode::hasBeenTaggedAsFinished() const
+    bool MPIMultiNode::hasBeenTaggedAsJustFinished() const
     {
         return _justFinished;
+    }
+
+    bool MPIMultiNode::hasBeenTaggedAsJustAwaken() const
+    {
+        return _justAwaken;
     }
 
     void MPIMultiNode::updateEnvironmentState()
@@ -1373,7 +1434,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
 
         if (_numberOfActiveProcesses > getId()) MPI_Comm_free(&_activeProcessesComm);
 
-std::string totalSimulationTime = CreateStringStream("TotalSimulationTime: " << MPI_Wtime() - _initialTime << " seconds.\n").str();
+std::string totalSimulationTime = CreateStringStream("[Process #" << getId() << "] TotalSimulationTime: " << MPI_Wtime() - _initialTime << " seconds.\n").str();
 std::cout << totalSimulationTime;
 if (_printInstrumentation) _schedulerLogs->printInstrumentation(totalSimulationTime);
 
@@ -1424,7 +1485,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(totalSimulationT
 
     AgentsVector MPIMultiNode::getAgent(const Point2D<int>& position, const std::string& type)
     {
-        return _loadBalancetree->getAgentsInPosition(position, type);
+        return _loadBalanceTree->getAgentsInPosition(position, type);
     }
 
     int MPIMultiNode::countNeighbours(Agent* target, const double& radius, const std::string& type)

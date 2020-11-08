@@ -16,6 +16,7 @@ namespace Engine
     protected:
         int                     _id;            //! Identifier of the Scheduler.
         int                     _numTasks;      //! Number of MPI tasks executing the simulation
+        int                     _numTasksMax;   //! Maximum number of MPI tasks available to execute the simulation.
         Engine::Rectangle<int>  _boundaries;    //! Limits of the simulation space.
         World                  *_world;         //! Pointer to the World of the simulation
 
@@ -120,11 +121,19 @@ namespace Engine
         virtual void initData( ) = 0;
         
         /**
-         * @brief Gets whether the MPI process has been tagged as finished.
+         * @brief Gets whether the MPI process has been tagged as 'just finished'.
          * 
          * @return bool
          */
-        virtual bool hasBeenTaggedAsFinished() const = 0;
+        virtual bool hasBeenTaggedAsJustFinished() const = 0;
+
+        /**
+         * @brief Gets whether the MPI process has been tagged as 'just awaken'.
+         * 
+         * @return true 
+         * @return false 
+         */
+        virtual bool hasBeenTaggedAsJustAwaken() const = 0;
 
         /**
          * @brief Updates the resources modified in the World::stepEnvironment() method. Must be implemented in child.
@@ -177,6 +186,13 @@ namespace Engine
          * @return const int& 
          */
         const int & getNumTasks() const { return _numTasks; }
+
+        /**
+         * @brief Gets the _numTasksMax member.
+         * 
+         * @return const int& 
+         */
+        const int& getNumTasksMax() const { return _numTasksMax; }
 
         /**
          * @brief Get the Wall Time of the simulatio. Must be implemented in the children.

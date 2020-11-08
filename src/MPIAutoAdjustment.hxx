@@ -37,12 +37,23 @@ namespace Engine
         protected:
 
             /** General structures **/
-            const MPIMultiNode* _schedulerInstance;                 //! Instance of the scheduler containing all the variables needed for auto adjustment.
+            MPIMultiNode* _schedulerInstance;       //! Instance of the scheduler containing all the variables needed for auto adjustment.
+
+            double _currentAgentPhasesAVGTime;
+
+            uint64_t _cpuTicks;                     //! CPU base clock ticks
 
             /** MPI Data Structures **/
             std::list<MPI_Request*> _sendRequests;
 
             /** PROTECTED METHODS **/
+
+            /**
+             * @brief Get the current CPU clock ticks.
+             * 
+             * @return uint64_t 
+             */
+            uint64_t getTicks(void);
 
             /**
              * @brief Sends a non-blocking request of 'numberOfElements', from 'data' typed as 'mpiDataType, to 'destinationNode', tagged with 'tag', by the default communicator MPI_COMM_WORLD.
@@ -57,18 +68,20 @@ namespace Engine
             void sendDataRequestToNode(void* data, const int& numberOfElements, const MPI_Datatype& mpiDatatype, const int& destinationNode, const int& tag, const MPI_Comm& mpiComm);
 
             /**
-             * @brief Sends the initial signals to all the worker nodes in order to begin the rebalancing.
+             * @brief Sends a 'signal' to all the working nodes with the tag 'messageTag'.
              * 
-             * @param beginRebalance const bool&
+             * @param signal const int&
+             * @param messageTag messageTag
              */
-            void sendSignalsToBeginRebalance(const bool& beginRebalance);
+            void sendSignalToAllWorkingNodes(const int& signal, const int& messageTag);
 
             /**
-             * @brief Receives the initial signal from the master nodes in order to begin the rebalancing. It returns false if no rebalancing is finally required.
+             * @brief Receives from the masterNode an eventType with tag 'messageTag', which returns as an integer.
              * 
-             * @return bool
+             * @param messageTag const int&
+             * @return int
              */
-            bool receiveSignalToBeginRebalance() const;
+            int receiveSignalFromMasterWithTag(const int& messageTag) const;
 
             /**
              * @brief Returns the total time for all the agent phases for the calling node.
@@ -86,12 +99,19 @@ namespace Engine
             bool needToRebalanceByLoad(const std::vector<double>& nodesTime) const;
 
             /**
-             * @brief Receives the total time for all the agents' execution phases, for all the nodes, and computes their load differences. Then, it returns whether a rebalance is needed or not. Besides, it lets the total load from all the nodes in 'totalAgentPhasesTotalTime'.
+             * @brief (For the master node) Receives the total time for all the agents' execution phases, for all the nodes, and computes their load differences. Then, it returns whether a rebalance is needed or not, letting the average in 'agentPhasesAVGTime'.
              * 
-             * @param masterNodeID const int&
+             * @param agentPhasesAVGTime double&
              * @return bool
              */
-            bool needToRebalance(const int& masterNodeID) const;
+            bool needToRebalance(double& agentPhasesAVGTime);
+
+            /**
+             * @brief (For the workers nodes) Waits and attends for the master requests, which is evaluating whether a rebalancing is required.
+             * 
+             * @return bool
+             */
+            int waitForMasterNeedsToRebalance();
 
             /**
              * @brief Receives all the agents from all the active working nodes.
@@ -113,35 +133,60 @@ namespace Engine
             void sendAllAgentsToMasterNode();
 
             /**
+             * @brief Estimates the total cost for 'numberOfProcessesToEstimate' nodes, using the 'executingAgentsEstimatedTime' which is the first term of the estimating equation. If the 'numberOfProcessesToEstimate' is < 1 or > the maximum number of the available MPI processes, it returns DBL_MAX.
+             * 
+             * @param numberOfProcessesToEstimate const int&
+             * @param executingAgentsEstimatedTime const double&
+             * @return double 
+             */
+            double estimateTotalCost(const int& numberOfProcessesToEstimate, const double& executingAgentsEstimatedTime);
+
+            /**
+             * @brief Explores possibilities of improvement the average cost trying to double the number of processes in each trial. When it founds a local minimum it stops and returns that number of processes.
+             * 
+             * @param initialNumberOfProcesses const int&
+             * @param totalCost const double
+             * @param executingAgentsEstimatedTime const double&
+             * @return int 
+             */
+            int exploreUp(const int& initialNumberOfProcesses, const double& totalCost, const double& executingAgentsEstimatedTime);
+
+            /**
+             * @brief Explores possibilities of improvement the average cost trying to double the number of processes in each trial. When it founds a local minimum it stops and returns that number of processes.
+             * 
+             * @param initialNumberOfProcesses const int&
+             * @param totalCost const double
+             * @param executingAgentsEstimatedTime const double&
+             * @return int 
+             */
+            int exploreDown(const int& initialNumberOfProcesses, const double& totalCost, const double& executingAgentsEstimatedTime);
+
+            /**
+             * @brief Explores the minimum cost performing a step test for different number of nodes. Returns the number of processes that gets a local minimum cost.
+             * 
+             * @return int
+             */
+            int exploreMinimumCost();
+
+            /**
              * @brief Awakes from sleep all the necessary working nodes according the the 'numberOfRequestedProcesses'.
              * 
              * @param numberOfRequestedProcesses const int&
              */
-            void awakeWorkingNodesToRepartition(const int& numberOfRequestedProcesses);
+            void awakeWorkingNodesToRepartition(const int& numberOfRequestedProcesses); 
 
             /**
-             * @brief Divides and tests a whole test step for the indicated 'numberOfProcessesToTest'.
+             * @brief Sends all the just computed partitioning spaces to all nodes in order to let know them whether they need to send to other nodes or discard their in-local-memory agents and rasters.
              * 
-             * @param numberOfProcessesToTest const int&
-             * @return double 
              */
-            double divideAndTestStep(const int& numberOfProcessesToTest);
+            void sendAllNewSpacesToAllNodes();
 
             /**
-             * @brief From the 'initialNumberOfProcesses', executes test steps in the direction marked by 't', returning the number of processes at the minimum cost.
+             * @brief Rebalances the current space with 'numberOfProcesses'.
              * 
-             * @param initialNumberOfProcesses const int&
-             * @param cost const double&
-             * @param lambda const T&
-             * @return int 
+             * @param numberOfProcesses const int&
              */
-            template <typename T> int getNumberOfProcessesAtMinimumCost(const int& initialNumberOfProcesses, const double& cost, const T& lambda);
-
-            /**
-             * @brief Explores the minimum cost performing a step test for different number of nodes. Returns the number of processes that gets a local minimum cost. NOTE: at the end of this function, the optimal number of processes is awaken.
-             * 
-             */
-            void exploreMinimumCost();
+            void rebalance(const int& numberOfProcesses);
 
         public:
 
@@ -160,9 +205,9 @@ namespace Engine
             /**
              * @brief Initializes this instance.
              * 
-             * @param schedulerInstance const MPIMultiNode&
+             * @param schedulerInstance MPIMultiNode&
              */
-            void initAutoAdjustment(const MPIMultiNode& schedulerInstance);
+            void initAutoAdjustment(MPIMultiNode& schedulerInstance);
 
             /**
              * @brief Rebalances the space if necessary.

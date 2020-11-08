@@ -46,6 +46,14 @@ namespace Engine
             int _numPartitions;                     //! Number of tasks in which the simulation should be split.
 
             /**
+             * @brief Copies deeply the node into a new object which is returned.
+             * 
+             * @param node node<Rectangle<int>>*
+             * @return node<Rectangle<int>>*
+             */
+            node<Rectangle<int>>* copyTree(node<Rectangle<int>>* node);
+
+            /**
              * @brief Recursively return the number of nodes of the tree starting at 'node' at level 'desiredDepth'.
              * 
              * @param node node<Rectangle<int>>*
@@ -198,16 +206,43 @@ namespace Engine
             void initializeTree();
 
             /**
+             * @brief Resets the tree in order to perform a new partitioning.
+             * 
+             */
+            void resetTree();
+
+            /**
+             * @brief Assignment operator. NOTE: The _world member object is shallow copied only.
+             * 
+             * @param object const MPILoadBalanceTree&
+             * @return MPILoadBalanceTree&
+             */
+            MPILoadBalanceTree& operator=(const MPILoadBalanceTree& object);
+
+            /**
              * @brief Makes a load balanced partition of the space, filling _root.
              * 
              */
             void divideSpace();
 
             /**
+             * @brief Performs a test dividing the space of the _world considering the current _numPartitions. It does not affect the _root member object.
+             * 
+             */
+            void divideSpaceTest();
+
+            /**
              * @brief Gets the current state of the '_root' member.
              * 
              */
-            node<Rectangle<int>>* getTree();
+            const node<Rectangle<int>>& getTree() const;
+
+            /**
+             * @brief Gets the _world member object.
+             * 
+             * @return World* 
+             */
+            const World& getWorld() const;
 
             /**
              * @brief Gets the created partitions, leaving it in 'partitions'.

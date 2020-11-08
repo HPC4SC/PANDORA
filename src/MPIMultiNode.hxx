@@ -65,7 +65,7 @@ namespace Engine
         protected:
 
             /** Base data structures for the space partitioning (master node only) **/
-            MPILoadBalanceTree* _loadBalancetree;                           //! Tree used to divide the space and balance the load of the simulation.
+            MPILoadBalanceTree* _loadBalanceTree;                           //! Tree used to divide the space and balance the load of the simulation.
             MPIAutoAdjustment* _autoAdjustment;                             //! Instance for the autoadjustment in the number of used nodes.
 
             MPINodesMap _mpiNodesMapToSend;                                 //! Map<nodeId, nodeInformation> containing the leafs of _loadBalancetree, where the 'value' field is now the 'ownedArea', and the IDs of the 'neighbours' are mapped with their coordinates.
@@ -613,6 +613,14 @@ namespace Engine
              */
             void finishSleepingProcesses();
 
+            /**
+             * @brief Gets the total number of overlapping cells for all the nodes in 'tree'.
+             * 
+             * @param tree const MPILoadBalanceTree&
+             * @return int 
+             */
+            int getTotalNumberOfOverlappingCells(const MPILoadBalanceTree& tree) const;
+
         public:
 
             /** INITIALIZATION PUBLIC METHODS **/
@@ -628,6 +636,21 @@ namespace Engine
              * 
              */
             virtual ~MPIMultiNode();
+
+            /**
+             * @brief Performs a divide test, returning the number of overlapping cells resulting from the test. Called by the AutoAdjustment subsystem.
+             * 
+             * @param numberOfProcesses const int&
+             * @return int 
+             */
+            int performDivideTest(const int& numberOfProcesses);
+
+            /**
+             * @brief Resets the partitioning variables in order to perform a new partitioning (rebalancing). Called by the AutoAdjustment subsystem.
+             * 
+             * @param newNumberOfProcesses const int&
+             */
+            void resetPartitioning(const int& newNumberOfProcesses);
 
             /** INITIALIZATION PUBLIC METHODS (INHERIT) **/
 
@@ -652,7 +675,14 @@ namespace Engine
              * 
              * @return bool
              */
-            bool hasBeenTaggedAsFinished() const override;
+            bool hasBeenTaggedAsJustFinished() const override;
+
+            /**
+             * @brief Returns true if a signeal has been sent from the master process to this process in order be added to the computing (active) processes of the simulation. Controlled by the member variable _justAwaken.
+             * 
+             * @return bool 
+             */
+            bool hasBeenTaggedAsJustAwaken() const override;
 
             /**
              * @brief Updates the resources modified in the World::stepEnvironment() method.
@@ -686,7 +716,7 @@ namespace Engine
             Point2D<int> getRandomPosition() const override;
 
             /**
-             * @brief Get the wall time for the MPI scheduler.
+             * @brief Get the wall time in seconds for the MPI scheduler.
              * 
              * @return double 
              */

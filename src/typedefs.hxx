@@ -29,6 +29,7 @@ namespace Engine
         eNumAgents = 11,
         eAgents = 12,
         eAgentsTypeID = 13,
+        eNumCoordinates = 14,
 
         eNumberOfStaticRasters = 20,
         eNumberOfDynamicRasters = 21,
@@ -64,13 +65,16 @@ namespace Engine
         eCreateGroupInactive = 71,
         eProcessWakeUp = 72,
         eProcessSleep = 73,
-        ePrepareToRepartition = 74,
-        eTypeOfEventAfterWakeUp = 75,
+        eSendAgentPhasesTotalTime = 74,
+        ePrepareToRepartition = 75,
+        eTypeOfEventAfterWakeUp = 76,
 
         eMessage_Die = 80,
-        eMessage_PrepareToRepartition_true = 81,
-        eMessage_PrepareToRepartition_false = 82,
-        eMessage_AwakeToRepartition = 83,
+        eMessage_SendAgentPhasesTotalTime_true = 81,
+        eMessage_SendAgentPhasesTotalTime_false = 82,
+        eMessage_PrepareToRepartition_true = 83,
+        eMessage_PrepareToRepartition_false = 84,
+        eMessage_AwakeToRepartition = 85,
 
         eAgentPhasesTotalTime = 90
     };

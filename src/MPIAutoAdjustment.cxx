@@ -25,6 +25,11 @@
 #include <Exception.hxx>
 
 #include <string.h>
+#include <numeric>
+#include <cfloat>
+#include <stdio.h>
+#include <stdint.h>
+#include <unistd.h>
 
 namespace Engine {
 
@@ -32,18 +37,31 @@ namespace Engine {
 
     MPIAutoAdjustment::MPIAutoAdjustment()
     {
+        uint64_t ts0, ts1;
+        ts0 = getTicks();
+        sleep(1);
+        ts1 = getTicks();
+
+        _cpuTicks = ts1 - ts0;
     }
 
     MPIAutoAdjustment::~MPIAutoAdjustment()
     {
     }
 
-    void MPIAutoAdjustment::initAutoAdjustment(const MPIMultiNode& schedulerInstance)
+    void MPIAutoAdjustment::initAutoAdjustment(MPIMultiNode& schedulerInstance)
     {
         _schedulerInstance = &schedulerInstance;
     }
 
     /** PROTECTED METHODS **/
+
+    uint64_t MPIAutoAdjustment::getTicks(void)
+    {
+        unsigned int lo, hi;
+        __asm__ __volatile__ ("rdtsc" : "=a" (lo), "=d" (hi));
+        return ((uint64_t) hi << 32) | lo;
+    }
 
     void MPIAutoAdjustment::sendDataRequestToNode(void* data, const int& numberOfElements, const MPI_Datatype& mpiDatatype, const int& destinationNode, const int& tag, const MPI_Comm& mpiComm)
     {
@@ -53,25 +71,23 @@ namespace Engine {
         _sendRequests.push_back(mpiRequest);
     }
 
-    void MPIAutoAdjustment::sendSignalsToBeginRebalance(const bool& beginRebalance)
+    void MPIAutoAdjustment::sendSignalToAllWorkingNodes(const int& signal, const int& messageTag)
     {
-        int eventType = eMessage_PrepareToRepartition_false;
-        if (beginRebalance) eventType = eMessage_PrepareToRepartition_true;
+        int signal_nonConst = signal;
 
         for (int workingNodeID = 0; workingNodeID < _schedulerInstance->_numberOfActiveProcesses; ++workingNodeID)
         {
             if (workingNodeID != _schedulerInstance->_masterNodeID)
-                sendDataRequestToNode(&eventType, 1, MPI_INT, workingNodeID, ePrepareToRepartition, MPI_COMM_WORLD);
+                sendDataRequestToNode(&signal_nonConst, 1, MPI_INT, workingNodeID, messageTag, _schedulerInstance->_activeProcessesComm);
         }
     }
 
-    bool MPIAutoAdjustment::receiveSignalToBeginRebalance() const
+    int MPIAutoAdjustment::receiveSignalFromMasterWithTag(const int& messageTag) const
     {
         int eventType;
-        MPI_Recv(&eventType, 1, MPI_INT, _schedulerInstance->_masterNodeID, ePrepareToRepartition, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        MPI_Recv(&eventType, 1, MPI_INT, _schedulerInstance->_masterNodeID, messageTag, _schedulerInstance->_activeProcessesComm, MPI_STATUS_IGNORE);
 
-        if (eventType == eMessage_PrepareToRepartition_true) return true;
-        return false;
+        return eventType;
     }
 
     double MPIAutoAdjustment::getAgentPhasesTotalTime() const
@@ -99,41 +115,61 @@ namespace Engine {
         return false;
     }
 
-    bool MPIAutoAdjustment::needToRebalance(const int& masterNodeID) const
+    bool MPIAutoAdjustment::needToRebalance(double& agentPhasesAVGTime)
     {
-        if (_schedulerInstance->getId() == masterNodeID)
+        bool needToRebalance = false;
+
+        double masterAgentPhasesTotalTime = getAgentPhasesTotalTime();
+
+        std::vector<double> nodesTime;
+        nodesTime.push_back(masterAgentPhasesTotalTime);
+
+        bool unbalancedByLoad = false;
+        if (needToRebalanceByLoad(nodesTime)) 
         {
-            std::vector<double> nodesTime(_schedulerInstance->_numberOfActiveProcesses);
-            double masterAgentPhasesTotalTime = getAgentPhasesTotalTime();
+            sendSignalToAllWorkingNodes(eMessage_SendAgentPhasesTotalTime_false, eSendAgentPhasesTotalTime);
+            needToRebalance = unbalancedByLoad = true;
+        }
+        else 
+            sendSignalToAllWorkingNodes(eMessage_SendAgentPhasesTotalTime_true, eSendAgentPhasesTotalTime);
 
-            //totalAgentPhasesTotalTime = masterAgentPhasesTotalTime;
-            nodesTime[masterNodeID] = masterAgentPhasesTotalTime;
-
-            if (needToRebalanceByLoad(nodesTime)) return true;
-
+        if (not unbalancedByLoad)
+        {
             for (int processID = 0; processID < _schedulerInstance->_numberOfActiveProcesses; ++processID)
             {
-                if (processID != masterNodeID)
+                if (processID != _schedulerInstance->_masterNodeID)
                 {
                     double nodeAgentPhasesTotalTime;
                     MPI_Recv(&nodeAgentPhasesTotalTime, 1, MPI_DOUBLE, processID, eAgentPhasesTotalTime, _schedulerInstance->_activeProcessesComm, MPI_STATUS_IGNORE);
 
-                    //totalAgentPhasesTotalTime += nodeAgentPhasesTotalTime;
-
-                    nodesTime[processID] = nodeAgentPhasesTotalTime;
-                    if (needToRebalanceByLoad(nodesTime)) return true;
+                    nodesTime.push_back(nodeAgentPhasesTotalTime);
+                    if (needToRebalanceByLoad(nodesTime))
+                    {
+                        needToRebalance = true;
+                        break;
+                    }
                 }
             }
         }
-        else
+
+        if (not nodesTime.empty()) 
         {
-            double agentPhasesTotalTime = getAgentPhasesTotalTime();
-            MPI_Send(&agentPhasesTotalTime, 1, MPI_DOUBLE, masterNodeID, eAgentPhasesTotalTime, _schedulerInstance->_activeProcessesComm);
+            agentPhasesAVGTime = 0.0;
+            for (int i = 0; i < nodesTime.size(); ++i)
+                agentPhasesAVGTime += nodesTime[i];
         }
 
-        //if (_numTasks == 1 and totalAgentPhasesTotalTime > _world->getConfig().getMinimumLoadToRebalance()) return true;
+        return needToRebalance;
+    }
 
-        return false;
+    int MPIAutoAdjustment::waitForMasterNeedsToRebalance() 
+    {
+        int eventType = receiveSignalFromMasterWithTag(eSendAgentPhasesTotalTime);
+        if (eventType == eMessage_SendAgentPhasesTotalTime_true)
+        {
+            double agentPhasesTotalTime = getAgentPhasesTotalTime();
+            MPI_Send(&agentPhasesTotalTime, 1, MPI_DOUBLE, _schedulerInstance->_masterNodeID, eAgentPhasesTotalTime, _schedulerInstance->_activeProcessesComm);
+        }
     }
 
     void MPIAutoAdjustment::receiveAllAgentsFromWorkingNodes()
@@ -228,6 +264,83 @@ namespace Engine {
         }
     }
 
+    double MPIAutoAdjustment::estimateTotalCost(const int& numberOfProcessesToEstimate, const double& executingAgentsEstimatedTime)
+    {
+        if (numberOfProcessesToEstimate < 1 or numberOfProcessesToEstimate > _schedulerInstance->getNumTasksMax()) return DBL_MAX;
+
+std::cout << CreateStringStream("estimateTotalCost: " << numberOfProcessesToEstimate << " PERFORMING DIVIDE TEST...\n").str();
+
+        double executingAgentsEstimatedTime_normalized = executingAgentsEstimatedTime / _cpuTicks;
+
+        int numberOfOverlappingCells = _schedulerInstance->performDivideTest(numberOfProcessesToEstimate);
+        double numberOfOverlappingCells_normalized = (double) numberOfOverlappingCells / _cpuTicks;
+
+std::cout << CreateStringStream("DIVIDE TEST COMPLETED. executingAgentsEstimatedTime_normalized: " << executingAgentsEstimatedTime_normalized << "\tnumberOfOverlappingCells_normalized:" << numberOfOverlappingCells_normalized << "\t_cpuTicks: " << _cpuTicks << "\n").str();
+        return executingAgentsEstimatedTime_normalized + (double) numberOfOverlappingCells_normalized;
+    }
+
+    int MPIAutoAdjustment::exploreUp(const int& initialNumberOfProcesses, const double& totalCost, const double& executingAgentsEstimatedTime)
+    {
+        int numberOfProcessesAtMinimumCost = initialNumberOfProcesses;
+
+        bool localMinimumFound = false;
+        while (not localMinimumFound)
+        {
+            int doubleProcesses = numberOfProcessesAtMinimumCost * 2.0;
+            double estimatedTime = executingAgentsEstimatedTime / 2.0;
+
+            double nextCost = estimateTotalCost(doubleProcesses, estimatedTime);
+            if (nextCost < totalCost)
+                numberOfProcessesAtMinimumCost = doubleProcesses;
+            else
+                localMinimumFound = true;
+        }
+
+        return numberOfProcessesAtMinimumCost;
+    }
+
+    int MPIAutoAdjustment::exploreDown(const int& initialNumberOfProcesses, const double& totalCost, const double& executingAgentsEstimatedTime)
+    {
+        int numberOfProcessesAtMinimumCost = initialNumberOfProcesses;
+
+        bool localMinimumFound = false;
+        while (not localMinimumFound)
+        {
+            int halfProcesses = numberOfProcessesAtMinimumCost / 2.0;
+            double estimatedTime = executingAgentsEstimatedTime * 2.0;
+
+            double nextCost = estimateTotalCost(halfProcesses, estimatedTime);
+            if (nextCost < totalCost)
+                numberOfProcessesAtMinimumCost = halfProcesses;
+            else
+                localMinimumFound = true;
+        }
+
+        return numberOfProcessesAtMinimumCost;
+    }
+
+    int MPIAutoAdjustment::exploreMinimumCost()
+    {
+        int currentNumberOfProcesses = _schedulerInstance->_numberOfActiveProcesses;
+        int doubleProcesses = currentNumberOfProcesses * 2;
+        int halfProcesses = currentNumberOfProcesses / 2;
+
+        double doubleProcessesEstimatedTime = _currentAgentPhasesAVGTime / 2.0;
+        double halfProcessesEstimatedTime = _currentAgentPhasesAVGTime * 2.0;
+        
+        double currentCost = estimateTotalCost(currentNumberOfProcesses, _currentAgentPhasesAVGTime);
+        double doubleProcessesCost = estimateTotalCost(doubleProcesses, doubleProcessesEstimatedTime);
+        double halfProcessesCost = estimateTotalCost(halfProcesses, halfProcessesEstimatedTime);
+
+        int numberOfProcessesAtMinimumCost = currentNumberOfProcesses;
+        if (doubleProcessesCost < currentCost and doubleProcessesCost < halfProcessesCost)
+            numberOfProcessesAtMinimumCost = exploreUp(doubleProcesses, doubleProcessesCost, doubleProcessesEstimatedTime);
+        else if (halfProcessesCost < currentCost and halfProcessesCost < doubleProcessesCost)
+            numberOfProcessesAtMinimumCost = exploreDown(halfProcesses, halfProcessesCost, halfProcessesEstimatedTime);
+        
+        return numberOfProcessesAtMinimumCost;
+    }
+
     void MPIAutoAdjustment::awakeWorkingNodesToRepartition(const int& numberOfRequestedProcesses)
     {
         for (int processID = _schedulerInstance->_numberOfActiveProcesses; processID < numberOfRequestedProcesses; ++processID)
@@ -240,92 +353,87 @@ namespace Engine {
         }
     }
 
-    double MPIAutoAdjustment::divideAndTestStep(const int& numberOfProcessesToTest)
+    void MPIAutoAdjustment::sendAllNewSpacesToAllNodes()
     {
-        awakeWorkingNodesToRepartition(numberOfProcessesToTest);
+        MPIMultiNode::MPINodesMap mpiNodes = _schedulerInstance->_mpiNodesMapToSend;
+        int amountOfNodesToSend = mpiNodes.size();
 
-        //divide
-        //MPI_Barrier(_schedulerInstance->_activeProcessesComm)
+        MPIMultiNode::Coordinates coordinatesForSize;
+        int sizeOfCoordinates = sizeof(coordinatesForSize);
         
+        void* coordinatesArray = malloc(amountOfNodesToSend * sizeOfCoordinates);
 
-    }
-
-    template <typename T> 
-    int MPIAutoAdjustment::getNumberOfProcessesAtMinimumCost(const int& initialNumberOfProcesses, const double& cost, const T& lambda)
-    {
-        int numberOfProcessesAtMinimumCost = initialNumberOfProcesses;
-
-        bool localMinimumFound = false;
-        while (not localMinimumFound)
+        int i = 0;
+        for (MPIMultiNode::MPINodesMap::const_iterator it = mpiNodes; it != mpiNodes; ++it)
         {
-            double nextCost = divideAndTestStep(lambda(numberOfProcessesAtMinimumCost));
-            if (nextCost < cost)
-                numberOfProcessesAtMinimumCost = lambda(numberOfProcessesAtMinimumCost);
-            else
-                localMinimumFound = true;
+            int nodeID = it->first;
+            Rectangle<int> nodeArea = it->second.ownedArea;
+
+            MPIMultiNode::Coordinates nodeAreaCoordinates;
+            nodeAreaCoordinates.top = nodeArea.top();
+            nodeAreaCoordinates.left = nodeArea.left();
+            nodeAreaCoordinates.bottom = nodeArea.bottom();
+            nodeAreaCoordinates.right = nodeArea.right();
+
+            memcpy((char*) coordinatesArray + i * sizeOfCoordinates, nodeAreaCoordinates, sizeOfCoordinates);
+            ++i;
         }
 
-        return numberOfProcessesAtMinimumCost;
+        for (int processID = _schedulerInstance->_numberOfActiveProcesses; processID < _schedulerInstance->_numberOfActiveProcesses; ++processID)
+        {
+            sendDataRequestToNode(&amountOfNodesToSend, 1, MPI_INT, processID, eNumCoordinates, MPI_COMM_WORLD);
+            sendDataRequestToNode(&coordinatesArray, amountOfNodesToSend, *_schedulerInstance->_coordinatesDatatype, processID, eCoordinates, MPI_COMM_WORLD);
+        }
     }
 
-    void MPIAutoAdjustment::exploreMinimumCost()
+    void MPIAutoAdjustment::rebalance(const int& newNumberOfProcesses)
     {
-        int currentNumberOfProcesses = _schedulerInstance->_numberOfActiveProcesses;
-        int doubleProcesses = currentNumberOfProcesses * 2;
-        int halfProcesses = currentNumberOfProcesses / 2;
+        _schedulerInstance->resetPartitioning(newNumberOfProcesses);
+        _schedulerInstance->divideSpace();
 
-        double currentCost = divideAndTestStep(currentNumberOfProcesses);
-        double doubleProcessesCost = divideAndTestStep(doubleProcesses);
-        double halfProcessesCost = divideAndTestStep(halfProcesses);
+        // wake up nodes if necessary
 
-        if (currentCost <= doubleProcessesCost and currentCost <= halfProcessesCost)
-            getNumberOfProcessesAtMinimumCost(currentNumberOfProcesses, currentCost, [] (int n)->int { return n; } );
-        else if (doubleProcessesCost < currentCost and doubleProcessesCost < halfProcessesCost)
-            getNumberOfProcessesAtMinimumCost(doubleProcesses, doubleProcessesCost, [] (int n)->int { return n*2; } );
-        else if (halfProcessesCost < currentCost and halfProcessesCost < doubleProcessesCost)
-            getNumberOfProcessesAtMinimumCost(doubleProcesses, halfProcessesCost, [] (int n)->int { return n/2; } );
+        sendAllNewSpacesToAllNodes();
+
+
+        _schedulerInstance->filterOutInitialAgents();
     }
 
     /** PUBLIC METHODS **/
 
     void MPIAutoAdjustment::checkForRebalancingSpace()
     {
+        bool neededToRebalance = false;
         if (_schedulerInstance->getId() == _schedulerInstance->_masterNodeID)
         {
-            if (needToRebalance(_schedulerInstance->_masterNodeID))
+            neededToRebalance = needToRebalance(_currentAgentPhasesAVGTime);
+            if (neededToRebalance)
             {
-                sendSignalsToBeginRebalance(true);
+                sendSignalToAllWorkingNodes(eMessage_PrepareToRepartition_true, ePrepareToRepartition);
                 receiveAllAgentsFromWorkingNodes();
+
+                int numberOfProcesses = exploreMinimumCost();
+
+                awakeWorkingNodesToRepartition(numberOfProcesses);
+                rebalance(numberOfProcesses);
             }
-            else sendSignalsToBeginRebalance(false);
+            else sendSignalToAllWorkingNodes(eMessage_PrepareToRepartition_false, ePrepareToRepartition);
         }
         else
         {
-            bool beginRebalance = receiveSignalToBeginRebalance();
-            if (beginRebalance)
+            waitForMasterNeedsToRebalance();
+
+            int eventType = receiveSignalFromMasterWithTag(ePrepareToRepartition);
+            if (eventType == eMessage_PrepareToRepartition_true)
             {
+                neededToRebalance = true;
+
                 sendAllAgentsToMasterNode();
             }
         }
 
-        exploreMinimumCost();
-
-        // if (getId() == _masterNodeID)
-        // {
-        //     double allNodesAgentPhasesTotalTime;    // 1st criteria: To define the load threshold to add or remove processes to active ones
-        //     bool needToRebalance;                   // 2nd criteria: To check if a rebalancing is needed
-        //     rebalance_receiveAndCheckAllNodesAgentPhasesTotalTime(getId(), allNodesAgentPhasesTotalTime, needToRebalance);
-
-        //     MPI_Barrier(_activeProcessesComm);
-        //     rebalance_readjustProcessesIfNecessary(getId(), allNodesAgentPhasesTotalTime, needToRebalance);
-        // }
-        // else
-        // {
-        //     rebalance_sendAgentPhasesTotalTime(_masterNodeID);
-
-        //     MPI_Barrier(_activeProcessesComm);
-        //     rebalance_receiveReadjustmentIfNecessary(_masterNodeID);
-        // }
+        std::cout << CreateStringStream("[PROCESS " << _schedulerInstance->getId() << "] JUST BEFORE THE MPI_Barrier. \n").str();
+        MPI_Barrier(_schedulerInstance->_activeProcessesComm);
     }
 
 } // namespace Engine
