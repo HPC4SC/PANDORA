@@ -24,15 +24,18 @@ private:
 
     int _seedRun = _gymConfig.getSeed();
     int _athleteId = 0;
-    int _directed1 = 0;
-    int _directed2 = 0;
-    int _directed3 = 0;
-    int _athleteId = 0;
+    bool _directed1Avaliable = false;
+    bool _directed2Avaliable = false;
+    bool _directed3Avaliable = false;
+    int _currentClass = 0;
 
     std::map<int,std::vector<Engine::Point2D<int>>> _mapZones;
 
     std::vector<int> _zones;
     std::vector<std::pair<int,int>> _exerciceTime;
+    std::vector<int> _directedActivity;
+    std::vector<int> _directedActivityTime;
+    std::vector<int> _directedActivityStartTime;
 
     Engine::RNGUniformInt _uni1;
     Engine::RNGUniformInt _uni79;
@@ -43,10 +46,11 @@ private:
     Engine::RNGUniformInt _uni232;
     Engine::RNGUniformInt _uni251;
     Engine::RNGUniformInt _uni255;
-    Engine::RNGUniformInt _uniWarmUp = Engine::RNGUniformInt(_seedRun,_gymConfig._minWarmup,_gymConfig._minWarmup);
+    Engine::RNGUniformInt _uniWarmUp = Engine::RNGUniformInt(_seedRun,_gymConfig._minWarmup,_gymConfig._maxWarmup);
     Engine::RNGUniformInt _uniLose = Engine::RNGUniformInt(_seedRun,_gymConfig._minLose,_gymConfig._maxLose);
     Engine::RNGUniformInt _uniCooldown = Engine::RNGUniformInt(_seedRun,_gymConfig._minCooldown,_gymConfig._maxCooldown);
-    Engine::RNGUniformInt _uniDirected = Engine::RNGUniformInt(_seedRun,_gymConfig._uniDirected,_gymConfig._uniDirected);
+    Engine::RNGUniformInt _uniDirected = Engine::RNGUniformInt(_seedRun,_gymConfig._minDirected,_gymConfig._maxDirected);
+    Engine::RNGUniformInt _uniZeroTwo = Engine::RNGUniformInt(_seedRun,0,2);
     Engine::RNGUniformDouble _uniZeroOne = Engine::RNGUniformDouble(_seedRun,0.,1.);
     Engine::RNGUniformDouble _uniMinusOneOne = Engine::RNGUniformDouble(_seedRun,-1.,1.);
 
@@ -77,9 +81,9 @@ public:
 
     bool isNotDoor(const Engine::Point2D<int>& point);
 
-    Engine::Point2D<int> getClosestDoor(const Engine::Point2D<int>& point);
+    Engine::Point2D<int> getDoor(const Engine::Point2D<int>& point);
 
-    int getExerciceTimeFromZone(const int& zone);
+    int getExerciceTimeFromTask(const int& task, const int& workoutType);
 
     bool atExerciceZone(Engine::Point2D<int> point, const int& zone);
 
@@ -87,9 +91,15 @@ public:
 
     void createDistributions();
 
-    std::list<int> createRoutine();
+    std::list<int> createRoutine(int& routineType);
 
-    int currentClassTime();
+    std::list<int> createFreeRoutine(int& routineType);
+
+    Engine::Point2D<int> getAlley();
+
+    void setupDirectedActivityAvailability();
+
+    void updateStartDirectedActivity();
 };
 
 }

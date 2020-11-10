@@ -2,7 +2,9 @@
 #define __NextPositionAction_hxx__
 
 #include <Action.hxx>
+
 #include <Athlete.hxx>
+#include <Gym.hxx>
 
 #include <string>
 

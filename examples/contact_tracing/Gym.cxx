@@ -33,6 +33,9 @@ void Gym::setupZones() {
                 _mapZones[getStaticRaster("layout").getValue(candidate)].push_back(candidate);
         }
     }
+    _directedActivity.push_back(1);
+    _directedActivity.push_back(79);
+    _directedActivity.push_back(120);
 }
 
 void Gym::createAgents() {
@@ -44,36 +47,21 @@ void Gym::createAthlete() {
     oss << "Athlete_" << _athleteId;
     _athleteId++;
     bool sick = false;
-    if (_uniZeroOne.draw() < _streetConfig._sickRate) sick = true;
-    bool hasApp = _uniZeroOne.draw() < _streetConfig._applicationRate;
+    if (_uniZeroOne.draw() < _gymConfig._sickRate) sick = true;
+    bool hasApp = _uniZeroOne.draw() < _gymConfig._applicationRate;
     int routineType = -1;
-    bool directedClass = false;
-    int totalExerciceTime;
-    switch (routineType) {
-    case 0:
-        totalExerciceTime = _uniLose.draw();
-        break;
-
-    case 1:
-        totalExerciceTime = _gymConfig._definition +  _gymConfig._definition * _uniMinusOneOne;
-        break;
-
-    case 2:
-        totalExerciceTime = _gymConfig._volume +  _gymConfig._volume * _uniMinusOneOne;
-        break;
-
-    case 3:
-        directedClass = true;
-        totalExerciceTime = currentClassTime();
-        break;
-    
-    default:
-        break;
-    }
 
     std::list<int> exerciceList = createRoutine(routineType);
-    Athlete::Athlete(oss.str(),_gymConfig._infectiousness,sick,_step,_gymConfig._phoneThreshold1,_gymConfig._phoneThreshold2,hasApp,
-        _gymConfig._signalRadius, _gymConfig._encounterRadius,this,exerciceList,totalExerciceTime,directedClass) 
+    Athlete* athlete = new Athlete(oss.str(),_gymConfig._infectiousness,sick,_step,_gymConfig._phoneThreshold1,_gymConfig._phoneThreshold2,hasApp,
+        _gymConfig._signalRadius,_gymConfig._encounterRadius,this,exerciceList,routineType);
+    addAgent(athlete);
+    int draw = _uni113.draw();
+    while (not this->checkPosition(_mapZones[113][draw])){
+        draw = _uni113.draw();
+        std::cout << "why bucle" << std::endl;  
+    }
+    Engine::Point2D<int> spawn = _mapZones[113][draw];
+    athlete->setPosition(spawn);
 }
 
 void Gym::step() {
@@ -82,8 +70,11 @@ void Gym::step() {
         _scheduler->serializeRasters(_step); 
         _scheduler->serializeAgents(_step);
     }
+    if (_step >= 1) {
+        setupDirectedActivityAvailability();
+        updateStartDirectedActivity();
+    }
     createAgents();
-    stepEnvironment();
     _scheduler->updateEnvironmentState();
     _scheduler->executeAgents();
     _scheduler->removeAgents();
@@ -96,8 +87,9 @@ int Gym::getSeedRun() {
 std::list<Engine::Point2D<int>> Gym::getShortestPath(const Engine::Point2D<int>& pos, const Engine::Point2D<int>& target) {
     std::queue<int> rowQueue;
     std::queue<int> columnQueue;
-    std::vector<std::vector<bool>> visited(_gymConfig.getSize().getHeight(), std::vector<bool>(_gymConfig.getSize().getWidth(),false));
-    std::vector<std::vector<Engine::Point2D<int>>> prev(_gymConfig.getSize().getHeight(), std::vector<Engine::Point2D<int>>(_gymConfig.getSize().getWidth(),Engine::Point2D<int>(-1,-1)));
+    std::vector<std::vector<bool>> visited(_gymConfig.getSize().getWidth(), std::vector<bool>(_gymConfig.getSize().getHeight(),false));
+    std::vector<std::vector<Engine::Point2D<int>>> prev(_gymConfig.getSize().getWidth(), std::vector<Engine::Point2D<int>>(_gymConfig.getSize().getHeight(),Engine::Point2D<int>(-1,-1)));
+
     rowQueue.push(pos._x);
     columnQueue.push(pos._y);
     visited[pos._x][pos._y] = true;
@@ -107,14 +99,14 @@ std::list<Engine::Point2D<int>> Gym::getShortestPath(const Engine::Point2D<int>&
         rowQueue.pop();
         columnQueue.pop();
         if (r == target._x and c == target._y) break;
-        exploreNeighbours(r,c,visited, rowQueue, columnQueue, prev);
+        exploreNeighbours(r,c,visited,rowQueue,columnQueue,prev);
     }
     return reconstructPath(pos,target,prev);
 }
 
 void Gym::exploreNeighbours(int& r, int& c, std::vector<std::vector<bool>>& visited, std::queue<int>& rowQueue, std::queue<int>& columnQueue, std::vector<std::vector<Engine::Point2D<int>>>& prev) {
-    std::vector<int> rowDirection = {1,-1,0, 0,1,-1,1,-1};
-    std::vector<int> columnDirection = {0, 0,1,-1,1,1,-1,-1};
+    std::vector<int> rowDirection = {1,-1,0,0,-1,1,1,-1};
+    std::vector<int> columnDirection = {0,0,1,-1,-1,1,-1,1};
     for (int i = 0; i < 8; i++) {
         int rr = r + rowDirection[i];
         int cc = c + columnDirection[i];
@@ -128,7 +120,7 @@ void Gym::exploreNeighbours(int& r, int& c, std::vector<std::vector<bool>>& visi
 }
 
 bool Gym::validPosition(const int& rr, const int& cc, const std::vector<std::vector<bool>>& visited) {
-    bool res = rr >= 0 and cc >= 0  and rr < _gymConfig.getSize().getHeight() and cc < _gymConfig.getSize().getWidth() and (not visited[rr][cc]); 
+    bool res = rr >= 0 and cc >= 0  and rr < _gymConfig.getSize().getWidth() and cc < _gymConfig.getSize().getHeight() and (not visited[rr][cc]) and checkPosition(Engine::Point2D<int>(rr,cc));
     if (res) res = res and getStaticRaster("layout").getValue(Engine::Point2D<int>(rr,cc)) != 0;
     return res;
 }
@@ -142,23 +134,25 @@ std::list<Engine::Point2D<int>> Gym::reconstructPath(const Engine::Point2D<int>&
 }
 
 bool Gym::isNotDoor(const Engine::Point2D<int>& point) {
-    return std::find(_mapZones[113].begin(),_mapZones[113].end(),point) != _mapZones[113].end();
+    return std::find(_mapZones[113].begin(),_mapZones[113].end(),point) == _mapZones[113].end();
 }
 
-Engine::Point2D<int> Gym::getClosestDoor(const Engine::Point2D<int>& point) {
-    double minDistance = point.distance(_mapZones[113][0]);
-    int minIdx = 0;
-    for (unsigned int i = 1; i < _mapZones[113].size(); i++) {
-        if (minDistance > point.distance(_mapZones[113][i])) {
-            minDistance = point.distance(_mapZones[113][i]);
-            minIdx = i;
+Engine::Point2D<int> Gym::getDoor(const Engine::Point2D<int>& point) {
+    return _mapZones[113][_uni113.draw()];
+}
+
+int Gym::getExerciceTimeFromTask(const int& task, const int& workoutType) {
+    if (workoutType == 3) return _directedActivityTime[_currentClass];
+    else {
+        if (task == 3) return _uniWarmUp.draw();
+        else if (task == 2) {
+            if (workoutType == 0) return _uniLose.draw();
+            else if (workoutType == 1) return _gymConfig._definition + _gymConfig._definition * _uniMinusOneOne.draw();
+            else if (workoutType == 2) return _gymConfig._volume + _gymConfig._volume * _uniMinusOneOne.draw();
         }
+        else if (task == 1) return _uniCooldown.draw();
     }
-    return _mapZones[113][minIdx];
-}
-
-int Gym::getExerciceTimeFromZone(const int& zone) {
-    
+    return -1;
 }
 
 bool Gym::atExerciceZone(Engine::Point2D<int> point, const int& zone) {
@@ -166,47 +160,45 @@ bool Gym::atExerciceZone(Engine::Point2D<int> point, const int& zone) {
 }
 
 Engine::Point2D<int> Gym::getTargetFromZone(const int& zone) {
+    Engine::Point2D<int> target = Engine::Point2D<int>(-1,-1);
     switch (zone) {
         case 1:
-            return _mapZones[zone][_uni1.draw()];
+            target = _mapZones[zone][_uni1.draw()];
             break;
 
         case 79:
-            return _mapZones[zone][_uni79.draw()];
+            target = _mapZones[zone][_uni79.draw()];
             break;
 
         case 103:
-            return _mapZones[zone][_uni103.draw()];
+            target = _mapZones[zone][_uni103.draw()];
             break;
 
         case 113:
-            return _mapZones[zone][_uni113.draw()];
+            target = _mapZones[zone][_uni113.draw()];
             break;
 
         case 120:
-            return _mapZones[zone][_uni120.draw()];
+            target = _mapZones[zone][_uni120.draw()];
             break;
 
         case 213:
-            return _mapZones[zone][_uni213.draw()];
+            target = _mapZones[zone][_uni213.draw()];
             break;
 
         case 232:
-            return _mapZones[zone][_uni232.draw()];
+            target = _mapZones[zone][_uni232.draw()];
             break;
 
         case 251:
-            return _mapZones[zone][_uni251.draw()];
-            break;
-
-        case 255:
-            return _mapZones[zone][_uni255.draw()];
+            target = _mapZones[zone][_uni251.draw()];
             break;
 
         default:
             break;
     }
-    return Engine::Point2D<int>(-1,-1);
+    if (not checkPosition(target)) getTargetFromZone(zone);
+    return target;
 }
 
 void Gym::createDistributions() {
@@ -219,51 +211,98 @@ void Gym::createDistributions() {
     _uni232 = Engine::RNGUniformInt(_seedRun,0,_mapZones[232].size() - 1);
     _uni251 = Engine::RNGUniformInt(_seedRun,0,_mapZones[251].size() - 1);
     _uni255 = Engine::RNGUniformInt(_seedRun,0,_mapZones[255].size() - 1);
+    _directedActivityTime.push_back(_uniDirected.draw());
+    _directedActivityTime.push_back(_uniDirected.draw());
+    _directedActivityTime.push_back(_uniDirected.draw());
+    _directedActivityStartTime.push_back(_step + 1000);
+    _directedActivityStartTime.push_back(_directedActivityStartTime[0] + 1500);
+    _directedActivityStartTime.push_back(_directedActivityStartTime[1] + 2000);
 }
 
 std::list<int> Gym::createRoutine(int& routineType) {
     std::list<int> routine;
-    if (_uniZeroOne.draw() < 0.4) {
+    if (_uniZeroOne.draw() < 0.3 and (_directed1Avaliable or _directed2Avaliable or _directed3Avaliable)) {
         routineType = 3; //directed
-
+        if (_directed1Avaliable) routine.push_back(1);
+        else if (_directed2Avaliable) routine.push_back(79);
+        else if (_directed3Avaliable) routine.push_back(120);
+        else routine = createFreeRoutine(routineType);
     }
     else {
-        double warmUpDraw = _uniZeroOne.draw();
-        if (warmUpDraw <= 0.3) routine.insert(103);
-        else if (warmUpDraw > 0.3 and warmUpDraw <= 0.6) routine.insert(232);
-        else if (warmUpDraw > 0.6) routine.insert(251);
-
-        double routineTypeDraw = _uniZeroOne.draw();
-        if (routineTypeDraw <= 0.3) {
-            routineType = 0; //Lose
-            double exerciceDraw = _uniZeroOne.draw();
-            if (exerciceDraw <= 0.25) routine.insert(103);
-            else if (exerciceDraw > 0.25 and exerciceDraw <= 0.5) routine.insert(213);
-            else if (exerciceDraw > 0.5 and exerciceDraw <= 0.75) routine.insert(232);
-            else if (exerciceDraw > 0.75) routine.insert(251);
-        }
-
-        else if (routineTypeDraw > 0.3 and routineTypeDraw <= 0.6) {
-            routineType = 1; //Definition
-            double exerciceDraw = _uniZeroOne.draw();
-            if (exerciceDraw <= 0.5) routine.insert(213);
-            else routine.insert(251);
-        }
-
-        else if (routineTypeDraw > 0.6) {
-            routineType = 2; //Volume
-            double exerciceDraw = _uniZeroOne.draw();
-            if (exerciceDraw <= 0.5) routine.insert(213);
-            else routine.insert(251);
-        }
-
-        double coolDownDraw = _uniZeroOne.draw();
-        if (coolDownDraw <= 0.3) routine.insert(103);
-        else if (coolDownDraw > 0.3 and coolDownDraw <= 0.6) routine.insert(232);
-        else if (coolDownDraw > 0.6) routine.insert(251);
+        routine = createFreeRoutine(routineType);
     }
+    return routine;
 }
 
-int currentClassTime() {}
+std::list<int> Gym::createFreeRoutine(int& routineType) {
+    std::list<int> routine;
+    std::cout << "free routine" << std::endl;
+    double warmUpDraw = _uniZeroOne.draw();
+    if (warmUpDraw <= 0.3) routine.push_back(103);
+    else if (warmUpDraw > 0.3 and warmUpDraw <= 0.6) routine.push_back(232);
+    else if (warmUpDraw > 0.6) routine.push_back(251);
+
+    double routineTypeDraw = _uniZeroOne.draw();
+    if (routineTypeDraw <= 0.3) {
+        routineType = 0; //Lose
+        double exerciceDraw = _uniZeroOne.draw();
+        if (exerciceDraw <= 0.25) routine.push_back(103);
+        else if (exerciceDraw > 0.25 and exerciceDraw <= 0.5) routine.push_back(213);
+        else if (exerciceDraw > 0.5 and exerciceDraw <= 0.75) routine.push_back(232);
+        else if (exerciceDraw > 0.75) routine.push_back(251);
+    }
+
+    else if (routineTypeDraw > 0.3 and routineTypeDraw <= 0.6) {
+        routineType = 1; //Definition
+        double exerciceDraw = _uniZeroOne.draw();
+        if (exerciceDraw <= 0.5) routine.push_back(213);
+        else routine.push_back(251);
+    }
+
+    else if (routineTypeDraw > 0.6) {
+        routineType = 2; //Volume
+        double exerciceDraw = _uniZeroOne.draw();
+        if (exerciceDraw <= 0.5) routine.push_back(213);
+        else routine.push_back(251);
+    }
+
+    double coolDownDraw = _uniZeroOne.draw();
+    if (coolDownDraw <= 0.3) routine.push_back(103);
+    else if (coolDownDraw > 0.3 and coolDownDraw <= 0.6) routine.push_back(232);
+    else if (coolDownDraw > 0.6) routine.push_back(251);
+
+    return routine;
+}
+
+Engine::Point2D<int> Gym::getAlley() {
+    return _mapZones[255][_uni255.draw()];
+}
+
+void Gym::setupDirectedActivityAvailability() {
+    if (_step >= _directedActivityStartTime[0] - 300 and _step < _directedActivityStartTime[0]) _directed1Avaliable = true;
+    if (_step >= _directedActivityStartTime[1] - 300 and _step < _directedActivityStartTime[1]) _directed2Avaliable = true;
+    if (_step >= _directedActivityStartTime[2] - 300 and _step < _directedActivityStartTime[2]) _directed3Avaliable = true;
+    std::cout << "directed1Avaliable: " << _directed1Avaliable << ' ' << _step << ' ' << _directedActivityStartTime[0] << std::endl;
+    std::cout << "directed2Avaliable: " << _directed2Avaliable << ' ' << _step << ' ' << _directedActivityStartTime[1] << std::endl;
+    std::cout << "directed3Avaliable: " << _directed3Avaliable << ' ' << _step << ' ' << _directedActivityStartTime[2] << std::endl;
+}
+
+void Gym::updateStartDirectedActivity() {
+    if (_step == _directedActivityStartTime[0]) {
+        _directedActivityTime[0] = _uniDirected.draw();
+        _directedActivityStartTime[0] = _directedActivityStartTime[0] + _directedActivityTime[0] + 1800;
+        _directed1Avaliable = false;
+    }
+    if (_step == _directedActivityStartTime[1]) {
+        _directedActivityTime[1] = _uniDirected.draw();
+        _directedActivityStartTime[1] = _directedActivityStartTime[1] + _directedActivityTime[1] + 1800;
+        _directed2Avaliable = false;
+    }
+    if (_step == _directedActivityStartTime[2]) {
+        _directedActivityTime[2] = _uniDirected.draw();
+        _directedActivityStartTime[2] = _directedActivityStartTime[2] + _directedActivityTime[2] + 1800;
+        _directed3Avaliable = false;
+    }
+}
 
 }

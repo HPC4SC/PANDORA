@@ -20,18 +20,25 @@ private:
     std::list<int> _exerciceList;
     int _exerciceTime; //MpiBasicAttribute
     Gym* _gym;
-	int _totalExerciceTime; //MpiBasicAttribute
-	bool _directedClass; //MpiBasicAttribute
+	int _workoutType; //MpiBasicAttribute
+	bool _directedActivityStarted = false;
 
 public:
     Athlete(const std::string& id, const double& infectiousness, const int& sick, const int& entryTime, 
         const int& phoneT1, const int& phoneT2, const bool& phoneApp, const int& signalRadius, const int& encounterRadius,
-		Gym* gym, const std::list<int>& exerciceList, const int& totalExerciceTime, const bool& directedClass);
+		Gym* gym, const std::list<int>& exerciceList, const int& _workoutType);
 
     ~Athlete();
 
     void selectActions();
 
+	std::list<Engine::Point2D<int>> getTargetPath();
+
+	Gym* getGym();
+
+	void popTargetPath();
+
+	void calculatePath();
 
 	////////////////////////////////////////////////
 	// This code has been automatically generated //
