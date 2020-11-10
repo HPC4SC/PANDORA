@@ -11,7 +11,7 @@ agents = ['Client','Cashier','HumanBeeing','Walker','Passanger','Athlete']
 namespaceAgents = ['Examples','Examples','Examples','Examples','Examples','Examples']
 world = 'Supermarket'
 
-srcFiles = Split('main.cxx Client.cxx Cashier.cxx HumanBeeing.cxx Supermarket.cxx SupermarketConfig.cxx Phone.cxx InfectAction.cxx InfectActionOutside.cxx MoveAction.cxx LeaveAction.cxx Street.cxx StreetConfig.cxx Walker.cxx WalkAction.cxx Passanger.cxx Train.cxx TrainConfig.cxx SeatAction.cxx RandomMoveAction.cxx Athlete.cxx Gym.cxx GymConfig.cxx NextPositionAction.cxx')
+srcFiles = Split('main.cxx Client.cxx Cashier.cxx HumanBeeing.cxx Supermarket.cxx SupermarketConfig.cxx Phone.cxx InfectAction.cxx InfectActionOutside.cxx MoveAction.cxx LeaveAction.cxx Street.cxx StreetConfig.cxx Walker.cxx WalkAction.cxx Passanger.cxx Train.cxx TrainConfig.cxx SeatAction.cxx RandomMoveAction.cxx Athlete.cxx Gym.cxx GymConfig.cxx NextPositionAction.cxx RestaurantConfig.cxx Restaurant.cxx Customer.cxx EatAction.cxx')
 
 ###################################################
 ########## END OF CUSTOM INFORMATION  #############

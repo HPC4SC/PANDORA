@@ -49,8 +49,6 @@ void Athlete::selectActions() {
 }
 
 std::list<Engine::Point2D<int>> Athlete::getTargetPath() {
-    std::cout << "targetPath size is: " << _targetPath.size() << std::endl;
-    std::cout << "_targetPosition is: " << _targetPosition << std::endl;
     return _targetPath;
 }
 

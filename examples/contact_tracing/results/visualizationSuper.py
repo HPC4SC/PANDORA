@@ -19,6 +19,8 @@ def read_agents(agent_route,scenario):
             agentType = 'Passanger'
         elif scenario == '3':
             agentType = 'Athlete'
+        elif scenario == '4':
+            agentType = 'Customer'
 
         simulation = hdf.get(agentType)
         #print(len(simulation))
@@ -157,6 +159,14 @@ def print_agents(steps_dfs,scenario):
         y2 = 60
         type = 'Gym' 
         img = plt.imread("../maps/gym_layout.png")
+        agentColor = 'black'
+    elif scenario == '4':
+        x1 = 0
+        y1 = 0
+        x2 = 40
+        y2 = 60
+        type = 'Restaurant' 
+        img = plt.imread("../maps/restaurant_layout.png")
         agentColor = 'black'
     pd.DataFrame(result).to_csv('./' + type + 'Output.csv')
 
