@@ -420,23 +420,26 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
         }
     }
 
-    void MPIMultiNode::fillOwnStructures(const MPINode& mpiNodeInfo)
+    void MPIMultiNode::fillOwnStructures(const MPINode& mpiNodeInfo, const bool& fillNeighbours)
     {
         _nodeSpace.ownedArea = mpiNodeInfo.ownedArea;
 
         generateOverlapAreas(_nodeSpace);
         generateInnerSubOverlapAreas(_nodeSpace);
 
-        for (std::map<int, MPINode*>::const_iterator it = mpiNodeInfo.neighbours.begin(); it != mpiNodeInfo.neighbours.end(); ++it)
+        if (fillNeighbours)
         {
-            int neighbourID = it->first;
-            MPINode* mpiNode = it->second;
+            for (std::map<int, MPINode*>::const_iterator it = mpiNodeInfo.neighbours.begin(); it != mpiNodeInfo.neighbours.end(); ++it)
+            {
+                int neighbourID = it->first;
+                MPINode* mpiNode = it->second;
 
-            _nodeSpace.neighbours[neighbourID] = new MPINode;
-            _nodeSpace.neighbours[neighbourID]->ownedArea = mpiNode->ownedArea;
-            generateOverlapAreas(*(_nodeSpace.neighbours[neighbourID]));
+                _nodeSpace.neighbours[neighbourID] = new MPINode;
+                _nodeSpace.neighbours[neighbourID]->ownedArea = mpiNode->ownedArea;
+                generateOverlapAreas(*(_nodeSpace.neighbours[neighbourID]));
 
-            generateInnerSubOverlapNeighbours(_nodeSpace, neighbourID, *(mpiNode));
+                generateInnerSubOverlapNeighbours(_nodeSpace, neighbourID, *(mpiNode));
+            }
         }
     }
 

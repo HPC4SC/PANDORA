@@ -183,23 +183,83 @@ namespace Engine
             void receiveNumberOfProcessesFromMasterNode(const int& newNumberOfProcesses);
 
             /**
-             * @brief Either awakes from sleep all the necessary nodes according the the 'numberOfRequestedProcesses', or puts to sleep processes that are no longer necessary for the incoming rebalance.
+             * @brief Awakes from sleep all the necessary nodes according the the 'numberOfRequestedProcesses', according to the incoming rebalance.
              * 
              * @param numberOfRequestedProcesses const int&
              */
-            void awakeOrPutToSleepNodesToRepartition(const int& numberOfRequestedProcesses); 
+            void awakeNodesIfNecessary(const int& numberOfRequestedProcesses); 
 
             /**
-             * @brief Sends all the just computed partitioning spaces to all nodes in order to let know them whether they need to send to other nodes or discard their in-local-memory agents and rasters.
+             * @brief Saves the current partitioning status at 'oldSpaces'.
              * 
+             * @param spaces MPIMultiNode::MPINodesMap&
              */
-            void sendAllNewSpacesToAllNodes();
+            void saveCurrentSpaces(MPIMultiNode::MPINodesMap& spaces) const;
 
             /**
-             * @brief Receives the new spaces resulting from the last partitining performed by the master node.
+             * @brief Sends all the just computed partitioning spaces to all nodes in order to let know them whether they need to send to other nodes or discard their in-local-memory agents and rasters. It lets the new partitioning in 'newSpaces'.
+             * 
+             * @param newSpaces MPIMultiNode::MPINodesMap&
+             */
+            void sendAllNewSpacesToAllNodes(MPIMultiNode::MPINodesMap& newSpaces) const;
+
+            /**
+             * @brief Receives the new spaces resulting from the last partitining performed by the master node. It lets the new partitioning in 'newSpaces'.
+             * 
+             * @param newSpaces MPIMultiNode::MPINodesMap&
+             */
+            void receiveNewSpacesFromMasterNode(MPIMultiNode::MPINodesMap& newSpaces) const;
+
+            /**
+             * @brief Fills up the 'newSpaces' data structure with the overlap areas.
+             * 
+             * @param newSpaces const MPIMultiNode::MPINodesMap&
+             */
+            void fillNewSpacesStructures(MPIMultiNode::MPINodesMap& newSpaces) const;
+
+            /**
+             * @brief Gets the node IDs of the spaces physically containing the agent.
+             * 
+             * @param agent 
+             * @param spaces 
+             * @return std::set<int> 
+             */
+            std::set<int> getNodesContainingAgent(const Agent& agent, const MPIMultiNode::MPINodesMap& spaces) const;
+
+            /**
+             * @brief Sends the agents in agentsToSendByNode->second to their corresponding nodes agentsToSendByNode->first.
+             * 
+             * @param agentsToSendByNode const std::map<int, AgentsList>&
+             */
+            void sendAgentsInMap(const std::map<int, AgentsList>& agentsToSendByNode);
+
+            /**
+             * @brief Sends the agents that the calling node contains to the rest of the nodes if necessary (according to the new scheme 'newSpaces').
+             * 
+             * @param newSpaces const MPIMultiNode::MPINodesMap&
+             * @param oldSpaces const MPIMultiNode::MPINodesMap&
+             */
+            void sendAgentsToOtherNodesIfNecessary(const MPIMultiNode::MPINodesMap& newSpaces, const MPIMultiNode::MPINodesMap& oldSpaces);
+
+            /**
+             * @brief Receves the agents that the rest of the nodes have sent to the calling node (according to the new scheme of 'newSpaces').
+             * 
+             * @param newSpaces const MPIMultiNode::MPINodesMap&
+             */
+            void receiveAgentsFromOtherNodesIfNecessary(const MPIMultiNode::MPINodesMap& newSpaces);
+
+            /**
+             * @brief Updates the partitioning data structures for the calling node.
+             * 
+             * @param newSpaces const MPIMultiNode::MPINodesMap&
+             */
+            void updateOwnStructures(const MPIMultiNode::MPINodesMap& newSpaces);
+
+            /**
+             * @brief Removes the non belonging agents considering the current space of the calling node.
              * 
              */
-            void receiveNewSpacesFromMasterNode();
+            void removeNonBelongingAgents();
 
             /**
              * @brief Rebalances the current space with 'numberOfProcesses'.

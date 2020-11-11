@@ -229,7 +229,7 @@ namespace Engine
              * 
              * @param mpiNodeInfo const MPINode&
              */
-            void fillOwnStructures(const MPINode& mpiNodeInfo);
+            void fillOwnStructures(const MPINode& mpiNodeInfo, const bool& fillNeighbours = true);
 
             /**
              * @brief It blocking sends the 'nodeCoordinates' to the corresponding 'nodeID'.

@@ -357,7 +357,7 @@ std::cout << CreateStringStream("DIVIDE TEST COMPLETED. executingAgentsEstimated
         MPI_Recv(&newNumberOfProcesses, 1, MPI_INT, _schedulerInstance->_masterNodeID, eNumProcesses, _schedulerInstance->_activeProcessesComm, MPI_STATUS_IGNORE);
     }
 
-    void MPIAutoAdjustment::awakeOrPutToSleepNodesToRepartition(const int& numberOfRequestedProcesses)
+    void MPIAutoAdjustment::awakeNodesIfNecessary(const int& numberOfRequestedProcesses)
     {
         if (numberOfRequestedProcesses > _schedulerInstance->_numberOfActiveProcesses)
         {
@@ -370,19 +370,24 @@ std::cout << CreateStringStream("DIVIDE TEST COMPLETED. executingAgentsEstimated
                 sendDataRequestToNode(&eventType, 1, MPI_INT, processID, eTypeOfEventAfterWakeUp, MPI_COMM_WORLD);
             }
         }
-        else
-        {
-            for (int processID = numberOfRequestedProcesses; processID < _schedulerInstance->_numberOfActiveProcesses; ++processID)
-            {
-                _schedulerInstance->waitSleeping(_schedulerInstance->_masterNodeID);
-            }
-        }
+        // else
+        // {
+        //     for (int processID = numberOfRequestedProcesses; processID < _schedulerInstance->_numberOfActiveProcesses; ++processID)
+        //     {
+        //         _schedulerInstance->waitSleeping(_schedulerInstance->_masterNodeID);
+        //     }
+        // }
     }
 
-    void MPIAutoAdjustment::sendAllNewSpacesToAllNodes()
+    void MPIAutoAdjustment::saveCurrentSpaces(MPIMultiNode::MPINodesMap& spaces) const
     {
-        MPIMultiNode::MPINodesMap mpiNodes = _schedulerInstance->_mpiNodesMapToSend;
-        int amountOfNodesToSend = mpiNodes.size();
+        spaces = _schedulerInstance->_mpiNodesMapToSend;
+    }
+
+    void MPIAutoAdjustment::sendAllNewSpacesToAllNodes(MPIMultiNode::MPINodesMap& newSpaces) const
+    {
+        newSpaces = _schedulerInstance->_mpiNodesMapToSend;
+        int amountOfNodesToSend = newSpaces.size();
 
         MPIMultiNode::Coordinates coordinatesForSize;
         int sizeOfCoordinates = sizeof(coordinatesForSize);
@@ -390,7 +395,7 @@ std::cout << CreateStringStream("DIVIDE TEST COMPLETED. executingAgentsEstimated
         void* coordinatesArray = malloc(amountOfNodesToSend * sizeOfCoordinates);
 
         int i = 0;
-        for (MPIMultiNode::MPINodesMap::const_iterator it = mpiNodes; it != mpiNodes; ++it)
+        for (MPIMultiNode::MPINodesMap::const_iterator it = newSpaces.begin(); it != newSpaces.end(); ++it)
         {
             int nodeID = it->first;
             Rectangle<int> nodeArea = it->second.ownedArea;
@@ -413,7 +418,7 @@ std::cout << CreateStringStream("DIVIDE TEST COMPLETED. executingAgentsEstimated
         free(coordinatesArray);
     }
 
-    void MPIAutoAdjustment::receiveNewSpacesFromMasterNode()
+    void MPIAutoAdjustment::receiveNewSpacesFromMasterNode(MPIMultiNode::MPINodesMap& newSpaces) const
     {
         int amountOfNodesToReceive;
         MPI_Recv(&amountOfNodesToReceive, 1, MPI_INT, _schedulerInstance->_masterNodeID, eNumCoordinates, _schedulerInstance->_activeProcessesComm, MPI_STATUS_IGNORE);
@@ -424,39 +429,117 @@ std::cout << CreateStringStream("DIVIDE TEST COMPLETED. executingAgentsEstimated
         void* coordinatesArray = malloc(amountOfNodesToReceive * sizeOfCoordinates);
         MPI_Recv(coordinatesArray, amountOfNodesToReceive, *_schedulerInstance->_coordinatesDatatype, _schedulerInstance->_masterNodeID, eCoordinates, _schedulerInstance->_activeProcessesComm, MPI_STATUS_IGNORE);
 
-        for (int i = 0; i < amountOfNodesToReceive; ++i)
+        for (int processID = 0; processID < amountOfNodesToReceive; ++processID)
         {
-            void* package = (char*) coordinatesArray + i * sizeOfCoordinates;
+            void* package = (char*) coordinatesArray + processID * sizeOfCoordinates;
             MPIMultiNode::Coordinates coordinates = (MPIMultiNode::Coordinates) *package;
 
-
-
+            if (newSpaces.find(i) == newSpaces.end()) 
+            {
+                MPIMultiNode::MPINode mpiNode;
+                mpiNode.ownedArea = coordinates;
+                newSpaces[processID] = mpiNode;
+            }
         }
         free(coordinatesArray);
     }
 
+    void MPIAutoAdjustment::fillNewSpacesStructures(MPIMultiNode::MPINodesMap& newSpaces) const
+    {
+        for (MPIMultiNode::MPINodesMap::const_iterator it = newSpaces.begin(); it != newSpaces.end(); ++it)
+            _schedulerInstance->generateOverlapAreas(it->second);
+    }
+
+    std::set<int> MPIAutoAdjustment::getNodesContainingAgent(const Agent& agent, const MPIMultiNode::MPINodesMap& spaces) const
+    {
+        std::set<int> resultingSet;
+        for (MPIMultiNode::MPINodesMap::const_iterator it = spaces.begin(); it != spaces.end(); ++it)
+        {
+            int mpiNodeID = it->first;
+            MPIMultiNode::MPINode mpiNode = it->second;
+            
+            if (mpiNode.ownedAreaWithOuterOverlaps.contains(agent.getPosition())) 
+                resultingSet.insert(mpiNodeID);
+        }
+        return resultingSet;
+    }
+
+    void MPIAutoAdjustment::sendAgentsInMap(const std::map<int, AgentsList>& agentsToSendByNode)
+    {
+        // define sendGhostAgentsInMap data structure and call it
+
+    }
+
+    void MPIAutoAdjustment::sendAgentsToOtherNodesIfNecessary(const MPIMultiNode::MPINodesMap& newSpaces, const MPIMultiNode::MPINodesMap& oldSpaces)
+    {
+        std::map<int, AgentsList> agentsToSendByNode;
+        for (AgentsMap::const_iterator itAgent = _schedulerInstance->_world->beginAgents(); itAgent != _schedulerInstance->_world->endAgents(); ++itAgent)
+        {
+            AgentPtr agentPtr = itAgent->second;
+            Agent* agent = agentPtr.get();
+
+            std::set<int> newNodesContainingAgent = getNodesContainingAgent(*agent, newSpaces);
+            std::set<int> oldNodesContainingAgent = getNodesContainingAgent(*agent, oldSpaces);
+
+            for (std::set<int>::const_iterator it = newNodesContainingAgent.begin(); it != newNodesContainingAgent.end(); ++it)
+            {
+                int newNodeID = *it;
+
+                if (oldNodesContainingAgent.find(newNodeID) == oldNodesContainingAgent.end())
+                {
+                    if (agentsToSendByNode.find(newNodeID) == agentsToSendByNode.end()) agentsToSendByNode[newNodeID] = AgentsList();
+                    agentsToSendByNode.at(newNodeID).push_back(agentPtr);
+                }
+            }
+        }
+
+        sendAgentsInMap(agentsToSendByNode);
+    }
+
+    void MPIAutoAdjustment::receiveAgentsFromOtherNodesIfNecessary(const MPIMultiNode::MPINodesMap& newSpaces)
+    {
+
+    }
+
+    void MPIAutoAdjustment::updateOwnStructures(const MPIMultiNode::MPINodesMap& newSpaces)
+    {
+
+    }
+
+    // Similar to _schedulerInstance->filterOutInitialAgents();
+    void MPIAutoAdjustment::removeNonBelongingAgents()
+    {
+
+    }
+
     void MPIAutoAdjustment::rebalance(const int& newNumberOfProcesses)
     {
+        MPIMultiNode::MPINodesMap oldSpaces, newSpaces;;
+        saveCurrentSpaces(oldSpaces);
+
         if (_schedulerInstance->getId() == _schedulerInstance->_masterNodeID)
         {
             _schedulerInstance->resetPartitioning(newNumberOfProcesses);
             _schedulerInstance->divideSpace();
-
-            // wake up nodes if necessary
-
-            sendAllNewSpacesToAllNodes();
-
-
-            _schedulerInstance->filterOutInitialAgents();
+            
+            sendAllNewSpacesToAllNodes(newSpaces);
         }
         else
         {
             // remove all the agents and all the rasters info (just in case the new awaken nodes has some data from a lot of steps before)
             // set current step for new nodes (masters send it to the just awaken processes)
 
-            receiveNewSpacesFromMasterNode();
+            receiveNewSpacesFromMasterNode(newSpaces);
         }
-        
+
+        fillNewSpacesStructures(newSpaces);
+
+        sendAgentsToOtherNodesIfNecessary(newSpaces, oldSpaces);
+        receiveAgentsFromOtherNodesIfNecessary(newSpaces);
+
+        removeNonBelongingAgents();
+
+        //updateOwnStructures(newSpaces);
     }
 
     /** PUBLIC METHODS **/
@@ -477,7 +560,7 @@ std::cout << CreateStringStream("DIVIDE TEST COMPLETED. executingAgentsEstimated
                 newNumberOfProcesses = exploreMinimumCost();
                 sendNumberOfProcessesToWorkingNodes(newNumberOfProcesses);
 
-                awakeOrPutToSleepNodesToRepartition(newNumberOfProcesses);
+                awakeNodesIfNecessary(newNumberOfProcesses);
             }
             else sendSignalToAllWorkingNodes(eMessage_PrepareToRepartition_false, ePrepareToRepartition);
         }
