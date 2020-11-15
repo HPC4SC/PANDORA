@@ -39,25 +39,25 @@ namespace Engine
     class MPIMultiNodeLogs;
     class MPIAutoAdjustment;
 
+    struct MPINode {
+        Rectangle<int> ownedAreaWithoutInnerOverlap;                //! Area of this node without inner (this node)   overlaps. // Filled up to depth 1 (from neighbours->second).
+        Rectangle<int> ownedArea;                                   //! Area of this node with    inner (this node)   overlaps. // Filled up to depth 1 (from neighbours->second).
+        Rectangle<int> ownedAreaWithOuterOverlaps;                  //! Area of this node with    outer (other nodes) overlaps. // Filled up to depth 1 (from neighbours->second).
+        std::map<int, MPINode*> neighbours;                         //! Map<neighbouringNodeId, neighbouringNodeSpaces> containing the neighbours information for communication. // Filled up to depth 0 (from neighbours->second).
+
+        std::map<int, Rectangle<int>> innerSubOverlaps;             //! Sub-overlaps (Sub areas of the inner overlap). Should be 8 in total for mode9 and 4 for mode4. Map<subOverlapID, subOverlapArea>, where subOverlapID = Engine::SubOverlapType enum. // Filled up to depth 0 (from neighbours->second).
+        std::map<int, std::list<int>> innerSubOverlapsNeighbours;   //! Sub-overlaps neighbouring nodes. Map<subOverlapID, list<nodeID>>. Used for efficient agents and rasters communication. // Filled up to depth 0 (from neighbours->second).
+    };
+
+    typedef std::map<int, MPINode> MPINodesMap;
+
+    typedef std::map<Point2D<int>, int> MapOfPositionsAndValues;
+    typedef std::map<int, MapOfPositionsAndValues> MapOfValuesByRaster;
+
     class MPIMultiNode : public Scheduler
     {
 
         public:
-
-            struct MPINode {
-                Rectangle<int> ownedAreaWithoutInnerOverlap;                //! Area of this node without inner (this node)   overlaps. // Filled up to depth 1 (from neighbours->second).
-                Rectangle<int> ownedArea;                                   //! Area of this node with    inner (this node)   overlaps. // Filled up to depth 1 (from neighbours->second).
-                Rectangle<int> ownedAreaWithOuterOverlaps;                  //! Area of this node with    outer (other nodes) overlaps. // Filled up to depth 1 (from neighbours->second).
-                std::map<int, MPINode*> neighbours;                         //! Map<neighbouringNodeId, neighbouringNodeSpaces> containing the neighbours information for communication. // Filled up to depth 0 (from neighbours->second).
-
-                std::map<int, Rectangle<int>> innerSubOverlaps;             //! Sub-overlaps (Sub areas of the inner overlap). Should be 8 in total. Map<subOverlapID, subOverlapArea>, where subOverlapID = Engine::SubOverlapType enum. // Filled up to depth 0 (from neighbours->second).
-                std::map<int, std::list<int>> innerSubOverlapsNeighbours;   //! Sub-overlaps neighbouring nodes. Map<subOverlapID, list<nodeID>>. Used for efficient agents and rasters communication. // Filled up to depth 0 (from neighbours->second).
-            };
-
-            typedef std::map<int, MPINode> MPINodesMap;
-
-            typedef std::map<Point2D<int>, int> MapOfPositionsAndValues;
-            typedef std::map<int, MapOfPositionsAndValues> MapOfValuesByRaster;
 
             friend class MPIMultiNodeLogs;
             friend class MPIAutoAdjustment;
@@ -161,6 +161,12 @@ namespace Engine
              * @param numberOfProcessesToEnable const int&
              */
             void enableOnlyProcesses(const int& numberOfProcessesToEnable);
+
+            /**
+             * @brief Cleans the node data structures (mainly _nodeSpace, World::agents & World::rasters). Used when node is going to sleep.
+             * 
+             */
+            void cleanNodeDataStructures();
 
             /**
              * @brief Puts the calling process to sleep, waiting for an awake signal from the master node 'masterNodeID'.
@@ -458,8 +464,9 @@ namespace Engine
              * @param mpiDatatype const MPI_Datatype&
              * @param destinationNode const int&
              * @param tag const int&
+             * @param mpiComm const MPI_Comm&
              */
-            void sendDataRequestToNode(void* data, const int& numberOfElements, const MPI_Datatype& mpiDatatype, const int& destinationNode, const int& tag);
+            void sendDataRequestToNode(void* data, const int& numberOfElements, const MPI_Datatype& mpiDatatype, const int& destinationNode, const int& tag, const MPI_Comm& mpiComm);
 
             /**
              * @brief Sends agents in 'agentsByTypeAndNode'. The corresponding node is indicated in the key of the map. 'subOverlapID' is only used for instrumentation purposes.
@@ -621,21 +628,7 @@ namespace Engine
              */
             int getTotalNumberOfOverlappingCells(const MPILoadBalanceTree& tree) const;
 
-        public:
-
-            /** INITIALIZATION PUBLIC METHODS **/
-
-            /**
-             * @brief Construct a new MPIMultiNode object.
-             * 
-             */
-            MPIMultiNode();
-
-            /**
-             * @brief Destroy the MPIMultiNode object.
-             * 
-             */
-            virtual ~MPIMultiNode();
+            /** MPIAutoAdjustment CALLED ROUTINES **/
 
             /**
              * @brief Performs a divide test, returning the number of overlapping cells resulting from the test. Called by the AutoAdjustment subsystem.
@@ -651,6 +644,29 @@ namespace Engine
              * @param newNumberOfProcesses const int&
              */
             void resetPartitioning(const int& newNumberOfProcesses);
+
+            /**
+             * @brief Sends the agents in agentsByTypeAndNode to their corresponding nodes.
+             * 
+             * @param agentsByTypeAndNode const std::map<int, std::map<std::string, AgentsList>>&
+             */
+            void sendAgentsInMap(const std::map<int, std::map<std::string, AgentsList>>& agentsByTypeAndNode);
+
+        public:
+
+            /** INITIALIZATION PUBLIC METHODS **/
+
+            /**
+             * @brief Construct a new MPIMultiNode object.
+             * 
+             */
+            MPIMultiNode();
+
+            /**
+             * @brief Destroy the MPIMultiNode object.
+             * 
+             */
+            virtual ~MPIMultiNode();
 
             /** INITIALIZATION PUBLIC METHODS (INHERIT) **/
 

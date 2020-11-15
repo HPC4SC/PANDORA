@@ -195,7 +195,7 @@ namespace Engine
 
         std::stringstream logName;
         logName << "simulation_" << getId( );
-        log_EDEBUG( logName.str( ), "agent: " << agent << " added at time step: " << getCurrentTimeStep( ) );
+        log_EDEBUG( logName.str( ), "agent: " << agent << " added at time step: " << getCurrentStep( ) );
     }
 
     void World::sortAgentsListAlphabetically()
@@ -289,6 +289,11 @@ std::cout << CreateStringStream("[Process #" << getId() << "] serializing \n").s
     int World::getCurrentStep( ) const
     {
         return _step;
+    }
+
+    void setCurrentStep(const int& currentStep)
+    {
+        _step = currentStep;
     }
 
     void World::stepEnvironment( )

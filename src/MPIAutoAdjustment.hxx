@@ -25,6 +25,7 @@
 #include <MPIMultiNode.hxx>
 
 #include <mpi.h>
+#include <set>
 
 namespace Engine
 {
@@ -194,28 +195,36 @@ namespace Engine
              * 
              * @param spaces MPIMultiNode::MPINodesMap&
              */
-            void saveCurrentSpaces(MPIMultiNode::MPINodesMap& spaces) const;
+            void saveCurrentSpaces(MPINodesMap & spaces) const;
 
             /**
              * @brief Sends all the just computed partitioning spaces to all nodes in order to let know them whether they need to send to other nodes or discard their in-local-memory agents and rasters. It lets the new partitioning in 'newSpaces'.
              * 
              * @param newSpaces MPIMultiNode::MPINodesMap&
              */
-            void sendAllNewSpacesToAllNodes(MPIMultiNode::MPINodesMap& newSpaces) const;
+            void sendAllNewSpacesToAllNodes(MPINodesMap& newSpaces) const;
 
             /**
              * @brief Receives the new spaces resulting from the last partitining performed by the master node. It lets the new partitioning in 'newSpaces'.
              * 
              * @param newSpaces MPIMultiNode::MPINodesMap&
              */
-            void receiveNewSpacesFromMasterNode(MPIMultiNode::MPINodesMap& newSpaces) const;
+            void receiveNewSpacesFromMasterNode(MPINodesMap& newSpaces) const;
 
             /**
              * @brief Fills up the 'newSpaces' data structure with the overlap areas.
              * 
              * @param newSpaces const MPIMultiNode::MPINodesMap&
              */
-            void fillNewSpacesStructures(MPIMultiNode::MPINodesMap& newSpaces) const;
+            void fillNewSpacesStructures(MPINodesMap& newSpaces) const;
+
+            /**
+             * @brief Initializes the map 'agentsByTypeAndNode' considering the 'totalNumberOfSendingNodes'.
+             * 
+             * @param agentsByTypeAndNode std::map<int, std::map<std::string, AgentsList>>&
+             * @param totalNumberOfSendingNodes const int&
+             */
+            void initializeAgentsToSendMap(std::map<int, std::map<std::string, AgentsList>>& agentsByTypeAndNode, const int& totalNumberOfSendingNodes) const;
 
             /**
              * @brief Gets the node IDs of the spaces physically containing the agent.
@@ -224,7 +233,7 @@ namespace Engine
              * @param spaces 
              * @return std::set<int> 
              */
-            std::set<int> getNodesContainingAgent(const Agent& agent, const MPIMultiNode::MPINodesMap& spaces) const;
+            std::set<int> getNodesContainingAgent(const Agent& agent, const MPINodesMap& spaces) const;
 
             /**
              * @brief Sends the agents in agentsToSendByNode->second to their corresponding nodes agentsToSendByNode->first.
@@ -234,19 +243,48 @@ namespace Engine
             void sendAgentsInMap(const std::map<int, AgentsList>& agentsToSendByNode);
 
             /**
-             * @brief Sends the agents that the calling node contains to the rest of the nodes if necessary (according to the new scheme 'newSpaces').
+             * @brief Sends those agents that the calling node contains to the rest of the nodes if necessary (according to the new scheme 'newSpaces').
              * 
              * @param newSpaces const MPIMultiNode::MPINodesMap&
              * @param oldSpaces const MPIMultiNode::MPINodesMap&
              */
-            void sendAgentsToOtherNodesIfNecessary(const MPIMultiNode::MPINodesMap& newSpaces, const MPIMultiNode::MPINodesMap& oldSpaces);
+            void sendAgentsToOtherNodesIfNecessary(const MPINodesMap& newSpaces, const MPINodesMap& oldSpaces);
 
             /**
-             * @brief Receves the agents that the rest of the nodes have sent to the calling node (according to the new scheme of 'newSpaces').
+             * @brief Receives the agents that the rest of the nodes have sent to the calling node.
+             * 
+             * @param numberOfNodesToReceiveFrom const int&
+             */
+            void receiveAgentsFromOtherNodesIfNecessary(const int& numberOfNodesToReceiveFrom);
+
+            /**
+             * @brief Sends those raster cells that the calling node contains to the rest of the nodes if necessary (according to the new scheme 'newSpaces').
+             * 
+             * @param newSpaces const MPIMultiNode::MPINodesMap&
+             * @param oldSpaces const MPIMultiNode::MPINodesMap&
+             */
+            void sendRastersToOtherNodesIfNecessary(const MPIMultiNode::MPINodesMap& newSpaces, const MPIMultiNode::MPINodesMap& oldSpaces);
+
+            /**
+             * @brief Receives the rasters cells that the rest of the nodes have sent to the calling node.
+             * 
+             * @param numberOfNodesToReceiveFrom const int&
+             */
+            void receiveRastersFromOtherNodesIfNecessary(const int& numberOfNodesToReceiveFrom);
+
+            /**
+             * @brief Removes the non-belonging agents considering the current space of the calling node.
              * 
              * @param newSpaces const MPIMultiNode::MPINodesMap&
              */
-            void receiveAgentsFromOtherNodesIfNecessary(const MPIMultiNode::MPINodesMap& newSpaces);
+            void removeNonBelongingAgents(const MPIMultiNode::MPINodesMap& newSpaces);
+
+            /**
+             * @brief Updates the current step (_world::_step) for the calling node.
+             * 
+             * @param newNumberOfProcesses const int&
+             */
+            void updateCurrentStep(const int& newNumberOfProcesses);
 
             /**
              * @brief Updates the partitioning data structures for the calling node.
@@ -256,10 +294,11 @@ namespace Engine
             void updateOwnStructures(const MPIMultiNode::MPINodesMap& newSpaces);
 
             /**
-             * @brief Removes the non belonging agents considering the current space of the calling node.
+             * @brief Puts the non-needed workers to sleep.
              * 
+             * @param newNumberOfProcesses const int&
              */
-            void removeNonBelongingAgents();
+            void putNonNeededWorkersToSleep(const int& newNumberOfProcesses);
 
             /**
              * @brief Rebalances the current space with 'numberOfProcesses'.

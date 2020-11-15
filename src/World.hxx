@@ -270,7 +270,14 @@ public:
      * @return current step. 
      */
     int getCurrentStep( ) const;
-   
+
+    /**
+     * @brief Sets the _step member variable.
+     * 
+     * @param currentStep const int&
+     */
+    void setCurrentStep(const int& currentStep);
+
     /**
      * @brief This method can be redefined by the children in order to modify the execution of each step on a given resource field.
      * 
@@ -492,16 +499,6 @@ public:
     const Config & getConfig( ) const 
     {
         return *_config;
-    }
-
-    /**
-     * @brief Get the value of the _step attribute.
-     * 
-     * @return int 
-     */
-    int getCurrentTimeStep( ) const 
-    { 
-        return _step;
     }
 
     /**
