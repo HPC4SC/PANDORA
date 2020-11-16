@@ -61,7 +61,7 @@ def writeGetSizeOfPackage(f, listAgents):
         f.write('\t{\n')
         f.write('\t\t' + agent + 'Package* ' + agent.lower() + 'Package = new ' + agent + 'Package;\n')
         f.write('\t\tint resultingSize = sizeof(*' + agent.lower() + 'Package);\n')
-        f.write('\t\tdelete ' + agent + 'Package;\n')
+        f.write('\t\tdelete ' + agent.lower() + 'Package;\n')
         f.write('\t\treturn resultingSize;\n')
         f.write('\t}\n')
     f.write('\n')

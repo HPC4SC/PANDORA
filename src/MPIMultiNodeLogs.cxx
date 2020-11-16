@@ -64,10 +64,10 @@ namespace Engine {
         ss << "Number of working nodes: " << _schedulerInstance->_numTasks << std::endl;
         ss << "Overlap size: " << _schedulerInstance->_overlapSize << std::endl << std::endl;
         ss << "PARTITIONS BEFORE MPI:" << std::endl;
-        for (std::map<int, MPIMultiNode::MPINode>::const_iterator it = _schedulerInstance->_mpiNodesMapToSend.begin(); it != _schedulerInstance->_mpiNodesMapToSend.end(); ++it) 
+        for (MPINodesMap::const_iterator it = _schedulerInstance->_mpiNodesMapToSend.begin(); it != _schedulerInstance->_mpiNodesMapToSend.end(); ++it) 
         {
             ss << "Partition: " << it->first << "\tCoordinates: " << it->second.ownedArea << std::endl;
-            for (std::map<int, MPIMultiNode::MPINode*>::const_iterator it2 = it->second.neighbours.begin(); it2 != it->second.neighbours.end(); ++it2)
+            for (std::map<int, MPINode*>::const_iterator it2 = it->second.neighbours.begin(); it2 != it->second.neighbours.end(); ++it2)
             {
                 ss << "\tNeighbour " << it2->first << ": " << it2->second->ownedArea << std::endl;
             }
@@ -85,7 +85,7 @@ namespace Engine {
         ss << "ownedAreaWithoutInnerOverlap: " << _schedulerInstance->_nodeSpace.ownedAreaWithoutInnerOverlap << std::endl;
         ss << "ownedArea: " << _schedulerInstance->_nodeSpace.ownedArea << std::endl;
         ss << "ownedAreaWithOuterOverlaps: " << _schedulerInstance->_nodeSpace.ownedAreaWithOuterOverlaps << std::endl;
-        for (std::map<int, MPIMultiNode::MPINode*>::const_iterator it = _schedulerInstance->_nodeSpace.neighbours.begin(); it != _schedulerInstance->_nodeSpace.neighbours.end(); ++it)
+        for (std::map<int, MPINode*>::const_iterator it = _schedulerInstance->_nodeSpace.neighbours.begin(); it != _schedulerInstance->_nodeSpace.neighbours.end(); ++it)
         {
             ss << "NeighbourID: " << it->first << "\tCoordinates: " << it->second->ownedArea << std::endl;
         }

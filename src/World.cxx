@@ -252,11 +252,11 @@ namespace Engine
 
     void World::run( )
     {
-        if (_scheduler->hasBeenTaggedAsFinished()) return;
+        if (_scheduler->hasBeenTaggedAsJustFinished()) return;
 
+        std::stringstream logName;
         if (not _scheduler->hasBeenTaggedAsJustAwaken())
         {
-            std::stringstream logName;
             logName << "simulation_" << getId( );
             log_INFO( logName.str( ), getWallTime( ) << " executing " << _config->getNumSteps( ) << " steps..." );
         }
@@ -291,7 +291,7 @@ std::cout << CreateStringStream("[Process #" << getId() << "] serializing \n").s
         return _step;
     }
 
-    void setCurrentStep(const int& currentStep)
+    void World::setCurrentStep(const int& currentStep)
     {
         _step = currentStep;
     }

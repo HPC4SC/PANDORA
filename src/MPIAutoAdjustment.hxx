@@ -66,7 +66,7 @@ namespace Engine
              * @param tag const int&
              * @param mpiComm const MPI_Comm&
              */
-            void sendDataRequestToNode(void* data, const int& numberOfElements, const MPI_Datatype& mpiDatatype, const int& destinationNode, const int& tag, const MPI_Comm& mpiComm);
+            void sendDataRequestToNode(const void* data, const int& numberOfElements, const MPI_Datatype& mpiDatatype, const int& destinationNode, const int& tag, const MPI_Comm& mpiComm);
 
             /**
              * @brief Sends a 'signal' to all the working nodes with the tag 'messageTag'.
@@ -174,14 +174,14 @@ namespace Engine
              * 
              * @param newNumberOfProcesses const int&
              */
-            void sendNumberOfProcessesToWorkingNodes(const int& newNumberOfProcesses) const;
+            void sendNumberOfProcessesToWorkingNodes(const int& newNumberOfProcesses);
 
             /**
              * @brief Receives the new number of processes 'newNumberOfProcesses' from the master node.
              * 
-             * @param newNumberOfProcesses const int&
+             * @param newNumberOfProcesses int&
              */
-            void receiveNumberOfProcessesFromMasterNode(const int& newNumberOfProcesses);
+            void receiveNumberOfProcessesFromMasterNode(int& newNumberOfProcesses);
 
             /**
              * @brief Awakes from sleep all the necessary nodes according the the 'numberOfRequestedProcesses', according to the incoming rebalance.
@@ -191,30 +191,30 @@ namespace Engine
             void awakeNodesIfNecessary(const int& numberOfRequestedProcesses); 
 
             /**
-             * @brief Saves the current partitioning status at 'oldSpaces'.
+             * @brief Saves the current partitioning status at 'spaces'.
              * 
-             * @param spaces MPIMultiNode::MPINodesMap&
+             * @param spaces MPINodesMap&
              */
-            void saveCurrentSpaces(MPINodesMap & spaces) const;
+            void saveCurrentSpaces(MPINodesMap& spaces);
 
             /**
              * @brief Sends all the just computed partitioning spaces to all nodes in order to let know them whether they need to send to other nodes or discard their in-local-memory agents and rasters. It lets the new partitioning in 'newSpaces'.
              * 
-             * @param newSpaces MPIMultiNode::MPINodesMap&
+             * @param newSpaces MPINodesMap&
              */
-            void sendAllNewSpacesToAllNodes(MPINodesMap& newSpaces) const;
+            void sendAllNewSpacesToAllNodes(MPINodesMap& newSpaces);
 
             /**
              * @brief Receives the new spaces resulting from the last partitining performed by the master node. It lets the new partitioning in 'newSpaces'.
              * 
-             * @param newSpaces MPIMultiNode::MPINodesMap&
+             * @param newSpaces MPINodesMap&
              */
             void receiveNewSpacesFromMasterNode(MPINodesMap& newSpaces) const;
 
             /**
              * @brief Fills up the 'newSpaces' data structure with the overlap areas.
              * 
-             * @param newSpaces const MPIMultiNode::MPINodesMap&
+             * @param newSpaces const MPINodesMap&
              */
             void fillNewSpacesStructures(MPINodesMap& newSpaces) const;
 
@@ -236,17 +236,17 @@ namespace Engine
             std::set<int> getNodesContainingAgent(const Agent& agent, const MPINodesMap& spaces) const;
 
             /**
-             * @brief Sends the agents in agentsToSendByNode->second to their corresponding nodes agentsToSendByNode->first.
+             * @brief Sends the agents in agentsByTypeAndNode->second->second to their corresponding nodes agentsByTypeAndNode->first.
              * 
-             * @param agentsToSendByNode const std::map<int, AgentsList>&
+             * @param agentsByTypeAndNode const std::map<int, std::map<std::string, AgentsList>>&
              */
-            void sendAgentsInMap(const std::map<int, AgentsList>& agentsToSendByNode);
+            void sendAgentsInMap(const std::map<int, std::map<std::string, AgentsList>>& agentsByTypeAndNode);
 
             /**
              * @brief Sends those agents that the calling node contains to the rest of the nodes if necessary (according to the new scheme 'newSpaces').
              * 
-             * @param newSpaces const MPIMultiNode::MPINodesMap&
-             * @param oldSpaces const MPIMultiNode::MPINodesMap&
+             * @param newSpaces const MPINodesMap&
+             * @param oldSpaces const MPINodesMap&
              */
             void sendAgentsToOtherNodesIfNecessary(const MPINodesMap& newSpaces, const MPINodesMap& oldSpaces);
 
@@ -260,10 +260,10 @@ namespace Engine
             /**
              * @brief Sends those raster cells that the calling node contains to the rest of the nodes if necessary (according to the new scheme 'newSpaces').
              * 
-             * @param newSpaces const MPIMultiNode::MPINodesMap&
-             * @param oldSpaces const MPIMultiNode::MPINodesMap&
+             * @param newSpaces const MPINodesMap&
+             * @param oldSpaces const MPINodesMap&
              */
-            void sendRastersToOtherNodesIfNecessary(const MPIMultiNode::MPINodesMap& newSpaces, const MPIMultiNode::MPINodesMap& oldSpaces);
+            void sendRastersToOtherNodesIfNecessary(const MPINodesMap& newSpaces, const MPINodesMap& oldSpaces);
 
             /**
              * @brief Receives the rasters cells that the rest of the nodes have sent to the calling node.
@@ -275,9 +275,9 @@ namespace Engine
             /**
              * @brief Removes the non-belonging agents considering the current space of the calling node.
              * 
-             * @param newSpaces const MPIMultiNode::MPINodesMap&
+             * @param newSpaces const MPINodesMap&
              */
-            void removeNonBelongingAgents(const MPIMultiNode::MPINodesMap& newSpaces);
+            void removeNonBelongingAgents(const MPINodesMap& newSpaces);
 
             /**
              * @brief Updates the current step (_world::_step) for the calling node.
@@ -289,9 +289,9 @@ namespace Engine
             /**
              * @brief Updates the partitioning data structures for the calling node.
              * 
-             * @param newSpaces const MPIMultiNode::MPINodesMap&
+             * @param newSpaces const MPINodesMap&
              */
-            void updateOwnStructures(const MPIMultiNode::MPINodesMap& newSpaces);
+            void updateOwnStructures(const MPINodesMap& newSpaces);
 
             /**
              * @brief Puts the non-needed workers to sleep.

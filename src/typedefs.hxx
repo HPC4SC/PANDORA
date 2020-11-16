@@ -5,9 +5,12 @@
 #include <list>
 #include <vector>
 #include <memory>
+#include <map>
+#include <Rectangle.hxx>
 
 namespace Engine
 {
+    /** Agent typedefs **/
 
     class Agent;
 
@@ -16,6 +19,22 @@ namespace Engine
     typedef std::vector< AgentPtr > AgentsVector;
     typedef std::map<std::string, AgentPtr> AgentsMap;
     typedef std::vector<std::vector<AgentsMap>> AgentsMatrix;
+
+    /** Scheduler typedefs **/
+    struct MPINode {
+        Rectangle<int> ownedAreaWithoutInnerOverlap;                //! Area of this node without inner (this node)   overlaps. // Filled up to depth 1 (from neighbours->second).
+        Rectangle<int> ownedArea;                                   //! Area of this node with    inner (this node)   overlaps. // Filled up to depth 1 (from neighbours->second).
+        Rectangle<int> ownedAreaWithOuterOverlaps;                  //! Area of this node with    outer (other nodes) overlaps. // Filled up to depth 1 (from neighbours->second).
+        std::map<int, MPINode*> neighbours;                         //! Map<neighbouringNodeId, neighbouringNodeSpaces> containing the neighbours information for communication. // Filled up to depth 0 (from neighbours->second).
+
+        std::map<int, Rectangle<int>> innerSubOverlaps;             //! Sub-overlaps (Sub areas of the inner overlap). Should be 8 in total for mode9 and 4 for mode4. Map<subOverlapID, subOverlapArea>, where subOverlapID = Engine::SubOverlapType enum. // Filled up to depth 0 (from neighbours->second).
+        std::map<int, std::list<int>> innerSubOverlapsNeighbours;   //! Sub-overlaps neighbouring nodes. Map<subOverlapID, list<nodeID>>. Used for efficient agents and rasters communication. // Filled up to depth 0 (from neighbours->second).
+    };
+
+    typedef std::map<int, MPINode> MPINodesMap;
+
+    typedef std::map<Point2D<int>, int> MapOfPositionsAndValues;
+    typedef std::map<int, MapOfPositionsAndValues> MapOfValuesByRaster;
 
     //! List of Mpi messages sent by the scheduler
     enum MpiMessageType
@@ -71,19 +90,17 @@ namespace Engine
         eTypeOfEventAfterWakeUp = 76,
         eCurrentStep = 77,
 
-        eMessage_Die = 80,
-        eMessage_SendAgentPhasesTotalTime_true = 81,
-        eMessage_SendAgentPhasesTotalTime_false = 82,
-        eMessage_PrepareToRepartition_true = 83,
-        eMessage_PrepareToRepartition_false = 84,
-        eMessage_AwakeToRepartition = 85,
-
-        eAgentPhasesTotalTime = 90
+        eAgentPhasesTotalTime = 80
     };
 
     enum TypeOfEventAfterWakeUpMPI
     {
-        
+        eMessage_Die = 100,
+        eMessage_SendAgentPhasesTotalTime_true = 101,
+        eMessage_SendAgentPhasesTotalTime_false = 102,
+        eMessage_PrepareToRepartition_true = 103,
+        eMessage_PrepareToRepartition_false = 104,
+        eMessage_AwakeToRepartition = 105
     };
 
     enum ExecutingPhaseType
