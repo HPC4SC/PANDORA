@@ -8,6 +8,7 @@ EatAction::EatAction() {}
 EatAction::~EatAction() {}
 
 void EatAction::execute(Engine::Agent & agent) {
+    std::cout << agent.getId() << " executing EatAction" << std::endl;
     Customer& customer = (Customer&)agent;
     Engine::World* world = agent.getWorld();
      Engine::Point2D<int> nextMemoryPosition = customer.getTargetPath().front();

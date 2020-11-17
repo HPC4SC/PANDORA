@@ -6,6 +6,8 @@
 #include <TrainConfig.hxx>
 #include <Gym.hxx>
 #include <GymConfig.hxx>
+#include <Restaurant.hxx>
+#include <RestaurantConfig.hxx>
 
 #include <Exception.hxx>
 #include <Config.hxx>
@@ -22,10 +24,10 @@ int main(int argc, char* argv[])
 			throw Engine::Exception("USAGE: contact_tracing [#cores] [config file]");
 		}
 	
-		std::string fileName("configGym.xml");
+		std::string fileName("configRestaurant.xml");
 		if(argc!=2) // cambiar para mpi
 		{
-			fileName = "configGym.xml";
+			fileName = "configRestaurant.xml";
 		}
 		if (fileName == "configSupermarket.xml") {
 			Examples::Supermarket super(new Examples::SupermarketConfig(fileName), super.useOpenMPIMultiNode());
@@ -50,6 +52,12 @@ int main(int argc, char* argv[])
 			gym.initialize(argc, argv);
 			gym.setParallelism(true, false);
 			gym.run();
+		}
+		else if (fileName == "configRestaurant.xml") {
+			Examples::Restaurant restaurant(new Examples::RestaurantConfig(fileName), restaurant.useOpenMPIMultiNode());
+			restaurant.initialize(argc, argv);
+			restaurant.setParallelism(true, false);
+			restaurant.run();
 		}
 		else throw Engine::Exception("Not a known scenario");
 	}

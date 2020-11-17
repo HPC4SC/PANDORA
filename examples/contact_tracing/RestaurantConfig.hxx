@@ -28,17 +28,6 @@ private:
     int _phoneThreshold1;
     int _phoneThreshold2;
 
-    int _minWarmup;
-    int _maxWarmup;
-    int _minLose;
-    int _maxLose;
-    int _definition;
-    int _volume;
-    int _minCooldown;
-    int _maxCooldown;
-    int _minDirected;
-    int _maxDirected;
-
 public:
 
     RestaurantConfig(const std::string& xmlFile);

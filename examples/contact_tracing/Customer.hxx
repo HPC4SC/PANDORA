@@ -21,10 +21,11 @@ private:
 	int _entryTime; //MpiBasicAttribute
 	Restaurant* _restaurant;
     int _eatTime; //MpiBasicAttribute
+	int _table;
 
 public:
     Customer(const std::string& id, const double& infectiousness, const int& sick, const int& entryTime,const int& phoneT1, const int& phoneT2, 
-        const bool& phoneApp, const int& signalRadius, const int& encounterRadius, Restaurant* restaurant, const int& eatTime);
+        const bool& phoneApp, const int& signalRadius, const int& encounterRadius, Restaurant* restaurant, const int& eatTime, const int& table);
 
     ~Customer();
 
@@ -37,8 +38,6 @@ public:
 	void popTargetPath();
 
 	void calculatePath();
-
-    void eat();
 
 };
 

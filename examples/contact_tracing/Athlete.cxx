@@ -17,7 +17,6 @@ Athlete::~Athlete() {}
 void Athlete::selectActions() {
     _actions.push_back(new InfectActionOutside);
     if (_exerciceList.empty()) {
-        std::cout << getId() << " going out" << std::endl;
         if (_gym->isNotDoor(_targetPosition)) {
             _targetPosition = _gym->getDoor(getPosition());
             int count = 0;
@@ -33,7 +32,6 @@ void Athlete::selectActions() {
         else _actions.push_back(new NextPositionAction);
     }
     else {
-        std::cout << getId() << " next exercice" << std::endl;
         if (_exerciceTime == 0) {
             _targetPosition = _gym->getTargetFromZone(_exerciceList.front());
             while (not _gym->checkPosition(_targetPosition)) _targetPosition = _gym->getTargetFromZone(_exerciceList.front());

@@ -236,7 +236,6 @@ std::list<int> Gym::createRoutine(int& routineType) {
 
 std::list<int> Gym::createFreeRoutine(int& routineType) {
     std::list<int> routine;
-    std::cout << "free routine" << std::endl;
     double warmUpDraw = _uniZeroOne.draw();
     if (warmUpDraw <= 0.3) routine.push_back(103);
     else if (warmUpDraw > 0.3 and warmUpDraw <= 0.6) routine.push_back(232);
