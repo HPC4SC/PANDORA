@@ -19,17 +19,29 @@ void Customer::selectActions() {
             _targetPosition = _restaurant->getDoor();
             while (not _restaurant->checkPosition(_targetPosition)) _targetPosition = _restaurant->getDoor();
             calculatePath();
+            _actions.push_back(new EatAction);
         }
-        if (getPosition() == _targetPosition) _actions.push_back(new LeaveAction);
+        if (getPosition() == _targetPosition) {
+            _restaurant->setTableFree(_table);
+            _actions.push_back(new LeaveAction);
+        }
         else _actions.push_back(new EatAction);
     }
     else {
-        if (getPosition() == _targetPosition) _eatTime--;
-        else if (_targetPath.empty()) {
-            std::cout << "trying to get target from table: " << _table << std::endl;
+        if (_restaurant->getPositionValue(getPosition()) == _restaurant->getPositionValue(_targetPosition)) _eatTime--;
+        else if (not _restaurant->checkPosition(_targetPosition)) {
+            std::cout << getId() << " going to recalculate path, target: " << _targetPosition << std::endl;
             _targetPosition = _restaurant->getTargetFromTable(_table);
             while (not _restaurant->checkPosition(_targetPosition)) _targetPosition = _restaurant->getTargetFromTable(_table);
             calculatePath();
+            _actions.push_back(new EatAction);
+        }
+        else if (_targetPath.empty()) {
+            std::cout << getId() << " going to calculate path, target: " << _table << std::endl;
+            _targetPosition = _restaurant->getTargetFromTable(_table);
+            while (not _restaurant->checkPosition(_targetPosition)) _targetPosition = _restaurant->getTargetFromTable(_table);
+            calculatePath();
+            _actions.push_back(new EatAction);
         }
         else _actions.push_back(new EatAction);
     }

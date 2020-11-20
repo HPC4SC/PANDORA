@@ -25,41 +25,64 @@ void Restaurant::setupZones() {
     for (int i = 0; i <= getBoundaries().right(); ++i) {
         for (int j = 0; j <= getBoundaries().bottom(); ++j) {
             Engine::Point2D<int> candidate = Engine::Point2D<int>(i,j);
-            if (std::find(_tables.begin(),_tables.end(),getStaticRaster("layout").getValue(candidate)) == _tables.end() and getStaticRaster("layout").getValue(candidate) != 133 and getStaticRaster("layout").getValue(candidate) != 0) {
+            if (std::find(_tables.begin(),_tables.end(),getStaticRaster("layout").getValue(candidate)) == _tables.end() and getStaticRaster("layout").getValue(candidate) != 113 and getStaticRaster("layout").getValue(candidate) != 0 and getStaticRaster("layout").getValue(candidate) != 255) {
                 _tables.push_back(getStaticRaster("layout").getValue(candidate));
                 _tablePositions.insert(std::pair<int,std::vector<Engine::Point2D<int>>>(getStaticRaster("layout").getValue(candidate),{candidate}));
             }
             else if (std::find(_tables.begin(),_tables.end(),getStaticRaster("layout").getValue(candidate)) != _tables.end()) 
                 _tablePositions[getStaticRaster("layout").getValue(candidate)].push_back(candidate);
+            else if (getStaticRaster("layout").getValue(candidate) == 113) _doors.push_back(candidate);
         }
     }
     for (unsigned int i = 0; i < _tables.size(); i++) _tableOccupied.insert(std::pair<int,bool>(_tables[i],false));
 }
 
-void Restaurant::createAgents() {
-    if (_step%_restaurantConfig._agentRate == 0 and _agentsByID.size() < 7) createCostumer();
+void Restaurant::createAgents() { // check avaliable doors before creat9ion, not door.size()
+    int avaliableDoors = getFreeDoors();
+    if (_step%_restaurantConfig._agentRate == 0 and _remainingAgentsToCreate == 0 and _groupsIn < _tables.size()) {
+        _currentTable = getFreeTable();
+        _currentEatTime = _uniEatTime.draw();
+        _groupsIn++;
+        int groupSize = _uniGroupSize.draw();
+        if (groupSize > avaliableDoors) {
+            _remainingAgentsToCreate = groupSize - avaliableDoors;
+            for (int i = 0; i < avaliableDoors; i++) createCustomer(_currentTable,_currentEatTime);
+        }
+        else {
+            for (int i = 0; i < groupSize; i++) createCustomer(_currentTable,_currentEatTime);
+            _tableOccupied[_currentTable] = true;
+        }
+    }
+    else if (_remainingAgentsToCreate > 0 and _groupsIn < _tables.size()) {
+        if (_remainingAgentsToCreate > avaliableDoors) {
+            _remainingAgentsToCreate = _remainingAgentsToCreate - avaliableDoors;
+            for (int i = 0; i < avaliableDoors; i++) createCustomer(_currentTable,_currentEatTime);
+        }
+        else {
+            for (int i = 0; i < _remainingAgentsToCreate; i++) createCustomer(_currentTable,_currentEatTime);
+            _remainingAgentsToCreate = 0;
+            _tableOccupied[_currentTable] = true;
+        }
+    }
 }
 
-void Restaurant::createCostumer() {
+void Restaurant::createCustomer(const int& table, const int& eatTime) {
     std::ostringstream oss;
     oss << "Customer_" << _customerId;
     _customerId++;
     bool sick = false;
     if (_uniZeroOne.draw() < _restaurantConfig._sickRate) sick = true;
     bool hasApp = _uniZeroOne.draw() < _restaurantConfig._applicationRate;
-    int table = getFreeTable();
-    if (table != -1) {
-        _tableOccupied[table] = true;
-        Customer* customer = new Customer(oss.str(),_restaurantConfig._infectiousness,sick,_step,_restaurantConfig._phoneThreshold1,_restaurantConfig._phoneThreshold2, 
-            hasApp,_restaurantConfig._signalRadius,_restaurantConfig._encounterRadius,this,_uniEatTime.draw(),table);
-        addAgent(customer);
-        int draw = _uni113.draw();
-        while (not this->checkPosition(_tablePositions[113][draw])){
-            draw = _uni113.draw();
-        }
-        Engine::Point2D<int> spawn = _tablePositions[113][draw];
-        customer->setPosition(spawn);
+    Customer* customer = new Customer(oss.str(),_restaurantConfig._infectiousness,sick,_step,_restaurantConfig._phoneThreshold1,_restaurantConfig._phoneThreshold2, 
+            hasApp,_restaurantConfig._signalRadius,_restaurantConfig._encounterRadius,this,eatTime,table);
+    addAgent(customer);
+    int draw = _uni113.draw();
+    while (not this->checkPosition(_doors[draw])) {
+        draw = _uni113.draw();
+        std::cout << "whyle why?" << std::endl;
     }
+    Engine::Point2D<int> spawn = _doors[draw];
+    customer->setPosition(spawn);
 }
 
 void Restaurant::step() {
@@ -68,13 +91,9 @@ void Restaurant::step() {
         _scheduler->serializeRasters(_step); 
         _scheduler->serializeAgents(_step);
     }
-    std::cout << "Create Agents" << std::endl;
     createAgents();
-    std::cout << "Update Env" << std::endl;
     _scheduler->updateEnvironmentState();
-    std::cout << "Execute Agents" << std::endl;
     _scheduler->executeAgents();
-    std::cout << "Remove Agents" << std::endl;
     _scheduler->removeAgents();
 }
 
@@ -130,7 +149,6 @@ std::list<Engine::Point2D<int>> Restaurant::reconstructPath(const Engine::Point2
 }
 
 Engine::Point2D<int> Restaurant::getTargetFromTable(const int& table) {
-    std::cout << "getTargetFromTable" << std::endl;
     Engine::Point2D<int> target = Engine::Point2D<int>(-1,-1);
     switch (table) {
         case 1:
@@ -214,7 +232,7 @@ void Restaurant::createDistributions() {
     _uni79 = Engine::RNGUniformInt(_seedRun,0,_tablePositions[79].size() - 1);
     _uni102 = Engine::RNGUniformInt(_seedRun,0,_tablePositions[102].size() - 1);
     _uni103 = Engine::RNGUniformInt(_seedRun,0,_tablePositions[103].size() - 1);
-    _uni113 = Engine::RNGUniformInt(_seedRun,0,_tablePositions[113].size() - 1);
+    _uni113 = Engine::RNGUniformInt(_seedRun,0,_doors.size() - 1);
     _uni196 = Engine::RNGUniformInt(_seedRun,0,_tablePositions[196].size() - 1);
     _uni210 = Engine::RNGUniformInt(_seedRun,0,_tablePositions[210].size() - 1);
     _uni213 = Engine::RNGUniformInt(_seedRun,0,_tablePositions[213].size() - 1);
@@ -226,24 +244,40 @@ void Restaurant::createDistributions() {
 }
 
 Engine::Point2D<int> Restaurant::getDoor() {
-    return _tablePositions[113][_uni113.draw()];
+    return _doors[_uni113.draw()];
 }
 
-int Restaurant::getFreeTable() {
+int Restaurant::getFreeTable() { // this does not check all the tables
     int table = _tables[_uniTable.draw()];
     bool occupied = _tableOccupied[table];
-    unsigned int count = 0;
-    while (occupied and count < _tables.size()) {
+    std::vector<int> checked;
+    while (occupied and checked.size() < _tables.size()) {
         table = _tables[_uniTable.draw()];
         occupied = _tableOccupied[table];
-        count++;
+        if (std::find(checked.begin(),checked.end(),table) == checked.end()) checked.push_back(table);
     }
-    if (count == _tables.size()) table = -1;
     return table;
 }
 
 bool Restaurant::targetIsDoor(const Engine::Point2D<int>& target) {
     return getStaticRaster("layout").getValue(target) ==  113; 
-} 
+}
+
+int Restaurant::getPositionValue(const Engine::Point2D<int>& position) {
+    return getStaticRaster("layout").getValue(position);
+}
+
+void Restaurant::setTableFree(const int& table) {
+    if (_tableOccupied[table]) _groupsIn--;
+    _tableOccupied[table] = false;
+}
+
+int Restaurant::getFreeDoors() {
+    int result = 0;
+    for (unsigned int i = 0; i <_doors.size(); i++) {
+        if (checkPosition(_doors[i])) result++;
+    }
+    return result;
+}
 
 }

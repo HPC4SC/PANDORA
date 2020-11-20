@@ -12,6 +12,8 @@ namespace Examples
         _minEatTime = getParamInt("Customer","minEatTime");
         _maxEatTime = getParamInt("Customer","maxEatTime");
         _agentRate = getParamInt("Customer","agentRate");
+        _minGroupSize = getParamInt("Customer","minGroupSize");
+        _maxGroupSize = getParamInt("Customer","maxGroupSize");
 
         _infectiousness = getParamFloat("Epidemiology","infectiousness");
         _infectoinRadius = getParamInt("Epidemiology","infectoinRadius");

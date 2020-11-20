@@ -17,6 +17,8 @@ private:
     int _minEatTime;
     int _maxEatTime;
     int _agentRate;
+    int _minGroupSize;
+    int _maxGroupSize;
 
     float _infectiousness;
     int _infectoinRadius;

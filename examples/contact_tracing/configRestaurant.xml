@@ -5,10 +5,10 @@
 	<logs printInConsole="false" printInstrumentation="false"/>
 	<mpi overlapSizeMPI="6" subpartitioningMode="4" initialPartitioning="false" rebalancingFreq="3" maximumPercOfUnbalance="50.0" loadThreshold="0.05"/>
 
-	<numSteps value="400" serializeResolution="1"/>
+	<numSteps value="8000" serializeResolution="1"/>
 	<size width="40" height="60"/>
 	<Raster mapRoute="./maps/restaurant_layout.bmp"/>
-	<Customer minEatTime="2400" maxEatTime="3600" agentRate="100"/>
+	<Customer minEatTime="1800" maxEatTime="3600" agentRate="100" minGroupSize="2" maxGroupSize="6"/>
     <Epidemiology infectiousness="0.00371" infectoinRadius="2" sickRate="0.3" encounterRadius="2"/>
 	<Phone signalRadius="6" applicationRate="1.0" phoneThreshold1="63" phoneThreshold2="74"/>
 </config>

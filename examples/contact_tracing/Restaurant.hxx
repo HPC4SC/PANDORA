@@ -21,10 +21,15 @@ private:
 
     int _seedRun = _restaurantConfig.getSeed();
     int _customerId = 0;
+    int _remainingAgentsToCreate = 0;
+    int _currentTable = -1;
+    int _groupsIn = 0;
+    int _currentEatTime;
     
     std::map<int,std::vector<Engine::Point2D<int>>> _tablePositions;
     std::map<int,bool> _tableOccupied;
     std::vector<int> _tables;
+    std::vector<Engine::Point2D<int>> _doors;
 
     Engine::RNGUniformInt _uni1;
     Engine::RNGUniformInt _uni7;
@@ -46,6 +51,7 @@ private:
     Engine::RNGUniformInt _uniTable;
     Engine::RNGUniformDouble _uniZeroOne = Engine::RNGUniformDouble(_seedRun,0.,1.);
     Engine::RNGUniformInt _uniEatTime = Engine::RNGUniformInt(_seedRun,_restaurantConfig._minEatTime,_restaurantConfig._maxEatTime);
+    Engine::RNGUniformInt _uniGroupSize = Engine::RNGUniformInt(_seedRun,_restaurantConfig._minGroupSize,_restaurantConfig._maxGroupSize);
 
 public:
     Restaurant(Engine::Config* config, Engine::Scheduler* scheduler = 0);
@@ -58,7 +64,7 @@ public:
 
     void createAgents();
 
-    void createCostumer();
+    void createCustomer(const int& table, const int& eatTime);
 
     void step();
 
@@ -79,6 +85,12 @@ public:
     int getFreeTable();
 
     bool targetIsDoor(const Engine::Point2D<int>& target);
+
+    int getPositionValue(const Engine::Point2D<int>& position);
+
+    void setTableFree(const int& table);
+
+    int getFreeDoors();
 
 };
 
