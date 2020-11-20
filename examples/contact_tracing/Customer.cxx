@@ -30,14 +30,12 @@ void Customer::selectActions() {
     else {
         if (_restaurant->getPositionValue(getPosition()) == _restaurant->getPositionValue(_targetPosition)) _eatTime--;
         else if (not _restaurant->checkPosition(_targetPosition)) {
-            std::cout << getId() << " going to recalculate path, target: " << _targetPosition << std::endl;
             _targetPosition = _restaurant->getTargetFromTable(_table);
             while (not _restaurant->checkPosition(_targetPosition)) _targetPosition = _restaurant->getTargetFromTable(_table);
             calculatePath();
             _actions.push_back(new EatAction);
         }
         else if (_targetPath.empty()) {
-            std::cout << getId() << " going to calculate path, target: " << _table << std::endl;
             _targetPosition = _restaurant->getTargetFromTable(_table);
             while (not _restaurant->checkPosition(_targetPosition)) _targetPosition = _restaurant->getTargetFromTable(_table);
             calculatePath();

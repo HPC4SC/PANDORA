@@ -77,10 +77,7 @@ void Restaurant::createCustomer(const int& table, const int& eatTime) {
             hasApp,_restaurantConfig._signalRadius,_restaurantConfig._encounterRadius,this,eatTime,table);
     addAgent(customer);
     int draw = _uni113.draw();
-    while (not this->checkPosition(_doors[draw])) {
-        draw = _uni113.draw();
-        std::cout << "whyle why?" << std::endl;
-    }
+    while (not this->checkPosition(_doors[draw])) draw = _uni113.draw();
     Engine::Point2D<int> spawn = _doors[draw];
     customer->setPosition(spawn);
 }

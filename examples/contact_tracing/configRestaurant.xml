@@ -5,7 +5,7 @@
 	<logs printInConsole="false" printInstrumentation="false"/>
 	<mpi overlapSizeMPI="6" subpartitioningMode="4" initialPartitioning="false" rebalancingFreq="3" maximumPercOfUnbalance="50.0" loadThreshold="0.05"/>
 
-	<numSteps value="8000" serializeResolution="1"/>
+	<numSteps value="1000" serializeResolution="1"/>
 	<size width="40" height="60"/>
 	<Raster mapRoute="./maps/restaurant_layout.bmp"/>
 	<Customer minEatTime="1800" maxEatTime="3600" agentRate="100" minGroupSize="2" maxGroupSize="6"/>
