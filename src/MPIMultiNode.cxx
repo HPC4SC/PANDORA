@@ -83,6 +83,8 @@ namespace Engine {
         _loadBalanceTree->setNumberOfPartitions(_numTasks);
         enableOnlyProcesses(_numTasks);
 
+        MPI_Barrier(MPI_COMM_WORLD);
+
         if (getId() == _masterNodeID) 
         {
             divideSpace();                                  printPartitionsBeforeMPI();
@@ -91,7 +93,10 @@ namespace Engine {
         else 
         {
             if (not distributeFromTheBeginning)
+            {
                 waitSleeping(_masterNodeID);
+std::cout << CreateStringStream("[processID: " << getId() << "] outside waitSleeping()\n").str();
+            }
             else
                 receiveInitialSpacesFromNode(_masterNodeID);    printOwnNodeStructureAfterMPI();
         }
@@ -186,13 +191,9 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
         MPI_Comm_group(MPI_COMM_WORLD, &worldGroup);
 
         MPI_Group_incl(worldGroup, _numberOfActiveProcesses, activeRanksArray, &activeGroup);
-
         MPI_Comm_create_group(MPI_COMM_WORLD, activeGroup, eCreateGroupActive, &_activeProcessesComm);
-
         MPI_Group_free(&worldGroup);
         MPI_Group_free(&activeGroup);
-
-        MPI_Barrier(MPI_COMM_WORLD);
 
         printActiveAndInactiveProcesses();
     }
@@ -243,30 +244,67 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
             {
                 int milisecondsToSleep = 10;
                 usleep(milisecondsToSleep * 1000);
-                MPI_Iprobe(masterNodeID, eProcessWakeUp, MPI_COMM_WORLD, &flag, MPI_STATUS_IGNORE);
+                MPI_Iprobe(masterNodeID, eTypeOfEventAfterWakeUp, MPI_COMM_WORLD, &flag, MPI_STATUS_IGNORE);
             }
 
-            int numberOfRequestedProcesses;
-            MPI_Recv(&numberOfRequestedProcesses, 1, MPI_INT, masterNodeID, eProcessWakeUp, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-            if (numberOfRequestedProcesses > getId())
+            int typeOfEventAfterWakeUp;
+            MPI_Recv(&typeOfEventAfterWakeUp, 1, MPI_INT, masterNodeID, eTypeOfEventAfterWakeUp, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            if (typeOfEventAfterWakeUp == eMessage_Die)
             {
-                int typeOfEventAfterWakeUp;
-                MPI_Recv(&typeOfEventAfterWakeUp, 1, MPI_INT, masterNodeID, eTypeOfEventAfterWakeUp, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-                if (typeOfEventAfterWakeUp == eMessage_Die)
-                {
-                    finish();
-                    _justFinished = true;
-                    return;
-                }
-                else if (typeOfEventAfterWakeUp == eMessage_AwakeToRepartition)
-                {
-                    wakeUp = true;
-
-                    _justAwaken = true;
-                    enableOnlyProcesses(numberOfRequestedProcesses);
-                }
+                finish();
+                _justFinished = true;
+                return;
             }
+            else if (typeOfEventAfterWakeUp == eMessage_AwakeToRepartition)
+            {
+                wakeUp = true;
+                _justAwaken = true;
+
+                int newNumberOfProcessesAndCurrentStep[2];
+                MPI_Recv(newNumberOfProcessesAndCurrentStep, 2, MPI_INT, masterNodeID, eNumberOfProcessesAndStep, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+                int newNumberOfProcesses = newNumberOfProcessesAndCurrentStep[0];
+                int currentStep = newNumberOfProcessesAndCurrentStep[1];
+
+std::cout << CreateStringStream("[process id: " << getId() << "] being awaken.... newNumberOfProcesses: " << newNumberOfProcesses << "\t currentStep: " << currentStep << "\n").str();
+
+                _numberOfActiveProcesses = newNumberOfProcesses;
+                _world->setCurrentStep(currentStep);
+            }
+
+
+
+
+
+
+
+
+
+
+//             int numberOfRequestedProcesses;
+//             MPI_Recv(&numberOfRequestedProcesses, 1, MPI_INT, masterNodeID, eProcessWakeUp, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+// std::cout << CreateStringStream("[process id: " << getId() << "] being awaken.... numberOfRequestedProcesses: " << numberOfRequestedProcesses << "\n").str();
+
+//             if (numberOfRequestedProcesses > getId())
+//             {
+//                 int typeOfEventAfterWakeUp;
+//                 MPI_Recv(&typeOfEventAfterWakeUp, 1, MPI_INT, masterNodeID, eTypeOfEventAfterWakeUp, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+//                 if (typeOfEventAfterWakeUp == eMessage_Die)
+//                 {
+//                     finish();
+//                     _justFinished = true;
+//                     return;
+//                 }
+//                 else if (typeOfEventAfterWakeUp == eMessage_AwakeToRepartition)
+//                 {
+//                     wakeUp = true;
+// std::cout << CreateStringStream("aaaaaaaaaaaaa\n").str();
+//                     _justAwaken = true;
+//                     enableOnlyProcesses(numberOfRequestedProcesses);
+// std::cout << CreateStringStream("bbbbbbbbbbbbb\n").str();
+//                 }
+//             }
         }
     }
 
@@ -1377,21 +1415,19 @@ if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<
     void MPIMultiNode::updateEnvironmentState()
     {
 if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStream("[Process # " << getId() <<  "] MPIMultiNode::updateEnvironmentState() STEP: " << _world->getCurrentStep() << " ==================================================================================\n").str());
-
         initializeAgentsAndRastersState();
-
         sendRastersToNeighbours();
         receiveRasters();
-
         MPI_Barrier(_activeProcessesComm);
     }
 
     void MPIMultiNode::checkForRebalancingSpace()
     {
-        if (_world->getCurrentStep() > 0 and 
-            _world->getConfig().getRebalancingFrequency() > 0 and 
-            _world->getCurrentStep() % _world->getConfig().getRebalancingFrequency() == 0) 
+        if (_world->getConfig().getAutoMode())
+        {
+            if (_world->getCurrentStep() > 0 and _world->getCurrentStep() % _world->getConfig().getRebalancingFrequency() == 0) 
                 _autoAdjustment->checkForRebalancingSpace();
+        }
     }
 
     void MPIMultiNode::executeAgents()

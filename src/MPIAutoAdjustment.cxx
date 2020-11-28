@@ -98,6 +98,14 @@ namespace Engine {
                 _schedulerInstance->_world->getUpdateStateTotalTime();
     }
 
+    bool MPIAutoAdjustment::validParametersForRebalancing() const
+    {
+        if (_schedulerInstance->_world->getConfig().getMaximumLoadPerNode() < 0 or
+            _schedulerInstance->_world->getConfig().getMaximumPercOfUnbalance() < 0) 
+                return false;
+        return true;
+    }
+
     bool MPIAutoAdjustment::needToRebalanceByLoad(const std::vector<double>& nodesTime) const
     {
         double maximumLoadPerNode = _schedulerInstance->_world->getConfig().getMaximumLoadPerNode();
@@ -109,7 +117,9 @@ namespace Engine {
 
         for (int j = 0; j < nodesTime.size() - 1; ++j)
         {
-            if (100.0 * (std::abs(1.0 - (lastNodeTime/nodesTime[j]))) > maximumPercOfUnbalance)
+            double lastNodeComparison = 100.0 * (std::abs(1.0 - (lastNodeTime/nodesTime[j])));
+            
+            if (lastNodeComparison > maximumPercOfUnbalance)
                 return true;
         }
         return false;
@@ -117,6 +127,12 @@ namespace Engine {
 
     bool MPIAutoAdjustment::needToRebalance(double& agentPhasesAVGTime)
     {
+        if (not validParametersForRebalancing()) 
+        {
+            sendSignalToAllWorkingNodes(eMessage_SendAgentPhasesTotalTime_false, eSendAgentPhasesTotalTime);
+            return false;
+        }
+
         bool needToRebalance = false;
 
         double masterAgentPhasesTotalTime = getAgentPhasesTotalTime();
@@ -125,13 +141,15 @@ namespace Engine {
         nodesTime.push_back(masterAgentPhasesTotalTime);
 
         bool unbalancedByLoad = false;
-        if (needToRebalanceByLoad(nodesTime)) 
+        if (needToRebalanceByLoad(nodesTime))
         {
             sendSignalToAllWorkingNodes(eMessage_SendAgentPhasesTotalTime_false, eSendAgentPhasesTotalTime);
             needToRebalance = unbalancedByLoad = true;
         }
         else 
+        {
             sendSignalToAllWorkingNodes(eMessage_SendAgentPhasesTotalTime_true, eSendAgentPhasesTotalTime);
+        }
 
         if (not unbalancedByLoad)
         {
@@ -143,11 +161,8 @@ namespace Engine {
                     MPI_Recv(&nodeAgentPhasesTotalTime, 1, MPI_DOUBLE, processID, eAgentPhasesTotalTime, _schedulerInstance->_activeProcessesComm, MPI_STATUS_IGNORE);
 
                     nodesTime.push_back(nodeAgentPhasesTotalTime);
-                    if (needToRebalanceByLoad(nodesTime))
-                    {
+                    if (not needToRebalance and needToRebalanceByLoad(nodesTime))
                         needToRebalance = true;
-                        break;
-                    }
                 }
             }
         }
@@ -157,9 +172,11 @@ namespace Engine {
             agentPhasesAVGTime = 0.0;
             for (int i = 0; i < nodesTime.size(); ++i)
                 agentPhasesAVGTime += nodesTime[i];
+            agentPhasesAVGTime /= nodesTime.size();
         }
 
-        return needToRebalance;
+        return true;
+        //return needToRebalance;
     }
 
     int MPIAutoAdjustment::waitForMasterNeedsToRebalance() 
@@ -168,7 +185,7 @@ namespace Engine {
         if (eventType == eMessage_SendAgentPhasesTotalTime_true)
         {
             double agentPhasesTotalTime = getAgentPhasesTotalTime();
-            MPI_Send(&agentPhasesTotalTime, 1, MPI_DOUBLE, _schedulerInstance->_masterNodeID, eAgentPhasesTotalTime, _schedulerInstance->_activeProcessesComm);
+            sendDataRequestToNode(&agentPhasesTotalTime, 1, MPI_DOUBLE, _schedulerInstance->_masterNodeID, eAgentPhasesTotalTime, _schedulerInstance->_activeProcessesComm);
         }
     }
 
@@ -319,16 +336,16 @@ std::cout << CreateStringStream("DIVIDE TEST COMPLETED. executingAgentsEstimated
         return numberOfProcessesAtMinimumCost;
     }
 
-    int MPIAutoAdjustment::exploreMinimumCost()
+    int MPIAutoAdjustment::exploreMinimumCost(const double& agentPhasesAVGTime)
     {
         int currentNumberOfProcesses = _schedulerInstance->_numberOfActiveProcesses;
         int doubleProcesses = currentNumberOfProcesses * 2;
         int halfProcesses = currentNumberOfProcesses / 2;
 
-        double doubleProcessesEstimatedTime = _currentAgentPhasesAVGTime / 2.0;
-        double halfProcessesEstimatedTime = _currentAgentPhasesAVGTime * 2.0;
+        double doubleProcessesEstimatedTime = agentPhasesAVGTime / 2.0;
+        double halfProcessesEstimatedTime = agentPhasesAVGTime * 2.0;
         
-        double currentCost = estimateTotalCost(currentNumberOfProcesses, _currentAgentPhasesAVGTime);
+        double currentCost = estimateTotalCost(currentNumberOfProcesses, agentPhasesAVGTime);
         double doubleProcessesCost = estimateTotalCost(doubleProcesses, doubleProcessesEstimatedTime);
         double halfProcessesCost = estimateTotalCost(halfProcesses, halfProcessesEstimatedTime);
 
@@ -338,7 +355,9 @@ std::cout << CreateStringStream("DIVIDE TEST COMPLETED. executingAgentsEstimated
         else if (halfProcessesCost < currentCost and halfProcessesCost < doubleProcessesCost)
             numberOfProcessesAtMinimumCost = exploreDown(halfProcesses, halfProcessesCost, halfProcessesEstimatedTime);
         
-        return numberOfProcessesAtMinimumCost;
+        if (_schedulerInstance->_world->getCurrentStep() == 3) return 2;
+        else return 4;
+        //return numberOfProcessesAtMinimumCost;
     }
 
     void MPIAutoAdjustment::sendNumberOfProcessesToWorkingNodes(const int& newNumberOfProcesses)
@@ -355,28 +374,6 @@ std::cout << CreateStringStream("DIVIDE TEST COMPLETED. executingAgentsEstimated
     void MPIAutoAdjustment::receiveNumberOfProcessesFromMasterNode(int& newNumberOfProcesses)
     {
         MPI_Recv(&newNumberOfProcesses, 1, MPI_INT, _schedulerInstance->_masterNodeID, eNumProcesses, _schedulerInstance->_activeProcessesComm, MPI_STATUS_IGNORE);
-    }
-
-    void MPIAutoAdjustment::awakeNodesIfNecessary(const int& numberOfRequestedProcesses)
-    {
-        if (numberOfRequestedProcesses > _schedulerInstance->_numberOfActiveProcesses)
-        {
-            for (int processID = _schedulerInstance->_numberOfActiveProcesses; processID < numberOfRequestedProcesses; ++processID)
-            {
-                int numberOfProcessesToAwake = numberOfRequestedProcesses;
-                sendDataRequestToNode(&numberOfProcessesToAwake, 1, MPI_INT, processID, eProcessWakeUp, MPI_COMM_WORLD);
-
-                int eventType = eMessage_AwakeToRepartition;
-                sendDataRequestToNode(&eventType, 1, MPI_INT, processID, eTypeOfEventAfterWakeUp, MPI_COMM_WORLD);
-            }
-        }
-        // else
-        // {
-        //     for (int processID = numberOfRequestedProcesses; processID < _schedulerInstance->_numberOfActiveProcesses; ++processID)
-        //     {
-        //         _schedulerInstance->waitSleeping(_schedulerInstance->_masterNodeID);
-        //     }
-        // }
     }
 
     void MPIAutoAdjustment::saveCurrentSpaces(MPINodesMap& spaces)
@@ -410,10 +407,13 @@ std::cout << CreateStringStream("DIVIDE TEST COMPLETED. executingAgentsEstimated
             ++i;
         }
 
-        for (int processID = _schedulerInstance->_numberOfActiveProcesses; processID < _schedulerInstance->_numberOfActiveProcesses; ++processID)
+        for (int processID = 0; processID < _schedulerInstance->_numberOfActiveProcesses; ++processID)
         {
-            sendDataRequestToNode(&amountOfNodesToSend, 1, MPI_INT, processID, eNumCoordinates, _schedulerInstance->_activeProcessesComm);
-            sendDataRequestToNode(&coordinatesArray, amountOfNodesToSend, *_schedulerInstance->_coordinatesDatatype, processID, eCoordinates, _schedulerInstance->_activeProcessesComm);
+            if (processID != _schedulerInstance->_masterNodeID)
+            {
+                sendDataRequestToNode(&amountOfNodesToSend, 1, MPI_INT, processID, eNumCoordinates, _schedulerInstance->_activeProcessesComm);
+                sendDataRequestToNode(&coordinatesArray, amountOfNodesToSend, *_schedulerInstance->_coordinatesDatatype, processID, eCoordinates, _schedulerInstance->_activeProcessesComm);
+            }
         }
         free(coordinatesArray);
     }
@@ -422,7 +422,7 @@ std::cout << CreateStringStream("DIVIDE TEST COMPLETED. executingAgentsEstimated
     {
         int amountOfNodesToReceive;
         MPI_Recv(&amountOfNodesToReceive, 1, MPI_INT, _schedulerInstance->_masterNodeID, eNumCoordinates, _schedulerInstance->_activeProcessesComm, MPI_STATUS_IGNORE);
-        
+
         MPIMultiNode::Coordinates coordinatesForSize;
         int sizeOfCoordinates = sizeof(coordinatesForSize);
 
@@ -441,13 +441,18 @@ std::cout << CreateStringStream("DIVIDE TEST COMPLETED. executingAgentsEstimated
                 newSpaces[processID] = mpiNode;
             }
         }
+
         free(coordinatesArray);
     }
 
     void MPIAutoAdjustment::fillNewSpacesStructures(MPINodesMap& newSpaces) const
     {
         for (MPINodesMap::iterator it = newSpaces.begin(); it != newSpaces.end(); ++it)
-            _schedulerInstance->generateOverlapAreas(it->second);
+        {
+            int nodeID = it->first;
+            if (_schedulerInstance->getId() == nodeID)
+                _schedulerInstance->generateOverlapAreas(it->second);
+        }
     }
 
     void MPIAutoAdjustment::initializeAgentsToSendMap(std::map<int, std::map<std::string, AgentsList>>& agentsByTypeAndNode, const int& totalNumberOfSendingNodes) const
@@ -582,25 +587,6 @@ if (_schedulerInstance->_printInstrumentation) _schedulerInstance->_schedulerLog
 
         _schedulerInstance->removeAgentsInVector(agentsToRemove);
     }
-    
-    void MPIAutoAdjustment::updateCurrentStep(const int& newNumberOfProcesses)
-    {
-        if (_schedulerInstance->getId() == _schedulerInstance->_masterNodeID)
-        {
-            for (int processID = 0; processID < newNumberOfProcesses; ++processID)
-            {
-                int currentStep = _schedulerInstance->_world->getCurrentStep();
-                sendDataRequestToNode(&currentStep, 1, MPI_INT, processID, eCurrentStep, _schedulerInstance->_activeProcessesComm);
-            }
-        }
-        else if (_schedulerInstance->getId() <= newNumberOfProcesses)
-        {
-            int currentStep;
-            MPI_Recv(&currentStep, 1, MPI_INT, _schedulerInstance->_masterNodeID, eCurrentStep, _schedulerInstance->_activeProcessesComm, MPI_STATUS_IGNORE);
-
-            _schedulerInstance->_world->setCurrentStep(currentStep);
-        }
-    }
 
     void MPIAutoAdjustment::updateOwnStructures(const MPINodesMap& newSpaces)
     {
@@ -613,6 +599,69 @@ if (_schedulerInstance->_printInstrumentation) _schedulerInstance->_schedulerLog
             _schedulerInstance->waitSleeping(_schedulerInstance->_masterNodeID);
     }
 
+    void MPIAutoAdjustment::doMasterForRebalance(bool& neededToRebalance, int& newNumberOfProcesses)
+    {
+        neededToRebalance = needToRebalance(_currentAgentPhasesAVGTime);
+        if (neededToRebalance)
+        {
+            sendSignalToAllWorkingNodes(eMessage_PrepareToRepartition_true, ePrepareToRepartition);
+            receiveAllAgentsFromWorkingNodes();
+
+_schedulerInstance->_schedulerLogs->writeInDebugFile(CreateStringStream("AGENTS RECEIVED FOR REBALANCING:").str());
+_schedulerInstance->_schedulerLogs->printAgentsMatrixInDebugFile(true);
+
+            newNumberOfProcesses = exploreMinimumCost(_currentAgentPhasesAVGTime);
+            sendNumberOfProcessesToWorkingNodes(newNumberOfProcesses);
+        }
+        else
+            sendSignalToAllWorkingNodes(eMessage_PrepareToRepartition_false, ePrepareToRepartition);
+    }
+
+    void MPIAutoAdjustment::doWorkersForRebalance(bool& neededToRebalance, int& newNumberOfProcesses)
+    {
+        if (_schedulerInstance->hasBeenTaggedAsJustAwaken())
+        {
+            neededToRebalance = true;
+            newNumberOfProcesses = _schedulerInstance->_numberOfActiveProcesses;
+
+            _schedulerInstance->_justAwaken = false;
+            _schedulerInstance->_world->setCurrentStep(_schedulerInstance->_world->getCurrentStep() + 1);
+        }
+        else
+        {
+            waitForMasterNeedsToRebalance();
+
+            int eventType = receiveSignalFromMasterWithTag(ePrepareToRepartition);
+            if (eventType == eMessage_PrepareToRepartition_true)
+            {
+                neededToRebalance = true;
+
+                sendAllAgentsToMasterNode();
+                receiveNumberOfProcessesFromMasterNode(newNumberOfProcesses);
+            }
+        }
+    }
+
+    void MPIAutoAdjustment::awakeNodesIfNecessary(const int& numberOfRequestedProcesses)
+    {
+        if (numberOfRequestedProcesses > _schedulerInstance->_numberOfActiveProcesses)
+        {
+            if (_schedulerInstance->getId() == _schedulerInstance->_masterNodeID)
+            {
+                for (int processID = _schedulerInstance->_numberOfActiveProcesses; processID < numberOfRequestedProcesses; ++processID)
+                {
+                    int eventType = eMessage_AwakeToRepartition;
+                    sendDataRequestToNode(&eventType, 1, MPI_INT, processID, eTypeOfEventAfterWakeUp, MPI_COMM_WORLD);
+
+                    int newNumberOfProcessesAndCurrentStep[2];
+                    newNumberOfProcessesAndCurrentStep[0] = numberOfRequestedProcesses;
+                    newNumberOfProcessesAndCurrentStep[1] = _schedulerInstance->_world->getCurrentStep();
+                    sendDataRequestToNode(newNumberOfProcessesAndCurrentStep, 2, MPI_INT, processID, eNumberOfProcessesAndStep, MPI_COMM_WORLD);
+                }
+            }
+        }
+    }
+
     void MPIAutoAdjustment::rebalance(const int& newNumberOfProcesses)
     {
         MPINodesMap oldSpaces, newSpaces;
@@ -623,74 +672,78 @@ if (_schedulerInstance->_printInstrumentation) _schedulerInstance->_schedulerLog
             _schedulerInstance->resetPartitioning(newNumberOfProcesses);
             _schedulerInstance->divideSpace();
             
+_schedulerInstance->_schedulerLogs->writeInDebugFile(CreateStringStream("NEW SPACES:").str());
+_schedulerInstance->printPartitionsBeforeMPI();
+
+_schedulerInstance->_schedulerLogs->writeInDebugFile(CreateStringStream("NEW SPACES SECOND METHOD:").str());
+_schedulerInstance->printOwnNodeStructureAfterMPI();
+            
             sendAllNewSpacesToAllNodes(newSpaces);
         }
         else
+        {
+_schedulerInstance->_schedulerLogs->writeInDebugFile(CreateStringStream("OLD SPACES:").str());
+_schedulerInstance->printOwnNodeStructureAfterMPI();
+
             receiveNewSpacesFromMasterNode(newSpaces);
+
+_schedulerInstance->_schedulerLogs->writeInDebugFile(CreateStringStream("NEW SPACES:").str());
+_schedulerInstance->printOwnNodeStructureAfterMPI();
+        }
+
+        std::stringstream ss;
+        ss << "newSpaces:\n";
+        for (MPINodesMap::const_iterator it = newSpaces.begin(); it != newSpaces.end(); ++it)
+        {
+            ss << "node id: " << it->first << ":\n";
+            ss << "\townedArea:" << it->second.ownedArea << "\n";
+            ss << "\n";
+        }
+        std::cout << ss.str();
 
         fillNewSpacesStructures(newSpaces);
 
-        sendAgentsToOtherNodesIfNecessary(newSpaces, oldSpaces);
-        receiveAgentsFromOtherNodesIfNecessary(std::max(newSpaces.size(), oldSpaces.size()));
+        // sendAgentsToOtherNodesIfNecessary(newSpaces, oldSpaces);
+        // receiveAgentsFromOtherNodesIfNecessary(std::max(newSpaces.size(), oldSpaces.size()));
 
-        sendRastersToOtherNodesIfNecessary(newSpaces, oldSpaces);
-        receiveRastersFromOtherNodesIfNecessary(std::max(newSpaces.size(), oldSpaces.size()));
+        // sendRastersToOtherNodesIfNecessary(newSpaces, oldSpaces);
+        // receiveRastersFromOtherNodesIfNecessary(std::max(newSpaces.size(), oldSpaces.size()));
 
-        removeNonBelongingAgents(newSpaces);
+        // removeNonBelongingAgents(newSpaces);
 
-        updateCurrentStep(newNumberOfProcesses);
-        updateOwnStructures(newSpaces);
+        // updateOwnStructures(newSpaces);
 
-        putNonNeededWorkersToSleep(newNumberOfProcesses);
+        // putNonNeededWorkersToSleep(newNumberOfProcesses);
+    }
+
+    void MPIAutoAdjustment::putToSleepNodesIfNecessary(const int& numberOfRequestedProcesses)
+    {
+        for (int processID = numberOfRequestedProcesses; processID < _schedulerInstance->_numberOfActiveProcesses; ++processID)
+            _schedulerInstance->waitSleeping(_schedulerInstance->_masterNodeID);
     }
 
     /** PUBLIC METHODS **/
 
     void MPIAutoAdjustment::checkForRebalancingSpace()
     {
-        int newNumberOfProcesses;
         bool neededToRebalance = false;
+        int newNumberOfProcesses;
 
         if (_schedulerInstance->getId() == _schedulerInstance->_masterNodeID)
-        {
-            neededToRebalance = needToRebalance(_currentAgentPhasesAVGTime);
-            if (neededToRebalance)
-            {
-                sendSignalToAllWorkingNodes(eMessage_PrepareToRepartition_true, ePrepareToRepartition);
-                receiveAllAgentsFromWorkingNodes();
-
-                newNumberOfProcesses = exploreMinimumCost();
-                sendNumberOfProcessesToWorkingNodes(newNumberOfProcesses);
-
-                awakeNodesIfNecessary(newNumberOfProcesses);
-            }
-            else sendSignalToAllWorkingNodes(eMessage_PrepareToRepartition_false, ePrepareToRepartition);
-        }
+            doMasterForRebalance(neededToRebalance, newNumberOfProcesses);
         else
-        {
-            if (_schedulerInstance->hasBeenTaggedAsJustAwaken())
-            {
-                neededToRebalance = true;
-                _schedulerInstance->_justAwaken = false;
-            }
-            else
-            {
-                waitForMasterNeedsToRebalance();
+            doWorkersForRebalance(neededToRebalance, newNumberOfProcesses);
 
-                int eventType = receiveSignalFromMasterWithTag(ePrepareToRepartition);
-                if (eventType == eMessage_PrepareToRepartition_true)
-                {
-                    neededToRebalance = true;
-
-                    sendAllAgentsToMasterNode();
-                    receiveNumberOfProcessesFromMasterNode(newNumberOfProcesses);
-                }
-            }
-        }
+        awakeNodesIfNecessary(newNumberOfProcesses);
+        _schedulerInstance->enableOnlyProcesses(newNumberOfProcesses);
 
         MPI_Barrier(_schedulerInstance->_activeProcessesComm);
 
-        if (neededToRebalance) rebalance(newNumberOfProcesses);
+        if (neededToRebalance) {
+            rebalance(newNumberOfProcesses);
+
+            //putToSleepNodesIfNecessary(newNumberOfProcesses);
+        }
 
         std::cout << CreateStringStream("[PROCESS " << _schedulerInstance->getId() << "] JUST BEFORE THE LAST MPI_Barrier. \n").str();
         MPI_Barrier(_schedulerInstance->_activeProcessesComm);

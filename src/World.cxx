@@ -268,10 +268,8 @@ namespace Engine
             std::cout << CreateStringStream("[Process #" << getId() << "] step " << _step << "\n").str();
 
             step();
-std::cout << CreateStringStream("[Process #" << getId() << "] before engine step " << _step << "\n").str();
             engineStep();
-std::cout << CreateStringStream("[Process #" << getId() << "] after engine step " << _step << "\n").str();
-
+            
             ++_step;
         }
 std::cout << CreateStringStream("[Process #" << getId() << "] serializing \n").str();

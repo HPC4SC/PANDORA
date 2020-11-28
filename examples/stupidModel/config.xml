@@ -5,7 +5,7 @@
 	<seed value="1234"/>
 	<logs printInConsole="false" printInstrumentation="true"/>
 	<mpi overlapSizeMPI="2" subpartitioningMode="4"/>
-	<mpiAutoAdjustment initialPartitioning="true" maximumLoadPerNode="0" rebalancingFreq="3" maximumPercOfUnbalance="50.0"/>
+	<mpiAutoAdjustment autoMode="true" initialPartitioning="false" rebalancingFreq="3" maximumLoadPerNode="0.1" maximumPercOfUnbalance="200.0"/>
 	<!--<mpiAutoAdjustment initialPartitioning="true" rebalancingFreq="0" maximumPercOfUnbalance="50.0" loadLowerThreshold="0.025" loadUpperThreshold="0.05"/>-->
 
 	<numSteps value="5" serializeResolution="1"/>

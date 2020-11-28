@@ -88,7 +88,7 @@ namespace Engine
         eSendAgentPhasesTotalTime = 74,
         ePrepareToRepartition = 75,
         eTypeOfEventAfterWakeUp = 76,
-        eCurrentStep = 77,
+        eNumberOfProcessesAndStep = 77,
 
         eAgentPhasesTotalTime = 80
     };

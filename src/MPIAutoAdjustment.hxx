@@ -92,6 +92,13 @@ namespace Engine
             double getAgentPhasesTotalTime() const;
 
             /**
+             * @brief Checks whether the parameters indicated for the rebalancing are valid (>= 0). If not, it returns false. True otherwise.
+             * 
+             * @return bool
+             */
+            bool validParametersForRebalancing() const;
+
+            /**
              * @brief Returns true if the last added time in 'nodesTime' is >= MaximumLoadPerNode. Also, returns true if the last time added in 'nodesTime' (nodesTime[nodesTime.size() - 1]) exceeds the maximum percentage of unbalance with some of the previously added times.
              * 
              * @param nodesTime const std::vector<double>&
@@ -165,9 +172,10 @@ namespace Engine
             /**
              * @brief Explores the minimum cost performing a step test for different number of nodes. Returns the number of processes that gets a local minimum cost.
              * 
+             * @param agentPhasesAVGTime const double&
              * @return int
              */
-            int exploreMinimumCost();
+            int exploreMinimumCost(const double& agentPhasesAVGTime);
 
             /**
              * @brief Sends the new number of processes 'numberOfProcesses' to all the working nodes.
@@ -182,13 +190,6 @@ namespace Engine
              * @param newNumberOfProcesses int&
              */
             void receiveNumberOfProcessesFromMasterNode(int& newNumberOfProcesses);
-
-            /**
-             * @brief Awakes from sleep all the necessary nodes according the the 'numberOfRequestedProcesses', according to the incoming rebalance.
-             * 
-             * @param numberOfRequestedProcesses const int&
-             */
-            void awakeNodesIfNecessary(const int& numberOfRequestedProcesses); 
 
             /**
              * @brief Saves the current partitioning status at 'spaces'.
@@ -280,13 +281,6 @@ namespace Engine
             void removeNonBelongingAgents(const MPINodesMap& newSpaces);
 
             /**
-             * @brief Updates the current step (_world::_step) for the calling node.
-             * 
-             * @param newNumberOfProcesses const int&
-             */
-            void updateCurrentStep(const int& newNumberOfProcesses);
-
-            /**
              * @brief Updates the partitioning data structures for the calling node.
              * 
              * @param newSpaces const MPINodesMap&
@@ -301,11 +295,41 @@ namespace Engine
             void putNonNeededWorkersToSleep(const int& newNumberOfProcesses);
 
             /**
+             * @brief Does the masters tasks for rebalancing.
+             * 
+             * @param neededToRebalance bool&
+             * @param newNumberOfProcesses int& 
+             */
+            void doMasterForRebalance(bool& neededToRebalance, int& newNumberOfProcesses);
+
+            /**
+             * @brief Does the workers tasks for rebalancing.
+             * 
+             * @param neededToRebalance bool&
+             * @param newNumberOfProcesses int&
+             */
+            void doWorkersForRebalance(bool& neededToRebalance, int& newNumberOfProcesses);
+
+            /**
+             * @brief Awakes from sleep all the necessary nodes according the the 'numberOfRequestedProcesses', according to the incoming rebalance.
+             * 
+             * @param numberOfRequestedProcesses const int&
+             */
+            void awakeNodesIfNecessary(const int& numberOfRequestedProcesses); 
+
+            /**
              * @brief Rebalances the current space with 'numberOfProcesses'.
              * 
              * @param numberOfProcesses const int&
              */
             void rebalance(const int& numberOfProcesses);
+
+            /**
+             * @brief Puts to sleep nodes if necessary, according the the 'numberOfRequestedProcesses'.
+             * 
+             * @param numberOfRequestedProcesses const int&
+             */
+            void putToSleepNodesIfNecessary(const int& numberOfRequestedProcesses);
 
         public:
 

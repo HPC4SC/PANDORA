@@ -21,6 +21,7 @@
 
 #include <MPILoadBalanceTree.hxx>
 #include <Agent.hxx>
+#include <Exception.hxx>
 
 #include <iostream>
 
@@ -228,9 +229,9 @@ namespace Engine {
     {
         double leftChildTotalWeight = 0;
 
-        for (int i = treeNode->value.left(); i <= treeNode->value.right(); ++i)
+        for (int i = treeNode->value.left(); i <= treeNode->value.right() + 1; ++i)
         {
-            for (int j = treeNode->value.top(); j <= treeNode->value.bottom(); ++j)
+            for (int j = treeNode->value.top(); j <= treeNode->value.bottom() + 1; ++j)
                 leftChildTotalWeight += getAgentsWeightFromCell(j, i);
 
             if (leftChildTotalWeight >= totalWeight / 2)
@@ -252,9 +253,9 @@ namespace Engine {
     {
         double leftChildTotalWeight = 0;
 
-        for (int i = treeNode->value.top(); i < treeNode->value.bottom(); ++i) 
+        for (int i = treeNode->value.top(); i < treeNode->value.bottom() + 1; ++i) 
         {
-            for (int j = treeNode->value.left(); j < treeNode->value.right(); ++j)
+            for (int j = treeNode->value.left(); j < treeNode->value.right() + 1; ++j)
                 leftChildTotalWeight += getAgentsWeightFromCell(i, j);
 
             if (leftChildTotalWeight >= totalWeight / 2)

@@ -48,9 +48,10 @@ protected:
     int _seed;                      //! Seed to be used for the RNG (Statistics class).
     int _overlapSize;               //! [Only for MPI scheduler] Overlap size in number of cells, defined for partition rectangles.
     int _subpartitioningMode;       //! [Only for MPI scheduler] Subpartitioning mode 9 -> 9 subpartitions per node, 4 -> 4 subpartitions per node.
+    bool _autoMode;                 //! [Only for MPI scheduler] Says whether the auto rebalancing mode is activated or not.
     bool _initialPartitioning;      //! [Only for MPI scheduler] To perform an initial partitioning or not (used as "false" for models that do not create initial agents and/or having warm-up periods).
-    double _maximumLoadPerNode;     //! [Only for MPI scheduler] Maximum load (in secs.) that a node should support just before partitioning.
     int _rebalancingFreq;           //! [Only for MPI scheduler] Rebalancing frequency check in number of steps. If < 1, then no frequency is stablished.    
+    double _maximumLoadPerNode;     //! [Only for MPI scheduler] Maximum load (in secs.) that a node should support just before partitioning.
     double _maximumPercOfUnbalance; //! [Only for MPI scheduler] Maximum percentage allowed of unbalancing among nodes. From this value on, the space should be rebalanced. If 0, no rebalancing by unbalances are applied at all.
     // double _loadLowerThreshold;     //! [Only for MPI scheduler] Lower load threshold to determine whether the simulation needs to add MPI processes.
     // double _loadUpperThreshold;     //! [Only for MPI scheduler] Upper load threshold to determine whether the simulation needs to subtract MPI processes.
@@ -162,6 +163,13 @@ public:
      * @return const int& 
      */
     const int& getSubpartitioningMode() const;
+
+    /**
+     * @brief Gets the _autoMode member.
+     * 
+     * @return bool
+     */
+    const bool& getAutoMode() const;
 
     /**
      * @brief Gets the _initialPartitioning member.
