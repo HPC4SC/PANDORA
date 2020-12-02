@@ -181,6 +181,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
     void MPIMultiNode::enableOnlyProcesses(const int& numberOfProcessesToEnable)
     {
         _numberOfActiveProcesses = numberOfProcessesToEnable;
+        _numTasks = numberOfProcessesToEnable;
 
         int* activeRanksArray = (int*) malloc(_numberOfActiveProcesses * sizeof(int));
 
@@ -205,7 +206,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
             agentsToRemove.push_back(it->second.get());
         removeAgentsInVector(agentsToRemove);
 
-        // The following is optional (when this node is awaken, it receives all and every raster cell from scratch).
+        // The following is optional (when this node is awaken, it receives all and every raster cell from scratch before this code).
         // for (int rasterID = 0; rasterID < _schedulerInstance->_world->getNumberOfRasters(); ++rasterID)
         // {
         //     if (_schedulerInstance->_world->rasterExists(rasterID) and _schedulerInstance->_world->isRasterDynamic(rasterID))
@@ -269,42 +270,10 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
 std::cout << CreateStringStream("[process id: " << getId() << "] being awaken.... newNumberOfProcesses: " << newNumberOfProcesses << "\t currentStep: " << currentStep << "\n").str();
 
                 _numberOfActiveProcesses = newNumberOfProcesses;
+                _numTasks = newNumberOfProcesses;
+
                 _world->setCurrentStep(currentStep);
             }
-
-
-
-
-
-
-
-
-
-
-//             int numberOfRequestedProcesses;
-//             MPI_Recv(&numberOfRequestedProcesses, 1, MPI_INT, masterNodeID, eProcessWakeUp, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-// std::cout << CreateStringStream("[process id: " << getId() << "] being awaken.... numberOfRequestedProcesses: " << numberOfRequestedProcesses << "\n").str();
-
-//             if (numberOfRequestedProcesses > getId())
-//             {
-//                 int typeOfEventAfterWakeUp;
-//                 MPI_Recv(&typeOfEventAfterWakeUp, 1, MPI_INT, masterNodeID, eTypeOfEventAfterWakeUp, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-//                 if (typeOfEventAfterWakeUp == eMessage_Die)
-//                 {
-//                     finish();
-//                     _justFinished = true;
-//                     return;
-//                 }
-//                 else if (typeOfEventAfterWakeUp == eMessage_AwakeToRepartition)
-//                 {
-//                     wakeUp = true;
-// std::cout << CreateStringStream("aaaaaaaaaaaaa\n").str();
-//                     _justAwaken = true;
-//                     enableOnlyProcesses(numberOfRequestedProcesses);
-// std::cout << CreateStringStream("bbbbbbbbbbbbb\n").str();
-//                 }
-//             }
         }
     }
 
@@ -324,6 +293,14 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
         endTime = getWallTime();
 
 if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStream("[Process # " << getId() <<  "] MPIMultiNode::createNodesInformationToSend()\tTOTAL TIME: " << endTime - initialTime).str());
+
+
+        _schedulerLogs->writeInDebugFile(CreateStringStream("HEY THERE:").str());
+        _schedulerLogs->printAgentsMatrixInDebugFile(true);
+
+
+
+
 
         if (not arePartitionsSuitable()) {
             std::cout << CreateStringStream("[Process # " << getId() <<  "] MPIMultiNode::divideSpace() - Partitions not suitable. Maybe there are too many unnecessary MPI nodes for such a small space, or the overlap size is too wide.\n").str();
@@ -658,6 +635,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
     bool MPIMultiNode::arePartitionsSuitable()
     {
         if (_numTasks == 1) return true;
+
         for (MPINodesMap::const_iterator it = _mpiNodesMapToSend.begin(); it != _mpiNodesMapToSend.end(); ++it)
         {
             if (it->second.ownedArea.getSize().getWidth() < 4 * _overlapSize or
@@ -708,7 +686,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
 
     /** RUN PROTECTED METHODS (CALLED BY INHERIT METHODS) **/
 
-    void MPIMultiNode::initializeAgentsAndRastersState()
+    void MPIMultiNode::prepareAgentsAndRastersStateForCurrentStep()
     {
         _executedAgentsInStep.clear();
     }
@@ -1333,9 +1311,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
         testTree->setWorld(_world);
         testTree->initializeTree();
         testTree->setNumberOfPartitions(numberOfProcesses);
-
         testTree->divideSpace();
-
         return getTotalNumberOfOverlappingCells(*testTree);
     }
 
@@ -1415,9 +1391,11 @@ if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<
     void MPIMultiNode::updateEnvironmentState()
     {
 if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStream("[Process # " << getId() <<  "] MPIMultiNode::updateEnvironmentState() STEP: " << _world->getCurrentStep() << " ==================================================================================\n").str());
-        initializeAgentsAndRastersState();
+
+        prepareAgentsAndRastersStateForCurrentStep();
         sendRastersToNeighbours();
         receiveRasters();
+
         MPI_Barrier(_activeProcessesComm);
     }
 

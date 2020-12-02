@@ -229,9 +229,9 @@ namespace Engine {
     {
         double leftChildTotalWeight = 0;
 
-        for (int i = treeNode->value.left(); i <= treeNode->value.right() + 1; ++i)
+        for (int i = treeNode->value.left(); i < treeNode->value.right() + 1; ++i)
         {
-            for (int j = treeNode->value.top(); j <= treeNode->value.bottom() + 1; ++j)
+            for (int j = treeNode->value.top(); j < treeNode->value.bottom() + 1; ++j)
                 leftChildTotalWeight += getAgentsWeightFromCell(j, i);
 
             if (leftChildTotalWeight >= totalWeight / 2)

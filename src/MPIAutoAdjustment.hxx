@@ -77,14 +77,6 @@ namespace Engine
             void sendSignalToAllWorkingNodes(const int& signal, const int& messageTag);
 
             /**
-             * @brief Receives from the masterNode an eventType with tag 'messageTag', which returns as an integer.
-             * 
-             * @param messageTag const int&
-             * @return int
-             */
-            int receiveSignalFromMasterWithTag(const int& messageTag) const;
-
-            /**
              * @brief Returns the total time for all the agent phases for the calling node.
              * 
              * @return double 
@@ -115,30 +107,10 @@ namespace Engine
             bool needToRebalance(double& agentPhasesAVGTime);
 
             /**
-             * @brief (For the workers nodes) Waits and attends for the master requests, which is evaluating whether a rebalancing is required.
-             * 
-             * @return bool
-             */
-            int waitForMasterNeedsToRebalance();
-
-            /**
              * @brief Receives all the agents from all the active working nodes.
              * 
              */
             void receiveAllAgentsFromWorkingNodes();
-
-            /**
-             * @brief Gets all the agents of the calling node and let them classified by type in 'agentsByType'.
-             * 
-             * @param agentsByType std::map<std::string, AgentsList>&
-             */
-            void getAllOwnedAreaAgentsByType(std::map<std::string, AgentsList>& agentsByType) const;
-
-            /**
-             * @brief Send all the agents of the calling node to the master node.
-             * 
-             */
-            void sendAllAgentsToMasterNode();
 
             /**
              * @brief Estimates the total cost for 'numberOfProcessesToEstimate' nodes, using the 'executingAgentsEstimatedTime' which is the first term of the estimating equation. If the 'numberOfProcessesToEstimate' is < 1 or > the maximum number of the available MPI processes, it returns DBL_MAX.
@@ -185,11 +157,62 @@ namespace Engine
             void sendNumberOfProcessesToWorkingNodes(const int& newNumberOfProcesses);
 
             /**
+             * @brief Awakes from sleep all the necessary nodes according the the 'numberOfRequestedProcesses', according to the incoming rebalance.
+             * 
+             * @param numberOfRequestedProcesses const int&
+             */
+            void awakeNodesIfNecessary(const int& numberOfRequestedProcesses); 
+
+            /**
+             * @brief Does the masters tasks for rebalancing.
+             * 
+             * @param neededToRebalance bool&
+             * @param newNumberOfProcesses int& 
+             */
+            void doMasterForRebalance(bool& neededToRebalance, int& newNumberOfProcesses);
+
+            /**
+             * @brief Receives from the masterNode an eventType with tag 'messageTag', which returns as an integer.
+             * 
+             * @param messageTag const int&
+             * @return int
+             */
+            int receiveSignalFromMasterWithTag(const int& messageTag) const;
+
+            /**
+             * @brief (For the workers nodes) Waits and attends for the master requests, which is evaluating whether a rebalancing is required.
+             * 
+             * @return bool
+             */
+            int waitForMasterNeedsToRebalance();
+
+            /**
+             * @brief Gets all the agents of the calling node and let them classified by type in 'agentsByType'.
+             * 
+             * @param agentsByType std::map<std::string, AgentsList>&
+             */
+            void getAllOwnedAreaAgentsByType(std::map<std::string, AgentsList>& agentsByType) const;
+
+            /**
+             * @brief Send all the agents of the calling node to the master node.
+             * 
+             */
+            void sendAllAgentsToMasterNode();
+
+            /**
              * @brief Receives the new number of processes 'newNumberOfProcesses' from the master node.
              * 
              * @param newNumberOfProcesses int&
              */
             void receiveNumberOfProcessesFromMasterNode(int& newNumberOfProcesses);
+
+            /**
+             * @brief Does the workers tasks for rebalancing.
+             * 
+             * @param neededToRebalance bool&
+             * @param newNumberOfProcesses int&
+             */
+            void doWorkersForRebalance(bool& neededToRebalance, int& newNumberOfProcesses);
 
             /**
              * @brief Saves the current partitioning status at 'spaces'.
@@ -213,11 +236,11 @@ namespace Engine
             void receiveNewSpacesFromMasterNode(MPINodesMap& newSpaces) const;
 
             /**
-             * @brief Fills up the 'newSpaces' data structure with the overlap areas.
+             * @brief Fills up the 'newSpaces' data structure with the overlap areas and their corresponding neighbours.
              * 
              * @param newSpaces const MPINodesMap&
              */
-            void fillNewSpacesStructures(MPINodesMap& newSpaces) const;
+            void generateNewSpacesOverlapsAndNeighbours(MPINodesMap& newSpaces) const;
 
             /**
              * @brief Initializes the map 'agentsByTypeAndNode' considering the 'totalNumberOfSendingNodes'.
@@ -295,29 +318,6 @@ namespace Engine
             void putNonNeededWorkersToSleep(const int& newNumberOfProcesses);
 
             /**
-             * @brief Does the masters tasks for rebalancing.
-             * 
-             * @param neededToRebalance bool&
-             * @param newNumberOfProcesses int& 
-             */
-            void doMasterForRebalance(bool& neededToRebalance, int& newNumberOfProcesses);
-
-            /**
-             * @brief Does the workers tasks for rebalancing.
-             * 
-             * @param neededToRebalance bool&
-             * @param newNumberOfProcesses int&
-             */
-            void doWorkersForRebalance(bool& neededToRebalance, int& newNumberOfProcesses);
-
-            /**
-             * @brief Awakes from sleep all the necessary nodes according the the 'numberOfRequestedProcesses', according to the incoming rebalance.
-             * 
-             * @param numberOfRequestedProcesses const int&
-             */
-            void awakeNodesIfNecessary(const int& numberOfRequestedProcesses); 
-
-            /**
              * @brief Rebalances the current space with 'numberOfProcesses'.
              * 
              * @param numberOfProcesses const int&
@@ -330,6 +330,12 @@ namespace Engine
              * @param numberOfRequestedProcesses const int&
              */
             void putToSleepNodesIfNecessary(const int& numberOfRequestedProcesses);
+
+            /**
+             * @brief Writes the final state of the rebalancing just performed in the log file of each process.
+             * 
+             */
+            void writeStateAfterRebalanceInLog();
 
         public:
 

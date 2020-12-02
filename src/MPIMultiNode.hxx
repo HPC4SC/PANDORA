@@ -370,10 +370,10 @@ namespace Engine
             /** RUN PROTECTED METHODS (CALLED BY INHERIT METHODS) **/
 
             /**
-             * @brief Performs everything that is needed to save the state of agents and rasters among sub-overlap processing chunks.
+             * @brief Performs everything that is needed to maintain the state of agents and rasters among sub-overlap processing chunks.
              * 
              */
-            void initializeAgentsAndRastersState();
+            void prepareAgentsAndRastersStateForCurrentStep();
 
             /**
              * @brief Updates the average time that agents have spent executing phase of type 'executingPhaseType'.
