@@ -5,12 +5,12 @@
 	<seed value="1234"/>
 	<logs printInConsole="false" printInstrumentation="true"/>
 	<mpi overlapSizeMPI="2" subpartitioningMode="4"/>
-	<mpiAutoAdjustment autoMode="false" initialPartitioning="false" rebalancingFreq="3" maximumLoadPerNode="0.1" maximumPercOfUnbalance="200.0"/>
+	<mpiAutoAdjustment autoMode="true" initialPartitioning="false" rebalancingFreq="3" maximumLoadPerNode="0.1" maximumPercOfUnbalance="200.0"/>
 	<!--<mpiAutoAdjustment initialPartitioning="true" rebalancingFreq="0" maximumPercOfUnbalance="50.0" loadLowerThreshold="0.025" loadUpperThreshold="0.05"/>-->
 
-	<numSteps value="10" serializeResolution="1"/>
-	<size width="20" height="20"/>
-	<Bugs numBugs="17" maxBugMovement="2" maxFoodConsumption="10" survivalProbability="95" initialBugSizeMean="1" initialBugSizeSD="0.7"/>
+	<numSteps value="7" serializeResolution="1"/>
+	<size width="60" height="60"/>
+	<Bugs numBugs="50" maxBugMovement="2" maxFoodConsumption="10" survivalProbability="95" initialBugSizeMean="1" initialBugSizeSD="0.7"/>
 	<Predators numPredators="0" maxPredatorHuntDistance="1"/>
 	<Raster maxFoodProduction = "0"/>
 </config>
