@@ -200,7 +200,7 @@ namespace Engine {
                         void* package = (char*) agentsPackageArray + j * sizeOfAgentsPackage;
                         Agent* agent = MpiFactory::instance()->createAndFillAgent(agentsTypeName, package);
 
-                        if (not _schedulerInstance->_nodeSpace.ownedAreaWithOuterOverlaps.contains(agent->getPosition()))
+                        if (not _schedulerInstance->_nodeSpace.ownedAreaWithOuterOverlap.contains(agent->getPosition()))
                                 _schedulerInstance->_world->addAgent(agent, false);
                     }
                     free(agentsPackageArray);
@@ -441,15 +441,14 @@ std::cout << CreateStringStream("DIVIDE TEST COMPLETED. executingAgentsEstimated
         }
     }
 
-    void MPIAutoAdjustment::saveCurrentSpaces(MPINodesMap& spaces)
+    void MPIAutoAdjustment::saveSpaces(MPINodesMap& spaces)
     {
         spaces = _schedulerInstance->_mpiNodesMapToSend;
     }
 
-    void MPIAutoAdjustment::sendAllNewSpacesToAllNodes(MPINodesMap& newSpaces)
+    void MPIAutoAdjustment::sendSpacesToAllNodes(const MPINodesMap& spaces)
     {
-        newSpaces = _schedulerInstance->_mpiNodesMapToSend;
-        int amountOfNodesToSend = newSpaces.size();
+        int amountOfNodesToSend = spaces.size();
 
         MPIMultiNode::Coordinates coordinatesForSize;
         int sizeOfCoordinates = sizeof(coordinatesForSize);
@@ -457,7 +456,7 @@ std::cout << CreateStringStream("DIVIDE TEST COMPLETED. executingAgentsEstimated
         void* coordinatesArray = malloc(amountOfNodesToSend * sizeOfCoordinates);
 
         int i = 0;
-        for (MPINodesMap::const_iterator it = newSpaces.begin(); it != newSpaces.end(); ++it)
+        for (MPINodesMap::const_iterator it = spaces.begin(); it != spaces.end(); ++it)
         {
             int nodeID = it->first;
             Rectangle<int> nodeArea = it->second.ownedArea;
@@ -483,7 +482,7 @@ std::cout << CreateStringStream("DIVIDE TEST COMPLETED. executingAgentsEstimated
         free(coordinatesArray);
     }
 
-    void MPIAutoAdjustment::receiveNewSpacesFromMasterNode(MPINodesMap& newSpaces) const
+    void MPIAutoAdjustment::receiveSpacesFromMasterNode(MPINodesMap& spaces) const
     {
         int amountOfNodesToReceive;
         MPI_Recv(&amountOfNodesToReceive, 1, MPI_INT, _schedulerInstance->_masterNodeID, eNumCoordinates, _schedulerInstance->_activeProcessesComm, MPI_STATUS_IGNORE);
@@ -499,27 +498,27 @@ std::cout << CreateStringStream("DIVIDE TEST COMPLETED. executingAgentsEstimated
             void* package = (char*) coordinatesArray + processID * sizeOfCoordinates;
             MPIMultiNode::Coordinates* coordinates = (MPIMultiNode::Coordinates*) package;
 
-            if (newSpaces.find(processID) == newSpaces.end()) 
+            if (spaces.find(processID) == spaces.end()) 
             {
-                MPINode mpiNode;
+                MPINode mpiNode = MPINode();
                 mpiNode.ownedArea = Rectangle<int>(coordinates->left, coordinates->top, coordinates->right, coordinates->bottom);
-                newSpaces[processID] = mpiNode;
+                spaces[processID] = mpiNode;
             }
         }
 
         free(coordinatesArray);
     }
 
-    void MPIAutoAdjustment::generateNewSpacesOverlapsAndNeighbours(MPINodesMap& newSpaces) const
+    void MPIAutoAdjustment::generateSpacesOverlapsAndNeighbours(MPINodesMap& spaces) const
     {
-        for (MPINodesMap::iterator it = newSpaces.begin(); it != newSpaces.end(); ++it)
+        for (MPINodesMap::iterator it = spaces.begin(); it != spaces.end(); ++it)
             _schedulerInstance->generateOverlapAreas(it->second);
 
-        for (MPINodesMap::iterator it1 = newSpaces.begin(); it1 != newSpaces.end(); ++it1)
+        for (MPINodesMap::iterator it1 = spaces.begin(); it1 != spaces.end(); ++it1)
         {
             int node1ID = it1->first;
 
-            for (MPINodesMap::iterator it2 = std::next(it1); it2 != newSpaces.end(); ++it2)
+            for (MPINodesMap::iterator it2 = std::next(it1); it2 != spaces.end(); ++it2)
             {
                 int node2ID = it2->first;
 
@@ -540,6 +539,46 @@ std::cout << CreateStringStream("DIVIDE TEST COMPLETED. executingAgentsEstimated
         }
     }
 
+    void MPIAutoAdjustment::printSpaces(const MPINodesMap& spaces, const bool& oldType) const
+    {
+        std::stringstream ss;
+
+        if (oldType) ss << "[Process ID: " << _schedulerInstance->getId() << "] oldSpaces:\n";
+        else ss << "[Process ID: " << _schedulerInstance->getId() << "] newSpaces:\n";
+
+        for (MPINodesMap::const_iterator it = spaces.begin(); it != spaces.end(); ++it)
+        {
+            ss << "node id: " << it->first << ":\n";
+            ss << "\townedArea: " << it->second.ownedArea << "\n";
+            ss << "\townedAreaWithOuterOverlap: " << it->second.ownedAreaWithOuterOverlap << "\n";
+            ss << "\townedAreaWithoutInnerOverlap: " << it->second.ownedAreaWithoutInnerOverlap << "\n";
+            ss << "\n"; 
+        }
+        std::cout << ss.str();
+    }
+
+    void MPIAutoAdjustment::removeNonBelongingAgentsToMPINode(const MPINode& mpiNode)
+    {
+        std::vector<Agent*> agentsToRemove;
+
+        for (AgentsMap::const_iterator itAgent = _schedulerInstance->_world->beginAgents(); itAgent != _schedulerInstance->_world->endAgents(); ++itAgent)
+        {
+            AgentPtr agentPtr = itAgent->second;
+            Agent* agent = agentPtr.get();
+
+            if (not mpiNode.ownedAreaWithOuterOverlap.contains(agent->getPosition()))
+                agentsToRemove.push_back(agent);
+        }
+
+        _schedulerInstance->removeAgentsInVector(agentsToRemove);
+    }
+
+    void MPIAutoAdjustment::removeMasterNodeNoNNeededAgents(const MPINodesMap& oldSpaces)
+    {
+        if (_schedulerInstance->getId() == _schedulerInstance->_masterNodeID)
+            removeNonBelongingAgentsToMPINode(oldSpaces.at(_schedulerInstance->_masterNodeID));
+    }
+
     void MPIAutoAdjustment::initializeAgentsToSendMap(std::map<int, std::map<std::string, AgentsList>>& agentsByTypeAndNode, const int& totalNumberOfSendingNodes) const
     {
         for (int processID = 0; processID < totalNumberOfSendingNodes; ++processID)
@@ -557,10 +596,30 @@ std::cout << CreateStringStream("DIVIDE TEST COMPLETED. executingAgentsEstimated
             int mpiNodeID = it->first;
             MPINode mpiNode = it->second;
             
-            if (mpiNode.ownedAreaWithOuterOverlaps.contains(agent.getPosition())) 
+            if (mpiNode.ownedAreaWithOuterOverlap.contains(agent.getPosition())) 
                 resultingSet.insert(mpiNodeID);
         }
         return resultingSet;
+    }
+
+    void MPIAutoAdjustment::printAgentsByTypeAndNodeToSend(const std::map<int, std::map<std::string, AgentsList>>& agentsByTypeAndNode) const
+    {
+        std::stringstream ss;
+        ss << "Node " << _schedulerInstance->getId() << " sending agents to:\n";
+        for (std::map<int, std::map<std::string, AgentsList>>::const_iterator it = agentsByTypeAndNode.begin(); it != agentsByTypeAndNode.end(); ++it)
+        {
+            ss << "\tnode = " << it->first << ":\n";
+            for (std::map<std::string, AgentsList>::const_iterator it2 = it->second.begin(); it2 != it->second.end(); ++it2)
+            {
+                ss << "\t\t type = " << it2->first << ": ";
+                for (AgentsList::const_iterator it3 = it2->second.begin(); it3 != it2->second.end(); ++it3) ss << it3->get()->getId() << ", ";
+                ss << "\n";
+            }
+            ss << "\t\t";
+            ss << "\n";
+        }
+        ss << "\n";
+        std::cout << ss.str();
     }
 
     void MPIAutoAdjustment::sendAgentsInMap(const std::map<int, std::map<std::string, AgentsList>>& agentsByTypeAndNode)
@@ -578,12 +637,6 @@ if (_schedulerInstance->_printInstrumentation) _schedulerInstance->_schedulerLog
         std::map<int, std::map<std::string, AgentsList>> agentsByTypeAndNode;
         initializeAgentsToSendMap(agentsByTypeAndNode, std::max(newSpaces.size(), oldSpaces.size()));
 
-        std::stringstream ss;
-        // ss << "[process ID: " << _schedulerInstance->getId() << "] agentsByTypeAndNode:\n";
-        // for (std::map<int, std::map<std::string, AgentsList>>::const_iterator it = agentsByTypeAndNode.begin(); it != agentsByTypeAndNode.end(); ++it)
-        //     ss << "node id: " << it->first << "\n";
-        // std::cout << ss.str();
-
         std::map<int, AgentsList> agentsToSendByNode;
         for (AgentsMap::const_iterator itAgent = _schedulerInstance->_world->beginAgents(); itAgent != _schedulerInstance->_world->endAgents(); ++itAgent)
         {
@@ -598,15 +651,15 @@ if (_schedulerInstance->_printInstrumentation) _schedulerInstance->_schedulerLog
             for (std::set<int>::const_iterator it = newNodesContainingAgent.begin(); it != newNodesContainingAgent.end(); ++it)
             {
                 int newNodeID = *it;
-//std::cout << CreateStringStream("[process ID: " << _schedulerInstance->getId() << "] checking agent: " << agent->getId() << "\tnewNodeID: " << newNodeID << "\n").str();
 
                 if (newNodeID != _schedulerInstance->getId())
                 {
                     if (oldNodesContainingAgent.find(newNodeID) == oldNodesContainingAgent.end())
                     {
-                        // if (_schedulerInstance->getId() == newNodeID)
+
+                        // if (agent->getId() == "Bug_31")
                         // {
-                        //     ss.clear();
+                        //     std::stringstream ss;
                         //     ss << "[process ID: " << _schedulerInstance->getId() << "] PUM! ==================================================================================================== \t agent: " << agent->getId() << "\tnewNodeID: " << newNodeID << "\n";
 
                         //     ss << "oldNodesContainingAgent:\n\t";
@@ -619,29 +672,29 @@ if (_schedulerInstance->_printInstrumentation) _schedulerInstance->_schedulerLog
                         //         ss << *it << ",";
                         //     ss << "\n";
 
-                        //     ss << "agent: " << agent->getId() << " position: " << agent->getPosition() << "\n";
+                            // ss << "agent: " << agent->getId() << " position: " << agent->getPosition() << "\n";
 
-                        //     ss << "oldSpaces:\n";
-                        //     for (MPINodesMap::const_iterator it = oldSpaces.begin(); it != oldSpaces.end(); ++it) 
-                        //     {
-                        //         ss << "node ID: " << it->first << "\n";
-                        //         ss << "\townedArea: " << it->second.ownedArea << "\n";
-                        //         ss << "\townedAreaWithOuterOverlaps: " << it->second.ownedAreaWithOuterOverlaps << "\n";
-                        //         ss << "\townedAreaWithoutInnerOverlap: " << it->second.ownedAreaWithoutInnerOverlap << "\n";
-                        //         ss << "\n";
-                        //     }
-                        //     ss << "\n";
+                            // ss << "oldSpaces:\n";
+                            // for (MPINodesMap::const_iterator it = oldSpaces.begin(); it != oldSpaces.end(); ++it) 
+                            // {
+                            //     ss << "node ID: " << it->first << "\n";
+                            //     ss << "\townedArea: " << it->second.ownedArea << "\n";
+                            //     ss << "\townedAreaWithOuterOverlap: " << it->second.ownedAreaWithOuterOverlap << "\n";
+                            //     ss << "\townedAreaWithoutInnerOverlap: " << it->second.ownedAreaWithoutInnerOverlap << "\n";
+                            //     ss << "\n";
+                            // }
+                            // ss << "\n";
 
-                        //     ss << "newSpaces:\n";
-                        //     for (MPINodesMap::const_iterator it = newSpaces.begin(); it != newSpaces.end(); ++it) 
-                        //     {
-                        //         ss << "node ID: " << it->first << "\n";
-                        //         ss << "\townedArea: " << it->second.ownedArea << "\n";
-                        //         ss << "\townedAreaWithOuterOverlaps: " << it->second.ownedAreaWithOuterOverlaps << "\n";
-                        //         ss << "\townedAreaWithoutInnerOverlap: " << it->second.ownedAreaWithoutInnerOverlap << "\n";
-                        //         ss << "\n";
-                        //     }
-                        //     ss << "\n";
+                            // ss << "newSpaces:\n";
+                            // for (MPINodesMap::const_iterator it = newSpaces.begin(); it != newSpaces.end(); ++it) 
+                            // {
+                            //     ss << "node ID: " << it->first << "\n";
+                            //     ss << "\townedArea: " << it->second.ownedArea << "\n";
+                            //     ss << "\townedAreaWithOuterOverlap: " << it->second.ownedAreaWithOuterOverlap << "\n";
+                            //     ss << "\townedAreaWithoutInnerOverlap: " << it->second.ownedAreaWithoutInnerOverlap << "\n";
+                            //     ss << "\n";
+                            // }
+                            // ss << "\n";
 
                         //     std::cout << ss.str();
 
@@ -656,24 +709,8 @@ if (_schedulerInstance->_printInstrumentation) _schedulerInstance->_schedulerLog
             }
         }
 
-        ss.clear();
-        ss << "Node " << _schedulerInstance->getId() << " sending agents to:\n";
-        for (std::map<int, std::map<std::string, AgentsList>>::const_iterator it = agentsByTypeAndNode.begin(); it != agentsByTypeAndNode.end(); ++it)
-        {
-            ss << "\tnode = " << it->first << ":\n";
-            for (std::map<std::string, AgentsList>::const_iterator it2 = it->second.begin(); it2 != it->second.end(); ++it2)
-            {
-                ss << "\t\t type = " << it2->first << ": ";
-                for (AgentsList::const_iterator it3 = it2->second.begin(); it3 != it2->second.end(); ++it3) ss << it3->get()->getId() << ", ";
-                ss << "\n";
-            }
-            ss << "\t\t";
-            ss << "\n";
-        }
-        ss << "\n";
-        std::cout << ss.str();
-
-//if (_schedulerInstance->_world->getCurrentStep() > 4) exit(0);
+//if (_schedulerInstance->_printInConsole) 
+printAgentsByTypeAndNodeToSend(agentsByTypeAndNode);
 
         sendAgentsInMap(agentsByTypeAndNode);
     }
@@ -725,24 +762,6 @@ if (_schedulerInstance->_printInstrumentation) _schedulerInstance->_schedulerLog
 
     }
 
-    void MPIAutoAdjustment::removeNonBelongingAgents(const MPINodesMap& newSpaces)
-    {
-        std::vector<Agent*> agentsToRemove;
-
-        MPINode ownMpiNode = newSpaces.at(_schedulerInstance->getId());
-
-        for (AgentsMap::const_iterator itAgent = _schedulerInstance->_world->beginAgents(); itAgent != _schedulerInstance->_world->endAgents(); ++itAgent)
-        {
-            AgentPtr agentPtr = itAgent->second;
-            Agent* agent = agentPtr.get();
-
-            if (not ownMpiNode.ownedAreaWithOuterOverlaps.contains(agent->getPosition()))
-                agentsToRemove.push_back(agent);
-        }
-
-        _schedulerInstance->removeAgentsInVector(agentsToRemove);
-    }
-
     void MPIAutoAdjustment::updateOwnStructures(const MPINodesMap& newSpaces)
     {
         int hey = _schedulerInstance->getId();
@@ -759,31 +778,34 @@ if (_schedulerInstance->_printInstrumentation) _schedulerInstance->_schedulerLog
     void MPIAutoAdjustment::rebalance(const int& newNumberOfProcesses)
     {
         MPINodesMap oldSpaces, newSpaces;
-        saveCurrentSpaces(oldSpaces);
 
         if (_schedulerInstance->getId() == _schedulerInstance->_masterNodeID)
         {
+            saveSpaces(oldSpaces);
+            sendSpacesToAllNodes(oldSpaces);
+
             _schedulerInstance->resetPartitioning(newNumberOfProcesses);
             _schedulerInstance->divideSpace();
             
-            sendAllNewSpacesToAllNodes(newSpaces);
+            saveSpaces(newSpaces);
+            sendSpacesToAllNodes(newSpaces);
         }
         else
-            receiveNewSpacesFromMasterNode(newSpaces);
-            
-        generateNewSpacesOverlapsAndNeighbours(newSpaces);
+        {
+            receiveSpacesFromMasterNode(oldSpaces);
+            receiveSpacesFromMasterNode(newSpaces);
+        }
 
-        // std::stringstream ss;
-        // ss << "newSpaces:\n";
-        // for (MPINodesMap::const_iterator it = newSpaces.begin(); it != newSpaces.end(); ++it)
-        // {
-        //     ss << "node id: " << it->first << ":\n";
-        //     ss << "\townedArea: " << it->second.ownedArea << "\n";
-        //     ss << "\townedAreaWithOuterOverlaps: " << it->second.ownedAreaWithOuterOverlaps << "\n";
-        //     ss << "\townedAreaWithoutInnerOverlap: " << it->second.ownedAreaWithoutInnerOverlap << "\n";
-        //     ss << "\n";
-        // }
-        // std::cout << ss.str();
+        generateSpacesOverlapsAndNeighbours(oldSpaces);
+        generateSpacesOverlapsAndNeighbours(newSpaces);
+
+if (_schedulerInstance->_printInConsole) 
+{
+    printSpaces(oldSpaces, true);
+    printSpaces(newSpaces, false);
+}
+
+        removeMasterNodeNoNNeededAgents(oldSpaces);
 
         sendAgentsToOtherNodesIfNecessary(newSpaces, oldSpaces);
         receiveAgentsFromOtherNodesIfNecessary(std::max(newSpaces.size(), oldSpaces.size()));
@@ -791,7 +813,7 @@ if (_schedulerInstance->_printInstrumentation) _schedulerInstance->_schedulerLog
         // sendRastersToOtherNodesIfNecessary(newSpaces, oldSpaces);
         // receiveRastersFromOtherNodesIfNecessary(std::max(newSpaces.size(), oldSpaces.size()));
 
-        removeNonBelongingAgents(newSpaces);
+        removeNonBelongingAgentsToMPINode(newSpaces.at(_schedulerInstance->getId()));
 
         updateOwnStructures(newSpaces);
 

@@ -211,9 +211,9 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
         // {
         //     if (_schedulerInstance->_world->rasterExists(rasterID) and _schedulerInstance->_world->isRasterDynamic(rasterID))
         //     {
-        //         for (int i = _nodeSpace.ownedAreaWithOuterOverlaps.top(); i < _nodeSpace.ownedAreaWithOuterOverlaps.bottom() + 1; ++i)
+        //         for (int i = _nodeSpace.ownedAreaWithOuterOverlap.top(); i < _nodeSpace.ownedAreaWithOuterOverlap.bottom() + 1; ++i)
         //         {
-        //             for (int j = _nodeSpace.ownedAreaWithOuterOverlaps.left(); j < _nodeSpace.ownedAreaWithOuterOverlaps.right() + 1; ++j)
+        //             for (int j = _nodeSpace.ownedAreaWithOuterOverlap.left(); j < _nodeSpace.ownedAreaWithOuterOverlap.right() + 1; ++j)
         //             {
         //                 Point2D<int> point = Point2D<int>(j, i);
         //                 _world->setValue(rasterID, point, -1);
@@ -352,7 +352,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
             AgentPtr agentPtr = it->second;
             Point2D<int> agentPosition = agentPtr.get()->getPosition();
 
-            if (not _nodeSpace.ownedAreaWithOuterOverlaps.contains(agentPosition))
+            if (not _nodeSpace.ownedAreaWithOuterOverlap.contains(agentPosition))
                 agentsToRemove.push_back(agentPtr.get());
         }
 
@@ -373,12 +373,12 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
 
     void MPIMultiNode::generateOverlapAreas(MPINode& mpiNode) const
     {
-        mpiNode.ownedAreaWithOuterOverlaps = mpiNode.ownedArea;
+        mpiNode.ownedAreaWithOuterOverlap = mpiNode.ownedArea;
         mpiNode.ownedAreaWithoutInnerOverlap = mpiNode.ownedArea;
 
         if (_numTasks == 1) return;
 
-        expandRectangleConsideringLimits(mpiNode.ownedAreaWithOuterOverlaps, _overlapSize);
+        expandRectangleConsideringLimits(mpiNode.ownedAreaWithOuterOverlap, _overlapSize);
         expandRectangleConsideringLimits(mpiNode.ownedAreaWithoutInnerOverlap, -_overlapSize, false);
     }
 
@@ -874,7 +874,7 @@ if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<
                     if (agentsByID.find(agent->getId()) != agentsByID.end())
                         _world->eraseAgent(agentsByID.at(agent->getId()).get());
 
-                    if (_nodeSpace.ownedAreaWithOuterOverlaps.contains(agent->getPosition()))
+                    if (_nodeSpace.ownedAreaWithOuterOverlap.contains(agent->getPosition()))
                     {
                         _world->addAgent(agent);
                         _executedAgentsInStep.insert(agent->getId());
@@ -896,7 +896,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
         for (std::list<int>::const_iterator potentialNeighboursIt = potentialNeighbours.begin(); potentialNeighboursIt != potentialNeighbours.end(); ++potentialNeighboursIt)
         {
             int potentialNeighbourID = *potentialNeighboursIt;
-            Rectangle<int> potentialNeighbourArea = _nodeSpace.neighbours.at(potentialNeighbourID)->ownedAreaWithOuterOverlaps;
+            Rectangle<int> potentialNeighbourArea = _nodeSpace.neighbours.at(potentialNeighbourID)->ownedAreaWithOuterOverlap;
 
             if (potentialNeighbourArea.contains(agentPosition))
                 subOverlapNeighboursIDs.push_back(potentialNeighbourID);
@@ -1079,7 +1079,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
                 for (std::list<int>::const_iterator neighboursIt = _nodeSpace.innerSubOverlapsNeighbours.at(subOverlapID).begin(); neighboursIt != _nodeSpace.innerSubOverlapsNeighbours.at(subOverlapID).end(); ++neighboursIt)
                 {
                     int neighbourID = *neighboursIt;
-                    if (_nodeSpace.neighbours.at(neighbourID)->ownedAreaWithOuterOverlaps.contains(point))
+                    if (_nodeSpace.neighbours.at(neighbourID)->ownedAreaWithOuterOverlap.contains(point))
                         neighbourIDs.push_back(neighbourID);
                 }
                 break;
@@ -1092,7 +1092,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
         for (std::map<int, MPINode*>::const_iterator it = _nodeSpace.neighbours.begin(); it != _nodeSpace.neighbours.end(); ++it)
         {
             int neighbourID = it->first;
-            Rectangle<int> neighbourAreaWithOuterOverlap = it->second->ownedAreaWithOuterOverlaps;
+            Rectangle<int> neighbourAreaWithOuterOverlap = it->second->ownedAreaWithOuterOverlap;
 
             if (neighbourAreaWithOuterOverlap.contains(point))
                 neighbourIDs.push_back(neighbourID);
@@ -1169,7 +1169,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
             int changedValue = _world->getValue(rasterIndex, position);
 
             bool isInInnerOverlapArea = _nodeSpace.ownedArea.contains(position) and not _nodeSpace.ownedAreaWithoutInnerOverlap.contains(position);
-            bool isInOuterOverlapArea = _nodeSpace.ownedAreaWithOuterOverlaps.contains(position) and not _nodeSpace.ownedArea.contains(position);
+            bool isInOuterOverlapArea = _nodeSpace.ownedAreaWithOuterOverlap.contains(position) and not _nodeSpace.ownedArea.contains(position);
 
             if (isInInnerOverlapArea or isInOuterOverlapArea)
             {

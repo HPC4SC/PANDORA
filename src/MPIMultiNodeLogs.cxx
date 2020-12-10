@@ -84,7 +84,7 @@ namespace Engine {
         ss << "OWN STRUCTURES AFTER MPI:" << std::endl;
         ss << "ownedAreaWithoutInnerOverlap: " << _schedulerInstance->_nodeSpace.ownedAreaWithoutInnerOverlap << std::endl;
         ss << "ownedArea: " << _schedulerInstance->_nodeSpace.ownedArea << std::endl;
-        ss << "ownedAreaWithOuterOverlaps: " << _schedulerInstance->_nodeSpace.ownedAreaWithOuterOverlaps << std::endl;
+        ss << "ownedAreaWithOuterOverlap: " << _schedulerInstance->_nodeSpace.ownedAreaWithOuterOverlap << std::endl;
         for (std::map<int, MPINode*>::const_iterator it = _schedulerInstance->_nodeSpace.neighbours.begin(); it != _schedulerInstance->_nodeSpace.neighbours.end(); ++it)
         {
             ss << "NeighbourID: " << it->first << "\tCoordinates: " << it->second->ownedArea << std::endl;
@@ -180,7 +180,7 @@ namespace Engine {
             for (int j = 0; j < agentsMatrix[i].size(); ++j)
             {
                 Point2D<int> point = Point2D<int>(j, i);
-                if (printAllMatrix or _schedulerInstance->_nodeSpace.ownedAreaWithOuterOverlaps.contains(point))
+                if (printAllMatrix or _schedulerInstance->_nodeSpace.ownedAreaWithOuterOverlap.contains(point))
                 {
                     if (agentsMatrix[j][i].empty()) ss << "-----";
 
@@ -246,7 +246,7 @@ namespace Engine {
             for (int j = 0; j < raster.getSize().getWidth(); ++j)
             {
                 Point2D<int> point = Point2D<int>(j, i);
-                if (_schedulerInstance->_nodeSpace.ownedAreaWithOuterOverlaps.contains(point)) 
+                if (_schedulerInstance->_nodeSpace.ownedAreaWithOuterOverlap.contains(point)) 
                 {
                     if (discrete) ss << raster.getDiscreteValue(point);
                     else ss << raster.getValue(point);

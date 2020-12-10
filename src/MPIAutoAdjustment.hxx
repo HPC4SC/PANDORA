@@ -215,32 +215,54 @@ namespace Engine
             void doWorkersForRebalance(bool& neededToRebalance, int& newNumberOfProcesses);
 
             /**
-             * @brief Saves the current partitioning status at 'spaces'.
+             * @brief Saves the current partitioning scheme at 'spaces'.
              * 
              * @param spaces MPINodesMap&
              */
-            void saveCurrentSpaces(MPINodesMap& spaces);
+            void saveSpaces(MPINodesMap& spaces);
 
             /**
-             * @brief Sends all the just computed partitioning spaces to all nodes in order to let know them whether they need to send to other nodes or discard their in-local-memory agents and rasters. It lets the new partitioning in 'newSpaces'.
+             * @brief Sends the partitioning scheme 'spaces' to all the nodes.
              * 
-             * @param newSpaces MPINodesMap&
+             * @param spaces const MPINodesMap&
              */
-            void sendAllNewSpacesToAllNodes(MPINodesMap& newSpaces);
+            void sendSpacesToAllNodes(const MPINodesMap& spaces);
 
             /**
-             * @brief Receives the new spaces resulting from the last partitining performed by the master node. It lets the new partitioning in 'newSpaces'.
+             * @brief Receives the partitioning scheme performed by the master node. It lets the new partitioning in 'spaces'.
              * 
-             * @param newSpaces MPINodesMap&
+             * @param spaces MPINodesMap&
              */
-            void receiveNewSpacesFromMasterNode(MPINodesMap& newSpaces) const;
+            void receiveSpacesFromMasterNode(MPINodesMap& spaces) const;
 
             /**
-             * @brief Fills up the 'newSpaces' data structure with the overlap areas and their corresponding neighbours.
+             * @brief Fills up the 'spaces' data structure with the overlap areas and their corresponding neighbours.
              * 
              * @param newSpaces const MPINodesMap&
              */
-            void generateNewSpacesOverlapsAndNeighbours(MPINodesMap& newSpaces) const;
+            void generateSpacesOverlapsAndNeighbours(MPINodesMap& spaces) const;
+
+            /**
+             * @brief Prints the partitioning scheme at 'spaces'. The 'oldType' param indicates whether if they are the old or the new spaces to print.
+             * 
+             * @param spaces const MPINodesMap&
+             * @param oldType const bool&
+             */
+            void printSpaces(const MPINodesMap& spaces, const bool& oldType) const;
+
+            /**
+             * @brief Removes the non-belonging agents considering 'ownMpiNode'.
+             * 
+             * @param mpiNode const MPINode&
+             */
+            void removeNonBelongingAgentsToMPINode(const MPINode& mpiNode);
+
+            /**
+             * @brief Removes the non-needed agents in the master node, since it had them all the perform the rebalance.
+             * 
+             * @param oldSpaces const MPINode&
+             */
+            void removeMasterNodeNoNNeededAgents(const MPINodesMap& oldSpaces);
 
             /**
              * @brief Initializes the map 'agentsByTypeAndNode' considering the 'totalNumberOfSendingNodes'.
@@ -258,6 +280,13 @@ namespace Engine
              * @return std::set<int> 
              */
             std::set<int> getNodesContainingAgent(const Agent& agent, const MPINodesMap& spaces) const;
+
+            /**
+             * @brief Prints the 'agentsByTypeAndNode' data structure.
+             * 
+             * @param agentsByTypeAndNode const std::map<int, std::map<std::string, AgentsList>>&
+             */
+            void printAgentsByTypeAndNodeToSend(const std::map<int, std::map<std::string, AgentsList>>& agentsByTypeAndNode) const;
 
             /**
              * @brief Sends the agents in agentsByTypeAndNode->second->second to their corresponding nodes agentsByTypeAndNode->first.
@@ -295,13 +324,6 @@ namespace Engine
              * @param numberOfNodesToReceiveFrom const int&
              */
             void receiveRastersFromOtherNodesIfNecessary(const int& numberOfNodesToReceiveFrom);
-
-            /**
-             * @brief Removes the non-belonging agents considering the current space of the calling node.
-             * 
-             * @param newSpaces const MPINodesMap&
-             */
-            void removeNonBelongingAgents(const MPINodesMap& newSpaces);
 
             /**
              * @brief Updates the partitioning data structures for the calling node.
