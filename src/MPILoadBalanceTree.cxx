@@ -45,6 +45,11 @@ namespace Engine {
         _world = world;
     }
 
+    int MPILoadBalanceTree::getNumberOfPartitions() const
+    {
+        return _numPartitions;
+    }
+
     void MPILoadBalanceTree::setNumberOfPartitions(const int& numberOfPartitions)
     {
         _numPartitions = numberOfPartitions;
@@ -60,9 +65,11 @@ namespace Engine {
 
     void MPILoadBalanceTree::resetTree()
     {
-        if (_root != NULL) 
+        if (_root) 
         {
-            destroyTree(_root);
+            delete _root;
+            _root = NULL;
+
             initializeTree();
         }
     }
@@ -189,7 +196,7 @@ namespace Engine {
 
     void MPILoadBalanceTree::destroyTree(node<Rectangle<int>>* leaf)
     {
-        if (leaf != NULL) 
+        if (leaf)
         {
             destroyTree(leaf->left);
             destroyTree(leaf->right);

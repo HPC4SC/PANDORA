@@ -117,9 +117,10 @@ namespace Engine
              * 
              * @param numberOfProcessesToEstimate const int&
              * @param executingAgentsEstimatedTime const double&
+             * @param isPartitioningSuitable bool&
              * @return double 
              */
-            double estimateTotalCost(const int& numberOfProcessesToEstimate, const double& executingAgentsEstimatedTime);
+            double estimateTotalCost(const int& numberOfProcessesToEstimate, const double& executingAgentsEstimatedTime, bool& isPartitioningSuitable);
 
             /**
              * @brief Explores possibilities of improvement the average cost trying to double the number of processes in each trial. When it founds a local minimum it stops and returns that number of processes.
@@ -142,12 +143,13 @@ namespace Engine
             int exploreDown(const int& initialNumberOfProcesses, const double& totalCost, const double& executingAgentsEstimatedTime);
 
             /**
-             * @brief Explores the minimum cost performing a step test for different number of nodes. Returns the number of processes that gets a local minimum cost.
+             * @brief Explores the minimum cost performing a step test for different number of nodes. If a rebalance is needed, it returns true (false otherwise). If the minimum cost is gotten with the current _numTasks, this function returns false (true otherwise, and the optimal number of processes is let in 'numberOfProcessesAtMinimumCost'). 
              * 
              * @param agentPhasesAVGTime const double&
-             * @return int
+             * @param numberOfProcessesAtMinimumCost int&
+             * @return bool
              */
-            int exploreMinimumCost(const double& agentPhasesAVGTime);
+            bool exploreMinimumCost(const double& agentPhasesAVGTime, int& numberOfProcessesAtMinimumCost);
 
             /**
              * @brief Sends the new number of processes 'numberOfProcesses' to all the working nodes.
@@ -251,13 +253,6 @@ namespace Engine
             void printSpaces(const MPINodesMap& spaces, const bool& oldType) const;
 
             /**
-             * @brief Removes the non-belonging agents considering 'ownMpiNode'.
-             * 
-             * @param mpiNode const MPINode&
-             */
-            void removeNonBelongingAgentsToMPINode(const MPINode& mpiNode);
-
-            /**
              * @brief Removes the non-needed agents in the master node, since it had them all the perform the rebalance.
              * 
              * @param oldSpaces const MPINode&
@@ -273,13 +268,13 @@ namespace Engine
             void initializeAgentsToSendMap(std::map<int, std::map<std::string, AgentsList>>& agentsByTypeAndNode, const int& totalNumberOfSendingNodes) const;
 
             /**
-             * @brief Gets the node IDs of the spaces physically containing the agent.
+             * @brief Gets the node IDs of the spaces physically containing the 'position'.
              * 
-             * @param agent 
-             * @param spaces 
+             * @param position const Point2D<int>&
+             * @param spaces const MPINodesMap&
              * @return std::set<int> 
              */
-            std::set<int> getNodesContainingAgent(const Agent& agent, const MPINodesMap& spaces) const;
+            std::set<int> getNodesContainingPosition(const Point2D<int>& position, const MPINodesMap& spaces) const;
 
             /**
              * @brief Prints the 'agentsByTypeAndNode' data structure.
@@ -311,6 +306,28 @@ namespace Engine
             void receiveAgentsFromOtherNodesIfNecessary(const int& numberOfNodesToReceiveFrom);
 
             /**
+             * @brief Removes the non-belonging agents considering 'mpiNode'.
+             * 
+             * @param mpiNode const MPINode&
+             */
+            void removeNonBelongingAgentsToMPINode(const MPINode& mpiNode);
+
+            /**
+             * @brief Initializes the map 'rastersValuesByNode' considering the 'totalNumberOfSendingNodes'.
+             * 
+             * @param rastersValuesByNode std::map<int, MapOfValuesByRaster>&
+             * @param totalNumberOfSendingNodes const int&
+             */
+            void initializeRasterValuesToSendMap(std::map<int, MapOfValuesByRaster>& rastersValuesByNode, const int& totalNumberOfSendingNodes) const;
+
+            /**
+             * @brief Sends the raster cells in rastersValuesByNode->second->second to their corresponding nodes rastersValuesByNode->first.
+             * 
+             * @param rastersValuesByNode const std::map<int, MapOfValuesByRaster>&
+             */
+            void sendRastersInMap(const std::map<int, MapOfValuesByRaster>& rastersValuesByNode);
+
+            /**
              * @brief Sends those raster cells that the calling node contains to the rest of the nodes if necessary (according to the new scheme 'newSpaces').
              * 
              * @param newSpaces const MPINodesMap&
@@ -326,6 +343,13 @@ namespace Engine
             void receiveRastersFromOtherNodesIfNecessary(const int& numberOfNodesToReceiveFrom);
 
             /**
+             * @brief Removes the non-belonging raster cells considering 'mpiNode'.
+             * 
+             * @param mpiNode const MPINode&
+             */
+            void removeNonBelongingRasterCellsToMPINode(const MPINode& mpiNode);
+
+            /**
              * @brief Updates the partitioning data structures for the calling node.
              * 
              * @param newSpaces const MPINodesMap&
@@ -333,31 +357,24 @@ namespace Engine
             void updateOwnStructures(const MPINodesMap& newSpaces);
 
             /**
-             * @brief Puts the non-needed workers to sleep.
-             * 
-             * @param newNumberOfProcesses const int&
-             */
-            void putNonNeededWorkersToSleep(const int& newNumberOfProcesses);
-
-            /**
-             * @brief Rebalances the current space with 'numberOfProcesses'.
+             * @brief Rebalances the current space with 'numberOfProcesses'. To do so, the nodes send the needed agents and raster cells among them, working the master and the workers together.
              * 
              * @param numberOfProcesses const int&
              */
-            void rebalance(const int& numberOfProcesses);
-
-            /**
-             * @brief Puts to sleep nodes if necessary, according the the 'numberOfRequestedProcesses'.
-             * 
-             * @param numberOfRequestedProcesses const int&
-             */
-            void putToSleepNodesIfNecessary(const int& numberOfRequestedProcesses);
+            void rebalanceAgentsAndRastersAmongNodes(const int& numberOfProcesses);
 
             /**
              * @brief Writes the final state of the rebalancing just performed in the log file of each process.
              * 
              */
             void writeStateAfterRebalanceInLog();
+
+            /**
+             * @brief Puts the non-needed workers to sleep.
+             * 
+             * @param newNumberOfProcesses const int&
+             */
+            void putNonNeededWorkersToSleep(const int& newNumberOfProcesses);
 
         public:
 

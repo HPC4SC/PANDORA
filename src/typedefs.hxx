@@ -36,7 +36,7 @@ namespace Engine
     typedef std::map<Point2D<int>, int> MapOfPositionsAndValues;
     typedef std::map<int, MapOfPositionsAndValues> MapOfValuesByRaster;
 
-    //! List of Mpi messages sent by the scheduler
+    /** List of Mpi messages sent by the scheduler **/
     enum MpiMessageType
     {
         eNumProcesses = 1,
@@ -86,9 +86,10 @@ namespace Engine
         eProcessWakeUp = 72,
         eProcessSleep = 73,
         eSendAgentPhasesTotalTime = 74,
-        ePrepareToRepartition = 75,
-        eTypeOfEventAfterWakeUp = 76,
-        eNumberOfProcessesAndStep = 77,
+        eCheckToRepartition = 75,
+        ePrepareToRepartition = 76,
+        eTypeOfEventAfterWakeUp = 77,
+        eNumberOfProcessesAndStep = 78,
 
         eAgentPhasesTotalTime = 80
     };
@@ -98,9 +99,11 @@ namespace Engine
         eMessage_Die = 100,
         eMessage_SendAgentPhasesTotalTime_true = 101,
         eMessage_SendAgentPhasesTotalTime_false = 102,
-        eMessage_PrepareToRepartition_true = 103,
-        eMessage_PrepareToRepartition_false = 104,
-        eMessage_AwakeToRepartition = 105
+        eMessage_CheckToRepartition_true = 103,
+        eMessage_CheckToRepartition_false = 104,
+        eMessage_PrepareToRepartition_true = 105,
+        eMessage_PrepareToRepartition_false = 106,
+        eMessage_AwakeToRepartition = 107
     };
 
     enum ExecutingPhaseType

@@ -265,14 +265,15 @@ namespace Engine
 
         while (_step < _config->getNumSteps())
         {
-            std::cout << CreateStringStream("[Process #" << getId() << "] step " << _step << "\n").str();
+            std::cout << "[Process #" + std::to_string(getId()) + "] step " + std::to_string(_step) + "\n";
 
             step();
             engineStep();
             
             ++_step;
         }
-std::cout << CreateStringStream("[Process #" << getId() << "] serializing \n").str();
+        
+        std::cout << "[Process #" + std::to_string(getId()) + "] serializing \n";
         // storing last step data
         if ( _step%_config->getSerializeResolution( )==0 )
         {

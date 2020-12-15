@@ -193,6 +193,13 @@ namespace Engine
             void setWorld(World* world);
 
             /**
+             * @brief Gets the _numPartitions member.
+             * 
+             * @return int 
+             */
+            int getNumberOfPartitions() const;
+
+            /**
              * @brief Sets the number of tasks (_numPartitions member) in which the space must be split.
              * 
              * @param numberOfPartitions const int&

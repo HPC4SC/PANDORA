@@ -55,7 +55,7 @@ namespace Engine {
         MPI_Comm_size(MPI_COMM_WORLD, &_numTasks);
         MPI_Comm_rank(MPI_COMM_WORLD, &_id);
 
-        _numTasksMax = _numTasks;
+        _numTasksMax = _numberOfActiveProcesses = _numTasks;
 
         initLogFileNames();
         initLoadBalanceTree();
@@ -95,7 +95,7 @@ namespace Engine {
             if (not distributeFromTheBeginning)
             {
                 waitSleeping(_masterNodeID);
-std::cout << CreateStringStream("[processID: " << getId() << "] outside waitSleeping()\n").str();
+std::cout << "[processID: " + std::to_string(getId()) + "] outside waitSleeping()\n";
             }
             else
                 receiveInitialSpacesFromNode(_masterNodeID);    printOwnNodeStructureAfterMPI();
@@ -108,7 +108,7 @@ std::cout << CreateStringStream("[processID: " << getId() << "] outside waitSlee
 
             stablishBoundaries();
 
-if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStream("\n").str());
+if (_printInstrumentation) _schedulerLogs->printInstrumentation("\n");
         }
     }
 
@@ -164,7 +164,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
         _world->createInitialRasters();
 
         double endTime = getWallTime();
-if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStream("[Process # " << getId() <<  "] MPIMultiNode::createInitialRasters()\tTOTAL TIME: " << endTime - initialTime).str());
+if (_printInstrumentation) _schedulerLogs->printInstrumentation("[Process # " + std::to_string(getId()) + "] MPIMultiNode::createInitialRasters()\tTOTAL TIME: " + std::to_string(endTime - initialTime));
     }
 
     void MPIMultiNode::createInitialAgents()
@@ -175,7 +175,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
 
         double endTime = getWallTime();
 
-if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStream("[Process # " << getId() <<  "] MPIMultiNode::createInitialAgents()\tTOTAL TIME: " << endTime - initialTime).str());
+if (_printInstrumentation) _schedulerLogs->printInstrumentation("[Process # " + std::to_string(getId()) + "] MPIMultiNode::createInitialAgents()\tTOTAL TIME: " + std::to_string(endTime - initialTime));
     }
 
     void MPIMultiNode::enableOnlyProcesses(const int& numberOfProcessesToEnable)
@@ -186,7 +186,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
         int* activeRanksArray = (int*) malloc(_numberOfActiveProcesses * sizeof(int));
 
         for (int i = 0; i < _numberOfActiveProcesses; ++i)
-                activeRanksArray[i] = i;
+            activeRanksArray[i] = i;
 
         MPI_Group worldGroup, activeGroup;
         MPI_Comm_group(MPI_COMM_WORLD, &worldGroup);
@@ -195,6 +195,8 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
         MPI_Comm_create_group(MPI_COMM_WORLD, activeGroup, eCreateGroupActive, &_activeProcessesComm);
         MPI_Group_free(&worldGroup);
         MPI_Group_free(&activeGroup);
+
+        //free(activeRanksArray);
 
         printActiveAndInactiveProcesses();
     }
@@ -267,7 +269,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
                 int newNumberOfProcesses = newNumberOfProcessesAndCurrentStep[0];
                 int currentStep = newNumberOfProcessesAndCurrentStep[1];
 
-std::cout << CreateStringStream("[process id: " << getId() << "] being awaken.... newNumberOfProcesses: " << newNumberOfProcesses << "\t currentStep: " << currentStep << "\n").str();
+std::cout << "[process id: " + std::to_string(getId()) + "] being awaken.... newNumberOfProcesses: " + std::to_string(newNumberOfProcesses) + "\t currentStep: " + std::to_string(currentStep) + "\n";
 
                 _numberOfActiveProcesses = newNumberOfProcesses;
                 _numTasks = newNumberOfProcesses;
@@ -284,26 +286,21 @@ std::cout << CreateStringStream("[process id: " << getId() << "] being awaken...
         _loadBalanceTree->divideSpace();
 
         double endTime = getWallTime();
-if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStream("[Process # " << getId() <<  "] MPIMultiNode::divideSpace()\tTOTAL TIME: " << endTime - initialTime).str());
+if (_printInstrumentation) _schedulerLogs->printInstrumentation("[Process # " + std::to_string(getId()) + "] MPIMultiNode::divideSpace()\tTOTAL TIME: " + std::to_string(endTime - initialTime));
 
         initialTime = getWallTime();
 
-        createNodesInformationToSend();
+        createNodesInformationToSendFromTree(*_loadBalanceTree, _mpiNodesMapToSend);
 
         endTime = getWallTime();
 
-if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStream("[Process # " << getId() <<  "] MPIMultiNode::createNodesInformationToSend()\tTOTAL TIME: " << endTime - initialTime).str());
+if (_printInstrumentation) _schedulerLogs->printInstrumentation("[Process # " + std::to_string(getId()) + "] MPIMultiNode::createNodesInformationToSendFromTree()\tTOTAL TIME: " + std::to_string(endTime - initialTime));
 
-
-        _schedulerLogs->writeInDebugFile(CreateStringStream("HEY THERE:").str());
+        _schedulerLogs->writeInDebugFile("HEY THERE:");
         _schedulerLogs->printAgentsMatrixInDebugFile(true);
 
-
-
-
-
-        if (not arePartitionsSuitable()) {
-            std::cout << CreateStringStream("[Process # " << getId() <<  "] MPIMultiNode::divideSpace() - Partitions not suitable. Maybe there are too many unnecessary MPI nodes for such a small space, or the overlap size is too wide.\n").str();
+        if (not arePartitionsSuitable(_mpiNodesMapToSend)) {
+            std::cout << "[Process # " + std::to_string(getId()) + "] MPIMultiNode::divideSpace() TRIED TO PERFORM PARTITIONING IN " + std::to_string(_numTasks) + " MPI TASKS - Partitions not suitable. Maybe there are too many unnecessary MPI nodes for such a small space, or the overlap size is too wide.\n";
             terminateAllMPIProcesses();
         }
     }
@@ -325,7 +322,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
         }
 
         double endTime = getWallTime();
-if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStream("[Process # " << getId() <<  "] MPIMultiNode::sendInitialSpacesToNodes()\tTOTAL TIME: " << endTime - initialTime).str());
+if (_printInstrumentation) _schedulerLogs->printInstrumentation("[Process # " + std::to_string(getId()) + "] MPIMultiNode::sendInitialSpacesToNodes()\tTOTAL TIME: " + std::to_string(endTime - initialTime));
     }
 
     void MPIMultiNode::receiveInitialSpacesFromNode(const int& masterNodeID)
@@ -338,7 +335,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
         fillOwnStructures(mpiNode);
 
         double endTime = getWallTime();
-if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStream("[Process # " << getId() <<  "] MPIMultiNode::receiveInitialSpacesFromNode()\tTOTAL TIME: " << endTime - initialTime).str());
+if (_printInstrumentation) _schedulerLogs->printInstrumentation("[Process # " + std::to_string(getId()) + "] MPIMultiNode::receiveInitialSpacesFromNode()\tTOTAL TIME: " + std::to_string(endTime - initialTime));
     }
 
     void MPIMultiNode::filterOutInitialAgents()
@@ -359,7 +356,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
         removeAgentsInVector(agentsToRemove);
 
         double endTime = getWallTime();
-if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStream("[Process # " << getId() <<  "] MPIMultiNode::filterOutInitialAgents()\tTOTAL TIME: " << endTime - initialTime).str());
+if (_printInstrumentation) _schedulerLogs->printInstrumentation("[Process # " + std::to_string(getId()) + "] MPIMultiNode::filterOutInitialAgents()\tTOTAL TIME: " + std::to_string(endTime - initialTime));
     }
 
     void MPIMultiNode::filterOutInitialRasters()
@@ -368,7 +365,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
 
 
         double endTime = getWallTime();
-if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStream("[Process # " << getId() <<  "] MPIMultiNode::filterOutInitialRasters()\tTOTAL TIME: " << endTime - initialTime).str());
+if (_printInstrumentation) _schedulerLogs->printInstrumentation("[Process # " + std::to_string(getId()) + "] MPIMultiNode::filterOutInitialRasters()\tTOTAL TIME: " + std::to_string(endTime - initialTime));
     }
 
     void MPIMultiNode::generateOverlapAreas(MPINode& mpiNode) const
@@ -420,7 +417,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
         }
         else
         {
-            std::cout << CreateStringStream("[Process # " << getId() <<  "] MPIMultiNode::generateInnerSubOverlapAreas() - Subpartitioning mode not implemented. Please, use mode 4 or mode 9.\n").str();
+            std::cout << "[Process # " + std::to_string(getId()) + "] MPIMultiNode::generateInnerSubOverlapAreas() - Subpartitioning mode not implemented. Please, use mode 4 or mode 9.\n";
             terminateAllMPIProcesses();
         }
         
@@ -545,15 +542,15 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
         _boundaries = _nodeSpace.ownedArea;
     }
 
-    void MPIMultiNode::addMPINodeToSendInMapItIsNot(const std::vector<Rectangle<int>>& partitions, const int& neighbourIndex)
+    void MPIMultiNode::addMPINodeToSendInMapIfItsNot(MPINodesMap& mpiNodesMapToSend, const std::vector<Rectangle<int>>& partitions, const int& neighbourIndex) const
     {
-        if (_mpiNodesMapToSend.find(neighbourIndex) == _mpiNodesMapToSend.end())
+        if (mpiNodesMapToSend.find(neighbourIndex) == mpiNodesMapToSend.end())
         {
             MPINode mpiNode;
             mpiNode.ownedArea = partitions[neighbourIndex];
             generateOverlapAreas(mpiNode);
 
-            _mpiNodesMapToSend[neighbourIndex] = mpiNode;
+            mpiNodesMapToSend[neighbourIndex] = mpiNode;
         }
     }
 
@@ -607,39 +604,48 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
         return doOverlap(rectangleAWithOuterOverlap, rectangleBWithOuterOverlap);
     }
 
-    void MPIMultiNode::createNodesInformationToSend()
+    void MPIMultiNode::createNodesInformationToSendFromTree(const MPILoadBalanceTree& loadBalanceTree, MPINodesMap& mpiNodesMapToSend) const
     {
         std::vector<Rectangle<int>> partitions;
-        _loadBalanceTree->getPartitionsFromTree(partitions);
+        loadBalanceTree.getPartitionsFromTree(partitions);
 
         for (int i = 0; i < partitions.size(); ++i)
         {
-            addMPINodeToSendInMapItIsNot(partitions, i);
+            addMPINodeToSendInMapIfItsNot(mpiNodesMapToSend, partitions, i);
 
             for (int j = i+1; j < partitions.size(); ++j)
             {
-                addMPINodeToSendInMapItIsNot(partitions, j);
+                addMPINodeToSendInMapIfItsNot(mpiNodesMapToSend, partitions, j);
 
                 if (areTheyNeighbours(partitions[i], partitions[j]))
                 {
-                    _mpiNodesMapToSend[i].neighbours[j] = new MPINode;
-                    _mpiNodesMapToSend[i].neighbours[j]->ownedArea = partitions[j];
+                    mpiNodesMapToSend[i].neighbours[j] = new MPINode;
+                    mpiNodesMapToSend[i].neighbours[j]->ownedArea = partitions[j];
 
-                    _mpiNodesMapToSend[j].neighbours[i] = new MPINode;
-                    _mpiNodesMapToSend[j].neighbours[i]->ownedArea = partitions[i];
+                    mpiNodesMapToSend[j].neighbours[i] = new MPINode;
+                    mpiNodesMapToSend[j].neighbours[i]->ownedArea = partitions[i];
                 }
             }
         }
     }
 
-    bool MPIMultiNode::arePartitionsSuitable()
+    bool MPIMultiNode::arePartitionsSuitable(const MPINodesMap& mpiNodesMapToSend) const
     {
         if (_numTasks == 1) return true;
 
-        for (MPINodesMap::const_iterator it = _mpiNodesMapToSend.begin(); it != _mpiNodesMapToSend.end(); ++it)
+        int multiplierMode;
+        if (_subpartitioningMode == eMode4) multiplierMode = 4;
+        else if (_subpartitioningMode == eMode9) multiplierMode = 3;
+        else 
         {
-            if (it->second.ownedArea.getSize().getWidth() < 4 * _overlapSize or
-                it->second.ownedArea.getSize().getHeight() < 4 * _overlapSize)
+            std::cout << "[Process # " + std::to_string(getId()) + "] MPIMultiNode::arePartitionsSuitable() - Subpartitioning mode not implemented.\n";
+            terminateAllMPIProcesses();
+        }
+
+        for (MPINodesMap::const_iterator it = mpiNodesMapToSend.begin(); it != mpiNodesMapToSend.end(); ++it)
+        {
+            if (it->second.ownedArea.getSize().getWidth() < multiplierMode * _overlapSize or
+                it->second.ownedArea.getSize().getHeight() < multiplierMode * _overlapSize)
                 return false;
         }
         return true;
@@ -673,15 +679,15 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
         if (_activeProcessesComm != MPI_COMM_NULL)
         {
             MPI_Comm_rank(_activeProcessesComm, &rank);
-            std::cout << CreateStringStream("[Process # " << getId() <<  "] active group rank: " << rank << " id: " << _id << "\n").str();
+            std::cout << "[Process # " + std::to_string(getId()) + "] active group rank: " + std::to_string(rank) + " id: " + std::to_string(_id) + "\n";
         }
         else if (MPI_COMM_WORLD != MPI_COMM_NULL)
         {
             MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-            std::cout << CreateStringStream("[Process # " << getId() <<  "] inactive group rank: " << rank << " id: " << _id << "\n").str();
+            std::cout << "[Process # " + std::to_string(getId()) + "] inactive group rank: " + std::to_string(rank) + " id: " + std::to_string(_id) + "\n";
         }
 
-        std::cout << CreateStringStream("\n").str();
+        std::cout << "\n";
     }
 
     /** RUN PROTECTED METHODS (CALLED BY INHERIT METHODS) **/
@@ -804,7 +810,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
         agentsVector.insert(agentsVector.end(), agentsToExecute.begin(), agentsToExecute.end());
 
         double endTime = getWallTime();
-if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStream("\n[Process # " << getId() <<  "] MPIMultiNode::executeAgentsInSubOverlap() OVERLAP: " << subOverlapID << "\tTOTAL TIME: " << endTime - initialTime).str());
+if (_printInstrumentation) _schedulerLogs->printInstrumentation("\n[Process # " + std::to_string(getId()) + "] MPIMultiNode::executeAgentsInSubOverlap() OVERLAP: " + std::to_string(subOverlapID) + "\tTOTAL TIME: " + std::to_string(endTime - initialTime));
     }
 
     void MPIMultiNode::initializeAgentsToSendMap(std::map<int, std::map<std::string, AgentsList>>& agentsByTypeAndNode) const
@@ -832,7 +838,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
         sendAgentsInMap(agentsByTypeAndNode);
 
         double endTime = getWallTime();
-if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStream("[Process # " << getId() <<  "] MPIMultiNode::sendGhostAgentsInMap() OVERLAP: " << subOverlapID << "\tTOTAL TIME: " << endTime - initialTime).str());
+if (_printInstrumentation) _schedulerLogs->printInstrumentation("[Process # " + std::to_string(getId()) + "] MPIMultiNode::sendGhostAgentsInMap() OVERLAP: " + std::to_string(subOverlapID) + "\tTOTAL TIME: " + std::to_string(endTime - initialTime));
     }
 
     void MPIMultiNode::receiveGhostAgentsFromNeighbouringNodes(const int& subOverlapID)
@@ -856,7 +862,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
                 int numberOfAgentsToReceive;
                 MPI_Recv(&numberOfAgentsToReceive, 1, MPI_INT, sendingNodeID, eNumGhostAgents, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTime() << " receiving numberOfAgentsToReceive: " << numberOfAgentsToReceive << " of type: " << agentsTypeName << "\tfrom node: " << sendingNodeID << "\n").str();
+if (_printInConsole) std::cout << "[Process # " + std::to_string(getId()) + "]\t" + std::to_string(getWallTime()) + " receiving numberOfAgentsToReceive: " + std::to_string(numberOfAgentsToReceive) + " of type: " + agentsTypeName + "\tfrom node: " + std::to_string(sendingNodeID) + "\n";
 
                 int sizeOfAgentPackage = MpiFactory::instance()->getSizeOfPackage(agentsTypeName);
                 
@@ -868,7 +874,7 @@ if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<
                     void* package = (char*) agentsPackageArray + j * sizeOfAgentPackage;
                     Agent* agent = MpiFactory::instance()->createAndFillAgent(agentsTypeName, package);
 
-if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTime() << " receiving agent: " << agent << "\tfrom node: " << sendingNodeID << "\n").str();
+if (_printInConsole) std::cout << "[Process # " + std::to_string(getId()) <<  "]\t" + std::to_string(getWallTime()) + " receiving agent: " + agent->getId() + "\tfrom node: " + std::to_string(sendingNodeID) + "\n";
 
                     AgentsMap agentsByID = _world->getAgentsMap();
                     if (agentsByID.find(agent->getId()) != agentsByID.end())
@@ -880,7 +886,7 @@ if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<
                         _executedAgentsInStep.insert(agent->getId());
                     }
                 }
-                free(agentsPackageArray);
+                //free(agentsPackageArray);
             }
         }
 
@@ -888,7 +894,7 @@ if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<
         //_world->sortAgentsListAlphabetically();     // Important when receiving agents asynchronously! Subsequent shuffles must obtain the same resulting list, so we need to sort the list of agents.
 
         double endTime = getWallTime();
-if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStream("[Process # " << getId() <<  "] MPIMultiNode::receiveGhostAgentsFromNeighbouringNodes() OVERLAP: " << subOverlapID << "\tTOTAL TIME: " << endTime - initialTime).str());
+if (_printInstrumentation) _schedulerLogs->printInstrumentation("[Process # " + std::to_string(getId()) + "] MPIMultiNode::receiveGhostAgentsFromNeighbouringNodes() OVERLAP: " + std::to_string(subOverlapID) + "\tTOTAL TIME: " + std::to_string(endTime - initialTime));
     }
 
     void MPIMultiNode::getRealNeighboursForAgent(std::list<int>& subOverlapNeighboursIDs, const std::list<int>& potentialNeighbours, const Point2D<int>& agentPosition) const
@@ -954,7 +960,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
         }
 
         double endTime = getWallTime();
-if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStream("[Process # " << getId() <<  "] MPIMultiNode::synchronizeAgentsIfNecessary() (PREPARATION OF THE DATA) OVERLAP: " << subOverlapID << "\tTOTAL TIME: " << endTime - initialTime).str());
+if (_printInstrumentation) _schedulerLogs->printInstrumentation("[Process # " + std::to_string(getId()) + "] MPIMultiNode::synchronizeAgentsIfNecessary() (PREPARATION OF THE DATA) OVERLAP: " + std::to_string(subOverlapID) + "\tTOTAL TIME: " + std::to_string(endTime - initialTime));
 
         sendGhostAgentsInMap(agentsByTypeAndNode, subOverlapID);
         receiveGhostAgentsFromNeighbouringNodes(subOverlapID);
@@ -975,7 +981,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
         }
         else
         {
-            std::cout << CreateStringStream("[Process # " << getId() <<  "] MPIMultiNode::addSubOverlapNeighboursFromPosition() - subOverlapID not valid: " << subOverlapID << "\n").str();
+            std::cout << "[Process # " + std::to_string(getId()) + "] MPIMultiNode::addSubOverlapNeighboursFromPosition() - subOverlapID not valid: " + std::to_string(subOverlapID) + "\n";
             terminateAllMPIProcesses();
         }
         
@@ -1046,7 +1052,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
         }
 
         double endTime = getWallTime();
-if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStream("[Process # " << getId() <<  "] MPIMultiNode::sendGhostAgentsToNeighbours() (PREPARATION OF THE DATA) OVERLAP: " << originalSubOverlapAreaID << "\tTOTAL TIME: " << endTime - initialTime).str());
+if (_printInstrumentation) _schedulerLogs->printInstrumentation("[Process # " + std::to_string(getId()) + "] MPIMultiNode::sendGhostAgentsToNeighbours() (PREPARATION OF THE DATA) OVERLAP: " + std::to_string(originalSubOverlapAreaID) + "\tTOTAL TIME: " + std::to_string(endTime - initialTime));
 
         sendGhostAgentsInMap(agentsByTypeAndNode, originalSubOverlapAreaID);
     }
@@ -1129,7 +1135,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
                 int numberOfPositions = positionsAndValues.size();
                 sendDataRequestToNode(&numberOfPositions, 1, MPI_INT, neighbourNodeID, eNumRasterPositions, MPI_COMM_WORLD);
 
-if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTime() << " sending numberOfPositions: " << numberOfPositions << " of raster: " << rasterIndex << "\tto node: " << neighbourNodeID << "\n").str();
+if (_printInConsole) std::cout << "[Process # " << std::to_string(getId()) <<  "]\t" << std::to_string(getWallTime()) << " sending numberOfPositions: " << std::to_string(numberOfPositions) << " of raster: " << std::to_string(rasterIndex) << "\tto node: " << std::to_string(neighbourNodeID) << "\n";
 
                 PositionAndValue positionAndValueArray[numberOfPositions];
 
@@ -1140,7 +1146,7 @@ if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<
                     positionAndValueArray[i].y = positionsAndValuesIt->first.getY();
                     positionAndValueArray[i].value = positionsAndValuesIt->second;
 
-if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTime() << " sending position: " << positionsAndValuesIt->first << " and value: " << positionsAndValuesIt->second << "\tto node: " << neighbourNodeID << "\n").str();
+if (_printInConsole) std::cout << "[Process # " + std::to_string(getId()) + "]\t" + std::to_string(getWallTime()) + " sending position: (" + std::to_string(positionsAndValuesIt->first.getX()) + "," + std::to_string(positionsAndValuesIt->first.getY()) + ") and value: " + std::to_string(positionsAndValuesIt->second) + "\tto node: " + std::to_string(neighbourNodeID) + "\n";
 
                     i++;
                 }
@@ -1149,7 +1155,7 @@ if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<
         }
 
         double endTime = getWallTime();
-if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStream("[Process # " << getId() <<  "] MPIMultiNode::sendRasterValuesInMap() OVERLAP: " << subOverlapID << "\tTOTAL TIME: " << endTime - initialTime).str());
+if (_printInstrumentation) _schedulerLogs->printInstrumentation("[Process # " + std::to_string(getId()) + "] MPIMultiNode::sendRasterValuesInMap() OVERLAP: " + std::to_string(subOverlapID) + "\tTOTAL TIME: " + std::to_string(endTime - initialTime));
     }
 
     void MPIMultiNode::sendRastersToNeighbours(const int& subOverlapID)
@@ -1188,7 +1194,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
         }
 
         double endTime = getWallTime();
-if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStream("[Process # " << getId() <<  "] MPIMultiNode::sendRastersToNeighbours() (PREPARATION OF THE DATA) OVERLAP: " << subOverlapID << "\tTOTAL TIME: " << endTime - initialTime).str());
+if (_printInstrumentation) _schedulerLogs->printInstrumentation("[Process # " + std::to_string(getId()) + "] MPIMultiNode::sendRastersToNeighbours() (PREPARATION OF THE DATA) OVERLAP: " + std::to_string(subOverlapID) + "\tTOTAL TIME: " + std::to_string(endTime - initialTime));
 
         sendRasterValuesInMap(rastersValuesByNode, subOverlapID);
 
@@ -1214,7 +1220,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
 
                 if (not _world->rasterExists(rasterIndex))
                 { 
-                    std::cout << CreateStringStream("[Process # " << getId() <<  "] MPIMultiNode::receiveRasters() - raster with index: " << rasterIndex << " not found.\n").str();
+                    std::cout << "[Process # " + std::to_string(getId()) + "] MPIMultiNode::receiveRasters() - raster with index: " + std::to_string(rasterIndex) + " not found.\n";
                     terminateAllMPIProcesses();
                 }
 
@@ -1231,7 +1237,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
                     Point2D<int> position = Point2D<int>(positionAndValue.x, positionAndValue.y);
                     int continuousValue = positionAndValue.value;
 
-if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTime() << " receiving raster index: " << rasterIndex << " position: " << position << " and value: " << continuousValue << "\tfrom node: " << sendingNodeID << "\n").str();
+if (_printInConsole) std::cout << "[Process # " << std::to_string(getId()) + "]\t" + std::to_string(getWallTime()) + " receiving raster index: " + std::to_string(rasterIndex) + " position: (" + std::to_string(position.getX()) + "," + std::to_string(position.getY()) + ") and value: " + std::to_string(continuousValue) + "\tfrom node: " + std::to_string(sendingNodeID) + "\n";
 
                     _world->getDynamicRaster(rasterIndex).setValue(position, continuousValue);
                 }
@@ -1239,7 +1245,7 @@ if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<
         }
 
         double endTime = getWallTime();
-if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStream("[Process # " << getId() <<  "] MPIMultiNode::receiveRasters() OVERLAP: " << subOverlapID << "\tTOTAL TIME: " << endTime - initialTime).str());
+if (_printInstrumentation) _schedulerLogs->printInstrumentation("[Process # " + std::to_string(getId()) + "] MPIMultiNode::receiveRasters() OVERLAP: " + std::to_string(subOverlapID) + "\tTOTAL TIME: " + std::to_string(endTime - initialTime));
     }
 
     void MPIMultiNode::clearRequests()
@@ -1304,7 +1310,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
 
     /** MPIAutoAdjustment CALLED ROUTINES **/
 
-    int MPIMultiNode::performDivideTest(const int& numberOfProcesses)
+    bool MPIMultiNode::performDivideTest(const int& numberOfProcesses, int& numberOfOverlappingCells)
     {
         MPILoadBalanceTree* testTree = new MPILoadBalanceTree();
 
@@ -1312,7 +1318,13 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
         testTree->initializeTree();
         testTree->setNumberOfPartitions(numberOfProcesses);
         testTree->divideSpace();
-        return getTotalNumberOfOverlappingCells(*testTree);
+
+        MPINodesMap mpiNodesMapToSend;
+        createNodesInformationToSendFromTree(*testTree, mpiNodesMapToSend);
+        if (not arePartitionsSuitable(mpiNodesMapToSend)) return false;
+
+        numberOfOverlappingCells = getTotalNumberOfOverlappingCells(*testTree);
+        return true;
     }
 
     void MPIMultiNode::resetPartitioning(const int& newNumberOfProcesses)
@@ -1325,7 +1337,6 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
                 delete itNeighbours->second;
         }
         _mpiNodesMapToSend.clear();
-
         _loadBalanceTree->resetTree();
         _loadBalanceTree->setNumberOfPartitions(newNumberOfProcesses);
     }
@@ -1351,7 +1362,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
                 int numberOfAgentsToSend = agentsToSend.size();
                 sendDataRequestToNode(&numberOfAgentsToSend, 1, MPI_INT, neighbourNodeID, eNumGhostAgents, MPI_COMM_WORLD);
 
-if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTime() << " sending numberOfAgents: " << numberOfAgentsToSend << " of type: " << agentsTypeName << "\tto node: " << neighbourNodeID << "\n").str();
+if (_printInConsole) std::cout << "[Process # " + std::to_string(getId()) + "]\t" + std::to_string(getWallTime()) + " sending numberOfAgents: " + std::to_string(numberOfAgentsToSend) + " of type: " + agentsTypeName + "\tto node: " + std::to_string(neighbourNodeID) + "\n";
 
                 int sizeOfAgentPackage = MpiFactory::instance()->getSizeOfPackage(agentsTypeName);
                 void* agentsPackageArray = malloc(numberOfAgentsToSend * sizeOfAgentPackage);
@@ -1362,7 +1373,7 @@ if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<
                 {
                     Agent* agent = itAgent->get();
 
- if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<  "]\t" << getWallTime() << " sending agent: " << agent << "\tto node: " << neighbourNodeID << "\n").str();
+ if (_printInConsole) std::cout << "[Process # " + std::to_string(getId()) + "]\t" + std::to_string(getWallTime()) + " sending agent: " + agent->getId() + "\tto node: " + std::to_string(neighbourNodeID) + "\n";
 
                     void* agentPackage = agent->fillPackage();
                     memcpy((char*) agentsPackageArray + i * sizeOfAgentPackage, agentPackage, sizeOfAgentPackage);
@@ -1390,7 +1401,7 @@ if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<
 
     void MPIMultiNode::updateEnvironmentState()
     {
-if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStream("[Process # " << getId() <<  "] MPIMultiNode::updateEnvironmentState() STEP: " << _world->getCurrentStep() << " ==================================================================================\n").str());
+if (_printInstrumentation) _schedulerLogs->printInstrumentation("[Process # " + std::to_string(getId()) +  "] MPIMultiNode::updateEnvironmentState() STEP: " + std::to_string(_world->getCurrentStep()) + " ==================================================================================\n");
 
         prepareAgentsAndRastersStateForCurrentStep();
         sendRastersToNeighbours();
@@ -1418,10 +1429,10 @@ _schedulerLogs->printAgentsMatrixInDebugFile(true);
 
         if (_numTasks == 1 or (_numTasks > 1 and _subpartitioningMode == 9))
         {
-_schedulerLogs->writeInDebugFile(CreateStringStream("AGENTS AT THE BEGINNING OF STEP " << _world->getCurrentStep() << ":").str());
+_schedulerLogs->writeInDebugFile("AGENTS AT THE BEGINNING OF STEP " + std::to_string(_world->getCurrentStep()) + ":");
 _schedulerLogs->printNodeAgentsInDebugFile(true);
 
-_schedulerLogs->writeInDebugFile(CreateStringStream("RASTERS AT THE BEGINNING OF STEP " << _world->getCurrentStep() << ":").str());
+_schedulerLogs->writeInDebugFile("RASTERS AT THE BEGINNING OF STEP " + std::to_string(_world->getCurrentStep()) + ":");
 _schedulerLogs->printNodeRastersInDebugFile();
 
             executeAgentsInSubOverlap(executedAgentsInArea, 0);
@@ -1433,15 +1444,15 @@ _schedulerLogs->printNodeRastersInDebugFile();
             initialTime = getWallTime();
             MPI_Barrier(_activeProcessesComm);
             double endTime = getWallTime();
-if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStream("[Process # " << getId() <<  "] MPIMultiNode::executeAgents() MPI_Barrier() AFTER OVERLAP: " << 0 << "\tTOTAL TIME: " << endTime - initialTime).str());
+if (_printInstrumentation) _schedulerLogs->printInstrumentation("[Process # " + std::to_string(getId()) + "] MPIMultiNode::executeAgents() MPI_Barrier() AFTER OVERLAP: " + std::to_string(0) + "\tTOTAL TIME: " + std::to_string(endTime - initialTime));
 
-_schedulerLogs->writeInDebugFile(CreateStringStream("AGENTS AT STEP " << _world->getCurrentStep() << "; INNER_MOST EXECUTED:").str());
+_schedulerLogs->writeInDebugFile("AGENTS AT STEP " + std::to_string(_world->getCurrentStep()) + "; INNER_MOST EXECUTED:");
 _schedulerLogs->printNodeAgentsInDebugFile(true);
 
-_schedulerLogs->writeInDebugFile(CreateStringStream("RASTERS AT STEP " << _world->getCurrentStep() << "; INNER_MOST EXECUTED:").str());
+_schedulerLogs->writeInDebugFile("RASTERS AT STEP " + std::to_string(_world->getCurrentStep()) + "; INNER_MOST EXECUTED:");
 _schedulerLogs->printNodeRastersInDebugFile();
 
-if (_printInConsole) std::cout << CreateStringStream("\n").str();
+if (_printInConsole) std::cout << "\n";
         }
 
         for (std::map<int, Rectangle<int>>::const_iterator it = _nodeSpace.innerSubOverlaps.begin(); it != _nodeSpace.innerSubOverlaps.end(); ++it)
@@ -1450,15 +1461,15 @@ if (_printInConsole) std::cout << CreateStringStream("\n").str();
             Rectangle<int> originalOverlapArea = it->second;
 
             executedAgentsInArea.clear();
-if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<  "] " << getWallTime() << " executing agents in suboverlap #" << originalSubOverlapAreaID << "\n").str();
+if (_printInConsole) std::cout << "[Process # " + std::to_string(getId()) + "] " + std::to_string(getWallTime()) + " executing agents in suboverlap #" + std::to_string(originalSubOverlapAreaID) + "\n";
             executeAgentsInSubOverlap(executedAgentsInArea, originalSubOverlapAreaID);
 
-if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<  "] " << getWallTime() << " agents executed -> synchronizing\n").str();
+if (_printInConsole) std::cout << "[Process # " + std::to_string(getId()) + "] " + std::to_string(getWallTime()) + " agents executed -> synchronizing\n";
             sendGhostAgentsToNeighbours(executedAgentsInArea, originalSubOverlapAreaID, _subpartitioningMode);
             receiveGhostAgentsFromNeighbouringNodes(originalSubOverlapAreaID);
 
-if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<  "] " << getWallTime() << " agents synchronized\n").str();
-if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<  "]\n").str();
+if (_printInConsole) std::cout << "[Process # " + std::to_string(getId()) + "] " + std::to_string(getWallTime()) + " agents synchronized\n";
+if (_printInConsole) std::cout << "[Process # " + std::to_string(getId()) + "]\n";
 
             sendRastersToNeighbours(originalSubOverlapAreaID);
             receiveRasters(originalSubOverlapAreaID);
@@ -1468,19 +1479,19 @@ if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<
             initialTime = getWallTime();
             MPI_Barrier(_activeProcessesComm);
             double endTime = getWallTime();
-if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStream("[Process # " << getId() <<  "] MPIMultiNode::executeAgents() MPI_Barrier() AFTER OVERLAP: " << originalSubOverlapAreaID << "\tTOTAL TIME: " << endTime - initialTime).str());
+if (_printInstrumentation) _schedulerLogs->printInstrumentation("[Process # " + std::to_string(getId()) + "] MPIMultiNode::executeAgents() MPI_Barrier() AFTER OVERLAP: " + std::to_string(originalSubOverlapAreaID) + "\tTOTAL TIME: " + std::to_string(endTime - initialTime));
 
 
-_schedulerLogs->writeInDebugFile(CreateStringStream("AGENTS AT STEP " << _world->getCurrentStep() << "; AFTER OVERLAP: " << originalSubOverlapAreaID).str());
+_schedulerLogs->writeInDebugFile("AGENTS AT STEP " + std::to_string(_world->getCurrentStep()) + "; AFTER OVERLAP: " + std::to_string(originalSubOverlapAreaID));
 _schedulerLogs->printNodeAgentsInDebugFile(true);
 
-_schedulerLogs->writeInDebugFile(CreateStringStream("RASTERS AT STEP " << _world->getCurrentStep() << "; AFTER OVERLAP: " << originalSubOverlapAreaID).str());
+_schedulerLogs->writeInDebugFile("RASTERS AT STEP " + std::to_string(_world->getCurrentStep()) + "; AFTER OVERLAP: " + std::to_string(originalSubOverlapAreaID));
 _schedulerLogs->printNodeRastersInDebugFile();
 
-if (_printInConsole) std::cout << CreateStringStream("\n").str();
+if (_printInConsole) std::cout << "\n";
         }
 
-if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStream("\n").str());
+if (_printInstrumentation) _schedulerLogs->printInstrumentation("\n");
     }
 
     void MPIMultiNode::finish() 
@@ -1494,7 +1505,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
 
         if (_numberOfActiveProcesses > getId()) MPI_Comm_free(&_activeProcessesComm);
 
-std::string totalSimulationTime = CreateStringStream("[Process #" << getId() << "] MPIMultiNode::finish() TotalSimulationTime: " << MPI_Wtime() - _initialTime << " seconds.\n").str();
+std::string totalSimulationTime = "[Process #" + std::to_string(getId()) + "] MPIMultiNode::finish() TotalSimulationTime: " + std::to_string(MPI_Wtime() - _initialTime) + " seconds.\n";
 std::cout << totalSimulationTime;
 if (_printInstrumentation) _schedulerLogs->printInstrumentation(totalSimulationTime);
 
@@ -1523,7 +1534,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(totalSimulationT
         AgentsMap agentsByID = _world->getAgentsMap();
         if (agentsByID.find(agent->getId()) == agentsByID.end())
         {
-            std::cout << CreateStringStream("[Process # " << getId() <<  "] MPIMultiNode::removeAgent(id) - agent: " << agent->getId() << " not found.\n").str();
+            std::cout << "[Process # " + std::to_string(getId()) + "] MPIMultiNode::removeAgent(id) - agent: " + agent->getId() + " not found.\n";
             terminateAllMPIProcesses();
         }
 
@@ -1538,7 +1549,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(totalSimulationT
             return agentsByID.at(id).get();
         else
         {
-            std::cout << CreateStringStream("[Process # " << getId() <<  "] MPIMultiNode::getAgent(id) - agent: " << id << " not found.\n").str();
+            std::cout << "[Process # " + std::to_string(getId()) + "] MPIMultiNode::getAgent(id) - agent: " + id + " not found.\n";
             terminateAllMPIProcesses();
         }
     }

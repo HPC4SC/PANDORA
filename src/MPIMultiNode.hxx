@@ -289,10 +289,11 @@ namespace Engine
             /**
              * @brief Adds into the _mpiNodeMap the partition <nodeId, partitions[neighbourIndex]>.
              * 
+             * @param mpiNodesMapToSend MPINodesMap&
              * @param partitions const std::vector<Rectangle<int>>&
              * @param neighbourIndex const int&
              */
-            void addMPINodeToSendInMapItIsNot(const std::vector<Rectangle<int>>& partitions, const int& neighbourIndex);
+            void addMPINodeToSendInMapIfItsNot(MPINodesMap& mpiNodesMapToSend, const std::vector<Rectangle<int>>& partitions, const int& neighbourIndex) const;
 
             /**
              * @brief Creates a rectangle like 'rectangle' expanded exactly 'expansion' cells in all directions (if possible). A 'expansion' < 0 == contraction. If 'contractInTheLimits' == false means that, if 'rectangle' is already in the limits of the simulation space ([_root->value.top(), _root->value.left()] or [_root->value.bottom(), _root->value.right()], then the resulting rectangle will NOT be modified (neither contracted nor expanded). This is normally used only when 'expansion' < 0.
@@ -323,17 +324,20 @@ namespace Engine
             bool areTheyNeighbours(const Rectangle<int>& rectangleA, const Rectangle<int>& rectangleB) const;
 
             /**
-             * @brief Create all the information needed for the processing MPI nodes to properly be executed and communicate with the rest of the nodes.
+             * @brief From 'loadBalanceTree', it creates all the information needed for the processing MPI nodes to properly be executed and communicate with the rest of the nodes.
              * 
+             * @param loadBalanceTree const MPILoadBalanceTree&
+             * @param mpiNodesMapToSend MPINodesMap&
              */
-            void createNodesInformationToSend();
+            void createNodesInformationToSendFromTree(const MPILoadBalanceTree& loadBalanceTree, MPINodesMap& mpiNodesMapToSend) const;
 
             /**
-             * @brief Check whether each of the created partitions fullfil the first condition of being their widths and heights > 2*_overlapSize.
+             * @brief Checks whether each of the created partitions in 'mpiNodesMapToSend' fullfils the first condition of being their widths and heights > 4*_overlapSize.
              * 
+             * @param mpiNodesMapToSend const MPINodesMap&
              * @return bool
              */
-            bool arePartitionsSuitable();
+            bool arePartitionsSuitable(const MPINodesMap& mpiNodesMapToSend) const;
 
             /** INITIALIZATION DEBUGGING METHODS **/
 
@@ -572,12 +576,12 @@ namespace Engine
             void addPositionAndValueToMap(MapOfPositionsAndValues& map, const Point2D<int>& position, const int& value);
 
             /**
-             * @brief Sends rasters in 'rasterValuesByNode'. Check 'initializeRasterValuesToSendMap(...)' documentation to know what is exactly the map. 'subOverlapID' is only used for instrumentation purposes.
+             * @brief Sends rasters in 'rasterValuesByNode'. Check 'initializeRasterValuesToSendMap(...)' documentation to know what is exactly the map. 'subOverlapID' is only used for instrumentation purposes. By default it is -1, in which case it means it does not apply.
              * 
              * @param rasterValuesByNode std::map<int, std::map<int, std::list<std::pair<Point2D<int>, int>>>>&
              * @param subOverlapID const int&
              */
-            void sendRasterValuesInMap(const std::map<int, MapOfValuesByRaster>& rasterValuesByNode, const int& subOverlapID);
+            void sendRasterValuesInMap(const std::map<int, MapOfValuesByRaster>& rasterValuesByNode, const int& subOverlapID = -1);
 
             /**
              * @brief Non-blockingly sends rasters to the other nodes. It only takes into account those positions around the sub-overlap area identifed by 'subOverlapAreaID' (i.e. the area expanded _overlapSize).
@@ -616,12 +620,13 @@ namespace Engine
             /** MPIAutoAdjustment CALLED ROUTINES **/
 
             /**
-             * @brief Performs a divide test, returning the number of overlapping cells resulting from the test. Called by the AutoAdjustment subsystem.
+             * @brief Performs a divide test, letting the number of overlapping cells resulting from the test in 'numberOfOverlappingCells'. If the partitions are not suitable, it returns false. True otherwise. [Called by the AutoAdjustment subsystem]
              * 
              * @param numberOfProcesses const int&
-             * @return int 
+             * @param numberOfOverlappingCells int&
+             * @return bool
              */
-            int performDivideTest(const int& numberOfProcesses);
+            bool performDivideTest(const int& numberOfProcesses, int& numberOfOverlappingCells);
 
             /**
              * @brief Resets the partitioning variables in order to perform a new partitioning (rebalancing). Called by the AutoAdjustment subsystem.
