@@ -272,7 +272,7 @@ namespace Engine
             
             ++_step;
         }
-        
+
         std::cout << "[Process #" + std::to_string(getId()) + "] serializing \n";
         // storing last step data
         if ( _step%_config->getSerializeResolution( )==0 )

@@ -184,9 +184,8 @@ namespace Engine
             /**
              * @brief (For the workers nodes) Waits and attends for the master requests, which is evaluating whether a rebalancing is required.
              * 
-             * @return bool
              */
-            int waitForMasterNeedsToRebalance();
+            void waitForMasterNeedsToRebalance();
 
             /**
              * @brief Gets all the agents of the calling node and let them classified by type in 'agentsByType'.
@@ -224,11 +223,12 @@ namespace Engine
             void saveSpaces(MPINodesMap& spaces);
 
             /**
-             * @brief Sends the partitioning scheme 'spaces' to all the nodes.
+             * @brief Sends the partitioning scheme 'spaces' to all the nodes. The 'numberOfProcessesToIntercommunicate' must be specified, since for instance for a scenario of 4->2 nodes, 4 nodes must communicate with each other (to send their agents and rasters to the new 2 partitions), not just the incoming 2.
              * 
              * @param spaces const MPINodesMap&
+             * @param numberOfProcessesToIntercommunicate const int&
              */
-            void sendSpacesToAllNodes(const MPINodesMap& spaces);
+            void sendSpacesToAllNodes(const MPINodesMap& spaces, const int& numberOfProcessesToIntercommunicate);
 
             /**
              * @brief Receives the partitioning scheme performed by the master node. It lets the new partitioning in 'spaces'.
@@ -253,7 +253,14 @@ namespace Engine
             void printSpaces(const MPINodesMap& spaces, const bool& oldType) const;
 
             /**
-             * @brief Removes the non-needed agents in the master node, since it had them all the perform the rebalance.
+             * @brief If the calling node has its own space, it removes the non-belonging agents considering the 'spaces'.at(getId()) area.
+             * 
+             * @param spaces const MPINodesMap&
+             */
+            void removeNonBelongingAgentsToMPINode(const MPINodesMap& spaces);
+
+            /**
+             * @brief Removes the non-needed agents in the master node (since it had them all in order perform the rebalance).
              * 
              * @param oldSpaces const MPINode&
              */
@@ -306,13 +313,6 @@ namespace Engine
             void receiveAgentsFromOtherNodesIfNecessary(const int& numberOfNodesToReceiveFrom);
 
             /**
-             * @brief Removes the non-belonging agents considering 'mpiNode'.
-             * 
-             * @param mpiNode const MPINode&
-             */
-            void removeNonBelongingAgentsToMPINode(const MPINode& mpiNode);
-
-            /**
              * @brief Initializes the map 'rastersValuesByNode' considering the 'totalNumberOfSendingNodes'.
              * 
              * @param rastersValuesByNode std::map<int, MapOfValuesByRaster>&
@@ -343,11 +343,11 @@ namespace Engine
             void receiveRastersFromOtherNodesIfNecessary(const int& numberOfNodesToReceiveFrom);
 
             /**
-             * @brief Removes the non-belonging raster cells considering 'mpiNode'.
+             * @brief If the calling node has its own space, it removes the non-belonging raster cells considering the 'spaces'.at(getId()) area.
              * 
-             * @param mpiNode const MPINode&
+             * @param mpiNode const MPINodesMap&
              */
-            void removeNonBelongingRasterCellsToMPINode(const MPINode& mpiNode);
+            void removeNonBelongingRasterCellsToMPINode(const MPINodesMap& spaces);
 
             /**
              * @brief Updates the partitioning data structures for the calling node.

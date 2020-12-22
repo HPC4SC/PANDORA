@@ -93,10 +93,7 @@ namespace Engine {
         else 
         {
             if (not distributeFromTheBeginning)
-            {
                 waitSleeping(_masterNodeID);
-std::cout << "[processID: " + std::to_string(getId()) + "] outside waitSleeping()\n";
-            }
             else
                 receiveInitialSpacesFromNode(_masterNodeID);    printOwnNodeStructureAfterMPI();
         }
@@ -224,8 +221,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation("[Process # " + 
         //     }
         // }
 
-        MPINode mpiNode;
-        _nodeSpace = mpiNode;
+        _nodeSpace.reset();
 
         _executedAgentsInStep.clear();
         _changedRastersCells.clear();
@@ -295,9 +291,6 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation("[Process # " + 
         endTime = getWallTime();
 
 if (_printInstrumentation) _schedulerLogs->printInstrumentation("[Process # " + std::to_string(getId()) + "] MPIMultiNode::createNodesInformationToSendFromTree()\tTOTAL TIME: " + std::to_string(endTime - initialTime));
-
-        _schedulerLogs->writeInDebugFile("HEY THERE:");
-        _schedulerLogs->printAgentsMatrixInDebugFile(true);
 
         if (not arePartitionsSuitable(_mpiNodesMapToSend)) {
             std::cout << "[Process # " + std::to_string(getId()) + "] MPIMultiNode::divideSpace() TRIED TO PERFORM PARTITIONING IN " + std::to_string(_numTasks) + " MPI TASKS - Partitions not suitable. Maybe there are too many unnecessary MPI nodes for such a small space, or the overlap size is too wide.\n";
@@ -454,7 +447,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation("[Process # " + 
                 int neighbourID = it->first;
                 MPINode* mpiNode = it->second;
 
-                _nodeSpace.neighbours[neighbourID] = new MPINode;
+                _nodeSpace.neighbours[neighbourID] = new MPINode();
                 _nodeSpace.neighbours[neighbourID]->ownedArea = mpiNode->ownedArea;
                 generateOverlapAreas(*(_nodeSpace.neighbours[neighbourID]));
 
@@ -1201,6 +1194,42 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation("[Process # " + 
         _changedRastersCells.clear();
     }
 
+    void MPIMultiNode::receiveRasterForOneNode(const int& sendingNodeID)
+    {
+        int numberOfRasters;
+        MPI_Recv(&numberOfRasters, 1, MPI_INT, sendingNodeID, eNumRasters, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+        for (int i = 0; i < numberOfRasters; ++i)
+        {
+            int rasterIndex;
+            MPI_Recv(&rasterIndex, 1, MPI_INT, sendingNodeID, eRasterIndex, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+            if (not _world->rasterExists(rasterIndex))
+            { 
+                std::cout << "[Process # " + std::to_string(getId()) + "] MPIMultiNode::receiveRasterForOneNode() - raster with index: " + std::to_string(rasterIndex) + " not found.\n";
+                terminateAllMPIProcesses();
+            }
+
+            int numberOfPositions;
+            MPI_Recv(&numberOfPositions, 1, MPI_INT, sendingNodeID, eNumRasterPositions, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+            PositionAndValue positionAndValueArray[numberOfPositions];
+            MPI_Recv(positionAndValueArray, numberOfPositions, *_positionAndValueDatatype, sendingNodeID, ePosAndValue, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+            for (int j = 0; j < numberOfPositions; ++j)
+            {
+                PositionAndValue positionAndValue = positionAndValueArray[j];
+
+                Point2D<int> position = Point2D<int>(positionAndValue.x, positionAndValue.y);
+                int continuousValue = positionAndValue.value;
+
+if (_printInConsole) std::cout << "[Process # " << std::to_string(getId()) + "]\t" + std::to_string(getWallTime()) + " receiving raster index: " + std::to_string(rasterIndex) + " position: (" + std::to_string(position.getX()) + "," + std::to_string(position.getY()) + ") and value: " + std::to_string(continuousValue) + "\tfrom node: " + std::to_string(sendingNodeID) + "\n";
+
+                _world->getDynamicRaster(rasterIndex).setValue(position, continuousValue);
+            }
+        }
+    }
+
     void MPIMultiNode::receiveRasters(const int& subOverlapID)
     {
         if (_numTasks == 1) return;
@@ -1210,38 +1239,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation("[Process # " + 
         for (std::map<int, MPINode*>::const_iterator it = _nodeSpace.neighbours.begin(); it != _nodeSpace.neighbours.end(); ++it)
         {
             int sendingNodeID = it->first;
-            int numberOfRasters;
-            MPI_Recv(&numberOfRasters, 1, MPI_INT, sendingNodeID, eNumRasters, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-            for (int i = 0; i < numberOfRasters; ++i)
-            {
-                int rasterIndex;
-                MPI_Recv(&rasterIndex, 1, MPI_INT, sendingNodeID, eRasterIndex, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-                if (not _world->rasterExists(rasterIndex))
-                { 
-                    std::cout << "[Process # " + std::to_string(getId()) + "] MPIMultiNode::receiveRasters() - raster with index: " + std::to_string(rasterIndex) + " not found.\n";
-                    terminateAllMPIProcesses();
-                }
-
-                int numberOfPositions;
-                MPI_Recv(&numberOfPositions, 1, MPI_INT, sendingNodeID, eNumRasterPositions, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-                PositionAndValue positionAndValueArray[numberOfPositions];
-                MPI_Recv(positionAndValueArray, numberOfPositions, *_positionAndValueDatatype, sendingNodeID, ePosAndValue, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-                for (int j = 0; j < numberOfPositions; ++j)
-                {
-                    PositionAndValue positionAndValue = positionAndValueArray[j];
-
-                    Point2D<int> position = Point2D<int>(positionAndValue.x, positionAndValue.y);
-                    int continuousValue = positionAndValue.value;
-
-if (_printInConsole) std::cout << "[Process # " << std::to_string(getId()) + "]\t" + std::to_string(getWallTime()) + " receiving raster index: " + std::to_string(rasterIndex) + " position: (" + std::to_string(position.getX()) + "," + std::to_string(position.getY()) + ") and value: " + std::to_string(continuousValue) + "\tfrom node: " + std::to_string(sendingNodeID) + "\n";
-
-                    _world->getDynamicRaster(rasterIndex).setValue(position, continuousValue);
-                }
-            }
+            receiveRasterForOneNode(sendingNodeID);
         }
 
         double endTime = getWallTime();
@@ -1329,6 +1327,8 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation("[Process # " + 
 
     void MPIMultiNode::resetPartitioning(const int& newNumberOfProcesses)
     {
+        _nodeSpace.reset();
+
         // Deleting map pointers up to 1 depth:
         for (MPINodesMap::const_iterator it = _mpiNodesMapToSend.begin(); it != _mpiNodesMapToSend.end(); ++it)
         {
@@ -1337,6 +1337,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation("[Process # " + 
                 delete itNeighbours->second;
         }
         _mpiNodesMapToSend.clear();
+
         _loadBalanceTree->resetTree();
         _loadBalanceTree->setNumberOfPartitions(newNumberOfProcesses);
     }
@@ -1419,12 +1420,20 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation("[Process # " + 
         }
     }
 
+    std::string toString(int variable)
+    {
+        std::cout << "variable: " << variable << std::endl;
+        std::cout << "variable type: " << typeid(variable).name() << std::endl;
+        return std::to_string(variable);
+    }
+
     void MPIMultiNode::executeAgents()
     {
         AgentsVector executedAgentsInArea;
         
         double initialTime;
 
+_schedulerLogs->writeInDebugFile("===== STEP " + std::to_string(_world->getCurrentStep()) + " =====");
 _schedulerLogs->printAgentsMatrixInDebugFile(true);
 
         if (_numTasks == 1 or (_numTasks > 1 and _subpartitioningMode == 9))
@@ -1457,8 +1466,8 @@ if (_printInConsole) std::cout << "\n";
 
         for (std::map<int, Rectangle<int>>::const_iterator it = _nodeSpace.innerSubOverlaps.begin(); it != _nodeSpace.innerSubOverlaps.end(); ++it)
         {
+
             int originalSubOverlapAreaID = it->first;
-            Rectangle<int> originalOverlapArea = it->second;
 
             executedAgentsInArea.clear();
 if (_printInConsole) std::cout << "[Process # " + std::to_string(getId()) + "] " + std::to_string(getWallTime()) + " executing agents in suboverlap #" + std::to_string(originalSubOverlapAreaID) + "\n";

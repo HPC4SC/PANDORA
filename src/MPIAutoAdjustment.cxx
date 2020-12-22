@@ -383,7 +383,7 @@ std::cout << "¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?
         return eventType;
     }
 
-    int MPIAutoAdjustment::waitForMasterNeedsToRebalance() 
+    void MPIAutoAdjustment::waitForMasterNeedsToRebalance() 
     {
         int eventType = receiveSignalFromMasterWithTag(eSendAgentPhasesTotalTime);
         if (eventType == eMessage_SendAgentPhasesTotalTime_true)
@@ -481,10 +481,25 @@ std::cout << "¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?
 
     void MPIAutoAdjustment::saveSpaces(MPINodesMap& spaces)
     {
+        // Copy all the simple types
         spaces = _schedulerInstance->_mpiNodesMapToSend;
+
+        // Copy pointers
+        for (MPINodesMap::const_iterator itMpiNodes = _schedulerInstance->_mpiNodesMapToSend.begin(); itMpiNodes != _schedulerInstance->_mpiNodesMapToSend.end(); ++itMpiNodes)
+        {
+            int nodeID = itMpiNodes->first;
+            for (std::map<int, MPINode*>::const_iterator itNeighbours = itMpiNodes->second.neighbours.begin(); itNeighbours != itMpiNodes->second.neighbours.end(); ++itNeighbours)
+            {
+                int neighbourID = itNeighbours->first;
+                MPINode* neighbourMPINode = new MPINode();
+                *neighbourMPINode = *(itNeighbours->second);
+
+                spaces.at(nodeID).neighbours.at(neighbourID) = neighbourMPINode;
+            }
+        }
     }
 
-    void MPIAutoAdjustment::sendSpacesToAllNodes(const MPINodesMap& spaces)
+    void MPIAutoAdjustment::sendSpacesToAllNodes(const MPINodesMap& spaces, const int& numberOfProcessesToIntercommunicate)
     {
         int amountOfNodesToSend = spaces.size();
 
@@ -496,7 +511,6 @@ std::cout << "¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?
         int i = 0;
         for (MPINodesMap::const_iterator it = spaces.begin(); it != spaces.end(); ++it)
         {
-            int nodeID = it->first;
             Rectangle<int> nodeArea = it->second.ownedArea;
 
             MPIMultiNode::Coordinates* nodeAreaCoordinates = new MPIMultiNode::Coordinates();
@@ -509,7 +523,7 @@ std::cout << "¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?
             ++i;
         }
 
-        for (int processID = 0; processID < _schedulerInstance->_numberOfActiveProcesses; ++processID)
+        for (int processID = 0; processID < numberOfProcessesToIntercommunicate; ++processID)
         {
             if (processID != _schedulerInstance->_masterNodeID)
             {
@@ -538,13 +552,13 @@ std::cout << "¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?
 
             if (spaces.find(processID) == spaces.end()) 
             {
-                MPINode mpiNode = MPINode();
-                mpiNode.ownedArea = Rectangle<int>(coordinates->left, coordinates->top, coordinates->right, coordinates->bottom);
-                spaces[processID] = mpiNode;
+                MPINode* mpiNode = new MPINode;
+                mpiNode->ownedArea = Rectangle<int>(coordinates->left, coordinates->top, coordinates->right, coordinates->bottom);
+                spaces[processID] = *mpiNode;
             }
         }
 
-        //free(coordinatesArray);
+        free(coordinatesArray);
     }
 
     void MPIAutoAdjustment::generateSpacesOverlapsAndNeighbours(MPINodesMap& spaces) const
@@ -566,11 +580,11 @@ std::cout << "¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?
                 if (_schedulerInstance->areTheyNeighbours(rectangle1, rectangle2))
                 {
                     if (it1->second.neighbours.find(node2ID) == it1->second.neighbours.end())
-                        it1->second.neighbours[node2ID] = new MPINode;
+                        it1->second.neighbours[node2ID] = new MPINode();
                     it1->second.neighbours.at(node2ID)->ownedArea = rectangle2;
 
                     if (it2->second.neighbours.find(node1ID) == it2->second.neighbours.end())
-                        it2->second.neighbours[node1ID] = new MPINode;
+                        it2->second.neighbours[node1ID] = new MPINode();
                     it2->second.neighbours.at(node1ID)->ownedArea = rectangle1;
                 }
             }
@@ -595,10 +609,30 @@ std::cout << "¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?
         std::cout << ss.str();
     }
 
+    void MPIAutoAdjustment::removeNonBelongingAgentsToMPINode(const MPINodesMap& spaces)
+    {
+        if (_schedulerInstance->getId() < _schedulerInstance->_numberOfActiveProcesses)
+        {
+            std::vector<Agent*> agentsToRemove;
+            MPINode mpiNode = spaces.at(_schedulerInstance->getId());
+
+            for (AgentsMap::const_iterator itAgent = _schedulerInstance->_world->beginAgents(); itAgent != _schedulerInstance->_world->endAgents(); ++itAgent)
+            {
+                AgentPtr agentPtr = itAgent->second;
+                Agent* agent = agentPtr.get();
+
+                if (not mpiNode.ownedAreaWithOuterOverlap.contains(agent->getPosition()))
+                    agentsToRemove.push_back(agent);
+            }
+
+            _schedulerInstance->removeAgentsInVector(agentsToRemove);
+        }
+    }
+
     void MPIAutoAdjustment::removeMasterNodeNoNNeededAgents(const MPINodesMap& oldSpaces)
     {
         if (_schedulerInstance->getId() == _schedulerInstance->_masterNodeID)
-            removeNonBelongingAgentsToMPINode(oldSpaces.at(_schedulerInstance->_masterNodeID));
+            removeNonBelongingAgentsToMPINode(oldSpaces);
     }
 
     void MPIAutoAdjustment::initializeAgentsToSendMap(std::map<int, std::map<std::string, AgentsList>>& agentsByTypeAndNode, const int& totalNumberOfSendingNodes) const
@@ -730,22 +764,6 @@ if (_schedulerInstance->_printInConsole) printAgentsByTypeAndNodeToSend(agentsBy
         }
     }
 
-    void MPIAutoAdjustment::removeNonBelongingAgentsToMPINode(const MPINode& mpiNode)
-    {
-        std::vector<Agent*> agentsToRemove;
-
-        for (AgentsMap::const_iterator itAgent = _schedulerInstance->_world->beginAgents(); itAgent != _schedulerInstance->_world->endAgents(); ++itAgent)
-        {
-            AgentPtr agentPtr = itAgent->second;
-            Agent* agent = agentPtr.get();
-
-            if (not mpiNode.ownedAreaWithOuterOverlap.contains(agent->getPosition()))
-                agentsToRemove.push_back(agent);
-        }
-
-        _schedulerInstance->removeAgentsInVector(agentsToRemove);
-    }
-
     void MPIAutoAdjustment::initializeRasterValuesToSendMap(std::map<int, MapOfValuesByRaster>& rastersValuesByNode, const int& totalNumberOfSendingNodes) const
     {
         for (int processID = 0; processID < totalNumberOfSendingNodes; ++processID)
@@ -809,80 +827,74 @@ if (_schedulerInstance->_printInstrumentation) _schedulerInstance->_schedulerLog
 
     void MPIAutoAdjustment::receiveRastersFromOtherNodesIfNecessary(const int& numberOfNodesToReceiveFrom)
     {
-
+        for (int sendingNodeID = 0; sendingNodeID < numberOfNodesToReceiveFrom; ++sendingNodeID)
+        {
+            if (sendingNodeID != _schedulerInstance->getId())
+                _schedulerInstance->receiveRasterForOneNode(sendingNodeID);
+        }
     }
 
-    void MPIAutoAdjustment::removeNonBelongingRasterCellsToMPINode(const MPINode& mpiNode)
+    void MPIAutoAdjustment::removeNonBelongingRasterCellsToMPINode(const MPINodesMap& spaces)
     {
-
+        // Not need to remove rasters outside the boundaries.
     }
 
     void MPIAutoAdjustment::updateOwnStructures(const MPINodesMap& newSpaces)
     {
-        int hey = _schedulerInstance->getId();
-
-        _schedulerInstance->fillOwnStructures(newSpaces.at(hey));
+        if (_schedulerInstance->getId() < _schedulerInstance->_numberOfActiveProcesses)
+        {
+            _schedulerInstance->fillOwnStructures(newSpaces.at(_schedulerInstance->getId()));
+        }
     }
 
     void MPIAutoAdjustment::rebalanceAgentsAndRastersAmongNodes(const int& newNumberOfProcesses)
     {
         MPINodesMap oldSpaces, newSpaces;
-std::cout << "hey\n";
+
         if (_schedulerInstance->getId() == _schedulerInstance->_masterNodeID)
         {
-std::cout << "hey 2\n";
             saveSpaces(oldSpaces);
-std::cout << "hey 3\n";
-            sendSpacesToAllNodes(oldSpaces);
-std::cout << "hey 4\n";
+            sendSpacesToAllNodes(oldSpaces, std::max((int) oldSpaces.size(), _schedulerInstance->_numberOfActiveProcesses));
+
             _schedulerInstance->resetPartitioning(newNumberOfProcesses);
-std::cout << "hey 5\n";
             _schedulerInstance->divideSpace();
-std::cout << "hey 6\n";
+
             saveSpaces(newSpaces);
-std::cout << "hey 7\n";
-            sendSpacesToAllNodes(newSpaces);
-std::cout << "hey 8\n";
+            sendSpacesToAllNodes(newSpaces, std::max((int) oldSpaces.size(), _schedulerInstance->_numberOfActiveProcesses));
         }
         else
         {
-std::cout << "hey 9\n";
             receiveSpacesFromMasterNode(oldSpaces);
-std::cout << "hey 10\n";
             receiveSpacesFromMasterNode(newSpaces);
-std::cout << "hey 11\n";
         }
-std::cout << "hey 12\n";
-        generateSpacesOverlapsAndNeighbours(oldSpaces);
-std::cout << "hey 13\n";
-        generateSpacesOverlapsAndNeighbours(newSpaces);
-std::cout << "hey 14\n";
-if (_schedulerInstance->_printInConsole) 
-{
-    printSpaces(oldSpaces, true);
-    printSpaces(newSpaces, false);
-}
-std::cout << "hey 15\n";
-        removeMasterNodeNoNNeededAgents(oldSpaces);
-std::cout << "hey 16\n";
-        sendAgentsToOtherNodesIfNecessary(newSpaces, oldSpaces);
-std::cout << "hey 17\n";
-        receiveAgentsFromOtherNodesIfNecessary(std::max(newSpaces.size(), oldSpaces.size()));
-std::cout << "hey 18\n";
-        removeNonBelongingAgentsToMPINode(newSpaces.at(_schedulerInstance->getId()));
-std::cout << "hey 19\n";
-        // sendRastersToOtherNodesIfNecessary(newSpaces, oldSpaces);
-        // receiveRastersFromOtherNodesIfNecessary(std::max(newSpaces.size(), oldSpaces.size()));
 
-        // removeNonBelongingRasterCellsToMPINode(newSpaces.at(_schedulerInstance->getId()));
+        generateSpacesOverlapsAndNeighbours(oldSpaces);
+        generateSpacesOverlapsAndNeighbours(newSpaces);
+
+// if (_schedulerInstance->_printInConsole) 
+// {
+//     printSpaces(oldSpaces, true);
+//     printSpaces(newSpaces, false);
+// }
+
+        removeMasterNodeNoNNeededAgents(oldSpaces);
+
+        sendAgentsToOtherNodesIfNecessary(newSpaces, oldSpaces);
+        receiveAgentsFromOtherNodesIfNecessary(std::max(newSpaces.size(), oldSpaces.size()));
+
+        removeNonBelongingAgentsToMPINode(newSpaces);
+
+        sendRastersToOtherNodesIfNecessary(newSpaces, oldSpaces);
+        receiveRastersFromOtherNodesIfNecessary(std::max(newSpaces.size(), oldSpaces.size()));
+
+        removeNonBelongingRasterCellsToMPINode(newSpaces);
 
         updateOwnStructures(newSpaces);
-std::cout << "hey 20\n";
     }
 
     void MPIAutoAdjustment::writeStateAfterRebalanceInLog()
     {
-        _schedulerInstance->_schedulerLogs->writeInDebugFile("STATE AFTER BEING REBALANCED:");
+        _schedulerInstance->_schedulerLogs->writeInDebugFile("STATE AFTER BEING REBALANCED AT THE END OF THE STEP " + std::to_string(_schedulerInstance->_world->getCurrentStep()) + ":");
         _schedulerInstance->printOwnNodeStructureAfterMPI();
     }
 
@@ -916,6 +928,7 @@ std::cout << "hey 20\n";
 
         std::cout << "[PROCESS " << _schedulerInstance->getId() << "] JUST BEFORE THE LAST MPI_Barrier.\n";
         MPI_Barrier(_schedulerInstance->_activeProcessesComm);
+        std::cout << "[PROCESS " << _schedulerInstance->getId() << "] JUST AFTER THE LAST MPI_Barrier.\n";
     }
 
 } // namespace Engine

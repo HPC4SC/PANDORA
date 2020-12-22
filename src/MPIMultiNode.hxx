@@ -591,6 +591,13 @@ namespace Engine
             void sendRastersToNeighbours(const int& subOverlapAreaID = -1);
 
             /**
+             * @brief Non-blockingly receives rasters from the node identified by 'sendingNodeID'.
+             * 
+             * @param sendingNodeID const int&
+             */
+            void receiveRasterForOneNode(const int& sendingNodeID);
+
+            /**
              * @brief Non-blockingly receives rasters from the other nodes. 'subOverlapID' is only used for instrumentation purposes.
              * 
              * @param subOverlapID const int&

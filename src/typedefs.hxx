@@ -24,11 +24,22 @@ namespace Engine
     struct MPINode {
         Rectangle<int> ownedAreaWithoutInnerOverlap;                //! Area of this node without inner (this node)   overlaps. // Filled up to depth 1 (from neighbours->second).
         Rectangle<int> ownedArea;                                   //! Area of this node with    inner (this node)   overlaps. // Filled up to depth 1 (from neighbours->second).
-        Rectangle<int> ownedAreaWithOuterOverlap;                  //! Area of this node with    outer (other nodes) overlaps. // Filled up to depth 1 (from neighbours->second).
+        Rectangle<int> ownedAreaWithOuterOverlap;                   //! Area of this node with    outer (other nodes) overlaps. // Filled up to depth 1 (from neighbours->second).
         std::map<int, MPINode*> neighbours;                         //! Map<neighbouringNodeId, neighbouringNodeSpaces> containing the neighbours information for communication. // Filled up to depth 0 (from neighbours->second).
 
         std::map<int, Rectangle<int>> innerSubOverlaps;             //! Sub-overlaps (Sub areas of the inner overlap). Should be 8 in total for mode9 and 4 for mode4. Map<subOverlapID, subOverlapArea>, where subOverlapID = Engine::SubOverlapType enum. // Filled up to depth 0 (from neighbours->second).
         std::map<int, std::list<int>> innerSubOverlapsNeighbours;   //! Sub-overlaps neighbouring nodes. Map<subOverlapID, list<nodeID>>. Used for efficient agents and rasters communication. // Filled up to depth 0 (from neighbours->second).
+
+        void reset() 
+        {
+            ownedAreaWithoutInnerOverlap = Rectangle<int>();
+            ownedArea = Rectangle<int>();
+            ownedAreaWithOuterOverlap = Rectangle<int>();
+            neighbours.clear();
+
+            innerSubOverlaps.clear();
+            innerSubOverlapsNeighbours.clear();
+        }
     };
 
     typedef std::map<int, MPINode> MPINodesMap;
@@ -41,15 +52,17 @@ namespace Engine
     {
         eNumProcesses = 1,
         eCoordinates = 2,
-        eNumNeighbours = 3,
-        eNeighbourID = 4,
-        eCoordinatesNeighbour = 5,
+        eCoordinatesAux = 3,
+        eNumNeighbours = 4,
+        eNeighbourID = 5,
+        eCoordinatesNeighbour = 6,
 
         eNumTypes = 10,
         eNumAgents = 11,
         eAgents = 12,
         eAgentsTypeID = 13,
         eNumCoordinates = 14,
+        eNumCoordinatesAux = 15,
 
         eNumberOfStaticRasters = 20,
         eNumberOfDynamicRasters = 21,
