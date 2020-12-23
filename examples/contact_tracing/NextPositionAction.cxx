@@ -10,7 +10,7 @@ NextPositionAction::~NextPositionAction() {}
 void NextPositionAction::execute(Engine::Agent & agent) {
 	Athlete& athlete = (Athlete&)agent;
     Engine::World* world = agent.getWorld();
-     Engine::Point2D<int> nextMemoryPosition = athlete.getTargetPath().front();
+    Engine::Point2D<int> nextMemoryPosition = athlete.getTargetPath().front();
     if (world->checkPosition(nextMemoryPosition)) {
 		athlete.popTargetPath();
 		agent.setPosition(nextMemoryPosition);
