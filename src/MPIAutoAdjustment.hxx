@@ -267,6 +267,13 @@ namespace Engine
             void removeMasterNodeNoNNeededAgents(const MPINodesMap& oldSpaces);
 
             /**
+             * @brief Updates the partitioning data structures for the calling node.
+             * 
+             * @param newSpaces const MPINodesMap&
+             */
+            void updateOwnStructures(const MPINodesMap& newSpaces);
+
+            /**
              * @brief Initializes the map 'agentsByTypeAndNode' considering the 'totalNumberOfSendingNodes'.
              * 
              * @param agentsByTypeAndNode std::map<int, std::map<std::string, AgentsList>>&
@@ -348,13 +355,6 @@ namespace Engine
              * @param mpiNode const MPINodesMap&
              */
             void removeNonBelongingRasterCellsToMPINode(const MPINodesMap& spaces);
-
-            /**
-             * @brief Updates the partitioning data structures for the calling node.
-             * 
-             * @param newSpaces const MPINodesMap&
-             */
-            void updateOwnStructures(const MPINodesMap& newSpaces);
 
             /**
              * @brief Rebalances the current space with 'numberOfProcesses'. To do so, the nodes send the needed agents and raster cells among them, working the master and the workers together.

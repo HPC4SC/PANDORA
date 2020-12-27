@@ -35,7 +35,7 @@ namespace Engine
             ownedAreaWithoutInnerOverlap = Rectangle<int>();
             ownedArea = Rectangle<int>();
             ownedAreaWithOuterOverlap = Rectangle<int>();
-            neighbours.clear();
+            neighbours.clear();     // ToDo: this could incur memory problems. We should delete this pointers recursively.
 
             innerSubOverlaps.clear();
             innerSubOverlapsNeighbours.clear();

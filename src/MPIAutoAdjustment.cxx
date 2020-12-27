@@ -635,6 +635,14 @@ std::cout << "¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?
             removeNonBelongingAgentsToMPINode(oldSpaces);
     }
 
+    void MPIAutoAdjustment::updateOwnStructures(const MPINodesMap& newSpaces)
+    {
+        if (_schedulerInstance->getId() < _schedulerInstance->_numberOfActiveProcesses)
+        {
+            _schedulerInstance->fillOwnStructures(newSpaces.at(_schedulerInstance->getId()));
+        }
+    }
+
     void MPIAutoAdjustment::initializeAgentsToSendMap(std::map<int, std::map<std::string, AgentsList>>& agentsByTypeAndNode, const int& totalNumberOfSendingNodes) const
     {
         for (int processID = 0; processID < totalNumberOfSendingNodes; ++processID)
@@ -643,8 +651,6 @@ std::cout << "¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?
                 agentsByTypeAndNode[processID] = std::map<std::string, AgentsList>();
         }
     }
-
-
 
     std::set<int> MPIAutoAdjustment::getNodesContainingPosition(const Point2D<int>& position, const MPINodesMap& spaces) const
     {
@@ -788,33 +794,37 @@ if (_schedulerInstance->_printInstrumentation) _schedulerInstance->_schedulerLog
         std::map<int, MapOfValuesByRaster> rastersValuesByNode;
         initializeRasterValuesToSendMap(rastersValuesByNode, std::max(newSpaces.size(), oldSpaces.size()));
 
-        for (int rasterIndex = 0; rasterIndex < _schedulerInstance->_world->getNumberOfRasters(); ++rasterIndex)
+        if (not _schedulerInstance->_justAwaken)
         {
-            if (not _schedulerInstance->_world->rasterExists(rasterIndex) or not _schedulerInstance->_world->isRasterDynamic(rasterIndex))
-                continue;
-
-            for (int i = _schedulerInstance->_nodeSpace.ownedArea.top(); i < _schedulerInstance->_nodeSpace.ownedArea.bottom() + 1; ++i)
+            for (int rasterIndex = 0; rasterIndex < _schedulerInstance->_world->getNumberOfRasters(); ++rasterIndex)
             {
-                for (int j = _schedulerInstance->_nodeSpace.ownedArea.left(); j < _schedulerInstance->_nodeSpace.ownedArea.right() + 1; ++j)
+                if (not _schedulerInstance->_world->rasterExists(rasterIndex) or not _schedulerInstance->_world->isRasterDynamic(rasterIndex))
+                    continue;
+
+                MPINode originalOwnSpace = oldSpaces.at(_schedulerInstance->getId());
+                for (int i = originalOwnSpace.ownedAreaWithOuterOverlap.top(); i < originalOwnSpace.ownedAreaWithOuterOverlap.bottom() + 1; ++i)
                 {
-                    Point2D<int> rasterCellPosition = Point2D<int>(i, j);
-                    int rasterCellValue = _schedulerInstance->_world->getValue(rasterIndex, rasterCellPosition);
-
-                    std::set<int> newNodesContainingRasterCell = getNodesContainingPosition(rasterCellPosition, newSpaces);
-                    std::set<int> oldNodesContainingRasterCell = getNodesContainingPosition(rasterCellPosition, oldSpaces);
-
-                    for (std::set<int>::const_iterator it = newNodesContainingRasterCell.begin(); it != newNodesContainingRasterCell.end(); ++it)
+                    for (int j = originalOwnSpace.ownedAreaWithOuterOverlap.left(); j < originalOwnSpace.ownedAreaWithOuterOverlap.right() + 1; ++j)
                     {
-                        int newNodeID = *it;
+                        Point2D<int> rasterCellPosition = Point2D<int>(j, i);
+                        int rasterCellValue = _schedulerInstance->_world->getValue(rasterIndex, rasterCellPosition);
 
-                        if (newNodeID != _schedulerInstance->getId())
+                        std::set<int> newNodesContainingRasterCell = getNodesContainingPosition(rasterCellPosition, newSpaces);
+                        std::set<int> oldNodesContainingRasterCell = getNodesContainingPosition(rasterCellPosition, oldSpaces);
+
+                        for (std::set<int>::const_iterator it = newNodesContainingRasterCell.begin(); it != newNodesContainingRasterCell.end(); ++it)
                         {
-                            if (oldNodesContainingRasterCell.find(newNodeID) == oldNodesContainingRasterCell.end())
-                            {
-                                if (rastersValuesByNode.at(newNodeID).find(rasterIndex) == rastersValuesByNode.at(newNodeID).end())
-                                    rastersValuesByNode.at(newNodeID)[rasterIndex] = MapOfPositionsAndValues();
+                            int newNodeID = *it;
 
-                                rastersValuesByNode.at(newNodeID).at(rasterIndex)[rasterCellPosition] = rasterCellValue;
+                            if (newNodeID != _schedulerInstance->getId())
+                            {
+                                if (oldNodesContainingRasterCell.find(newNodeID) == oldNodesContainingRasterCell.end())
+                                {
+                                    if (rastersValuesByNode.at(newNodeID).find(rasterIndex) == rastersValuesByNode.at(newNodeID).end())
+                                        rastersValuesByNode.at(newNodeID)[rasterIndex] = MapOfPositionsAndValues();
+
+                                    rastersValuesByNode.at(newNodeID).at(rasterIndex)[rasterCellPosition] = rasterCellValue;
+                                }
                             }
                         }
                     }
@@ -837,14 +847,6 @@ if (_schedulerInstance->_printInstrumentation) _schedulerInstance->_schedulerLog
     void MPIAutoAdjustment::removeNonBelongingRasterCellsToMPINode(const MPINodesMap& spaces)
     {
         // Not need to remove rasters outside the boundaries.
-    }
-
-    void MPIAutoAdjustment::updateOwnStructures(const MPINodesMap& newSpaces)
-    {
-        if (_schedulerInstance->getId() < _schedulerInstance->_numberOfActiveProcesses)
-        {
-            _schedulerInstance->fillOwnStructures(newSpaces.at(_schedulerInstance->getId()));
-        }
     }
 
     void MPIAutoAdjustment::rebalanceAgentsAndRastersAmongNodes(const int& newNumberOfProcesses)
@@ -871,13 +873,10 @@ if (_schedulerInstance->_printInstrumentation) _schedulerInstance->_schedulerLog
         generateSpacesOverlapsAndNeighbours(oldSpaces);
         generateSpacesOverlapsAndNeighbours(newSpaces);
 
-// if (_schedulerInstance->_printInConsole) 
-// {
-//     printSpaces(oldSpaces, true);
-//     printSpaces(newSpaces, false);
-// }
+//if (_schedulerInstance->_printInConsole) { printSpaces(oldSpaces, true);    printSpaces(newSpaces, false); }
 
         removeMasterNodeNoNNeededAgents(oldSpaces);
+        updateOwnStructures(newSpaces);
 
         sendAgentsToOtherNodesIfNecessary(newSpaces, oldSpaces);
         receiveAgentsFromOtherNodesIfNecessary(std::max(newSpaces.size(), oldSpaces.size()));
@@ -888,14 +887,14 @@ if (_schedulerInstance->_printInstrumentation) _schedulerInstance->_schedulerLog
         receiveRastersFromOtherNodesIfNecessary(std::max(newSpaces.size(), oldSpaces.size()));
 
         removeNonBelongingRasterCellsToMPINode(newSpaces);
-
-        updateOwnStructures(newSpaces);
     }
 
     void MPIAutoAdjustment::writeStateAfterRebalanceInLog()
     {
         _schedulerInstance->_schedulerLogs->writeInDebugFile("STATE AFTER BEING REBALANCED AT THE END OF THE STEP " + std::to_string(_schedulerInstance->_world->getCurrentStep()) + ":");
         _schedulerInstance->printOwnNodeStructureAfterMPI();
+        _schedulerInstance->printNodeAgents();
+        _schedulerInstance->printNodeRasters();
     }
 
     void MPIAutoAdjustment::putNonNeededWorkersToSleep(const int& newNumberOfProcesses)
