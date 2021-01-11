@@ -376,6 +376,12 @@ namespace Engine
              */
             void putNonNeededWorkersToSleep(const int& newNumberOfProcesses);
 
+            /**
+             * @brief Synchronizes the active processes after the rebalancing, if necessary.
+             * 
+             */
+            void synchronizeProcesses();
+
         public:
 
             /**

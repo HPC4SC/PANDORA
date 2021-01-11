@@ -193,7 +193,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation("[Process # " + 
         MPI_Group_free(&worldGroup);
         MPI_Group_free(&activeGroup);
 
-        //free(activeRanksArray);
+        free(activeRanksArray);
 
         printActiveAndInactiveProcesses();
     }
@@ -879,7 +879,7 @@ if (_printInConsole) std::cout << "[Process # " + std::to_string(getId()) <<  "]
                         _executedAgentsInStep.insert(agent->getId());
                     }
                 }
-                //free(agentsPackageArray);
+                free(agentsPackageArray);
             }
         }
 
@@ -1383,7 +1383,7 @@ if (_printInConsole) std::cout << "[Process # " + std::to_string(getId()) + "]\t
                 }
                 sendDataRequestToNode(agentsPackageArray, numberOfAgentsToSend, *agentTypeMPI, neighbourNodeID, eGhostAgents, MPI_COMM_WORLD);
                 
-                //free(agentsPackageArray);
+                free(agentsPackageArray);
             }
         }
     }

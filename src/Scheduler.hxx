@@ -384,8 +384,10 @@ namespace Engine
          */
         void setParallelism(bool updateKnowledgeInParallel, bool executeActionsInParallel) 
         {
+            if (hasBeenTaggedAsJustFinished()) return;
+
             _updateKnowledgeInParallel = updateKnowledgeInParallel;
-            _executeActionsInParallel = executeActionsInParallel; 
+            _executeActionsInParallel = executeActionsInParallel;
         }
 
         /**

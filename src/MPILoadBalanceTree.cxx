@@ -192,11 +192,6 @@ namespace Engine {
 
             return treeNode->right;
         }
-        else
-        {
-            std::cout << "MPILoadBalanceTree::insertNode - NO RETURNING VALUE! ==============================================================================================================================\n";
-        }
-        
     }
 
     void MPILoadBalanceTree::destroyTree(node<Rectangle<int>>* leaf)

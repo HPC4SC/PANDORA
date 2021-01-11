@@ -225,6 +225,8 @@ namespace Engine
     void World::engineStep()
     {
         _scheduler->checkForRebalancingSpace();
+        if (_scheduler->hasBeenTaggedAsJustFinished()) return;
+
         //resetVariablesForRebalance();
 
         updateDiscreteStateStructures();
@@ -262,6 +264,7 @@ namespace Engine
         }
 
         engineStep();
+        if (_scheduler->hasBeenTaggedAsJustFinished()) return;
 
         while (_step < _config->getNumSteps())
         {
@@ -269,6 +272,7 @@ namespace Engine
 
             step();
             engineStep();
+            if (_scheduler->hasBeenTaggedAsJustFinished()) return;
             
             ++_step;
         }

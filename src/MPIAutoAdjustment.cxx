@@ -203,7 +203,7 @@ namespace Engine {
                         if (not _schedulerInstance->_nodeSpace.ownedAreaWithOuterOverlap.contains(agent->getPosition()))
                                 _schedulerInstance->_world->addAgent(agent, false);
                     }
-                    //free(agentsPackageArray);
+                    free(agentsPackageArray);
                 }
             }
         }
@@ -313,6 +313,8 @@ std::cout << "currentIsSuitable: " << currentIsSuitable << "\tdoubleIsSuitable: 
 
         if (_schedulerInstance->_world->getCurrentStep() == 3) numberOfProcessesAtMinimumCost = 2;
         else if (_schedulerInstance->_world->getCurrentStep() == 6) numberOfProcessesAtMinimumCost = 4;
+        else if (_schedulerInstance->_world->getCurrentStep() == 12) numberOfProcessesAtMinimumCost = 4;
+
 std::cout << "¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿? isRebalanceSuitable: " << isRebalanceSuitable << "\tnumberOfProcessesAtMinimumCost: " << numberOfProcessesAtMinimumCost << "\n";
         return isRebalanceSuitable;
     }
@@ -443,7 +445,7 @@ std::cout << "¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?
             }
             sendDataRequestToNode(agentsPackageArray, numberOfAgentsToSend, *agentTypeMPI, _schedulerInstance->_masterNodeID, eAgents, MPI_COMM_WORLD);
 
-            //free(agentsPackageArray);
+            free(agentsPackageArray);
         }
     }
 
@@ -531,7 +533,7 @@ std::cout << "¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?
                 sendDataRequestToNode(coordinatesArray, amountOfNodesToSend, *_schedulerInstance->_coordinatesDatatype, processID, eCoordinates, MPI_COMM_WORLD);
             }
         }
-        //free(coordinatesArray);
+        free(coordinatesArray);
     }
 
     void MPIAutoAdjustment::receiveSpacesFromMasterNode(MPINodesMap& spaces) const
@@ -794,7 +796,7 @@ if (_schedulerInstance->_printInstrumentation) _schedulerInstance->_schedulerLog
         std::map<int, MapOfValuesByRaster> rastersValuesByNode;
         initializeRasterValuesToSendMap(rastersValuesByNode, std::max(newSpaces.size(), oldSpaces.size()));
 
-        if (not _schedulerInstance->_justAwaken)
+        if (not _schedulerInstance->hasBeenTaggedAsJustAwaken())
         {
             for (int rasterIndex = 0; rasterIndex < _schedulerInstance->_world->getNumberOfRasters(); ++rasterIndex)
             {
@@ -903,6 +905,14 @@ if (_schedulerInstance->_printInstrumentation) _schedulerInstance->_schedulerLog
             _schedulerInstance->waitSleeping(_schedulerInstance->_masterNodeID);
     }
 
+    void MPIAutoAdjustment::synchronizeProcesses()
+    {
+        _schedulerInstance->_justAwaken = false;
+
+        if (not _schedulerInstance->hasBeenTaggedAsJustFinished())
+            MPI_Barrier(_schedulerInstance->_activeProcessesComm);
+    }
+
     /** PUBLIC METHODS **/
 
     void MPIAutoAdjustment::checkForRebalancingSpace()
@@ -923,11 +933,7 @@ if (_schedulerInstance->_printInstrumentation) _schedulerInstance->_schedulerLog
             putNonNeededWorkersToSleep(newNumberOfProcesses);
         }
 
-        _schedulerInstance->_justAwaken = false;  // ??
-
-        std::cout << "[PROCESS " << _schedulerInstance->getId() << "] JUST BEFORE THE LAST MPI_Barrier.\n";
-        MPI_Barrier(_schedulerInstance->_activeProcessesComm);
-        std::cout << "[PROCESS " << _schedulerInstance->getId() << "] JUST AFTER THE LAST MPI_Barrier.\n";
+        synchronizeProcesses();
     }
 
 } // namespace Engine
