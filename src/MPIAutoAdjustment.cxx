@@ -313,7 +313,7 @@ std::cout << "currentIsSuitable: " << currentIsSuitable << "\tdoubleIsSuitable: 
 
         if (_schedulerInstance->_world->getCurrentStep() == 3) numberOfProcessesAtMinimumCost = 2;
         else if (_schedulerInstance->_world->getCurrentStep() == 6) numberOfProcessesAtMinimumCost = 4;
-        else if (_schedulerInstance->_world->getCurrentStep() == 12) numberOfProcessesAtMinimumCost = 4;
+        else if (_schedulerInstance->_world->getCurrentStep() == 12) numberOfProcessesAtMinimumCost = 2;
 
 std::cout << "¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿? isRebalanceSuitable: " << isRebalanceSuitable << "\tnumberOfProcessesAtMinimumCost: " << numberOfProcessesAtMinimumCost << "\n";
         return isRebalanceSuitable;
@@ -460,8 +460,6 @@ std::cout << "¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?
         {
             neededToRebalance = true;
             newNumberOfProcesses = _schedulerInstance->_numberOfActiveProcesses;
-
-            _schedulerInstance->_world->setCurrentStep(_schedulerInstance->_world->getCurrentStep() + 1);
         }
         else
         {
@@ -891,26 +889,38 @@ if (_schedulerInstance->_printInstrumentation) _schedulerInstance->_schedulerLog
         removeNonBelongingRasterCellsToMPINode(newSpaces);
     }
 
-    void MPIAutoAdjustment::writeStateAfterRebalanceInLog()
+    void MPIAutoAdjustment::setNonNeededWorkersToSleep(const int& newNumberOfProcesses)
     {
-        _schedulerInstance->_schedulerLogs->writeInDebugFile("STATE AFTER BEING REBALANCED AT THE END OF THE STEP " + std::to_string(_schedulerInstance->_world->getCurrentStep()) + ":");
-        _schedulerInstance->printOwnNodeStructureAfterMPI();
-        _schedulerInstance->printNodeAgents();
-        _schedulerInstance->printNodeRasters();
+        if (_schedulerInstance->getId() >= newNumberOfProcesses)
+            _schedulerInstance->_goToSleep = true;
     }
 
-    void MPIAutoAdjustment::putNonNeededWorkersToSleep(const int& newNumberOfProcesses)
+    void MPIAutoAdjustment::writeStateAfterRebalanceInLog()
     {
-        if (_schedulerInstance->getId() >= newNumberOfProcesses) 
-            _schedulerInstance->waitSleeping(_schedulerInstance->_masterNodeID);
+        if (_schedulerInstance->hasBeenTaggedAsGoToSleep())
+            _schedulerInstance->_schedulerLogs->writeInDebugFile(CreateStringStream("GOING TO SLEEP AFTER REBALANCE AT THE END OF THE STEP " << std::to_string(_schedulerInstance->_world->getCurrentStep()) << "...\n\n").str());
+        else
+        {
+            _schedulerInstance->_schedulerLogs->writeInDebugFile(CreateStringStream("STATE AFTER BEING REBALANCED AT THE END OF THE STEP " << std::to_string(_schedulerInstance->_world->getCurrentStep()) << ":").str());
+            _schedulerInstance->printOwnNodeStructureAfterMPI();
+            _schedulerInstance->printNodeAgents();
+            _schedulerInstance->printNodeRasters();
+        }
     }
 
     void MPIAutoAdjustment::synchronizeProcesses()
     {
-        _schedulerInstance->_justAwaken = false;
+        if (not _schedulerInstance->hasBeenTaggedAsGoToSleep())
+        {
+            _schedulerInstance->_justAwaken = false;
 
-        if (not _schedulerInstance->hasBeenTaggedAsJustFinished())
-            MPI_Barrier(_schedulerInstance->_activeProcessesComm);
+            if (not _schedulerInstance->hasBeenTaggedAsJustFinished())
+            {
+                std::cout << CreateStringStream("process #" << _schedulerInstance->getId() << " JUST BEFORE THE FINAL BARRIER WHEN REBALANCING.\n").str();
+                MPI_Barrier(_schedulerInstance->_activeProcessesComm);
+                std::cout << CreateStringStream("process #" << _schedulerInstance->getId() << " JUST AFTER THE FINAL BARRIER WHEN REBALANCING.\n").str();
+            }
+        }
     }
 
     /** PUBLIC METHODS **/
@@ -924,15 +934,14 @@ if (_schedulerInstance->_printInstrumentation) _schedulerInstance->_schedulerLog
             doMasterForRebalance(neededToRebalance, newNumberOfProcesses);
         else
             doWorkersForRebalance(neededToRebalance, newNumberOfProcesses);
-        
-        _schedulerInstance->enableOnlyProcesses(newNumberOfProcesses);
 
+        _schedulerInstance->enableOnlyProcesses(newNumberOfProcesses);
+        
         if (neededToRebalance) {
             rebalanceAgentsAndRastersAmongNodes(newNumberOfProcesses);
+            setNonNeededWorkersToSleep(newNumberOfProcesses);
             writeStateAfterRebalanceInLog();
-            putNonNeededWorkersToSleep(newNumberOfProcesses);
         }
-
         synchronizeProcesses();
     }
 

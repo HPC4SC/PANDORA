@@ -66,7 +66,7 @@ namespace Engine
             int _masterNodeID;                                              //! ID of the master node. Used for communication.
 
             int _numberOfActiveProcesses;                                   //! Current number of active processes.
-            bool _justAwaken, _justFinished;
+            bool _goToSleep, _justAwaken, _justFinished;                    //! Flags to control active processes flow.
             MPI_Comm _activeProcessesComm;                                  //! Communicator for active MPI processes.
 
             struct Coordinates {
@@ -684,6 +684,13 @@ namespace Engine
             /** RUN PUBLIC METHODS (INHERIT) **/
 
             /**
+             * @brief Returns whether the process has been tagged as inactive process and it should be go to sleep until being awaken.
+             * 
+             * @return bool
+             */
+            bool hasBeenTaggedAsGoToSleep() const override;
+
+            /**
              * @brief Returns true if a signal has been sent from the master process to this process in order to finalize its flow. Controlled by the member variable _justFinished.
              * 
              * @return bool
@@ -696,6 +703,12 @@ namespace Engine
              * @return bool 
              */
             bool hasBeenTaggedAsJustAwaken() const override;
+
+            /**
+             * @brief Sets the process to sleep.
+             * 
+             */
+            void goToSleep() override;
 
             /**
              * @brief Updates the resources modified in the World::stepEnvironment() method.

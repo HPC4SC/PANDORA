@@ -105,16 +105,22 @@ protected:
     void updateDiscreteStateStructures() const;
 
     /**
-     * @brief Runs all the needed internal modifications at the beginning of each step. Cannot be overriden by the simulation.
-     * 
-     */
-    void engineStep();
-
-    /**
      * @brief Dumps current state of the simulation into the log files. Then applies next simulation step. Can be overriden by the model.
      * 
      */
     virtual void step( );
+
+    /**
+     * @brief Performs the step (virtual method) only if it's necessary.
+     * 
+     */
+    void performStep();
+
+    /**
+     * @brief Runs all the needed internal modifications at the beginning of each step. Cannot be overriden by the simulation.
+     * 
+     */
+    void engineStep();
 
 public:
     

@@ -119,7 +119,14 @@ namespace Engine
          * 
          */
         virtual void initData( ) = 0;
-        
+
+        /**
+         * @brief Gets whether the MPI process has tagged as 'go to sleep'.
+         * 
+         * @return bool
+         */
+        virtual bool hasBeenTaggedAsGoToSleep() const = 0;
+
         /**
          * @brief Gets whether the MPI process has been tagged as 'just finished'.
          * 
@@ -134,6 +141,12 @@ namespace Engine
          * @return false 
          */
         virtual bool hasBeenTaggedAsJustAwaken() const = 0;
+
+        /**
+         * @brief Sets the process to sleep.
+         * 
+         */
+        virtual void goToSleep() = 0;
 
         /**
          * @brief Updates the resources modified in the World::stepEnvironment() method. Must be implemented in child.

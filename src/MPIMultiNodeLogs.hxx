@@ -87,10 +87,9 @@ namespace Engine
             /**
              * @brief Gets the string representing: the nodes structure (ID + Coordinates) in _nodesSpace.
              * 
-
              * @return std::string 
              */
-            std::string getString_OwnNodeStructureAfterMPI() const;
+            std::string getString_OwnNodeStructure() const;
 
             /**
              * @brief Gets the string representing: the agents for the current node executing this method.
@@ -126,7 +125,7 @@ namespace Engine
              * @brief Prints in the node's debug file: the nodes structure (ID + Coordinates) in _nodesSpace.
              * 
              */
-            void printOwnNodeStructureAfterMPIInDebugFile() const;
+            void printOwnNodeStructureInDebugFile() const;
             
             /**
              * @brief Prints in the node's debug file: the agents for the current node executing this method.

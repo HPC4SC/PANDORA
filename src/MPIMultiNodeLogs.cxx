@@ -77,11 +77,10 @@ namespace Engine {
         return ss.str();
     }
 
-    std::string MPIMultiNodeLogs::getString_OwnNodeStructureAfterMPI() const
+    std::string MPIMultiNodeLogs::getString_OwnNodeStructure() const
     {
         std::stringstream ss;
         //ss << "TS = " << _schedulerInstance->getWallTime() << ":" << std::endl;
-        ss << "OWN STRUCTURES AFTER MPI:" << std::endl;
         ss << "ownedAreaWithoutInnerOverlap: " << _schedulerInstance->_nodeSpace.ownedAreaWithoutInnerOverlap << std::endl;
         ss << "ownedArea: " << _schedulerInstance->_nodeSpace.ownedArea << std::endl;
         ss << "ownedAreaWithOuterOverlap: " << _schedulerInstance->_nodeSpace.ownedAreaWithOuterOverlap << std::endl;
@@ -206,9 +205,9 @@ namespace Engine {
         log_DEBUG(_logFileNames.at(_schedulerInstance->getId()), getString_PartitionsBeforeMPI());
     }
 
-    void MPIMultiNodeLogs::printOwnNodeStructureAfterMPIInDebugFile() const
+    void MPIMultiNodeLogs::printOwnNodeStructureInDebugFile() const
     {
-        log_DEBUG(_logFileNames.at(_schedulerInstance->getId()), getString_OwnNodeStructureAfterMPI());
+        log_DEBUG(_logFileNames.at(_schedulerInstance->getId()), getString_OwnNodeStructure());
     }
 
     void MPIMultiNodeLogs::printNodeAgentsInDebugFile(const bool& fullDescription) const

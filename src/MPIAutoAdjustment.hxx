@@ -364,17 +364,17 @@ namespace Engine
             void rebalanceAgentsAndRastersAmongNodes(const int& numberOfProcesses);
 
             /**
+             * @brief Sets the non-needed workers to sleep.
+             * 
+             * @param newNumberOfProcesses const int&
+             */
+            void setNonNeededWorkersToSleep(const int& newNumberOfProcesses);
+
+            /**
              * @brief Writes the final state of the rebalancing just performed in the log file of each process.
              * 
              */
             void writeStateAfterRebalanceInLog();
-
-            /**
-             * @brief Puts the non-needed workers to sleep.
-             * 
-             * @param newNumberOfProcesses const int&
-             */
-            void putNonNeededWorkersToSleep(const int& newNumberOfProcesses);
 
             /**
              * @brief Synchronizes the active processes after the rebalancing, if necessary.

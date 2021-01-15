@@ -36,7 +36,7 @@ namespace Engine {
 
     /** INITIALIZATION PUBLIC METHODS **/
 
-    MPIMultiNode::MPIMultiNode() : _initialTime(0.0f), _masterNodeID(0), _justAwaken(false), _justFinished(false), _serializer(*this)
+    MPIMultiNode::MPIMultiNode() : _initialTime(0.0f), _masterNodeID(0), _goToSleep(false), _justAwaken(false), _justFinished(false), _serializer(*this)
     {
     }
 
@@ -93,12 +93,12 @@ namespace Engine {
         else 
         {
             if (not distributeFromTheBeginning)
-                waitSleeping(_masterNodeID);
+                _goToSleep = true;
             else
                 receiveInitialSpacesFromNode(_masterNodeID);    printOwnNodeStructureAfterMPI();
         }
 
-        if (not hasBeenTaggedAsJustFinished() and not hasBeenTaggedAsJustAwaken())
+        if (not _goToSleep)
         {
             filterOutInitialAgents();                           printNodeAgents();
             filterOutInitialRasters();                          printNodeRasters();
@@ -233,6 +233,8 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation("[Process # " + 
 
     void MPIMultiNode::waitSleeping(const int& masterNodeID)
     {
+std::cout << CreateStringStream("[PROCESS ID: " << getId() << "] IS GOING TO SLEEP.\n").str();
+
         cleanNodeDataStructures();
 
         bool wakeUp = false;
@@ -250,12 +252,14 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation("[Process # " + 
             MPI_Recv(&typeOfEventAfterWakeUp, 1, MPI_INT, masterNodeID, eTypeOfEventAfterWakeUp, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             if (typeOfEventAfterWakeUp == eMessage_Die)
             {
+std::cout << CreateStringStream("[PROCESS ID: " << getId() << "] WAS SLEEPING AND JUST RECEIVED A MESSAGE TO DIE.\n").str();
                 finish();
                 _justFinished = true;
                 return;
             }
             else if (typeOfEventAfterWakeUp == eMessage_AwakeToRepartition)
             {
+std::cout << CreateStringStream("[PROCESS ID: " << getId() << "] WAS SLEEPING AND JUST RECEIVED A MESSAGE TO AWAKE TO REPARTITION.\n").str();
                 wakeUp = true;
                 _justAwaken = true;
 
@@ -265,7 +269,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation("[Process # " + 
                 int newNumberOfProcesses = newNumberOfProcessesAndCurrentStep[0];
                 int currentStep = newNumberOfProcessesAndCurrentStep[1];
 
-std::cout << "[process id: " + std::to_string(getId()) + "] being awaken.... newNumberOfProcesses: " + std::to_string(newNumberOfProcesses) + "\t currentStep: " + std::to_string(currentStep) + "\n";
+std::cout << "[process id: " + std::to_string(getId()) + "] being awaken... newNumberOfProcesses: " + std::to_string(newNumberOfProcesses) + "\t currentStep: " + std::to_string(currentStep) + "\n";
 
                 _numberOfActiveProcesses = newNumberOfProcesses;
                 _numTasks = newNumberOfProcesses;
@@ -653,7 +657,8 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation("[Process # " + 
 
     void MPIMultiNode::printOwnNodeStructureAfterMPI() const
     {
-        _schedulerLogs->printOwnNodeStructureAfterMPIInDebugFile();
+        _schedulerLogs->writeInDebugFile("OWN STRUCTURES AFTER FIRST MPI PARTITIONING:");
+        _schedulerLogs->printOwnNodeStructureInDebugFile();
     }
     
     void MPIMultiNode::printNodeAgents() const
@@ -1390,6 +1395,11 @@ if (_printInConsole) std::cout << "[Process # " + std::to_string(getId()) + "]\t
 
     /** RUN PUBLIC METHODS (INHERIT) **/
 
+    bool MPIMultiNode::hasBeenTaggedAsGoToSleep() const
+    {
+        return _goToSleep;
+    }
+
     bool MPIMultiNode::hasBeenTaggedAsJustFinished() const
     {
         return _justFinished;
@@ -1398,6 +1408,15 @@ if (_printInConsole) std::cout << "[Process # " + std::to_string(getId()) + "]\t
     bool MPIMultiNode::hasBeenTaggedAsJustAwaken() const
     {
         return _justAwaken;
+    }
+
+    void MPIMultiNode::goToSleep()
+    {
+        _goToSleep = false;
+        
+        waitSleeping(_masterNodeID);
+
+        _schedulerLogs->writeInDebugFile(CreateStringStream("GETTING BACK FROM SLEEP...\n").str());
     }
 
     void MPIMultiNode::updateEnvironmentState()

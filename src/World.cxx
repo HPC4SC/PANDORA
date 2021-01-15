@@ -222,16 +222,6 @@ namespace Engine
         }
     }
 
-    void World::engineStep()
-    {
-        _scheduler->checkForRebalancingSpace();
-        if (_scheduler->hasBeenTaggedAsJustFinished()) return;
-
-        //resetVariablesForRebalance();
-
-        updateDiscreteStateStructures();
-    }
-
     void World::step( )
     {
         std::stringstream logName;
@@ -252,32 +242,47 @@ namespace Engine
         log_INFO( logName.str( ), getWallTime( ) << " finished step: " << _step );
     }
 
+    void World::performStep()
+    {
+        if (not _scheduler->hasBeenTaggedAsGoToSleep()) 
+        {
+            std::cout << CreateStringStream("[Process #" << getId() << "] executing step " << _step << "\n").str();
+
+            step();
+        }
+    }
+
+    void World::engineStep()
+    {
+        if (_scheduler->hasBeenTaggedAsGoToSleep()) _scheduler->goToSleep();
+        if (_scheduler->hasBeenTaggedAsJustFinished()) return;
+        
+        _scheduler->checkForRebalancingSpace();
+        //resetVariablesForRebalance();
+
+        if (not _scheduler->hasBeenTaggedAsGoToSleep()) updateDiscreteStateStructures();
+    }
+
     void World::run( )
     {
-        if (_scheduler->hasBeenTaggedAsJustFinished()) return;
-
         std::stringstream logName;
-        if (not _scheduler->hasBeenTaggedAsJustAwaken())
-        {
-            logName << "simulation_" << getId( );
-            log_INFO( logName.str( ), getWallTime( ) << " executing " << _config->getNumSteps( ) << " steps..." );
-        }
+        logName << "simulation_" << getId();
+        std::string logString = CreateStringStream(getWallTime( ) << " executing " << _config->getNumSteps( ) << " steps... ").str();
 
-        engineStep();
-        if (_scheduler->hasBeenTaggedAsJustFinished()) return;
+        if (_scheduler->hasBeenTaggedAsGoToSleep()) logString += CreateStringStream("BUT WENT TO SLEEP.").str();
+        log_INFO( logName.str( ), logString);
 
         while (_step < _config->getNumSteps())
         {
-            std::cout << "[Process #" + std::to_string(getId()) + "] step " + std::to_string(_step) + "\n";
-
-            step();
+            performStep();
             engineStep();
+
             if (_scheduler->hasBeenTaggedAsJustFinished()) return;
             
             ++_step;
         }
 
-        std::cout << "[Process #" + std::to_string(getId()) + "] serializing \n";
+        std::cout << CreateStringStream("[Process #" << getId() << "] serializing...\n").str();
         // storing last step data
         if ( _step%_config->getSerializeResolution( )==0 )
         {
