@@ -253,6 +253,7 @@ def createMpiHeader(agentName, source, header, attributesMap):
     f.write('#define __' + agentName + '_mpi_hxx\n')
     f.write('\n')
     f.write('#include <Point2D.hxx>\n')
+    f.write('#include <' + agentName + '.hxx>\n')
     f.write('\n')
     # struct Package
     f.write('typedef struct\n')
@@ -271,6 +272,7 @@ def createMpiHeader(agentName, source, header, attributesMap):
             f.write('\tchar ' + nameAttribute + 'Mpi[32];\n')
         else:
             f.write('\t' + typeAttribute + ' ' + nameAttribute + 'Mpi;\n')
+    f.write('\n')
     # close struct
     f.write('} ' + agentName + 'Package;\n')
     # close file
@@ -399,6 +401,20 @@ def writeVectorAttributesPassing(f, agentName, vectorAttributesMap):
     f.write('\n')
     return None
 
+def writeCreationComplexAttributesDeltaPackage(f, agentName):
+    f.write('void* ' + agentName + '::createComplexAttributesDeltaPackage() const\n')
+    f.write('{\n')
+    
+    f.write('}\n')
+    return None
+
+def writeUpdateDiscreteStructuresSubClass(f, agentName):
+    f.write('void ' + agentName + '::updateDiscreteStructuresSubClass() const\n')
+    f.write('{\n')
+    
+    f.write('}\n')
+    return None
+
 def createMpiCode(agentName, source, header, namespace, parent, attributesMap, vectorAttributesMap):
     print '\t\tcreating mpi file: mpiCode/' + agentName + '_mpi.cxx for agent: ' + agentName + ' in namespace: ' + namespace + ' with parent: ' + parent + ' from source: ' + source + ' and header: ' + header
     f = open('mpiCode/' + agentName + '_mpi.cxx', 'w')
@@ -418,7 +434,9 @@ def createMpiCode(agentName, source, header, namespace, parent, attributesMap, v
     writeFreeAgentPackage(f, agentName)
     writeConstructor(f, agentName, parent, attributesMap)
     writeComparator(f, agentName, parent, attributesMap)
-    writeVectorAttributesPassing(f, agentName, vectorAttributesMap);
+    writeVectorAttributesPassing(f, agentName, vectorAttributesMap)
+    writeCreationComplexAttributesDeltaPackage(f, agentName)
+    writeUpdateDiscreteStructuresSubClass(f, agentName)
     if namespace != "":
         f.write('} // namespace ' + namespace + '\n')
     f.write('\n')
@@ -442,11 +460,14 @@ def addVectorAttribute(line, vectorAttributesMap):
 # attributes with basic types (int, float, char, ...)
 def addBasicAttribute(line, attributesMap):
     splitLine = line.split()
+
     # 1st word will be the type of the attribute
     typeAttribute = splitLine[0]
+
     # 2nd word will be the name, removing final ';'
     nameAttribute = splitLine[1]
     nameAttribute = nameAttribute.strip(';')
+
     attributesMap[nameAttribute] = typeAttribute
     print '\t\t\tattribute detected: ' + nameAttribute + ' with type: ' + typeAttribute
     return None
@@ -454,22 +475,46 @@ def addBasicAttribute(line, attributesMap):
 
 def addStringAttribute(line, attributesMap):
     splitLine = line.split()
+
     # 1st word will be std::string
+    typeAttribute = 'string'
+
     # 2nd word will be the name, removing final ';'
     nameAttribute = splitLine[1]
     nameAttribute = nameAttribute.strip(';')
-    attributesMap[nameAttribute] = 'string'
+
+    attributesMap[nameAttribute] = typeAttribute
     print '\t\t\tattribute detected: ' + nameAttribute + ' with type: string'
     return None
 
+def addComplexAttribute(line, complexAttributesMap):
+    splitLine = line.split(";")
+    firstPart = splitLine[0]
+    firstPartSplit = firstPart.split()
 
-def getAttributesFromClass(className, attributesMap, vectorAttributesMap):
+    firstPartLength = len(firstPartSplit)
+    
+    # 1st strings will the the type of the attribute, even if they are separated by spaces.
+    typeAttribute = ''
+    for i in range(0, firstPartLength - 1):
+        typeAttribute += firstPartSplit[i]
+
+    # 2nd word will be the name, removing final ';'
+    nameAttribute = firstPartSplit[firstPartLength - 1]
+    nameAttribute = nameAttribute.strip(';')
+
+    complexAttributesMap[nameAttribute] = typeAttribute
+    print '\t\t\tattribute detected: ' + nameAttribute + ' with type: ' + typeAttribute
+    return None
+
+def getAttributesFromClass(className, attributesMap, vectorAttributesMap, complexAttributesMap):
     headerName = className + '.hxx'
     print '\t\tlooking for attributes of class: ' + className + ' in header: ' + headerName + '...'
     f = open(headerName, 'r')
     keyBasic = 'MpiBasicAttribute'
     keyVector = 'MpiVectorAttribute'
     keyString = 'MpiStringAttribute'
+    keyComplex = 'MpiComplexAttribute'
     for line in f:
         if line.find(keyBasic) != -1:
             addBasicAttribute(line, attributesMap)
@@ -477,6 +522,8 @@ def getAttributesFromClass(className, attributesMap, vectorAttributesMap):
             addVectorAttribute(line, vectorAttributesMap)
         elif line.find(keyString) != -1:
             addStringAttribute(line, attributesMap)
+        elif line.find(keyComplex) != -1:
+            addComplexAttribute(line, complexAttributesMap)
         # parse base class, it must inherit from Agent
         elif line.find('class') != -1 and line.find(className) != -1 and line.find('public') != -1:
             splittedLine = line.rsplit()
@@ -492,8 +539,8 @@ def getAttributesFromClass(className, attributesMap, vectorAttributesMap):
     return parentName
 
 
-def checkHeader(agentName, headerName, parentName):
-    print '\tchecking if header: ' + headerName + ' for agent: ' + agentName + ' defines needed methods...'
+def includeVirtualMethodsHeaders(agentName, headerName, parentName):
+    print '\tchecking if header: ' + headerName + ' for agent: ' + agentName + ' defines needed virtual methods...'
     # if this is not defined, we will add the four needed methods
     fillPackageName = 'fillPackage'
     f = open(headerName, 'r')
@@ -502,7 +549,8 @@ def checkHeader(agentName, headerName, parentName):
             print '\theader: ' + headerName + ' correct'
             return
     f.close()
-    print '\theader: ' + headerName + ' does not contain parallel methods, adding...'
+
+    print '\theader: ' + headerName + ' does not contain virtual methods, adding them...'
 
     headerNameTmp = headerName + '_tmp'
     f = open(headerName, 'r')
@@ -519,19 +567,16 @@ def checkHeader(agentName, headerName, parentName):
             print 'end of agent declaration: ' + agentName
             insideClass = 0
             fTmp.write('\n')
-            fTmp.write('\t////////////////////////////////////////////////\n')
-            fTmp.write('\t// This code has been automatically generated //\n')
-            fTmp.write('\t/////// Please do not modify it ////////////////\n')
-            fTmp.write('\t////////////////////////////////////////////////\n')
+            fTmp.write('\t///// Autogenerated code (do not modify): /////\n')
             fTmp.write('\t' + agentName + '( void * );\n')
-            fTmp.write('\tvoid * fillPackage() const;\n')
+            fTmp.write('\tvoid* fillPackage() const;\n')
             fTmp.write('\tvoid freePackage(void* package) const override;\n')
-            fTmp.write('\tbool hasTheSameAttributes(const'+ parentName +'&) const override;\n')
+            fTmp.write('\tbool hasTheSameAttributes(const '+ parentName +'& other) const override;\n')
             fTmp.write('\tvoid sendVectorAttributes(int);\n')
             fTmp.write('\tvoid receiveVectorAttributes(int);\n')
-            fTmp.write('\t////////////////////////////////////////////////\n')
-            fTmp.write('\t//////// End of generated code /////////////////\n')
-            fTmp.write('\t////////////////////////////////////////////////\n')
+            fTmp.write('\tvoid* createComplexAttributesDeltaPackage() const override;\n')
+            fTmp.write('\tvoid updateDiscreteStructuresSubClass() const override;\n')
+            fTmp.write('\t///////// End of autogenerated code ///////////\n')
             fTmp.write('\n')
             fTmp.write(line)
         else:
@@ -539,8 +584,57 @@ def checkHeader(agentName, headerName, parentName):
     f.close()
     fTmp.close()
     os.rename(headerNameTmp, headerName)
-    return
+    return None
 
+def includeDiscreteVariables(agentName, headerName, attributesMap, complexAttributesMap):
+    print '\tchecking if header: ' + headerName + ' for agent: ' + agentName + ' defines needed discrete variables...'
+    # if this is not defined, we will add the four needed methods
+    firstDiscreteVariableName = '_discrete' + next(iter(attributesMap))
+    f = open(headerName, 'r')
+    for line in f:
+        if line.find(firstDiscreteVariableName) != -1:
+            print '\theader: ' + headerName + ' correct'
+            return
+    f.close()
+
+    print '\theader: ' + headerName + ' does not contain discrete variables, adding them...'
+
+    headerNameTmp = headerName + '_tmp'
+    f = open(headerName, 'r')
+    fTmp = open(headerNameTmp, 'w')
+
+    insideClass = 0
+    for line in f:
+        if insideClass == 0:
+            if line.find('class') != -1 and line.find(agentName) != -1:
+                print 'accessing agent declaration: ' + agentName
+                insideClass = 1
+            fTmp.write(line)
+        elif line.find('};') != -1:
+            print 'end of agent declaration: ' + agentName
+            insideClass = 0
+            fTmp.write('\n')
+            fTmp.write('\t///// Autogenerated code (do not modify): /////\n')
+            fTmp.write('private:\n')
+            for key in attributesMap:
+                fTmp.write('\t' + attributesMap[key] + ' _discrete' + key + ';\n')
+            
+            fTmp.write('\n')
+            
+            for key in complexAttributesMap:
+                fTmp.write('\t' + complexAttributesMap[key] + ' _discrete' + key + ';\n')
+
+            fTmp.write('\t///////// End of autogenerated code ///////////\n')
+            fTmp.write('\n')
+            fTmp.write(line)
+        else:
+            fTmp.write(line)
+            
+    f.close()
+    fTmp.close()
+    os.rename(headerNameTmp, headerName)
+
+    return None
 
 def execute(target, source, env):
     print 'generating code for mpi communication...'
@@ -550,11 +644,16 @@ def execute(target, source, env):
     for i in range(1, len(source)):
         sourceName = str(source[i])
         headerName = sourceName.replace(".cxx", ".hxx")
-        listAgents += [sourceName.replace(".cxx", "")]
+        agentName = sourceName.replace(".cxx", "")
+
+        listAgents += [agentName]
         attributesMap = {}
         vectorAttributesMap = {}
-        parentName = getAttributesFromClass(listAgents[i - 1], attributesMap, vectorAttributesMap)
-        checkHeader(sourceName.replace(".cxx", ""), headerName, parentName)
+        complexAttributesMap = {}
+
+        parentName = getAttributesFromClass(listAgents[i - 1], attributesMap, vectorAttributesMap, complexAttributesMap)
+        includeVirtualMethodsHeaders(agentName, headerName, parentName)
+        includeDiscreteVariables(agentName, headerName, attributesMap, complexAttributesMap)
         print '\tprocessing agent: ' + listAgents[i - 1]
         # get the list of attributes to send/receive in MPI
         # create header declaring a package with the list of attributes

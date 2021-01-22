@@ -317,8 +317,7 @@ namespace Engine
          * @brief Checks whether 'this' object has the exact same class attributes than 
          * 
          * @param other 
-         * @return true 
-         * @return false 
+         * @return bool
          */
         virtual bool hasTheSameAttributes(const Agent& other) const;
 
@@ -393,7 +392,6 @@ namespace Engine
          * 
          * @return void* 
          */
-        //virtual void * fillPackage(int& packageSize) const = 0;
         virtual void * fillPackage() const = 0;
 
         /**
@@ -405,16 +403,29 @@ namespace Engine
         /**
          * @brief sends the registered vector attributes of an Agent.
          * 
-         * @param target Agent that will recieve the data.
+         * @param target Process that will recieve the data.
          */
         virtual void sendVectorAttributes( int target ) = 0;
 
         /**
          * @brief recieves the registered vector attributes of an Agent.
          * 
-         * @param origin Agent that sent the data. 
+         * @param origin Process that sent the data. 
          */
         virtual void receiveVectorAttributes( int origin ) = 0;
+
+        /**
+         * @brief Create a serialized package with all the information about the changed complex data structures of the subclass. Need to be implemented in the sub-agent.
+         * 
+         * @return void* 
+         */
+        virtual void* createComplexAttributesDeltaPackage() const = 0;
+
+        /**
+         * @brief Updates the discrete data structures that have been defined in the sub-agent.
+         * 
+         */
+        virtual void updateDiscreteStructuresSubClass() const = 0;
 
         /**
          * @brief returns the interator pointing to the begin() position of _stringAttributes.

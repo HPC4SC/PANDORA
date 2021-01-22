@@ -134,6 +134,14 @@ public:
 	{		
 	}
 
+	void* createComplexAttributesDeltaPackage() const
+	{
+	}
+
+	void updateDiscreteStructuresSubClass() const
+	{
+	}
+
 	void serializeIntAttribute( const std::string & key, int value )
 	{
 		serializeAttribute(key, value);

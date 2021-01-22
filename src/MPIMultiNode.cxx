@@ -25,6 +25,11 @@
 #include <GeneralState.hxx>
 #include <MpiFactory.hxx>
 
+#include <vector>
+#include <list>
+#include <queue>
+#include <map>
+
 #include <math.h>
 #include <string>
 #include <string.h>
@@ -839,6 +844,118 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation("\n[Process # " 
 if (_printInstrumentation) _schedulerLogs->printInstrumentation("[Process # " + std::to_string(getId()) + "] MPIMultiNode::sendGhostAgentsInMap() OVERLAP: " + std::to_string(subOverlapID) + "\tTOTAL TIME: " + std::to_string(endTime - initialTime));
     }
 
+    void MPIMultiNode::receiveAgentsPackage(const int& sendingNodeID, const std::string& agentsTypeName)
+    {
+        MPI_Datatype* agentTypeMPI = MpiFactory::instance()->getMPIType(agentsTypeName);
+
+        int numberOfAgentsToReceive;
+        MPI_Recv(&numberOfAgentsToReceive, 1, MPI_INT, sendingNodeID, eNumGhostAgents, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+if (_printInConsole) std::cout << "[Process # " + std::to_string(getId()) + "]\t" + std::to_string(getWallTime()) + " receiving numberOfAgentsToReceive: " + std::to_string(numberOfAgentsToReceive) + " of type: " + agentsTypeName + "\tfrom node: " + std::to_string(sendingNodeID) + "\n";
+
+        int sizeOfAgentPackage = MpiFactory::instance()->getSizeOfPackage(agentsTypeName);
+        
+        void* agentsPackageArray = malloc(numberOfAgentsToReceive * sizeOfAgentPackage);
+        MPI_Recv(agentsPackageArray, numberOfAgentsToReceive, *agentTypeMPI, sendingNodeID, eGhostAgents, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+        for (int i = 0; i < numberOfAgentsToReceive; ++i)
+        {
+            void* package = (char*) agentsPackageArray + i * sizeOfAgentPackage;
+            Agent* agent = MpiFactory::instance()->createAndFillAgent(agentsTypeName, package);
+
+if (_printInConsole) std::cout << "[Process # " + std::to_string(getId()) <<  "]\t" + std::to_string(getWallTime()) + " receiving agent: " + agent->getId() + "\tfrom node: " + std::to_string(sendingNodeID) + "\n";
+
+            AgentsMap agentsByID = _world->getAgentsMap();
+            if (agentsByID.find(agent->getId()) != agentsByID.end())
+                _world->eraseAgent(agentsByID.at(agent->getId()).get());
+
+            if (_nodeSpace.ownedAreaWithOuterOverlap.contains(agent->getPosition()))
+            {
+                _world->addAgent(agent);
+                _executedAgentsInStep.insert(agent->getId());
+            }
+        }
+        free(agentsPackageArray);
+    }
+
+    int MPIMultiNode::getBytesForTypeOfElement(const int& typeOfElementsTag) const
+    {
+
+    }
+
+    void MPIMultiNode::receiveAgentsComplexAttributesPackage(const int& sendingNodeID)
+    {
+        // int bytesToTransfer;
+        // MPI_Recv(&bytesToTransfer, 1, MPI_INT, sendingNodeID, eGhostAgentsComplexAttributesNumBytes, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+        // void* agentsComplexAttributesArray = malloc(bytesToTransfer);
+        // MPI_Recv(agentsComplexAttributesArray, bytesToTransfer, MPI_BYTE, sendingNodeID, eGhostAgentsComplexAttributes, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+        // int i = 0;
+        // while (i < bytesToTransfer)
+        // {
+        //     void* package = (char*) agentsComplexAttributesArray + i;
+
+        //     std::string agentID;
+        //     int typeOfDSTag, typeOfElementsTag, numberOfElements;
+
+        //     memcpy(&agentID, package, 32);      // If these lines does not work maybe they need casts like (char*) or (unsigned int)
+        //     memcpy(&typeOfDSTag, package + 32, 4);
+        //     memcpy(&typeOfElementsTag, package + 32 + 4, 4);
+        //     memcpy(&numberOfElements, package + 32 + 4 + 4, 4);
+
+        //     int bytesForElement = getBytesForTypeOfElement(typeOfElementsTag);
+
+        //     int dataStructureLength = bytesForElement * numberOfElements;
+        //     void* dataStructure = malloc(dataStructureLength);
+
+        //     memcpy((char*) dataStructure, package + (unsigned int) (32 + 4 + 4 + 4), dataStructureLength);
+
+        //     if (typeOfDSTag == eTypeOfDS_vector)
+        //     {
+        //         if (typeOfElementsTag == eTypeOfElement_int)
+        //         {
+
+        //         }
+        //         else if (typeOfElementsTag == eTypeOfElement_float)
+        //         {
+
+        //         }
+        //         else if (typeOfElementsTag == eTypeOfElement_bool)
+        //         {
+                    
+        //         }
+        //         else if (typeOfElementsTag == eTypeOfElement_string)
+        //         {
+                    
+        //         }
+        //         else if (typeOfElementsTag == eTypeOfElement_point2D)
+        //         {
+                    
+        //         }
+        //     }
+        //     else if (typeOfDSTag == eTypeOfDS_list)
+        //     {
+                
+        //     }
+        //     else if (typeOfDSTag == eTypeOfDS_queue)
+        //     {
+                
+        //     }
+        //     else if (typeOfDSTag == eTypeOfDS_map)
+        //     {
+                
+        //     }
+        //     else if (typeOfDSTag == eTypeOfDS_point2D)
+        //     {
+                
+        //     }
+
+        //     i += (32 + 4 + 4 + 4 + dataStructureLength);
+        // }
+
+    }
+
     void MPIMultiNode::receiveGhostAgentsFromNeighbouringNodes(const int& subOverlapID)
     {
         double initialTime = getWallTime();
@@ -855,36 +972,10 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation("[Process # " + 
                 int agentTypeID;
                 MPI_Recv(&agentTypeID, 1, MPI_INT, sendingNodeID, eGhostAgentsType, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
                 std::string agentsTypeName = MpiFactory::instance()->getNameFromTypeID(agentTypeID);
-                MPI_Datatype* agentTypeMPI = MpiFactory::instance()->getMPIType(agentsTypeName);
-
-                int numberOfAgentsToReceive;
-                MPI_Recv(&numberOfAgentsToReceive, 1, MPI_INT, sendingNodeID, eNumGhostAgents, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
-if (_printInConsole) std::cout << "[Process # " + std::to_string(getId()) + "]\t" + std::to_string(getWallTime()) + " receiving numberOfAgentsToReceive: " + std::to_string(numberOfAgentsToReceive) + " of type: " + agentsTypeName + "\tfrom node: " + std::to_string(sendingNodeID) + "\n";
-
-                int sizeOfAgentPackage = MpiFactory::instance()->getSizeOfPackage(agentsTypeName);
                 
-                void* agentsPackageArray = malloc(numberOfAgentsToReceive * sizeOfAgentPackage);
-                MPI_Recv(agentsPackageArray, numberOfAgentsToReceive, *agentTypeMPI, sendingNodeID, eGhostAgents, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                receiveAgentsPackage(sendingNodeID, agentsTypeName);
 
-                for (int j = 0; j < numberOfAgentsToReceive; ++j)
-                {
-                    void* package = (char*) agentsPackageArray + j * sizeOfAgentPackage;
-                    Agent* agent = MpiFactory::instance()->createAndFillAgent(agentsTypeName, package);
-
-if (_printInConsole) std::cout << "[Process # " + std::to_string(getId()) <<  "]\t" + std::to_string(getWallTime()) + " receiving agent: " + agent->getId() + "\tfrom node: " + std::to_string(sendingNodeID) + "\n";
-
-                    AgentsMap agentsByID = _world->getAgentsMap();
-                    if (agentsByID.find(agent->getId()) != agentsByID.end())
-                        _world->eraseAgent(agentsByID.at(agent->getId()).get());
-
-                    if (_nodeSpace.ownedAreaWithOuterOverlap.contains(agent->getPosition()))
-                    {
-                        _world->addAgent(agent);
-                        _executedAgentsInStep.insert(agent->getId());
-                    }
-                }
-                free(agentsPackageArray);
+                receiveAgentsComplexAttributesPackage(sendingNodeID);
             }
         }
 
@@ -1000,12 +1091,14 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation("[Process # " + 
         Point2D<int> agentDiscretePosition = agent.getDiscretePosition();
         Point2D<int> agentPosition = agent.getPosition();
 
+        //if (agentDiscretePosition.isEqual(agentPosition) and agent.hasTheSameAttributes()) return;
+
+        bool needToSend;
         bool isInInnerMostArea = _nodeSpace.ownedAreaWithoutInnerOverlap.contains(agentPosition);
         bool wereInInnerMostArea = _nodeSpace.ownedAreaWithoutInnerOverlap.contains(agentDiscretePosition);
 
-        bool needToSend;
         if (subpartitioningMode == eMode4) needToSend = not wereInInnerMostArea or not isInInnerMostArea;
-        else if (subpartitioningMode == eMode9) needToSend = true;
+        else if (subpartitioningMode == eMode9) needToSend = true;      // When this method is called for mode9, it assumed that the agent is always outside the innermost area, or it was.
 
         if (needToSend)
         {
@@ -1018,7 +1111,6 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation("[Process # " + 
                 getNeighboursThatNeedToRemoveAgent(neighbouringNodeIDs, originalSubOverlapAreaID, agent);
                 getNeighboursThatNeedToAddAgent(neighbouringNodeIDs, originalSubOverlapAreaID, agent);
             }
-            
         }
     }
 
@@ -1146,7 +1238,7 @@ if (_printInConsole) std::cout << "[Process # " << std::to_string(getId()) <<  "
 
 if (_printInConsole) std::cout << "[Process # " + std::to_string(getId()) + "]\t" + std::to_string(getWallTime()) + " sending position: (" + std::to_string(positionsAndValuesIt->first.getX()) + "," + std::to_string(positionsAndValuesIt->first.getY()) + ") and value: " + std::to_string(positionsAndValuesIt->second) + "\tto node: " + std::to_string(neighbourNodeID) + "\n";
 
-                    i++;
+                    ++i;
                 }
                 sendDataRequestToNode(positionAndValueArray, numberOfPositions, *_positionAndValueDatatype, neighbourNodeID, ePosAndValue, MPI_COMM_WORLD);
             }
@@ -1347,6 +1439,60 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation("[Process # " + 
         _loadBalanceTree->setNumberOfPartitions(newNumberOfProcesses);
     }
 
+    void MPIMultiNode::sendAgentsPackage(const AgentsList& agentsToSend, const int& neighbourNodeID, const std::string& agentsTypeName)
+    {
+        int numberOfAgentsToSend = agentsToSend.size();
+        sendDataRequestToNode(&numberOfAgentsToSend, 1, MPI_INT, neighbourNodeID, eNumGhostAgents, MPI_COMM_WORLD);
+
+if (_printInConsole) std::cout << "[Process # " + std::to_string(getId()) + "]\t" + std::to_string(getWallTime()) + " sending numberOfAgents: " + std::to_string(numberOfAgentsToSend) + " of type: " + agentsTypeName + "\tto node: " + std::to_string(neighbourNodeID) + "\n";
+
+        int sizeOfAgentPackage = MpiFactory::instance()->getSizeOfPackage(agentsTypeName);
+        void* agentsPackageArray = malloc(numberOfAgentsToSend * sizeOfAgentPackage);
+
+        int i = 0;
+        MPI_Datatype* agentTypeMPI = MpiFactory::instance()->getMPIType(agentsTypeName);
+        for (AgentsList::const_iterator itAgent = agentsToSend.begin(); itAgent != agentsToSend.end(); ++itAgent)
+        {
+            Agent* agent = itAgent->get();
+
+if (_printInConsole) std::cout << "[Process # " + std::to_string(getId()) + "]\t" + std::to_string(getWallTime()) + " sending agent: " + agent->getId() + "\tto node: " + std::to_string(neighbourNodeID) + "\n";
+
+            void* agentPackage = agent->fillPackage();
+            memcpy((char*) agentsPackageArray + i * sizeOfAgentPackage, agentPackage, sizeOfAgentPackage);
+            agent->freePackage(agentPackage);
+            ++i;
+        }
+        sendDataRequestToNode(agentsPackageArray, numberOfAgentsToSend, *agentTypeMPI, neighbourNodeID, eGhostAgents, MPI_COMM_WORLD);
+        
+        free(agentsPackageArray);
+    }
+
+    void MPIMultiNode::sendAgentsComplexAttributesPackage(const AgentsList& agentsToSend, const int& neighbourNodeID)
+    {
+        // void* agentsComplexAttributesArray;
+        // int sizeOfAllAgentsComplexAttributes = 0;
+        // for (AgentsList::const_iterator itAgent = agentsToSend.begin(); itAgent != agentsToSend.end(); ++itAgent)
+        // {
+        //     Agent* agent = itAgent->get();
+
+        //     int sizeOfComplexAttributes;
+        //     void* complexAttributesData = agent->getComplexAttributesPackage(sizeOfComplexAttributes);
+
+        //     agentsComplexAttributesArray = realloc(agentsComplexAttributesArray, sizeOfAllAgentsComplexAttributes + sizeOfComplexAttributes);
+        //     memcpy((char*) agentsComplexAttributesArray + sizeOfAllAgentsComplexAttributes, complexAttributesData, sizeOfComplexAttributes);
+        //     agent->freeComplexAttributesPackage();
+
+        //     sizeOfAllAgentsComplexAttributes += sizeOfComplexAttributes;
+        // }
+
+        // int bytesToTransfer = sizeof(agentsComplexAttributesArray);
+        // sendDataRequestToNode(&bytesToTransfer, 1, MPI_INT, neighbourNodeID, eGhostAgentsComplexAttributesNumBytes, MPI_COMM_WORLD);
+
+        // sendDataRequestToNode(agentsComplexAttributesArray, bytesToTransfer, MPI_BYTE, neighbourNodeID, eGhostAgentsComplexAttributes, MPI_COMM_WORLD);
+
+        // free(agentsPackageArray);
+    }
+
     void MPIMultiNode::sendAgentsInMap(const std::map<int, std::map<std::string, AgentsList>>& agentsByTypeAndNode)
     {
         for (std::map<int, std::map<std::string, AgentsList>>::const_iterator itNeighbourNode = agentsByTypeAndNode.begin(); itNeighbourNode != agentsByTypeAndNode.end(); ++itNeighbourNode)
@@ -1365,30 +1511,9 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation("[Process # " + 
                 int agentsTypeID = MpiFactory::instance()->getIDFromTypeName(agentsTypeName);
                 sendDataRequestToNode(&agentsTypeID, 1, MPI_INT, neighbourNodeID, eGhostAgentsType, MPI_COMM_WORLD);
 
-                int numberOfAgentsToSend = agentsToSend.size();
-                sendDataRequestToNode(&numberOfAgentsToSend, 1, MPI_INT, neighbourNodeID, eNumGhostAgents, MPI_COMM_WORLD);
+                sendAgentsPackage(agentsToSend, neighbourNodeID, agentsTypeName);
 
-if (_printInConsole) std::cout << "[Process # " + std::to_string(getId()) + "]\t" + std::to_string(getWallTime()) + " sending numberOfAgents: " + std::to_string(numberOfAgentsToSend) + " of type: " + agentsTypeName + "\tto node: " + std::to_string(neighbourNodeID) + "\n";
-
-                int sizeOfAgentPackage = MpiFactory::instance()->getSizeOfPackage(agentsTypeName);
-                void* agentsPackageArray = malloc(numberOfAgentsToSend * sizeOfAgentPackage);
-
-                int i = 0;
-                MPI_Datatype* agentTypeMPI = MpiFactory::instance()->getMPIType(agentsTypeName);
-                for (AgentsList::const_iterator itAgent = agentsToSend.begin(); itAgent != agentsToSend.end(); ++itAgent)
-                {
-                    Agent* agent = itAgent->get();
-
- if (_printInConsole) std::cout << "[Process # " + std::to_string(getId()) + "]\t" + std::to_string(getWallTime()) + " sending agent: " + agent->getId() + "\tto node: " + std::to_string(neighbourNodeID) + "\n";
-
-                    void* agentPackage = agent->fillPackage();
-                    memcpy((char*) agentsPackageArray + i * sizeOfAgentPackage, agentPackage, sizeOfAgentPackage);
-                    agent->freePackage(agentPackage);
-                    ++i;
-                }
-                sendDataRequestToNode(agentsPackageArray, numberOfAgentsToSend, *agentTypeMPI, neighbourNodeID, eGhostAgents, MPI_COMM_WORLD);
-                
-                free(agentsPackageArray);
+                sendAgentsComplexAttributesPackage(agentsToSend, neighbourNodeID);
             }
         }
     }

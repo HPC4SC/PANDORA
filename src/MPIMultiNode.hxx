@@ -466,6 +466,29 @@ namespace Engine
             void sendGhostAgentsInMap(const std::map<int, std::map<std::string, AgentsList>>& agentsByTypeAndNode, const int& subOverlapID);
 
             /**
+             * @brief Receives an agents package by the process 'sendingNodeID' and includes them into the node's set of a agents. The agents are of type 'agentsTypeName'.
+             * 
+             * @param sendingNodeID const int&
+             * @param agentsTypeName const std::string&
+             */
+            void receiveAgentsPackage(const int& sendingNodeID, const std::string& agentsTypeName);
+
+            /**
+             * @brief Gets the number of bytes for elements of type 'typeOfElementsTag'.
+             * 
+             * @param typeOfElementsTag const int&
+             * @return int 
+             */
+            int getBytesForTypeOfElement(const int& typeOfElementsTag) const;
+
+            /**
+             * @brief Receives an agents-complex-attributes package by the process 'sendingNodeID' and sets them to the corresponding agents.
+             * 
+             * @param sendingNodeID const int&
+             */
+            void receiveAgentsComplexAttributesPackage(const int& sendingNodeID);
+
+            /**
              * @brief Non-blockingly receives agents from the neighbouring nodes. 'subOverlapID' is only used for instrumentation purposes.
              * 
              * @param subOverlapID const int&
@@ -641,6 +664,23 @@ namespace Engine
              * @param newNumberOfProcesses const int&
              */
             void resetPartitioning(const int& newNumberOfProcesses);
+
+            /**
+             * @brief Builds and sends an MPI package for the whole set of 'agentsToSend', to the process 'neighbourNodeID'. The agents are of type 'agentsTypeName'.
+             * 
+             * @param agentsToSend const AgentsList& 
+             * @param neighbourNodeID const int&
+             * @param agentsTypeName const std::string&
+             */
+            void sendAgentsPackage(const AgentsList& agentsToSend, const int& neighbourNodeID, const std::string& agentsTypeName);
+
+            /**
+             * @brief Builds and sends an MPI package for the whole set of complex attributes (lists, maps, etc.) of the 'agentsToSend', to the process 'neighbourNodeID'.
+             * 
+             * @param agentsToSend const AgentsList& 
+             * @param neighbourNodeID const int&
+             */
+            void sendAgentsComplexAttributesPackage(const AgentsList& agentsToSend, const int& neighbourNodeID);
 
             /**
              * @brief Sends the agents in agentsByTypeAndNode to their corresponding nodes.

@@ -81,6 +81,8 @@ namespace Engine
         eGhostAgentsType = 41,
         eNumGhostAgents = 42,
         eGhostAgents = 43,
+        eGhostAgentsComplexAttributesNumBytes = 44,
+        eGhostAgentsComplexAttributes = 45,
 
         eNumRasters = 50,
         eRasterIndex = 51,
@@ -148,6 +150,21 @@ namespace Engine
     {
         eMode4 = 4,
         eMode9 = 9
+    };
+
+    enum ComplexAttributesTags
+    {
+        eTypeOfDS_vector = 1,
+        eTypeOfDS_list = 2,
+        eTypeOfDS_queue = 3,
+        eTypeOfDS_map = 4,
+        eTypeOfDS_point2D = 5,
+
+        eTypeOfElement_int = 6,
+        eTypeOfElement_float = 7,
+        eTypeOfElement_bool = 8,
+        eTypeOfElement_string = 9,
+        eTypeOfElement_point2D = 10
     };
 
 } // namespace Engine

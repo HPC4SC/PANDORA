@@ -199,7 +199,6 @@ bool Agent::hasTheSameAttributes(const Agent& other) const
             _stringAttributes == other._stringAttributes and
             _id == other._id and
             _exists == other._exists and
-            _position == other._position and
             _world->getId() == other._world->getId();
 }
 

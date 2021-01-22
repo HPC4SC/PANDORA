@@ -757,13 +757,22 @@ if (_schedulerInstance->_printInConsole) printAgentsByTypeAndNodeToSend(agentsBy
                     void* agentsPackageArray = malloc(numberOfAgentsToReceive * sizeOfAgentPackage);
                     MPI_Recv(agentsPackageArray, numberOfAgentsToReceive, *agentTypeMPI, sendingNodeID, eGhostAgents, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
+std::cout << CreateStringStream("[id = " << _schedulerInstance->getId() << "] -------------------------------- 1\n").str();
+
                     for (int j = 0; j < numberOfAgentsToReceive; ++j)
                     {
+std::cout << CreateStringStream("[id = " << _schedulerInstance->getId() << "] -------------------------------- 2\n").str();
                         void* package = (char*) agentsPackageArray + j * sizeOfAgentPackage;
+std::cout << CreateStringStream("[id = " << _schedulerInstance->getId() << "] -------------------------------- 3\n").str();
                         Agent* agent = MpiFactory::instance()->createAndFillAgent(agentsTypeName, package);
-
+std::cout << CreateStringStream("[id = " << _schedulerInstance->getId() << "] -------------------------------- 4\n").str();
                         if (_schedulerInstance->_world->getAgentsMap().find(agent->getId()) == _schedulerInstance->_world->getAgentsMap().end())
+                        {
+std::cout << CreateStringStream("[id = " << _schedulerInstance->getId() << "] -------------------------------- 5\n").str();
                             _schedulerInstance->_world->addAgent(agent);
+std::cout << CreateStringStream("[id = " << _schedulerInstance->getId() << "] -------------------------------- 6\n").str();
+                        }
+std::cout << CreateStringStream("[id = " << _schedulerInstance->getId() << "] -------------------------------- 7\n").str();
                     }
                 }
             }
@@ -877,12 +886,14 @@ if (_schedulerInstance->_printInstrumentation) _schedulerInstance->_schedulerLog
 
         removeMasterNodeNoNNeededAgents(oldSpaces);
         updateOwnStructures(newSpaces);
-
+std::cout << CreateStringStream("[id = " << _schedulerInstance->getId() << "] ajsfñjsdajsfkl 1\n").str();
         sendAgentsToOtherNodesIfNecessary(newSpaces, oldSpaces);
+std::cout << CreateStringStream("[id = " << _schedulerInstance->getId() << "] ajsfñjsdajsfkl 2\n").str();
         receiveAgentsFromOtherNodesIfNecessary(std::max(newSpaces.size(), oldSpaces.size()));
+std::cout << CreateStringStream("[id = " << _schedulerInstance->getId() << "] ajsfñjsdajsfkl 3\n").str();
 
         removeNonBelongingAgentsToMPINode(newSpaces);
-
+std::cout << CreateStringStream("[id = " << _schedulerInstance->getId() << "] ajsfñjsdajsfkl 4\n").str();
         sendRastersToOtherNodesIfNecessary(newSpaces, oldSpaces);
         receiveRastersFromOtherNodesIfNecessary(std::max(newSpaces.size(), oldSpaces.size()));
 
