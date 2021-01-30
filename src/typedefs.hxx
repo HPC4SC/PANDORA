@@ -167,6 +167,17 @@ namespace Engine
         eTypeOfElement_point2D = 10
     };
 
+    enum ComplexAttributesDeltaTags
+    {
+        eVectorInsert = 1,
+        eVectorUpdate = 2,
+        eVectorDelete = 3,
+        eQueuePush = 4,
+        eQueuePop = 5,
+        eMapInsertOrUpdate = 6,
+        eMapDelete = 7
+    };
+
 } // namespace Engine
 
 #endif // __PandoraTypedefs_hxx__

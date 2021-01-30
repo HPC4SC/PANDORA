@@ -66,23 +66,23 @@ int Bug::getSurvivalProbability() const {
 }
 
 void Bug::reproduce(const std::string &childId) {
-	Bug * child = new Bug(childId, this->_maxBugMovement, this->_maxConsumptionRate, this->_survivalProbability, 0);
-	// creation of a new agent
-	_world->addAgent(child);
-	bool colocat = false;
-	Engine::Point2D<int>newPosition = this->getPosition();
-	for (int i = 0; i < 5 and not colocat; ++i) {
-		// find an unoccupied cell within 5 trys
-		int modX = Engine::GeneralState::statistics().getUniformDistValue(-3,3);
-		newPosition._x += modX;
-		int modY = Engine::GeneralState::statistics().getUniformDistValue(-3,3);
-		newPosition._y += modY;
-		if (_world->checkPosition(newPosition)) colocat = true;
-	}
-	// if the agent has foud a valid position it is placed there
-	if (not colocat) child->remove();
-	// otherwise the agent is removed
-	else child->setPosition(newPosition);
+	// Bug * child = new Bug(childId, this->_maxBugMovement, this->_maxConsumptionRate, this->_survivalProbability, 0);
+	// // creation of a new agent
+	// _world->addAgent(child);
+	// bool colocat = false;
+	// Engine::Point2D<int>newPosition = this->getPosition();
+	// for (int i = 0; i < 5 and not colocat; ++i) {
+	// 	// find an unoccupied cell within 5 trys
+	// 	int modX = Engine::GeneralState::statistics().getUniformDistValue(-3,3);
+	// 	newPosition._x += modX;
+	// 	int modY = Engine::GeneralState::statistics().getUniformDistValue(-3,3);
+	// 	newPosition._y += modY;
+	// 	if (_world->checkPosition(newPosition)) colocat = true;
+	// }
+	// // if the agent has foud a valid position it is placed there
+	// if (not colocat) child->remove();
+	// // otherwise the agent is removed
+	// else child->setPosition(newPosition);
 }
 
 

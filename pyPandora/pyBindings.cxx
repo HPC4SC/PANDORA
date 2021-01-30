@@ -134,11 +134,11 @@ public:
 	{		
 	}
 
-	void* createComplexAttributesDeltaPackage() const
+	void* createComplexAttributesDeltaPackage(int& sizeOfPackage) const
 	{
 	}
 
-	void updateDiscreteStructuresSubClass() const
+	void copyContinuousValuesToDiscreteOnes()
 	{
 	}
 

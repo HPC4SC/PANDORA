@@ -417,15 +417,16 @@ namespace Engine
         /**
          * @brief Create a serialized package with all the information about the changed complex data structures of the subclass. Need to be implemented in the sub-agent.
          * 
+         * @param sizeOfPackage int&
          * @return void* 
          */
-        virtual void* createComplexAttributesDeltaPackage() const = 0;
+        virtual void* createComplexAttributesDeltaPackage(int& sizeOfPackage) const = 0;
 
         /**
          * @brief Updates the discrete data structures that have been defined in the sub-agent.
          * 
          */
-        virtual void updateDiscreteStructuresSubClass() const = 0;
+        virtual void copyContinuousValuesToDiscreteOnes() = 0;
 
         /**
          * @brief returns the interator pointing to the begin() position of _stringAttributes.
@@ -491,12 +492,6 @@ namespace Engine
         {
             return 1;
         }
-
-        /**
-         * @brief Updates the member _discretePosition, copying all values in _position to it.
-         * 
-         */
-        void copyContinuousValuesToDiscreteOnes();
 
     };
 } // namespace Engine

@@ -401,22 +401,213 @@ def writeVectorAttributesPassing(f, agentName, vectorAttributesMap):
     f.write('\n')
     return None
 
-def writeCreationComplexAttributesDeltaPackage(f, agentName):
-    f.write('void* ' + agentName + '::createComplexAttributesDeltaPackage() const\n')
+def getMethodsForVector(variableName, typeOfElements, agentName, mapOfDeltaCodes):
+    insertMethodName = 'insertElementAtIndex' + variableName + '(const ' + typeOfElements + '& element, const int& index)'
+    updateMethodName = 'updateElementAtIndex' + variableName + '(const ' + typeOfElements + '& element, const int& index)'
+    deleteMethodName = 'deleteElementAtIndex' + variableName + '(const int& index)'
+
+    insertMethodCode =  '\tif (index >= ' + variableName + '.size() or index < 0) throw Engine::Exception("' + agentName + '_mpi.cxx::insertElementAtIndex_forVector' + variableName + '() - NOT VALID INDEX.");\n' \
+                        '\n' \
+                        '\tstd::vector<' + typeOfElements + '>::const_iterator itPos = ' + variableName + '.begin() + index;\n' \
+                        '\t' + variableName + '.insert(itPos, element);\n' \
+                        '\n' \
+                        '\t_deltaFor' + variableName + '.push_back(std::make_tuple(Engine::eVectorInsert, index, element));\n' 
+    updateMethodCode =  '\tif (index >= ' + variableName + '.size() or index < 0) throw Engine::Exception("' + agentName + '_mpi.cxx::updateElementAtIndex_forVector' + variableName + '() - NOT VALID INDEX.");\n' \
+                        '\n' \
+                        '\t' + variableName + '.at(index) = element;\n' \
+                        '\n' \
+                        '\t_deltaFor' + variableName + '.push_back(std::make_tuple(Engine::eVectorUpdate, index, element));\n'
+
+    typeOfElementsNull = '(' + typeOfElements + ') 0'
+    if typeOfElements.find('Engine::Point2D') != -1:
+        typeOfElementsNull = 'Engine::Point2D<int>()'
+
+    deleteMethodCode =  '\tif (index >= ' + variableName + '.size() or index < 0) throw Engine::Exception("' + agentName + '_mpi.cxx::deleteElementAtIndex_forVector' + variableName + '() - NOT VALID INDEX.");\n' \
+                        '\n' \
+                        '\t' + variableName + '.erase(' + variableName + '.begin() + index);\n' \
+                        '\n' \
+                        '\t_deltaFor' + variableName + '.push_back(std::make_tuple(Engine::eVectorDelete, index, ' + typeOfElementsNull + '));\n'
+
+    mapOfDeltaCodes[insertMethodName] = insertMethodCode
+    mapOfDeltaCodes[updateMethodName] = updateMethodCode
+    mapOfDeltaCodes[deleteMethodName] = deleteMethodCode
+
+    return None
+
+def getMethodsForQueue(variableName, typeOfElements, mapOfDeltaCodes):
+    pushMethodName = 'pushElement' + variableName + '(const ' + typeOfElements + '& element)'
+    popMethodName = 'popElement' + variableName + '()'
+
+    pushMethodCode =    '\t' + variableName + '.push(element);\n' \
+                        '\n' \
+                        '\t_deltaFor' + variableName + '.push_back(std::make_tuple(Engine::eQueuePush, element));\n'
+    
+    typeOfElementsNull = '(' + typeOfElements + ') 0'
+    if typeOfElements.find('Engine::Point2D') != -1:
+        typeOfElementsNull = 'Engine::Point2D<int>()'
+
+    popMethodCode =     '\tif (not ' + variableName + '.empty())\n' \
+                        '\t{\n' \
+                        '\t\t' + variableName + '.pop();\n' \
+                        '\n' \
+                        '\t\t_deltaFor' + variableName + '.push_back(std::make_tuple(Engine::eQueuePush, ' + typeOfElementsNull + '));\n' \
+                        '\t}\n'
+
+    mapOfDeltaCodes[pushMethodName] = pushMethodCode
+    mapOfDeltaCodes[popMethodName] = popMethodCode
+
+    return None
+
+def getMethodsForMap(variableName, typeOfElements, valueType, mapOfDeltaCodes):
+    insertOrUpdateMethodName = 'insertOrUpdateElement' + variableName + '(const ' + typeOfElements + '& key, const ' + valueType + '& value)'
+    deleteMethodName = 'deleteElement' + variableName + '(const ' + typeOfElements + '& key)'
+
+    insertOrUpdateMethodCode =  '\t' + variableName + '[key] = value;\n' \
+                                '\n' \
+                                '\t_deltaFor' + variableName + '.push_back(std::make_tuple(Engine::eMapInsertOrUpdate, key, value));\n'
+
+    valueTypeNull = '(' + valueType + ') 0'
+    if valueType.find('Engine::Point2D') != -1:
+        valueTypeNull = 'Engine::Point2D<int>()'
+
+    deleteMethodCode =          '\t' + variableName + '.erase(key);\n' \
+                                '\n' \
+                                '\t_deltaFor' + variableName + '.push_back(std::make_tuple(Engine::eMapDelete, key, ' + valueTypeNull + '));\n'
+
+    mapOfDeltaCodes[insertOrUpdateMethodName] = insertOrUpdateMethodCode
+    mapOfDeltaCodes[deleteMethodName] = deleteMethodCode
+
+    return None
+
+def getListOfSetterHeaders(agentName, mapOfDeltaCodes, mapOfDeltaVariables, complexAttributesMap):
+    for variableName in complexAttributesMap:
+        print 'variableName "' + variableName + '" of type "' + complexAttributesMap[variableName] + '"'
+        typeOfElements = ''
+        if complexAttributesMap[variableName].find('<Engine::Point2D') != -1:
+            typeOfElements = 'Engine::Point2D<int>'
+        elif complexAttributesMap[variableName].find('<int') != -1:
+            typeOfElements = 'int'
+        elif complexAttributesMap[variableName].find('<float') != -1:
+            typeOfElements = 'float'
+        elif complexAttributesMap[variableName].find('<bool') != -1:
+            typeOfElements = 'bool'
+        elif complexAttributesMap[variableName].find('<std::string') != -1:
+            typeOfElements = 'std::string'
+        else:
+            print 'No valid type for attribute "' + variableName + '" of type "' + complexAttributesMap[variableName] + '"!'
+
+        if complexAttributesMap[variableName].find('std::vector') != -1:
+            mapOfDeltaVariables['_deltaFor' + variableName] = 'std::vector<std::tuple<int, int, ' + typeOfElements + '>>'
+
+            getMethodsForVector(variableName, typeOfElements, agentName, mapOfDeltaCodes)
+        elif complexAttributesMap[variableName].find('std::queue') != -1:
+            mapOfDeltaVariables['_deltaFor' + variableName] = 'std::vector<std::tuple<int, ' + typeOfElements + '>>'
+
+            getMethodsForQueue(variableName, typeOfElements, mapOfDeltaCodes)
+        elif complexAttributesMap[variableName].find('std::map') != -1:
+            valueType = ''
+            if complexAttributesMap[variableName].find(',Engine::Point2D<int>') != -1:
+                valueType = 'Engine::Point2D<int>'
+            elif complexAttributesMap[variableName].find(',int') != -1:
+                valueType = 'int'
+            elif complexAttributesMap[variableName].find(',float') != -1:
+                valueType = 'float'
+            elif complexAttributesMap[variableName].find(',bool') != -1:
+                valueType = 'bool'
+            elif complexAttributesMap[variableName].find(',std::string') != -1:
+                valueType = 'std::string'
+            else:
+                print 'No valid value type for map "' + variableName + '" of type "' + complexAttributesMap[variableName] + '"!'
+
+            mapOfDeltaVariables['_deltaFor' + variableName] = 'std::vector<std::tuple<int, ' + typeOfElements + ', ' + valueType + '>>'
+
+            getMethodsForMap(variableName, typeOfElements, valueType, mapOfDeltaCodes)
+
+    return None
+
+def writeComplexAttributesSettersHeaders(agentName, headerName, complexAttributesMap, mapOfDeltaCodes, mapOfDeltaVariables):
+    # Building headers
+    firstAttributeMethod = next(iter(complexAttributesMap)) + '(const '
+    f = open(headerName, 'r')
+    for line in f:
+        if line.find(firstAttributeMethod) != -1:
+            print '\tComplex attributes setters headers at "' + headerName + '" already correct.'
+            return
+    f.close()
+
+    print '\t"' + headerName + '" does not contain the complex attributes setters headers, adding them...'
+
+    headerNameTmp = headerName + '_tmp'
+    f = open(headerName, 'r')
+    fTmp = open(headerNameTmp, 'w')
+
+    insideClass = 0
+    for line in f:
+        if insideClass == 0:
+            if line.find('class') != -1 and line.find(agentName) != -1:
+                print 'accessing agent declaration: ' + agentName
+                insideClass = 1
+            fTmp.write(line)
+        elif line.find('};') != -1:
+            print 'end of agent declaration: ' + agentName
+            insideClass = 0
+            fTmp.write('\n')
+            fTmp.write('\t///// Autogenerated code (do not modify): /////\n')
+            fTmp.write('private:\n')
+
+            for variableName in mapOfDeltaVariables:
+                fTmp.write('\t' + mapOfDeltaVariables[variableName] + ' ' + variableName + ';\n')
+
+            fTmp.write('\n')
+
+            for methodWithParams in mapOfDeltaCodes:
+                fTmp.write('\tvoid ' + methodWithParams + ';\n')
+
+            fTmp.write('\t///////// End of autogenerated code ///////////\n')
+            fTmp.write('\n')
+            fTmp.write(line)
+        else:
+            fTmp.write(line)
+            
+    f.close()
+    fTmp.close()
+    os.rename(headerNameTmp, headerName)
+
+    return None
+
+def writeComplexAttributesSettersCode(f, agentName, mapOfDeltaCodes, mapOfDeltaVariables):
+    for methodWithParams in mapOfDeltaCodes:
+        f.write('void ' + agentName + '::' + methodWithParams + '\n')
+        f.write('{\n')
+        f.write(mapOfDeltaCodes[methodWithParams])
+        f.write('}\n')
+        f.write('\n')
+
+    return None
+
+def writeCreateComplexAttributesDeltaPackage(f, agentName):
+    f.write('void* ' + agentName + '::createComplexAttributesDeltaPackage(int& sizeOfPackage) const\n')
     f.write('{\n')
     
     f.write('}\n')
+    f.write('\n')
     return None
 
-def writeUpdateDiscreteStructuresSubClass(f, agentName):
-    f.write('void ' + agentName + '::updateDiscreteStructuresSubClass() const\n')
+def writeCopyContinuousValuesToDiscreteOnes(f, agentName, attributesMap, complexAttributesMap):
+    f.write('void ' + agentName + '::copyContinuousValuesToDiscreteOnes()\n')
     f.write('{\n')
-    
+    f.write('\tEngine::Agent::copyContinuousValuesToDiscreteOnes();\n')
+    f.write('\n')
+    for key in attributesMap:
+        f.write('\t' + key + ' = _discrete' + key + ';\n')
+    for key in complexAttributesMap:
+        f.write('\t' + key + ' = _discrete' + key + ';\n')
     f.write('}\n')
+    f.write('\n')
     return None
 
-def createMpiCode(agentName, source, header, namespace, parent, attributesMap, vectorAttributesMap):
-    print '\t\tcreating mpi file: mpiCode/' + agentName + '_mpi.cxx for agent: ' + agentName + ' in namespace: ' + namespace + ' with parent: ' + parent + ' from source: ' + source + ' and header: ' + header
+def createMpiCode(agentName, source, headerName, namespace, parent, attributesMap, vectorAttributesMap, complexAttributesMap):
+    print '\t\tcreating mpi file: mpiCode/' + agentName + '_mpi.cxx for agent: ' + agentName + ' in namespace: ' + namespace + ' with parent: ' + parent + ' from source: ' + source + ' and header: ' + headerName
     f = open('mpiCode/' + agentName + '_mpi.cxx', 'w')
     # header
     f.write('\n')
@@ -424,6 +615,10 @@ def createMpiCode(agentName, source, header, namespace, parent, attributesMap, v
     f.write('#include <' + agentName + '.hxx>\n')
     f.write('#include <cstring>\n')
     f.write('#include <mpi.h>\n')
+    f.write('#include <vector>\n')
+    f.write('#include <queue>\n')
+    f.write('#include <map>\n')
+    f.write('#include <Exception.hxx>\n')
     f.write('#include <typedefs.hxx>\n')
     f.write('\n')
     if namespace != "":
@@ -435,8 +630,17 @@ def createMpiCode(agentName, source, header, namespace, parent, attributesMap, v
     writeConstructor(f, agentName, parent, attributesMap)
     writeComparator(f, agentName, parent, attributesMap)
     writeVectorAttributesPassing(f, agentName, vectorAttributesMap)
-    writeCreationComplexAttributesDeltaPackage(f, agentName)
-    writeUpdateDiscreteStructuresSubClass(f, agentName)
+
+    if len(complexAttributesMap) > 0:
+        mapOfDeltaCodes, mapOfDeltaVariables, mapOfDeltaCodes = {}, {}, {}
+        getListOfSetterHeaders(agentName, mapOfDeltaCodes, mapOfDeltaVariables, complexAttributesMap)
+
+        writeComplexAttributesSettersHeaders(agentName, headerName, complexAttributesMap, mapOfDeltaCodes, mapOfDeltaVariables)
+        writeComplexAttributesSettersCode(f, agentName, mapOfDeltaCodes, mapOfDeltaVariables)
+    
+    writeCreateComplexAttributesDeltaPackage(f, agentName)
+    writeCopyContinuousValuesToDiscreteOnes(f, agentName, attributesMap, complexAttributesMap)
+
     if namespace != "":
         f.write('} // namespace ' + namespace + '\n')
     f.write('\n')
@@ -538,19 +742,18 @@ def getAttributesFromClass(className, attributesMap, vectorAttributesMap, comple
     f.close()
     return parentName
 
-
-def includeVirtualMethodsHeaders(agentName, headerName, parentName):
+def includeVirtualMethodsHeaders(agentName, headerName, parentName, complexAttributesMap):
     print '\tchecking if header: ' + headerName + ' for agent: ' + agentName + ' defines needed virtual methods...'
     # if this is not defined, we will add the four needed methods
     fillPackageName = 'fillPackage'
     f = open(headerName, 'r')
     for line in f:
         if line.find(fillPackageName) != -1:
-            print '\theader: ' + headerName + ' correct'
+            print '\tVirtual methods headers at "' + headerName + '" already correct.'
             return
     f.close()
 
-    print '\theader: ' + headerName + ' does not contain virtual methods, adding them...'
+    print '\t"' + headerName + '" does not contain virtual methods headers, adding them...'
 
     headerNameTmp = headerName + '_tmp'
     f = open(headerName, 'r')
@@ -568,14 +771,15 @@ def includeVirtualMethodsHeaders(agentName, headerName, parentName):
             insideClass = 0
             fTmp.write('\n')
             fTmp.write('\t///// Autogenerated code (do not modify): /////\n')
+            fTmp.write('public:\n')
             fTmp.write('\t' + agentName + '( void * );\n')
             fTmp.write('\tvoid* fillPackage() const;\n')
             fTmp.write('\tvoid freePackage(void* package) const override;\n')
             fTmp.write('\tbool hasTheSameAttributes(const '+ parentName +'& other) const override;\n')
             fTmp.write('\tvoid sendVectorAttributes(int);\n')
             fTmp.write('\tvoid receiveVectorAttributes(int);\n')
-            fTmp.write('\tvoid* createComplexAttributesDeltaPackage() const override;\n')
-            fTmp.write('\tvoid updateDiscreteStructuresSubClass() const override;\n')
+            fTmp.write('\tvoid* createComplexAttributesDeltaPackage(int& sizeOfPackage) const override;\n')
+            fTmp.write('\tvoid copyContinuousValuesToDiscreteOnes() override;\n')
             fTmp.write('\t///////// End of autogenerated code ///////////\n')
             fTmp.write('\n')
             fTmp.write(line)
@@ -593,11 +797,11 @@ def includeDiscreteVariables(agentName, headerName, attributesMap, complexAttrib
     f = open(headerName, 'r')
     for line in f:
         if line.find(firstDiscreteVariableName) != -1:
-            print '\theader: ' + headerName + ' correct'
+            print '\tDiscrete variables includes at "' + headerName + '" already correct.'
             return
     f.close()
 
-    print '\theader: ' + headerName + ' does not contain discrete variables, adding them...'
+    print '\t"' + headerName + '" does not contain discrete variables headers, adding them...'
 
     headerNameTmp = headerName + '_tmp'
     f = open(headerName, 'r')
@@ -652,7 +856,7 @@ def execute(target, source, env):
         complexAttributesMap = {}
 
         parentName = getAttributesFromClass(listAgents[i - 1], attributesMap, vectorAttributesMap, complexAttributesMap)
-        includeVirtualMethodsHeaders(agentName, headerName, parentName)
+        includeVirtualMethodsHeaders(agentName, headerName, parentName, complexAttributesMap)
         includeDiscreteVariables(agentName, headerName, attributesMap, complexAttributesMap)
         print '\tprocessing agent: ' + listAgents[i - 1]
         # get the list of attributes to send/receive in MPI
@@ -660,7 +864,7 @@ def execute(target, source, env):
         createMpiHeader(listAgents[i - 1], sourceName, headerName, attributesMap)
         # create a source code defining package-class copy
         createMpiCode(listAgents[i - 1], sourceName, headerName, namespaceAgents[i - 1], parentName, attributesMap,
-                      vectorAttributesMap)
+                      vectorAttributesMap, complexAttributesMap)
         listAttributesMaps.append(attributesMap)
 
     # fill mpi code registering types and additional methods
