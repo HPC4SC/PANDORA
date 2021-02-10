@@ -1469,6 +1469,15 @@ if (_printInConsole) std::cout << "[Process # " + std::to_string(getId()) + "]\t
 
     void MPIMultiNode::sendAgentsComplexAttributesPackage(const AgentsList& agentsToSend, const int& neighbourNodeID)
     {
+        void* complexAttributesDeltaPackage;
+        for (AgentsList::const_iterator itAgent = agentsToSend.begin(); itAgent != agentsToSend.end(); ++itAgent)
+        {
+            Agent* agent = itAgent->get();
+
+            int sizeOfComplexAttributes;
+            void* complexAttributesData = agent->createComplexAttributesDeltaPackage(sizeOfComplexAttributes);
+        }
+
         // void* agentsComplexAttributesArray;
         // int sizeOfAllAgentsComplexAttributes = 0;
         // for (AgentsList::const_iterator itAgent = agentsToSend.begin(); itAgent != agentsToSend.end(); ++itAgent)
@@ -1557,7 +1566,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation("[Process # " + 
 
     void MPIMultiNode::checkForRebalancingSpace()
     {
-        if (_world->getConfig().getAutoMode())
+        if (_numTasksMax > 1 and _world->getConfig().getAutoMode())
         {
             if (_world->getCurrentStep() > 0 and _world->getCurrentStep() % _world->getConfig().getRebalancingFrequency() == 0) 
                 _autoAdjustment->checkForRebalancingSpace();

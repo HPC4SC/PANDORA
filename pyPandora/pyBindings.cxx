@@ -134,7 +134,7 @@ public:
 	{		
 	}
 
-	void* createComplexAttributesDeltaPackage(int& sizeOfPackage) const
+	void* createComplexAttributesDeltaPackage(int& sizeOfPackage)
 	{
 	}
 

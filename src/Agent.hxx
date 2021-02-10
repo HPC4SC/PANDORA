@@ -420,7 +420,7 @@ namespace Engine
          * @param sizeOfPackage int&
          * @return void* 
          */
-        virtual void* createComplexAttributesDeltaPackage(int& sizeOfPackage) const = 0;
+        virtual void* createComplexAttributesDeltaPackage(int& sizeOfPackage) = 0;
 
         /**
          * @brief Updates the discrete data structures that have been defined in the sub-agent.

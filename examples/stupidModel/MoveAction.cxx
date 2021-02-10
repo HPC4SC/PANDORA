@@ -3,8 +3,9 @@
 
 #include <GeneralState.hxx>
 #include <Rectangle.hxx>
-
 #include <Exception.hxx>
+
+#include <Bug.hxx>
 
 namespace Examples 
 {
@@ -27,6 +28,14 @@ void MoveAction::execute( Engine::Agent & agent ) {
 	if(world->checkPosition(newPosition)) {
 		agent.setPosition(newPosition);
 	}
+
+	bug.insertElementAtIndex_hey1("hey", -1);
+	bug.insertElementAtIndex_hey1("come", -1);
+	bug.updateElementAtIndex_hey1("here mada", 0);
+
+	// bug.insertElementAtIndex_hey1(8, -1);
+	// bug.insertElementAtIndex_hey1(2, -1);
+	// bug.updateElementAtIndex_hey1(14, 0);
 }
 
 void MoveAction::moveBestPos(int &new_x,int &new_y, Engine::World * world, const Bug& bug) {
