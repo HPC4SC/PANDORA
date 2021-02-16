@@ -8,7 +8,7 @@
 	<mpiAutoAdjustment autoMode="true" initialPartitioning="false" rebalancingFreq="3" maximumLoadPerNode="0.1" maximumPercOfUnbalance="200.0"/>
 	<!--<mpiAutoAdjustment initialPartitioning="true" rebalancingFreq="0" maximumPercOfUnbalance="50.0" loadLowerThreshold="0.025" loadUpperThreshold="0.05"/>-->
 
-	<numSteps value="14" serializeResolution="1"/>
+	<numSteps value="5" serializeResolution="1"/>
 	<size width="60" height="60"/>
 	<Bugs numBugs="50" maxBugMovement="2" maxFoodConsumption="10" survivalProbability="95" initialBugSizeMean="1" initialBugSizeSD="0.7"/>
 	<Predators numPredators="0" maxPredatorHuntDistance="1"/>

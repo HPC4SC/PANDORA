@@ -885,17 +885,26 @@ if (_printInConsole) std::cout << "[Process # " + std::to_string(getId()) <<  "]
 
     void MPIMultiNode::receiveAgentsComplexAttributesPackage(const int& sendingNodeID)
     {
-        // int bytesToTransfer;
-        // MPI_Recv(&bytesToTransfer, 1, MPI_INT, sendingNodeID, eGhostAgentsComplexAttributesNumBytes, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        int bytesToTransfer;
+        MPI_Recv(&bytesToTransfer, 1, MPI_INT, sendingNodeID, eGhostAgentsComplexAttributesNumBytes, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-        // void* agentsComplexAttributesArray = malloc(bytesToTransfer);
-        // MPI_Recv(agentsComplexAttributesArray, bytesToTransfer, MPI_BYTE, sendingNodeID, eGhostAgentsComplexAttributes, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+        void* agentsComplexAttributesArray = malloc(bytesToTransfer);
+        MPI_Recv(agentsComplexAttributesArray, bytesToTransfer, MPI_BYTE, sendingNodeID, eGhostAgentsComplexAttributes, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
-        // int i = 0;
-        // while (i < bytesToTransfer)
-        // {
-        //     void* package = (char*) agentsComplexAttributesArray + i;
+        int byteIndex = 0;
+        while (byteIndex < bytesToTransfer)
+        {
+            int sizeOfCurrentPackage = *((int*) (agentsComplexAttributesArray + byteIndex));
+            
+            void* currentPackage = malloc(sizeOfCurrentPackage);
+            memcpy((char*) currentPackage, agentsComplexAttributesArray + byteIndex, sizeOfCurrentPackage);
+            int agentID = *((int*) (currentPackage + sizeof(int)));
+            Agent* agent = _world->getAgent(agentID);
+            agent->applyComplexAttributesDeltaPackage(currentPackage);
 
+            free(currentPackage);
+            byteIndex += sizeOfCurrentPackage;
+        }
         //     std::string agentID;
         //     int typeOfDSTag, typeOfElementsTag, numberOfElements;
 
@@ -1469,37 +1478,26 @@ if (_printInConsole) std::cout << "[Process # " + std::to_string(getId()) + "]\t
 
     void MPIMultiNode::sendAgentsComplexAttributesPackage(const AgentsList& agentsToSend, const int& neighbourNodeID)
     {
-        void* complexAttributesDeltaPackage;
+        void* agentsComplexAttributesArray;
+        int sizeOfAllAgentsComplexAttributes = 0;
         for (AgentsList::const_iterator itAgent = agentsToSend.begin(); itAgent != agentsToSend.end(); ++itAgent)
         {
             Agent* agent = itAgent->get();
 
-            int sizeOfComplexAttributes;
-            void* complexAttributesData = agent->createComplexAttributesDeltaPackage(sizeOfComplexAttributes);
+            int sizeOfComplexAttributes, packageID;
+            void* complexAttributesData = agent->createComplexAttributesDeltaPackage(sizeOfComplexAttributes, packageID);
+
+            agentsComplexAttributesArray = realloc(agentsComplexAttributesArray, sizeOfAllAgentsComplexAttributes + sizeOfComplexAttributes);
+            memcpy((char*) agentsComplexAttributesArray + sizeOfAllAgentsComplexAttributes, complexAttributesData, sizeOfComplexAttributes);
+            agent->freeComplexAttributesDeltaPackage(packageID);
+
+            sizeOfAllAgentsComplexAttributes += sizeOfComplexAttributes;
         }
 
-        // void* agentsComplexAttributesArray;
-        // int sizeOfAllAgentsComplexAttributes = 0;
-        // for (AgentsList::const_iterator itAgent = agentsToSend.begin(); itAgent != agentsToSend.end(); ++itAgent)
-        // {
-        //     Agent* agent = itAgent->get();
+        sendDataRequestToNode(&sizeOfAllAgentsComplexAttributes, 1, MPI_INT, neighbourNodeID, eGhostAgentsComplexAttributesNumBytes, MPI_COMM_WORLD);
+        sendDataRequestToNode(agentsComplexAttributesArray, bytesToTransfer, MPI_BYTE, neighbourNodeID, eGhostAgentsComplexAttributes, MPI_COMM_WORLD);
 
-        //     int sizeOfComplexAttributes;
-        //     void* complexAttributesData = agent->getComplexAttributesPackage(sizeOfComplexAttributes);
-
-        //     agentsComplexAttributesArray = realloc(agentsComplexAttributesArray, sizeOfAllAgentsComplexAttributes + sizeOfComplexAttributes);
-        //     memcpy((char*) agentsComplexAttributesArray + sizeOfAllAgentsComplexAttributes, complexAttributesData, sizeOfComplexAttributes);
-        //     agent->freeComplexAttributesPackage();
-
-        //     sizeOfAllAgentsComplexAttributes += sizeOfComplexAttributes;
-        // }
-
-        // int bytesToTransfer = sizeof(agentsComplexAttributesArray);
-        // sendDataRequestToNode(&bytesToTransfer, 1, MPI_INT, neighbourNodeID, eGhostAgentsComplexAttributesNumBytes, MPI_COMM_WORLD);
-
-        // sendDataRequestToNode(agentsComplexAttributesArray, bytesToTransfer, MPI_BYTE, neighbourNodeID, eGhostAgentsComplexAttributes, MPI_COMM_WORLD);
-
-        // free(agentsPackageArray);
+        free(agentsComplexAttributesArray);
     }
 
     void MPIMultiNode::sendAgentsInMap(const std::map<int, std::map<std::string, AgentsList>>& agentsByTypeAndNode)

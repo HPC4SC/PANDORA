@@ -420,7 +420,22 @@ namespace Engine
          * @param sizeOfPackage int&
          * @return void* 
          */
-        virtual void* createComplexAttributesDeltaPackage(int& sizeOfPackage) = 0;
+        virtual void* createComplexAttributesDeltaPackage(int& sizeOfPackage, int& packageID) = 0;
+
+        /**
+         * @brief Applies the delta changes in 'package' to this agent complex attributes.
+         * 
+         * @param package void*
+         */
+        virtual void applyComplexAttributesDeltaPackage(void* package) = 0;
+
+        /**
+         * @brief Frees the complex attributePackage identified by 'packageID'
+         * 
+         * @param packageID const int&
+         * 
+         */
+        virtual void freeComplexAttributesDeltaPackage(const int& packageID) = 0;
 
         /**
          * @brief Updates the discrete data structures that have been defined in the sub-agent.
