@@ -878,9 +878,18 @@ if (_printInConsole) std::cout << "[Process # " + std::to_string(getId()) <<  "]
         free(agentsPackageArray);
     }
 
-    int MPIMultiNode::getBytesForTypeOfElement(const int& typeOfElementsTag) const
+    std::string MPIMultiNode::getAgentIDFromPackage(void* package) const
     {
+        int byteIndex = sizeof(int);
+        int agentIDLength = *((int*) (package + byteIndex));     byteIndex += sizeof(int);
 
+        std::string agentID = "";
+        for (int i = 0; i < agentIDLength; ++i)
+        {
+            char agentIDLetter = *((char*) (package + byteIndex + i));
+            agentID += agentIDLetter;
+        }
+        return agentID;
     }
 
     void MPIMultiNode::receiveAgentsComplexAttributesPackage(const int& sendingNodeID)
@@ -898,71 +907,13 @@ if (_printInConsole) std::cout << "[Process # " + std::to_string(getId()) <<  "]
             
             void* currentPackage = malloc(sizeOfCurrentPackage);
             memcpy((char*) currentPackage, agentsComplexAttributesArray + byteIndex, sizeOfCurrentPackage);
-            int agentID = *((int*) (currentPackage + sizeof(int)));
+            std::string agentID = getAgentIDFromPackage(currentPackage);
             Agent* agent = _world->getAgent(agentID);
             agent->applyComplexAttributesDeltaPackage(currentPackage);
 
             free(currentPackage);
             byteIndex += sizeOfCurrentPackage;
         }
-        //     std::string agentID;
-        //     int typeOfDSTag, typeOfElementsTag, numberOfElements;
-
-        //     memcpy(&agentID, package, 32);      // If these lines does not work maybe they need casts like (char*) or (unsigned int)
-        //     memcpy(&typeOfDSTag, package + 32, 4);
-        //     memcpy(&typeOfElementsTag, package + 32 + 4, 4);
-        //     memcpy(&numberOfElements, package + 32 + 4 + 4, 4);
-
-        //     int bytesForElement = getBytesForTypeOfElement(typeOfElementsTag);
-
-        //     int dataStructureLength = bytesForElement * numberOfElements;
-        //     void* dataStructure = malloc(dataStructureLength);
-
-        //     memcpy((char*) dataStructure, package + (unsigned int) (32 + 4 + 4 + 4), dataStructureLength);
-
-        //     if (typeOfDSTag == eTypeOfDS_vector)
-        //     {
-        //         if (typeOfElementsTag == eTypeOfElement_int)
-        //         {
-
-        //         }
-        //         else if (typeOfElementsTag == eTypeOfElement_float)
-        //         {
-
-        //         }
-        //         else if (typeOfElementsTag == eTypeOfElement_bool)
-        //         {
-                    
-        //         }
-        //         else if (typeOfElementsTag == eTypeOfElement_string)
-        //         {
-                    
-        //         }
-        //         else if (typeOfElementsTag == eTypeOfElement_point2D)
-        //         {
-                    
-        //         }
-        //     }
-        //     else if (typeOfDSTag == eTypeOfDS_list)
-        //     {
-                
-        //     }
-        //     else if (typeOfDSTag == eTypeOfDS_queue)
-        //     {
-                
-        //     }
-        //     else if (typeOfDSTag == eTypeOfDS_map)
-        //     {
-                
-        //     }
-        //     else if (typeOfDSTag == eTypeOfDS_point2D)
-        //     {
-                
-        //     }
-
-        //     i += (32 + 4 + 4 + 4 + dataStructureLength);
-        // }
-
     }
 
     void MPIMultiNode::receiveGhostAgentsFromNeighbouringNodes(const int& subOverlapID)
@@ -981,9 +932,8 @@ if (_printInConsole) std::cout << "[Process # " + std::to_string(getId()) <<  "]
                 int agentTypeID;
                 MPI_Recv(&agentTypeID, 1, MPI_INT, sendingNodeID, eGhostAgentsType, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
                 std::string agentsTypeName = MpiFactory::instance()->getNameFromTypeID(agentTypeID);
-                
-                receiveAgentsPackage(sendingNodeID, agentsTypeName);
 
+                receiveAgentsPackage(sendingNodeID, agentsTypeName);
                 receiveAgentsComplexAttributesPackage(sendingNodeID);
             }
         }
@@ -1478,25 +1428,38 @@ if (_printInConsole) std::cout << "[Process # " + std::to_string(getId()) + "]\t
 
     void MPIMultiNode::sendAgentsComplexAttributesPackage(const AgentsList& agentsToSend, const int& neighbourNodeID)
     {
-        void* agentsComplexAttributesArray;
+        AgentsVector agentsWithPackage;
         int sizeOfAllAgentsComplexAttributes = 0;
         for (AgentsList::const_iterator itAgent = agentsToSend.begin(); itAgent != agentsToSend.end(); ++itAgent)
         {
+            AgentPtr agentPtr = *itAgent;
+            Agent* agent = agentPtr.get();
+
+            if (_nodeSpace.ownedAreaWithoutInnerOverlap.contains(agent->getPosition())) continue;
+
+            int sizeOfComplexAttributes = agent->createComplexAttributesDeltaPackage();
+            agentsWithPackage.push_back(agentPtr);
+
+            sizeOfAllAgentsComplexAttributes += sizeOfComplexAttributes;
+        }
+
+        void* agentsComplexAttributesArray = malloc(sizeOfAllAgentsComplexAttributes);
+
+        sizeOfAllAgentsComplexAttributes = 0;
+        for (AgentsVector::const_iterator itAgent = agentsWithPackage.begin(); itAgent != agentsWithPackage.end(); ++itAgent)
+        {
             Agent* agent = itAgent->get();
 
-            int sizeOfComplexAttributes, packageID;
-            void* complexAttributesData = agent->createComplexAttributesDeltaPackage(sizeOfComplexAttributes, packageID);
-
-            agentsComplexAttributesArray = realloc(agentsComplexAttributesArray, sizeOfAllAgentsComplexAttributes + sizeOfComplexAttributes);
+            int sizeOfComplexAttributes;
+            void* complexAttributesData = agent->getComplexAttributesDeltaPackage(sizeOfComplexAttributes);
             memcpy((char*) agentsComplexAttributesArray + sizeOfAllAgentsComplexAttributes, complexAttributesData, sizeOfComplexAttributes);
-            agent->freeComplexAttributesDeltaPackage(packageID);
+            agent->freeComplexAttributesDeltaPackage();
 
             sizeOfAllAgentsComplexAttributes += sizeOfComplexAttributes;
         }
 
         sendDataRequestToNode(&sizeOfAllAgentsComplexAttributes, 1, MPI_INT, neighbourNodeID, eGhostAgentsComplexAttributesNumBytes, MPI_COMM_WORLD);
-        sendDataRequestToNode(agentsComplexAttributesArray, bytesToTransfer, MPI_BYTE, neighbourNodeID, eGhostAgentsComplexAttributes, MPI_COMM_WORLD);
-
+        sendDataRequestToNode(agentsComplexAttributesArray, sizeOfAllAgentsComplexAttributes, MPI_BYTE, neighbourNodeID, eGhostAgentsComplexAttributes, MPI_COMM_WORLD);
         free(agentsComplexAttributesArray);
     }
 
@@ -1709,7 +1672,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(totalSimulationT
             return agentsByID.at(id).get();
         else
         {
-            std::cout << "[Process # " + std::to_string(getId()) + "] MPIMultiNode::getAgent(id) - agent: " + id + " not found.\n";
+            std::cout << CreateStringStream("[Process # " << getId() << "] MPIMultiNode::getAgent(id) - agent: " << id << " not found.\n").str();
             terminateAllMPIProcesses();
         }
     }

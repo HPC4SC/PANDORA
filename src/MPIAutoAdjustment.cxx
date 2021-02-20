@@ -764,6 +764,8 @@ if (_schedulerInstance->_printInConsole) printAgentsByTypeAndNodeToSend(agentsBy
                         if (_schedulerInstance->_world->getAgentsMap().find(agent->getId()) == _schedulerInstance->_world->getAgentsMap().end())
                             _schedulerInstance->_world->addAgent(agent);
                     }
+
+                    _schedulerInstance->receiveAgentsComplexAttributesPackage(sendingNodeID);
                 }
             }
         }
@@ -876,10 +878,10 @@ if (_schedulerInstance->_printInstrumentation) _schedulerInstance->_schedulerLog
 
         removeMasterNodeNoNNeededAgents(oldSpaces);
         updateOwnStructures(newSpaces);
-        
+
         sendAgentsToOtherNodesIfNecessary(newSpaces, oldSpaces);
         receiveAgentsFromOtherNodesIfNecessary(std::max(newSpaces.size(), oldSpaces.size()));
-
+        
         removeNonBelongingAgentsToMPINode(newSpaces);
 
         sendRastersToOtherNodesIfNecessary(newSpaces, oldSpaces);

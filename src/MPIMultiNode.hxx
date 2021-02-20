@@ -474,12 +474,12 @@ namespace Engine
             void receiveAgentsPackage(const int& sendingNodeID, const std::string& agentsTypeName);
 
             /**
-             * @brief Gets the number of bytes for elements of type 'typeOfElementsTag'.
+             * @brief Extracts the agent ID from the 'package'.
              * 
-             * @param typeOfElementsTag const int&
-             * @return int 
+             * @param package void*
+             * @return std::string 
              */
-            int getBytesForTypeOfElement(const int& typeOfElementsTag) const;
+            std::string getAgentIDFromPackage(void* package) const;
 
             /**
              * @brief Receives an agents-complex-attributes package by the process 'sendingNodeID' and sets them to the corresponding agents.

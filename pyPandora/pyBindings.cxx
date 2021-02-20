@@ -134,11 +134,15 @@ public:
 	{		
 	}
 
-	void* createComplexAttributesDeltaPackage(int& sizeOfPackage, int& packageID)
+	int createComplexAttributesDeltaPackage()
 	{
 	}
 
-	void freeComplexAttributesDeltaPackage(const int& packageID)
+	void* getComplexAttributesDeltaPackage(int& sizeOfPackage)
+	{
+	}
+
+	void freeComplexAttributesDeltaPackage()
 	{
 	}
 

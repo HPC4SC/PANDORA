@@ -152,21 +152,6 @@ namespace Engine
         eMode9 = 9
     };
 
-    enum ComplexAttributesTags
-    {
-        eTypeOfDS_vector = 1,
-        eTypeOfDS_list = 2,
-        eTypeOfDS_queue = 3,
-        eTypeOfDS_map = 4,
-        eTypeOfDS_point2D = 5,
-
-        eTypeOfElement_int = 6,
-        eTypeOfElement_float = 7,
-        eTypeOfElement_bool = 8,
-        eTypeOfElement_string = 9,
-        eTypeOfElement_point2D = 10
-    };
-
     enum ComplexAttributesDeltaTags
     {
         eVectorInsert = 1,

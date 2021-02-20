@@ -415,12 +415,19 @@ namespace Engine
         virtual void receiveVectorAttributes( int origin ) = 0;
 
         /**
-         * @brief Create a serialized package with all the information about the changed complex data structures of the subclass. Need to be implemented in the sub-agent.
+         * @brief Creates a serialized package with all the information about the changed complex data structures of the subclass and saves it in the own agent _deltaPackage. Returns the total size of the created package. Need to be implemented in the sub-agent.
+         * 
+         * @return sizeOfPackage int&
+         */
+        virtual int createComplexAttributesDeltaPackage() = 0;
+
+        /**
+         * @brief Gets the previously created package for the agent's complex attributes.
          * 
          * @param sizeOfPackage int&
          * @return void* 
          */
-        virtual void* createComplexAttributesDeltaPackage(int& sizeOfPackage, int& packageID) = 0;
+        virtual void* getComplexAttributesDeltaPackage(int& sizeOfPackage) = 0;
 
         /**
          * @brief Applies the delta changes in 'package' to this agent complex attributes.
@@ -432,10 +439,9 @@ namespace Engine
         /**
          * @brief Frees the complex attributePackage identified by 'packageID'
          * 
-         * @param packageID const int&
          * 
          */
-        virtual void freeComplexAttributesDeltaPackage(const int& packageID) = 0;
+        virtual void freeComplexAttributesDeltaPackage() = 0;
 
         /**
          * @brief Updates the discrete data structures that have been defined in the sub-agent.
