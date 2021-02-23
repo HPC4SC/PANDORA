@@ -425,6 +425,8 @@ def getMethodsForVector(agentName, variableID, complexAttributesRelated, deltaHe
     typeOfElementsNull = '(' + typeOfElements + ') 0'
     if typeOfElements.find('Engine::Point2D') != -1:
         typeOfElementsNull = 'Engine::Point2D<int>()'
+    elif typeOfElements.find('std::string') != -1:
+        typeOfElementsNull = '(' + typeOfElements + ') ""'
 
     deleteMethodCode =  '\tif (index >= ' + variableName + '.size() or index < 0) throw Engine::Exception("' + agentName + '_mpi.cxx::deleteElementAtIndex_forVector' + variableName + '() - NOT VALID INDEX.");\n' \
                         '\n' \
@@ -451,6 +453,8 @@ def getMethodsForQueue(variableID, complexAttributesRelated, deltaHeadersAndCode
     typeOfElementsNull = '(' + typeOfElements + ') 0'
     if typeOfElements.find('Engine::Point2D') != -1:
         typeOfElementsNull = 'Engine::Point2D<int>()'
+    elif typeOfElements.find('std::string') != -1:
+        typeOfElementsNull = '(' + typeOfElements + ') ""'
 
     popMethodCode =     '\tif (not ' + variableName + '.empty())\n' \
                         '\t{\n' \
@@ -478,6 +482,8 @@ def getMethodsForMap(variableID, complexAttributesRelated, deltaHeadersAndCodes)
     valueTypeNull = '(' + valueType + ') 0'
     if valueType.find('Engine::Point2D') != -1:
         valueTypeNull = 'Engine::Point2D<int>()'
+    elif valueType.find('std::string') != -1:
+        valueTypeNull = '(' + valueType + ') ""'
 
     deleteMethodCode =          '\tif (' + variableName + '.erase(key) != 0 )\n' \
                                 '\t\t' + deltaVariableName + '.push_back(std::make_tuple(Engine::eMapDelete, key, ' + valueTypeNull + '));\n'
@@ -631,8 +637,11 @@ def writeComplexAttributesSettersCode(f, agentName, complexAttributesRelated):
 def writeGetComplexAttributesDeltaPackage(f, agentName, complexAttributesRelated):
     f.write('void* ' + agentName + '::getComplexAttributesDeltaPackage(int& sizeOfPackage)\n')
     f.write('{\n')
-    f.write('\tsizeOfPackage = *((int*) _deltaPackage);\n')
-    f.write('\treturn _deltaPackage;\n')
+    if len(complexAttributesRelated.complexAttributesOrderMap) > 0:
+        f.write('\tsizeOfPackage = *((int*) _deltaPackage);\n')
+        f.write('\treturn _deltaPackage;\n')
+    else:
+        f.write('\t return NULL;')
     f.write('}\n')
     f.write('\n')
     return None
@@ -723,12 +732,13 @@ def writeCreateComplexAttributesDeltaPackage(f, agentName, complexAttributesRela
     f.write('int ' + agentName + '::createComplexAttributesDeltaPackage()\n')
     f.write('{\n')
 
-    f.write('std::cout << CreateStringStream("Bug " << getId() << " in createComplexAttributesDeltaPackage()\\n").str();\n')
-
     if len(complexAttributesRelated.complexAttributesOrderMap) == 0:
+        f.write('\treturn 0;\n')
         f.write('}\n')
         f.write('\n')
         return None
+
+    f.write('//std::cout << CreateStringStream("Bug " << getId() << " in createComplexAttributesDeltaPackage()\\n").str();\n')
 
     deltaSizeVariables = {}
     for variableID, variableName in complexAttributesRelated.complexAttributesOrderMap.items():
@@ -798,7 +808,7 @@ def writeCreateComplexAttributesDeltaPackage(f, agentName, complexAttributesRela
             f.write('\t\tint elementIndex = std::get<1>(' + deltaVariableName + '[i]);\n')
             f.write('\t\t' + typeOfElements + ' elementNewValue = std::get<2>(' + deltaVariableName + '[i]);\n')
 
-            f.write('std::cout << CreateStringStream("hey1 - typeOfModification: " << typeOfModification << " elementIndex: " << elementIndex << " elementNewValue: " << elementNewValue << "\\n").str();\n')
+            f.write('//std::cout << CreateStringStream("hey1 - typeOfModification: " << typeOfModification << " elementIndex: " << elementIndex << " elementNewValue: " << elementNewValue << "\\n").str();\n')
         elif variableShortType == 'std::queue':
             f.write('\t\t' + typeOfElements + ' elementNewValue = std::get<1>(' + deltaVariableName + '[i]);\n')
         elif variableShortType == 'std::map':
@@ -826,7 +836,7 @@ def writeCreateComplexAttributesDeltaPackage(f, agentName, complexAttributesRela
             writePoints2DOrStringMemCpyParametrized(f, typeOfElements, 'elementNewValue')
 
         f.write('\t}\n')
-    f.write('std::cout << CreateStringStream("Package " << getId() << " created in createComplexAttributesDeltaPackage(): " << *((int*) (resultingPackage + 0)) << " where sizeOfPackage: " << sizeOfPackage << "\\n").str();\n')
+    f.write('//std::cout << CreateStringStream("Package " << getId() << " created in createComplexAttributesDeltaPackage(): " << *((int*) (resultingPackage + 0)) << " where sizeOfPackage: " << sizeOfPackage << "\\n").str();\n')
 
     f.write('\n')
     for variableID in complexAttributesRelated.complexAttributesOrderMap:
@@ -851,21 +861,58 @@ def writePoints2DVariablesDefinitionParametrized_receiver(f, typeOfElements, dsV
         f.write('\t\t\tint ' + dsVariableName + 'Length = *((int*) (package + byteIndex));\t\t\tbyteIndex += sizeof(int);\n')
         f.write('\t\t\tfor (int i = 0; i < ' + dsVariableName + 'Length; ++i)\n')
         f.write('\t\t\t{\n')
-        f.write('\t\t\t\char charI = *((char*) (package + byteIndex));\t\t\tbyteIndex += sizeof(char);\n')
+        f.write('\t\t\t\tchar charI = *((char*) (package + byteIndex));\t\t\tbyteIndex += sizeof(char);\n')
         f.write('\t\t\t\t' + dsVariableName + ' += charI;\n')
         f.write('\t\t\t}\n')
     else:
-        f.write('\t\t\t' + typeOfElements + ' element = *((' + typeOfElements + '*) (package + byteIndex));\t\t\tbyteIndex += sizeof(' + typeOfElements + ');\n')
+        f.write('\t\t\t' + typeOfElements + ' ' + dsVariableName + ' = *((' + typeOfElements + '*) (package + byteIndex));\t\t\tbyteIndex += sizeof(' + typeOfElements + ');\n')
 
     return None
 
-def applyChangesToVector(f, variableName):
+def writePrintVector(f, variableName):
+    f.write('\n')
+    #f.write('\t\tif (_world->getConfig().getPrintInConsole())\n')
+    #f.write('\t\t{\n')
+    f.write('\t\t\tstd::cout << CreateStringStream("[applyComplexAttributesDeltaPackage()] AGENT: " << getId() << "\\t' + variableName + ': ").str();\n')
+    f.write('\t\t\tfor (int i = 0; i < ' + variableName + '.size(); ++i)\n')
+    f.write('\t\t\t\tstd::cout << CreateStringStream(' + variableName + '[i] << ", ").str();\n\n')
+    f.write('\t\t\tstd::cout << CreateStringStream("\\n").str();\n')
+    #f.write('\t\t}\n')
+    f.write('\n')
+    return None
+
+def writePrintQueue(f, variableName, typeOfElements):
+    f.write('\n')
+    #f.write('\t\tif (_world->getConfig().getPrintInConsole())\n')
+    #f.write('\t\t{\n')
+    f.write('\t\t\tstd::queue<' + typeOfElements + '> ' + variableName + 'Aux = ' + variableName + ';\n')
+    f.write('\t\t\tstd::cout << CreateStringStream("[applyComplexAttributesDeltaPackage()] AGENT: " << getId() << "\\t' + variableName + ': ").str();\n')
+    f.write('\t\t\twhile (not ' + variableName + 'Aux.empty())\n')
+    f.write('\t\t\t{\tstd::cout << CreateStringStream(' + variableName + 'Aux.front() << ", ").str();\t' + variableName + 'Aux.pop(); }\n\n')
+    f.write('\t\t\tstd::cout << CreateStringStream("\\n").str();\n')
+    #f.write('\t\t}\n')
+    f.write('\n')
+    return None
+
+def writePrintMap(f, variableName, typeOfElements, valueType):
+    f.write('\n')
+    #f.write('\t\tif (_world->getConfig().getPrintInConsole())\n')
+    #f.write('\t\t{\n')
+    f.write('\t\t\tstd::cout << CreateStringStream("[applyComplexAttributesDeltaPackage()] AGENT: " << getId() << "\\t' + variableName + ': ").str();\n')
+    f.write('\t\t\tfor (std::map<' + typeOfElements + ', ' + valueType + '>::const_iterator it = ' + variableName + '.begin(); it != ' + variableName + '.end(); ++it)\n')
+    f.write('\t\t\t\tstd::cout << CreateStringStream("<" << it->first << "," << it->second << ">, ").str();\n\n')
+    f.write('\t\t\tstd::cout << CreateStringStream("\\n").str();\n')
+    #f.write('\t\t}\n')
+    f.write('\n')
+    return None
+
+def applyChangesToVector(f, variableName, typeOfElements):
     f.write('\t\t\tif (typeOfModification == Engine::eVectorInsert)\n')
     f.write('\t\t\t{\n')
     f.write('\t\t\t\tif (elementIndex >= ' + variableName + '.size() or elementIndex < 0) ' + variableName + '.push_back(elementNewValue);\n')
     f.write('\t\t\t\telse\n')
     f.write('\t\t\t\t{\n')
-    f.write('\t\t\t\t\tstd::vector<Engine::Point2D<int>>::const_iterator itPos = ' + variableName + '.begin() + elementIndex;\n')
+    f.write('\t\t\t\t\tstd::vector<' + typeOfElements + '>::const_iterator itPos = ' + variableName + '.begin() + elementIndex;\n')
     f.write('\t\t\t\t\t' + variableName + '.insert(itPos, elementNewValue);\n')
     f.write('\t\t\t\t}\n')
     f.write('\t\t\t}\n')
@@ -895,12 +942,18 @@ def applyChangesToMap(f, variableName):
 def writeApplyComplexAttributesDeltaPackage(f, agentName, complexAttributesRelated):
     f.write('void ' + agentName + '::applyComplexAttributesDeltaPackage(void* package)\n')
     f.write('{\n')
+
+    if len(complexAttributesRelated.complexAttributesOrderMap) == 0:
+        f.write('}\n')
+        f.write('\n')
+        return None
+
     f.write('\tint byteIndex = 0;\n')
     f.write('\tint packageSize = *((int*) (package + byteIndex));\t\t\t\t\t\tbyteIndex += sizeof(int);\n')
     f.write('\n')
     f.write('\tint sizeOfAgentIDString = *((int*) (package + byteIndex));\t\t\t\tbyteIndex += sizeof(int) + sizeOfAgentIDString * sizeof(char);\n')
     f.write('\n')
-    f.write('\tint deltaVariableID, deltaVariableSizeOfElements, deltaVariableNumberOfBytes, finalPositionForVariable;\n')
+    f.write('\tint deltaVariableID, deltaVariableNumberOfBytes, finalPositionForVariable;\n')
     for variableID, variableName in complexAttributesRelated.complexAttributesOrderMap.items():
         variableShortType = complexAttributesRelated.complexAttributesShortType[variableID]
         typeOfElements = complexAttributesRelated.complexAttributesElementsType[variableID]
@@ -912,7 +965,7 @@ def writeApplyComplexAttributesDeltaPackage(f, agentName, complexAttributesRelat
         f.write('\t\tdeltaVariableID = *((int*) (package + byteIndex));\t\t\t\t\tbyteIndex += sizeof(int);\n')
         f.write('\t\tdeltaVariableNumberOfBytes = *((int*) (package + byteIndex));\t\tbyteIndex += sizeof(int);\n')
         f.write('\n')
-        f.write('\nstd::cout << CreateStringStream("[applyComplexAttributesDeltaPackage()] AGENT: " << getId() << " ' + variableName + ' - byteIndex: " << byteIndex << " deltaVariableNumberOfBytes: " << deltaVariableNumberOfBytes << "\\n").str();\n\n')
+        f.write('\nif (_world->getConfig().getPrintInConsole()) std::cout << CreateStringStream("[applyComplexAttributesDeltaPackage()] AGENT: " << getId() << " ' + variableName + ' - byteIndex: " << byteIndex << " deltaVariableNumberOfBytes: " << deltaVariableNumberOfBytes << "\\n").str();\n\n')
         f.write('\t\tfinalPositionForVariable = byteIndex + deltaVariableNumberOfBytes;\n')
         f.write('\t\twhile (byteIndex < finalPositionForVariable)\n')
         f.write('\t\t{\n')
@@ -928,20 +981,19 @@ def writeApplyComplexAttributesDeltaPackage(f, agentName, complexAttributesRelat
         else:
             writePoints2DVariablesDefinitionParametrized_receiver(f, typeOfElements, 'elementNewValue')
 
-        if variableShortType == 'std::vector': f.write('\nstd::cout << CreateStringStream("[applyComplexAttributesDeltaPackage()] AGENT: " << getId() << " ' + variableName + ' - typeOfModification: " << typeOfModification << " elementIndex: " << elementIndex << " elementNewValue: " << elementNewValue << "\\n").str();\n\n')
-        #elif variableShortType == 'std::queue': f.write('\nstd::cout << CreateStringStream("[applyComplexAttributesDeltaPackage()] AGENT: " << getId() << " ' + variableName + ' - typeOfModification: " << typeOfModification << " elementNewValue: " << elementNewValue << "\\n").str();\n\n')
-        #elif variableShortType == 'std::map': f.write('\nstd::cout << CreateStringStream("[applyComplexAttributesDeltaPackage()] AGENT: " << getId() << " ' + variableName + ' - typeOfModification: " << typeOfModification << " elementKey: " << elementKey << " elementNewValue: " << elementNewValue << "\\n").str();\n\n')
-
         if variableShortType == 'std::vector':
-            applyChangesToVector(f, variableName)
+            applyChangesToVector(f, variableName, typeOfElements)
         elif variableShortType == 'std::queue':
             applyChangesToQueue(f, variableName)
         elif variableShortType == 'std::map':
             applyChangesToMap(f, variableName)
-        
-        #f.write('\nstd::cout << CreateStringStream("[applyComplexAttributesDeltaPackage()] AGENT: " << getId() << " ' + variableName + ' - CORRECTLY\\n").str();\n\n')
 
         f.write('\t\t}\n')
+
+        if variableShortType == 'std::vector': writePrintVector(f, variableName)
+        elif variableShortType == 'std::queue': writePrintQueue(f, variableName, typeOfElements)
+        elif variableShortType == 'std::map': writePrintMap(f, variableName, typeOfElements, valueType)
+
         f.write('\t}\n')
         
         f.write('\n')
@@ -953,7 +1005,8 @@ def writeApplyComplexAttributesDeltaPackage(f, agentName, complexAttributesRelat
 def writeFreeComplexAttributeDeltaPackage(f, agentName, complexAttributesRelated):
     f.write('void ' + agentName + '::freeComplexAttributesDeltaPackage()\n')
     f.write('{\n')
-    f.write('\tfree(_deltaPackage);\n')
+    if len(complexAttributesRelated.complexAttributesOrderMap) > 0:
+        f.write('\tfree(_deltaPackage);\n')
     f.write('}\n')
     return None
 
@@ -1173,6 +1226,49 @@ def includeVirtualMethodsHeaders(agentName, headerName, parentName):
     os.rename(headerNameTmp, headerName)
     return None
 
+def checkIfComplexAttributesHasChanged(agentName, headerName, complexAttributesRelated):
+    if len(complexAttributesRelated.complexAttributesOrderMap) == 0: return None
+
+    print '\tchecking if header: ' + headerName + ' for agent: ' + agentName + ' defines correct complex attributes auxiliary variables...'
+    # if this is not defined, we will add the four needed methods
+
+    correctComplexVariables = {}
+    f = open(headerName, 'r')
+    for line in f:
+        for variableID, variableName in complexAttributesRelated.complexAttributesOrderMap.items():
+            fullType = complexAttributesRelated.complexAttributesFullType[variableID]
+
+            if line.find(fullType + ' _discrete' + variableName + ';') != -1:
+                correctComplexVariables[variableID] = "OK"
+    f.close()
+
+    if len(correctComplexVariables) == len(complexAttributesRelated.complexAttributesOrderMap):
+        print '\tDefinition of complex attributes auxiliary variables "' + headerName + '" already correct.'
+        return
+
+    print '\t"' + headerName + '" does not defines complex attributes auxiliary variables, erasing the current configuration...'
+
+    headerNameTmp = headerName + '_tmp'
+    f = open(headerName, 'r')
+    fTmp = open(headerNameTmp, 'w')
+
+    maintainingLines = True
+    for line in f:
+        if line.find('Autogenerated code (do not modify)') != -1:
+            maintainingLines = False
+            pass
+
+        if maintainingLines:
+            fTmp.write(line)
+        
+        if line.find('End of autogenerated code') != -1:
+            maintainingLines = True
+
+    f.close()
+    fTmp.close()
+    os.rename(headerNameTmp, headerName)
+    return None
+
 def includeDiscreteVariables(agentName, headerName, attributesMap, complexAttributesRelated):
     print '\tchecking if header: ' + headerName + ' for agent: ' + agentName + ' defines needed discrete variables...'
     # if this is not defined, we will add the four needed methods
@@ -1258,6 +1354,7 @@ def execute(target, source, env):
         complexAttributesRelated = ComplexAttributesRelated()
 
         parentName = getAttributesFromClass(listAgents[i - 1], attributesMap, vectorAttributesMap, complexAttributesRelated)
+        checkIfComplexAttributesHasChanged(agentName, headerName, complexAttributesRelated)
         includeVirtualMethodsHeaders(agentName, headerName, parentName)
         includeDiscreteVariables(agentName, headerName, attributesMap, complexAttributesRelated)
         print '\tprocessing agent: ' + listAgents[i - 1]

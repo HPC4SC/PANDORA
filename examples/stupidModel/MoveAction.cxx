@@ -29,13 +29,18 @@ void MoveAction::execute( Engine::Agent & agent ) {
 		agent.setPosition(newPosition);
 	}
 
-	// bug.insertElementAtIndex_hey1(Engine::Point2D<int>(4, 5), -1);
-	// bug.insertElementAtIndex_hey1(Engine::Point2D<int>(14, 3), -1);
-	// bug.updateElementAtIndex_hey1(Engine::Point2D<int>(3, 8), 0);
+	bug.insertElementAtIndex_hey1("aggfffg", -1);
+	bug.insertElementAtIndex_hey1("aggggg", -1);
+	bug.updateElementAtIndex_hey1("tttttttttttttt", 0);
 
-	// bug.insertElementAtIndex_hey1(8, -1);
-	// bug.insertElementAtIndex_hey1(2, -1);
-	// bug.updateElementAtIndex_hey1(14, 0);
+	bug.pushElement_hey2("fasg");
+	bug.pushElement_hey2("agsag");
+	bug.popElement_hey2();
+
+	bug.insertOrUpdateElement_hey3("a", "aa");
+	bug.insertOrUpdateElement_hey3("b", "bb");
+	bug.insertOrUpdateElement_hey3("c", "cc");
+	bug.deleteElement_hey3("b");
 }
 
 void MoveAction::moveBestPos(int &new_x,int &new_y, Engine::World * world, const Bug& bug) {
