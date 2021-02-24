@@ -85,6 +85,15 @@ void Bug::reproduce(const std::string &childId) {
 	// else child->setPosition(newPosition);
 }
 
+	void Bug::setPointyNipple(const Engine::Point2D<int>& pointyNipple)
+	{
+		_pointyNipple = pointyNipple;
+	}
+
+	void Bug::setPointyNoNipple(const std::string& pointyNoNipple)
+	{
+		_pointyNoNipple = pointyNoNipple;
+	}
 
 	void Bug::updateState( ) {}
 	void Bug::updateKnowledge( ) {}

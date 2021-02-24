@@ -401,20 +401,6 @@ namespace Engine
         virtual void freePackage(void* package) const = 0;
 
         /**
-         * @brief sends the registered vector attributes of an Agent.
-         * 
-         * @param target Process that will recieve the data.
-         */
-        virtual void sendVectorAttributes( int target ) = 0;
-
-        /**
-         * @brief recieves the registered vector attributes of an Agent.
-         * 
-         * @param origin Process that sent the data. 
-         */
-        virtual void receiveVectorAttributes( int origin ) = 0;
-
-        /**
          * @brief Creates a serialized package with all the information about the changed complex data structures of the subclass and saves it in the own agent _deltaPackage. Returns the total size of the created package. Need to be implemented in the sub-agent.
          * 
          * @return sizeOfPackage int&

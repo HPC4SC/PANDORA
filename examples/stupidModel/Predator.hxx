@@ -37,8 +37,6 @@ public:
 	void* fillPackage() const override;
 	void freePackage(void* package) const override;
 	bool hasTheSameAttributes(const Engine::Agent& other) const override;
-	void sendVectorAttributes(int);
-	void receiveVectorAttributes(int);
 	int createComplexAttributesDeltaPackage() override;
 	void* getComplexAttributesDeltaPackage(int& sizeOfPackage) override;
 	void applyComplexAttributesDeltaPackage(void* package) override;

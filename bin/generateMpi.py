@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os
 import collections
+import sys
 
 def writeRegisterTypes(f, listAgents):
     f.write('void MpiFactory::registerTypes()\n')
@@ -104,7 +105,14 @@ def getMpiTypeAttribute(typeAttribute):
 def writeCreateType(f, nameAgent, attributesMap):
     # we have to send 6 basic attributes (_id, _position._x, _position._y, _discretePosition._x, _discretePosition._y, _layer, _discreteLayer & _exists + the number of dynamic attributes
     numBasicAttributes = 8
-    numAttributes = numBasicAttributes + len(attributesMap)
+    numDynamicParams = 0
+    for nameAttribute, typeAttribute in attributesMap.items():
+        if typeAttribute == "Engine::Point2D<int>":
+            numDynamicParams += 2
+        else:
+            numDynamicParams += 1
+
+    numAttributes = numBasicAttributes + numDynamicParams
     f.write('MPI_Datatype * create' + nameAgent + 'Type()\n')
     f.write('{\n')
     f.write('\t' + nameAgent + 'Package package;\n')
@@ -142,15 +150,24 @@ def writeCreateType(f, nameAgent, attributesMap):
     # dynamic params
     index = numBasicAttributes
     for nameAttribute, typeAttribute in attributesMap.items():
-        f.write('\t// ' + nameAttribute + '\n')
-        if typeAttribute == "string":
+        if typeAttribute == "std::string":
+            f.write('\t// ' + nameAttribute + '\n')
             f.write('\tblockLengths[' + str(index) + '] = 32;\n')
             f.write('\ttypeList[' + str(index) + '] = MPI_CHAR;\n');
+        elif typeAttribute == "Engine::Point2D<int>":
+            f.write('\t// ' + nameAttribute + '._x\n')
+            f.write('\tblockLengths[' + str(index) + '] = 1;\n')
+            f.write('\ttypeList[' + str(index) + '] = MPI_INT;\n')
+            index += 1
+            f.write('\t// ' + nameAttribute + '._y\n')
+            f.write('\tblockLengths[' + str(index) + '] = 1;\n')
+            f.write('\ttypeList[' + str(index) + '] = MPI_INT;\n')
         else:
+            f.write('\t// ' + nameAttribute + '\n')
             f.write('\tblockLengths[' + str(index) + '] = 1;\n')
             mpiTypeAttribute = getMpiTypeAttribute(typeAttribute)
             f.write('\ttypeList[' + str(index) + '] = ' + mpiTypeAttribute + ';\n')
-        index = index + 1
+        index += 1
     f.write('\n')
     # displacements
     f.write('\tMPI_Aint displacements[' + str(numAttributes) + '];\n')
@@ -193,10 +210,19 @@ def writeCreateType(f, nameAgent, attributesMap):
     # dynamic params
     index = numBasicAttributes
     for nameAttribute, typeAttribute in attributesMap.items():
-        f.write('\t// ' + nameAttribute + '\n')
-        f.write('\tMPI_Address(&package.' + nameAttribute + 'Mpi, &address);\n')
-        f.write('\tdisplacements[' + str(index) + '] = address-startAddress;\n')
-        index = index + 1
+        if typeAttribute == "Engine::Point2D<int>":
+            f.write('\t// ' + nameAttribute + '._x\n')
+            f.write('\tMPI_Address(&package.' + nameAttribute + 'Mpi._x, &address);\n')
+            f.write('\tdisplacements[' + str(index) + '] = address-startAddress;\n')
+            index += 1
+            f.write('\t// ' + nameAttribute + '._y\n')
+            f.write('\tMPI_Address(&package.' + nameAttribute + 'Mpi._y, &address);\n')
+            f.write('\tdisplacements[' + str(index) + '] = address-startAddress;\n')
+        else:
+            f.write('\t// ' + nameAttribute + '\n')
+            f.write('\tMPI_Address(&package.' + nameAttribute + 'Mpi, &address);\n')
+            f.write('\tdisplacements[' + str(index) + '] = address-startAddress;\n')
+        index += 1
 
     # create mpi data type  
     f.write('\n')
@@ -268,7 +294,7 @@ def createMpiHeader(agentName, source, header, attributesMap):
     f.write('\n')
     # dynamic params
     for nameAttribute, typeAttribute in attributesMap.items():
-        if typeAttribute == "string":
+        if typeAttribute == "std::string":
             f.write('\tchar ' + nameAttribute + 'Mpi[32];\n')
         else:
             f.write('\t' + typeAttribute + ' ' + nameAttribute + 'Mpi;\n')
@@ -299,7 +325,7 @@ def writeFillPackage(f, agentName, attributesMap):
     f.write('\n')
     # dynamic params
     for nameAttribute, typeAttribute in attributesMap.items():
-        if typeAttribute == "string":
+        if typeAttribute == "std::string":
             f.write(
                 '\tmemcpy(&package->' + nameAttribute + 'Mpi, ' + nameAttribute + '.c_str(), std::min((unsigned int)32,(unsigned int)(sizeof(char)*' + nameAttribute + '.size())));\n');
             f.write(
@@ -355,50 +381,6 @@ def writeComparator(f, agentName, parent, attributesMap):
         firstAttribute = False
     f.write(';\n')
     f.write('}\n')
-    return None
-
-def getMpiTypeConversion(typeInCpp):
-    if typeInCpp == 'int':
-        return 'MPI_INTEGER'
-    elif typeInCpp == 'float':
-        return 'MPI_FLOAT'
-
-    return 'MPI_INTEGER'
-
-
-def writeVectorAttributesPassing(f, agentName, vectorAttributesMap):
-    print 'writing vector attributes map'
-    f.write('\n')
-    f.write('void ' + agentName + '::sendVectorAttributes( int target )\n')
-    f.write('{\n')
-    if vectorAttributesMap:
-        f.write('\tint sizeVector = 0;\n')
-    for nameAttribute in vectorAttributesMap.keys():
-        print 'sending vector: ' + nameAttribute + ' with type: ' + vectorAttributesMap[nameAttribute]
-        f.write('\tsizeVector = ' + nameAttribute + '.size();\n')
-        f.write('\tMPI_Send(&sizeVector, 1, MPI_INTEGER, target, Engine::eSizeVector, MPI_COMM_WORLD);\n')
-        mpiType = getMpiTypeConversion(vectorAttributesMap[nameAttribute])
-        f.write(
-            '\tMPI_Send(&' + nameAttribute + '[0], sizeVector, ' + mpiType + ', target, Engine::eVectorAttribute, MPI_COMM_WORLD);\n')
-        f.write('\n')
-    f.write('}\n')
-    f.write('\n')
-
-    f.write('void ' + agentName + '::receiveVectorAttributes( int origin )\n')
-    f.write('{\n')
-    if vectorAttributesMap:
-        f.write('\tint sizeVector = 0;\n')
-        f.write('\tMPI_Status status;\n')
-    for nameAttribute in vectorAttributesMap.keys():
-        print 'receiving vector: ' + nameAttribute + ' with type: ' + vectorAttributesMap[nameAttribute]
-        f.write('\tMPI_Recv(&sizeVector, 1, MPI_INTEGER, origin, Engine::eSizeVector, MPI_COMM_WORLD, &status);\n')
-        f.write('\t' + nameAttribute + '.resize(sizeVector);\n')
-        mpiType = getMpiTypeConversion(vectorAttributesMap[nameAttribute])
-        f.write(
-            '\tMPI_Recv(&' + nameAttribute + '[0], sizeVector, ' + mpiType + ', origin, Engine::eVectorAttribute, MPI_COMM_WORLD, &status);\n')
-        f.write('\n')
-    f.write('}\n')
-    f.write('\n')
     return None
 
 def getMethodsForVector(agentName, variableID, complexAttributesRelated, deltaHeadersAndCodes):
@@ -511,6 +493,8 @@ def getListOfSetterHeaders(agentName, complexAttributesRelated):
             typeOfElements = 'float'
         elif complexAttributesRelated.complexAttributesFullType[variableID].find('<bool') != -1:
             typeOfElements = 'bool'
+        elif complexAttributesRelated.complexAttributesFullType[variableID].find('<char') != -1:
+            typeOfElements = 'char'
         elif complexAttributesRelated.complexAttributesFullType[variableID].find('<std::string') != -1:
             typeOfElements = 'std::string'
         else:
@@ -545,6 +529,8 @@ def getListOfSetterHeaders(agentName, complexAttributesRelated):
                 valueType = 'float'
             elif complexAttributesRelated.complexAttributesFullType[variableID].find(',bool') != -1:
                 valueType = 'bool'
+            elif complexAttributesRelated.complexAttributesFullType[variableID].find(',char') != -1:
+                valueType = 'char'
             elif complexAttributesRelated.complexAttributesFullType[variableID].find(',std::string') != -1:
                 valueType = 'std::string'
             else:
@@ -990,9 +976,9 @@ def writeApplyComplexAttributesDeltaPackage(f, agentName, complexAttributesRelat
 
         f.write('\t\t}\n')
 
-        if variableShortType == 'std::vector': writePrintVector(f, variableName)
-        elif variableShortType == 'std::queue': writePrintQueue(f, variableName, typeOfElements)
-        elif variableShortType == 'std::map': writePrintMap(f, variableName, typeOfElements, valueType)
+        #if variableShortType == 'std::vector': writePrintVector(f, variableName)
+        #elif variableShortType == 'std::queue': writePrintQueue(f, variableName, typeOfElements)
+        #elif variableShortType == 'std::map': writePrintMap(f, variableName, typeOfElements, valueType)
 
         f.write('\t}\n')
         
@@ -1023,7 +1009,7 @@ def writeCopyContinuousValuesToDiscreteOnes(f, agentName, attributesMap, complex
     f.write('\n')
     return None
 
-def createMpiCode(agentName, source, headerName, namespace, parent, attributesMap, vectorAttributesMap, complexAttributesRelated):
+def createMpiCode(agentName, source, headerName, namespace, parent, attributesMap, complexAttributesRelated):
     print '\t\tcreating mpi file: mpiCode/' + agentName + '_mpi.cxx for agent: ' + agentName + ' in namespace: ' + namespace + ' with parent: ' + parent + ' from source: ' + source + ' and header: ' + headerName
     f = open('mpiCode/' + agentName + '_mpi.cxx', 'w')
     # header
@@ -1047,7 +1033,6 @@ def createMpiCode(agentName, source, headerName, namespace, parent, attributesMa
     writeFreeAgentPackage(f, agentName)
     writeConstructor(f, agentName, parent, attributesMap)
     writeComparator(f, agentName, parent, attributesMap)
-    writeVectorAttributesPassing(f, agentName, vectorAttributesMap)
 
     if len(complexAttributesRelated.complexAttributesOrderMap) > 0:
         getListOfSetterHeaders(agentName, complexAttributesRelated)
@@ -1067,21 +1052,7 @@ def createMpiCode(agentName, source, headerName, namespace, parent, attributesMa
     f.close()
     return None
 
-
-# attributes defined as a std::vector of basic types
-def addVectorAttribute(line, vectorAttributesMap):
-    indexTemplateBegin = line.find('<')
-    indexTemplateEnd = line.find('>')
-    typeVector = line[indexTemplateBegin + 1:indexTemplateEnd]
-    restOfLine = line[indexTemplateEnd + 1:]
-    indexEndOfName = restOfLine.find(';')
-    variableName = restOfLine[:indexEndOfName].strip()
-    vectorAttributesMap[variableName] = typeVector
-    print '\t\t\tvector attribute detected: ' + variableName + ' with type: std::vector of: ' + typeVector
-    return None
-
-
-# attributes with basic types (int, float, char, ...)
+# attributes with basic types (int, float, char, bool, std::string and Engine::Point2D<int>)
 def addBasicAttribute(line, attributesMap):
     splitLine = line.split()
 
@@ -1096,21 +1067,6 @@ def addBasicAttribute(line, attributesMap):
     print '\t\t\tattribute detected: ' + variableName + ' with type: ' + typeAttribute
     return None
 
-
-def addStringAttribute(line, attributesMap):
-    splitLine = line.split()
-
-    # 1st word will be std::string
-    typeAttribute = 'string'
-
-    # 2nd word will be the name, removing final ';'
-    variableName = splitLine[1]
-    variableName = variableName.strip(';')
-
-    attributesMap[variableName] = typeAttribute
-    print '\t\t\tattribute detected: ' + variableName + ' with type: string'
-    return None
-
 def getNewIDFromOrderMap(variableName, complexAttributesRelated):
     newID = 1
     if len(complexAttributesRelated.complexAttributesOrderMap) > 0:
@@ -1119,6 +1075,7 @@ def getNewIDFromOrderMap(variableName, complexAttributesRelated):
 
     return newID
 
+# attributes with complex types (std::vector<T>, std::queue<T>, std::map<T, U> ; T|U = {int, float, char, bool, std::string, Engine::Point2D<int>})
 def addComplexAttribute(line, complexAttributesRelated):
     splitLine = line.split(";")
     firstPart = splitLine[0]
@@ -1144,21 +1101,21 @@ def addComplexAttribute(line, complexAttributesRelated):
 
     return None
 
-def getAttributesFromClass(className, attributesMap, vectorAttributesMap, complexAttributesRelated):
+def getAttributesFromClass(className, attributesMap, complexAttributesRelated):
     headerName = className + '.hxx'
     print '\t\tlooking for attributes of class: ' + className + ' in header: ' + headerName + '...'
     f = open(headerName, 'r')
     keyBasic = 'MpiBasicAttribute'
-    keyVector = 'MpiVectorAttribute'
-    keyString = 'MpiStringAttribute'
     keyComplex = 'MpiComplexAttribute'
     for line in f:
+        splitLineDoubleSlash = line.split("//")
+        splitLineSlashAsterisk = line.split("/*")
+        if  splitLineDoubleSlash[0].replace(" ", "").replace("\t", "") == "" or \
+            splitLineSlashAsterisk[0].replace(" ", "").replace("\t", "") == "": 
+                continue
+
         if line.find(keyBasic) != -1:
             addBasicAttribute(line, attributesMap)
-        elif line.find(keyVector) != -1:
-            addVectorAttribute(line, vectorAttributesMap)
-        elif line.find(keyString) != -1:
-            addStringAttribute(line, attributesMap)
         elif line.find(keyComplex) != -1:
             addComplexAttribute(line, complexAttributesRelated)
         # parse base class, it must inherit from Agent
@@ -1171,7 +1128,7 @@ def getAttributesFromClass(className, attributesMap, vectorAttributesMap, comple
             if (indexSeparator != -1):
                 parentNameWithoutNamespace = parentName[indexSeparator + 2:]
             if parentNameWithoutNamespace != 'Agent':
-                getAttributesFromClass(parentNameWithoutNamespace, attributesMap, vectorAttributesMap, complexAttributesRelated)
+                getAttributesFromClass(parentNameWithoutNamespace, attributesMap, complexAttributesRelated)
     f.close()
     return parentName
 
@@ -1209,8 +1166,6 @@ def includeVirtualMethodsHeaders(agentName, headerName, parentName):
             fTmp.write('\tvoid* fillPackage() const override;\n')
             fTmp.write('\tvoid freePackage(void* package) const override;\n')
             fTmp.write('\tbool hasTheSameAttributes(const '+ parentName +'& other) const override;\n')
-            fTmp.write('\tvoid sendVectorAttributes(int);\n')
-            fTmp.write('\tvoid receiveVectorAttributes(int);\n')
             fTmp.write('\tint createComplexAttributesDeltaPackage() override;\n')
             fTmp.write('\tvoid* getComplexAttributesDeltaPackage(int& sizeOfPackage) override;\n')
             fTmp.write('\tvoid applyComplexAttributesDeltaPackage(void* package) override;\n')
@@ -1226,25 +1181,37 @@ def includeVirtualMethodsHeaders(agentName, headerName, parentName):
     os.rename(headerNameTmp, headerName)
     return None
 
-def checkIfComplexAttributesHasChanged(agentName, headerName, complexAttributesRelated):
+def checkIfAttributesHasChanged(agentName, headerName, attributesMap, complexAttributesRelated):
     if len(complexAttributesRelated.complexAttributesOrderMap) == 0: return None
 
     print '\tchecking if header: ' + headerName + ' for agent: ' + agentName + ' defines correct complex attributes auxiliary variables...'
     # if this is not defined, we will add the four needed methods
 
+    numberOfCurrentAttributes = 0
+    correctAttributes = {}
     correctComplexVariables = {}
     f = open(headerName, 'r')
     for line in f:
+        if line.find(' _discrete') != -1:
+            numberOfCurrentAttributes += 1
+        
+        for variableName, variableType in attributesMap.items():
+            if line.find('\t' + variableType + ' _discrete' + variableName + ';') != -1:
+                correctAttributes[variableName] = "OK"
+
         for variableID, variableName in complexAttributesRelated.complexAttributesOrderMap.items():
             fullType = complexAttributesRelated.complexAttributesFullType[variableID]
 
-            if line.find(fullType + ' _discrete' + variableName + ';') != -1:
+            if line.find('\t' + fullType + ' _discrete' + variableName + ';') != -1:
                 correctComplexVariables[variableID] = "OK"
+
     f.close()
 
-    if len(correctComplexVariables) == len(complexAttributesRelated.complexAttributesOrderMap):
-        print '\tDefinition of complex attributes auxiliary variables "' + headerName + '" already correct.'
-        return
+    numberOfAttributesToActuallyConsider = len(attributesMap) + len(complexAttributesRelated.complexAttributesOrderMap)
+    if  numberOfCurrentAttributes == numberOfAttributesToActuallyConsider and \
+        len(correctAttributes) == len(attributesMap) and len(correctComplexVariables) == len(complexAttributesRelated.complexAttributesOrderMap):
+            print '\tDefinition of complex attributes auxiliary variables "' + headerName + '" already correct.'
+            return
 
     print '\t"' + headerName + '" does not defines complex attributes auxiliary variables, erasing the current configuration...'
 
@@ -1350,11 +1317,10 @@ def execute(target, source, env):
         listAgents += [agentName]
 
         attributesMap = {}
-        vectorAttributesMap = {}
         complexAttributesRelated = ComplexAttributesRelated()
 
-        parentName = getAttributesFromClass(listAgents[i - 1], attributesMap, vectorAttributesMap, complexAttributesRelated)
-        checkIfComplexAttributesHasChanged(agentName, headerName, complexAttributesRelated)
+        parentName = getAttributesFromClass(listAgents[i - 1], attributesMap, complexAttributesRelated)
+        checkIfAttributesHasChanged(agentName, headerName, attributesMap, complexAttributesRelated)
         includeVirtualMethodsHeaders(agentName, headerName, parentName)
         includeDiscreteVariables(agentName, headerName, attributesMap, complexAttributesRelated)
         print '\tprocessing agent: ' + listAgents[i - 1]
@@ -1362,8 +1328,7 @@ def execute(target, source, env):
         # create header declaring a package with the list of attributes
         createMpiHeader(listAgents[i - 1], sourceName, headerName, attributesMap)
         # create a source code defining package-class copy
-        createMpiCode(listAgents[i - 1], sourceName, headerName, namespaceAgents[i - 1], parentName, attributesMap,
-                      vectorAttributesMap, complexAttributesRelated)
+        createMpiCode(listAgents[i - 1], sourceName, headerName, namespaceAgents[i - 1], parentName, attributesMap, complexAttributesRelated)
         listAttributesMaps.append(attributesMap)
 
     # fill mpi code registering types and additional methods
