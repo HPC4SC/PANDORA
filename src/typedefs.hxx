@@ -5,9 +5,12 @@
 #include <list>
 #include <vector>
 #include <memory>
+#include <map>
+#include <Rectangle.hxx>
 
 namespace Engine
 {
+    /** Agent typedefs **/
 
     class Agent;
 
@@ -17,18 +20,49 @@ namespace Engine
     typedef std::map<std::string, AgentPtr> AgentsMap;
     typedef std::vector<std::vector<AgentsMap>> AgentsMatrix;
 
-    //! List of Mpi messages sent by the scheduler
+    /** Scheduler typedefs **/
+    struct MPINode {
+        Rectangle<int> ownedAreaWithoutInnerOverlap;                //! Area of this node without inner (this node)   overlaps. // Filled up to depth 1 (from neighbours->second).
+        Rectangle<int> ownedArea;                                   //! Area of this node with    inner (this node)   overlaps. // Filled up to depth 1 (from neighbours->second).
+        Rectangle<int> ownedAreaWithOuterOverlap;                   //! Area of this node with    outer (other nodes) overlaps. // Filled up to depth 1 (from neighbours->second).
+        std::map<int, MPINode*> neighbours;                         //! Map<neighbouringNodeId, neighbouringNodeSpaces> containing the neighbours information for communication. // Filled up to depth 0 (from neighbours->second).
+
+        std::map<int, Rectangle<int>> innerSubOverlaps;             //! Sub-overlaps (Sub areas of the inner overlap). Should be 8 in total for mode9 and 4 for mode4. Map<subOverlapID, subOverlapArea>, where subOverlapID = Engine::SubOverlapType enum. // Filled up to depth 0 (from neighbours->second).
+        std::map<int, std::list<int>> innerSubOverlapsNeighbours;   //! Sub-overlaps neighbouring nodes. Map<subOverlapID, list<nodeID>>. Used for efficient agents and rasters communication. // Filled up to depth 0 (from neighbours->second).
+
+        void reset() 
+        {
+            ownedAreaWithoutInnerOverlap = Rectangle<int>();
+            ownedArea = Rectangle<int>();
+            ownedAreaWithOuterOverlap = Rectangle<int>();
+            neighbours.clear();     // ToDo: this could incur memory problems. We should delete this pointers recursively.
+
+            innerSubOverlaps.clear();
+            innerSubOverlapsNeighbours.clear();
+        }
+    };
+
+    typedef std::map<int, MPINode> MPINodesMap;
+
+    typedef std::map<Point2D<int>, int> MapOfPositionsAndValues;
+    typedef std::map<int, MapOfPositionsAndValues> MapOfValuesByRaster;
+
+    /** List of Mpi messages sent by the scheduler **/
     enum MpiMessageType
     {
-        eCoordinates = 1,
-        eNumNeighbours = 2,
-        eNeighbourID = 3,
-        eCoordinatesNeighbour = 4,
+        eNumProcesses = 1,
+        eCoordinates = 2,
+        eCoordinatesAux = 3,
+        eNumNeighbours = 4,
+        eNeighbourID = 5,
+        eCoordinatesNeighbour = 6,
 
         eNumTypes = 10,
         eNumAgents = 11,
         eAgents = 12,
         eAgentsTypeID = 13,
+        eNumCoordinates = 14,
+        eNumCoordinatesAux = 15,
 
         eNumberOfStaticRasters = 20,
         eNumberOfDynamicRasters = 21,
@@ -47,6 +81,8 @@ namespace Engine
         eGhostAgentsType = 41,
         eNumGhostAgents = 42,
         eGhostAgents = 43,
+        eGhostAgentsComplexAttributesNumBytes = 44,
+        eGhostAgentsComplexAttributes = 45,
 
         eNumRasters = 50,
         eRasterIndex = 51,
@@ -64,17 +100,25 @@ namespace Engine
         eCreateGroupInactive = 71,
         eProcessWakeUp = 72,
         eProcessSleep = 73,
-        eTypeOfEventAfterWakeUp = 74,
+        eSendAgentPhasesTotalTime = 74,
+        eCheckToRepartition = 75,
+        ePrepareToRepartition = 76,
+        eTypeOfEventAfterWakeUp = 77,
+        eNumberOfProcessesAndStep = 78,
 
-        eDie = 80,
-        ePrepareToRepartition = 81,
-
-        eAgentPhasesTotalTime = 90
+        eAgentPhasesTotalTime = 80
     };
 
     enum TypeOfEventAfterWakeUpMPI
     {
-        
+        eMessage_Die = 100,
+        eMessage_SendAgentPhasesTotalTime_true = 101,
+        eMessage_SendAgentPhasesTotalTime_false = 102,
+        eMessage_CheckToRepartition_true = 103,
+        eMessage_CheckToRepartition_false = 104,
+        eMessage_PrepareToRepartition_true = 105,
+        eMessage_PrepareToRepartition_false = 106,
+        eMessage_AwakeToRepartition = 107
     };
 
     enum ExecutingPhaseType
@@ -106,6 +150,17 @@ namespace Engine
     {
         eMode4 = 4,
         eMode9 = 9
+    };
+
+    enum ComplexAttributesDeltaTags
+    {
+        eVectorInsert = 1,
+        eVectorUpdate = 2,
+        eVectorDelete = 3,
+        eQueuePush = 4,
+        eQueuePop = 5,
+        eMapInsertOrUpdate = 6,
+        eMapDelete = 7
     };
 
 } // namespace Engine

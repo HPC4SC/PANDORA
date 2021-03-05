@@ -134,6 +134,26 @@ public:
 	{		
 	}
 
+	int createComplexAttributesDeltaPackage()
+	{
+	}
+
+	void* getComplexAttributesDeltaPackage(int& sizeOfPackage)
+	{
+	}
+
+	void freeComplexAttributesDeltaPackage()
+	{
+	}
+
+	void applyComplexAttributesDeltaPackage(void* package)
+	{
+	}
+
+	void copyContinuousValuesToDiscreteOnes()
+	{
+	}
+
 	void serializeIntAttribute( const std::string & key, int value )
 	{
 		serializeAttribute(key, value);

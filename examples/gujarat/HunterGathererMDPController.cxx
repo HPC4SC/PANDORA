@@ -24,7 +24,7 @@ HunterGathererMDPController::~HunterGathererMDPController()
 
 void HunterGathererMDPController::selectActions( GujaratAgent & agent, std::list<MDPAction*> & actions )
 {
-	log_DEBUG(agent.getId()+"_controller",  "timestep=" << agent.getWorld()->getCurrentTimeStep());
+	log_DEBUG(agent.getId()+"_controller",  "timestep=" << agent.getWorld()->getCurrentStep());
 	log_DEBUG(agent.getId()+"_controller",  "\tagent.position=" << agent.getPosition());
 
 	_model->reset(agent);

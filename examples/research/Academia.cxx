@@ -121,7 +121,7 @@ void Academia::generateNewPaper( Paper & paper )
 	}
 	log_DEBUG( logName.str(), newAuthor << " new author");
         
-	newPaper = new Paper(oss.str(), getCurrentTimeStep());
+	newPaper = new Paper(oss.str(), getCurrentStep());
 	addAgent(newPaper);
 	newPaper->setCitedPapers(citedPapers.size());
 	newPaper->setAuthor(newAuthor);

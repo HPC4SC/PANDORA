@@ -317,8 +317,7 @@ namespace Engine
          * @brief Checks whether 'this' object has the exact same class attributes than 
          * 
          * @param other 
-         * @return true 
-         * @return false 
+         * @return bool
          */
         virtual bool hasTheSameAttributes(const Agent& other) const;
 
@@ -393,7 +392,6 @@ namespace Engine
          * 
          * @return void* 
          */
-        //virtual void * fillPackage(int& packageSize) const = 0;
         virtual void * fillPackage() const = 0;
 
         /**
@@ -403,18 +401,39 @@ namespace Engine
         virtual void freePackage(void* package) const = 0;
 
         /**
-         * @brief sends the registered vector attributes of an Agent.
+         * @brief Creates a serialized package with all the information about the changed complex data structures of the subclass and saves it in the own agent _deltaPackage. Returns the total size of the created package. Need to be implemented in the sub-agent.
          * 
-         * @param target Agent that will recieve the data.
+         * @return sizeOfPackage int&
          */
-        virtual void sendVectorAttributes( int target ) = 0;
+        virtual int createComplexAttributesDeltaPackage() = 0;
 
         /**
-         * @brief recieves the registered vector attributes of an Agent.
+         * @brief Gets the previously created package for the agent's complex attributes.
          * 
-         * @param origin Agent that sent the data. 
+         * @param sizeOfPackage int&
+         * @return void* 
          */
-        virtual void receiveVectorAttributes( int origin ) = 0;
+        virtual void* getComplexAttributesDeltaPackage(int& sizeOfPackage) = 0;
+
+        /**
+         * @brief Applies the delta changes in 'package' to this agent complex attributes.
+         * 
+         * @param package void*
+         */
+        virtual void applyComplexAttributesDeltaPackage(void* package) = 0;
+
+        /**
+         * @brief Frees the complex attributePackage identified by 'packageID'
+         * 
+         * 
+         */
+        virtual void freeComplexAttributesDeltaPackage() = 0;
+
+        /**
+         * @brief Updates the discrete data structures that have been defined in the sub-agent.
+         * 
+         */
+        virtual void copyContinuousValuesToDiscreteOnes() = 0;
 
         /**
          * @brief returns the interator pointing to the begin() position of _stringAttributes.
@@ -480,12 +499,6 @@ namespace Engine
         {
             return 1;
         }
-
-        /**
-         * @brief Updates the member _discretePosition, copying all values in _position to it.
-         * 
-         */
-        void copyContinuousValuesToDiscreteOnes();
 
     };
 } // namespace Engine

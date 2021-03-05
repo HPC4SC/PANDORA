@@ -23,7 +23,7 @@
 #include <Agent.hxx>
 #include <Exception.hxx>
 #include <Scheduler.hxx>
-#include <OpenMPIMultiNode.hxx>
+#include <MPIMultiNode.hxx>
 
 #include <GeneralState.hxx>
 
@@ -195,7 +195,7 @@ namespace Engine
 
         std::stringstream logName;
         logName << "simulation_" << getId( );
-        log_EDEBUG( logName.str( ), "agent: " << agent << " added at time step: " << getCurrentTimeStep( ) );
+        log_EDEBUG( logName.str( ), "agent: " << agent << " added at time step: " << getCurrentStep( ) );
     }
 
     void World::sortAgentsListAlphabetically()
@@ -222,17 +222,6 @@ namespace Engine
         }
     }
 
-    void World::engineStep()
-    {
-        if (_step > 0 and _config->getRebalancingFrequency() > 0 and (_step % _config->getRebalancingFrequency()) == 0) 
-        {
-            _scheduler->checkForRebalancingSpace();
-            resetVariablesForRebalance();
-        }
-
-        updateDiscreteStateStructures();
-    }
-
     void World::step( )
     {
         std::stringstream logName;
@@ -253,22 +242,47 @@ namespace Engine
         log_INFO( logName.str( ), getWallTime( ) << " finished step: " << _step );
     }
 
+    void World::performStep()
+    {
+        if (not _scheduler->hasBeenTaggedAsGoToSleep()) 
+        {
+            std::cout << CreateStringStream("[Process #" << getId() << "] executing step " << _step << "\n").str();
+
+            step();
+        }
+    }
+
+    void World::engineStep()
+    {
+        if (_scheduler->hasBeenTaggedAsGoToSleep()) _scheduler->goToSleep();
+        if (_scheduler->hasBeenTaggedAsJustFinished()) return;
+        
+        _scheduler->checkForRebalancingSpace();
+        //resetVariablesForRebalance();
+
+        if (not _scheduler->hasBeenTaggedAsGoToSleep()) updateDiscreteStateStructures();
+    }
+
     void World::run( )
     {
-        if (_scheduler->hasBeenTaggedAsFinished()) return;
-
         std::stringstream logName;
-        logName << "simulation_" << getId( );
-        log_INFO( logName.str( ), getWallTime( ) << " executing " << _config->getNumSteps( ) << " steps..." );
+        logName << "simulation_" << getId();
+        std::string logString = CreateStringStream(getWallTime( ) << " executing " << _config->getNumSteps( ) << " steps... ").str();
 
-        engineStep();
+        if (_scheduler->hasBeenTaggedAsGoToSleep()) logString += CreateStringStream("BUT WENT TO SLEEP.").str();
+        log_INFO( logName.str( ), logString);
 
-        for ( _step=0; _step<_config->getNumSteps( ); _step++ )
+        while (_step < _config->getNumSteps())
         {
-            std::cout << CreateStringStream("step" << _step << "\n").str();
-            step();
+            performStep();
             engineStep();
+
+            if (_scheduler->hasBeenTaggedAsJustFinished()) return;
+            
+            ++_step;
         }
+
+        std::cout << CreateStringStream("[Process #" << getId() << "] serializing...\n").str();
         // storing last step data
         if ( _step%_config->getSerializeResolution( )==0 )
         {
@@ -283,6 +297,11 @@ namespace Engine
     int World::getCurrentStep( ) const
     {
         return _step;
+    }
+
+    void World::setCurrentStep(const int& currentStep)
+    {
+        _step = currentStep;
     }
 
     void World::stepEnvironment( )
@@ -610,7 +629,7 @@ namespace Engine
 
     Scheduler* World::useOpenMPIMultiNode()
     {
-        return new OpenMPIMultiNode();
+        return new MPIMultiNode();
     }
 
     // Scheduler * World::useSpacePartition( int overlap, bool finalize )

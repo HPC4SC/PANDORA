@@ -45,7 +45,7 @@ void GujaratAgent::logAgentState()
 	std::stringstream logName;
 	logName << "agents_" << _world->getId() << "_" << getId();
 
-	log_DEBUG( logName.str(), "timestep=" << getWorld()->getCurrentTimeStep());
+	log_DEBUG( logName.str(), "timestep=" << getWorld()->getCurrentStep());
 	log_DEBUG( logName.str(), "\tagent.collectedResourcesBeforeAction=" << getOnHandResources());
 	log_DEBUG( logName.str(), "\tagent.nrAdults=" << getNrAvailableAdults());
 	log_DEBUG( logName.str(), "\tagent.adultAges=[");
@@ -95,7 +95,7 @@ void GujaratAgent::updateState()
 	
 	// end of year, evaluate reproduction, mortality and update age
     const GujaratConfig & gujaratConfig = (const GujaratConfig &)(getWorld()->getConfig());
-	if((getWorld()->getCurrentTimeStep() % gujaratConfig._daysPerYear) == (gujaratConfig._daysPerYear -1))
+	if((getWorld()->getCurrentStep() % gujaratConfig._daysPerYear) == (gujaratConfig._daysPerYear -1))
 	{
 		updateAges();
 		checkMortality();

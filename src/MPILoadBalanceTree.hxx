@@ -19,15 +19,15 @@
  *
  */
 
-#ifndef __LoadBalanceTree_hxx__
-#define __LoadBalanceTree_hxx__
+#ifndef __MPILoadBalanceTree_hxx__
+#define __MPILoadBalanceTree_hxx__
 
 #include <World.hxx>
 
 namespace Engine
 {
 
-    class LoadBalanceTree
+    class MPILoadBalanceTree
     {
         public:
 
@@ -44,6 +44,14 @@ namespace Engine
 
             World* _world;                          //! Pointer to the World of the simulation
             int _numPartitions;                     //! Number of tasks in which the simulation should be split.
+
+            /**
+             * @brief Copies deeply the node into a new object which is returned.
+             * 
+             * @param node node<Rectangle<int>>*
+             * @return node<Rectangle<int>>*
+             */
+            node<Rectangle<int>>* copyTree(node<Rectangle<int>>* node);
 
             /**
              * @brief Recursively return the number of nodes of the tree starting at 'node' at level 'desiredDepth'.
@@ -166,16 +174,16 @@ namespace Engine
         public:
 
             /**
-             * @brief Construct a new LoadBalanceTree object.
+             * @brief Construct a new MPILoadBalanceTree object.
              * 
              */
-            LoadBalanceTree();
+            MPILoadBalanceTree();
 
             /**
-             * @brief Destroy the LoadBalanceTree object.
+             * @brief Destroy the MPILoadBalanceTree object.
              * 
              */
-            virtual ~LoadBalanceTree();
+            virtual ~MPILoadBalanceTree();
 
             /**
              * @brief Sets the _world member.
@@ -183,6 +191,13 @@ namespace Engine
              * @param world 
              */
             void setWorld(World* world);
+
+            /**
+             * @brief Gets the _numPartitions member.
+             * 
+             * @return int 
+             */
+            int getNumberOfPartitions() const;
 
             /**
              * @brief Sets the number of tasks (_numPartitions member) in which the space must be split.
@@ -198,16 +213,43 @@ namespace Engine
             void initializeTree();
 
             /**
+             * @brief Resets the tree in order to perform a new partitioning.
+             * 
+             */
+            void resetTree();
+
+            /**
+             * @brief Assignment operator. NOTE: The _world member object is shallow copied only.
+             * 
+             * @param object const MPILoadBalanceTree&
+             * @return MPILoadBalanceTree&
+             */
+            MPILoadBalanceTree& operator=(const MPILoadBalanceTree& object);
+
+            /**
              * @brief Makes a load balanced partition of the space, filling _root.
              * 
              */
             void divideSpace();
 
             /**
+             * @brief Performs a test dividing the space of the _world considering the current _numPartitions. It does not affect the _root member object.
+             * 
+             */
+            void divideSpaceTest();
+
+            /**
              * @brief Gets the current state of the '_root' member.
              * 
              */
-            node<Rectangle<int>>* getTree();
+            const node<Rectangle<int>>& getTree() const;
+
+            /**
+             * @brief Gets the _world member object.
+             * 
+             * @return World* 
+             */
+            const World& getWorld() const;
 
             /**
              * @brief Gets the created partitions, leaving it in 'partitions'.
@@ -229,4 +271,4 @@ namespace Engine
 
 } // namespace Engine
 
-#endif // __LoadBalanceTree_hxx__
+#endif // __MPILoadBalanceTree_hxx__

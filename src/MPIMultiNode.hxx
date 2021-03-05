@@ -19,13 +19,14 @@
  *
  */
 
-#ifndef __OpenMPIMultiNode_hxx__
-#define __OpenMPIMultiNode_hxx__
+#ifndef __MPIMultiNode_hxx__
+#define __MPIMultiNode_hxx__
 
 #include <World.hxx>
 #include <Scheduler.hxx>
-#include <LoadBalanceTree.hxx>
-#include <OpenMPIMultiNodeLogs.hxx>
+#include <MPILoadBalanceTree.hxx>
+#include <MPIMultiNodeLogs.hxx>
+#include <MPIAutoAdjustment.hxx>
 #include <Serializer.hxx>
 
 #include <set>
@@ -34,37 +35,25 @@
 namespace Engine
 {
 
-    class LoadBalanceTree;
-    class OpenMPIMultiNodeLogs;
+    class MPILoadBalanceTree;
+    class MPIMultiNodeLogs;
+    class MPIAutoAdjustment;
 
-    class OpenMPIMultiNode : public Scheduler
+    class MPIMultiNode : public Scheduler
     {
 
         public:
 
-            struct MPINode {
-                Rectangle<int> ownedAreaWithoutInnerOverlap;                //! Area of this node without inner (this node)   overlaps. // Filled up to depth 1 (from neighbours->second).
-                Rectangle<int> ownedArea;                                   //! Area of this node with    inner (this node)   overlaps. // Filled up to depth 1 (from neighbours->second).
-                Rectangle<int> ownedAreaWithOuterOverlaps;                  //! Area of this node with    outer (other nodes) overlaps. // Filled up to depth 1 (from neighbours->second).
-                std::map<int, MPINode*> neighbours;                         //! Map<neighbouringNodeId, neighbouringNodeSpaces> containing the neighbours information for communication. // Filled up to depth 0 (from neighbours->second).
-
-                std::map<int, Rectangle<int>> innerSubOverlaps;             //! Sub-overlaps (Sub areas of the inner overlap). Should be 8 in total. Map<subOverlapID, subOverlapArea>, where subOverlapID = Engine::SubOverlapType enum. // Filled up to depth 0 (from neighbours->second).
-                std::map<int, std::list<int>> innerSubOverlapsNeighbours;   //! Sub-overlaps neighbouring nodes. Map<subOverlapID, list<nodeID>>. Used for efficient agents and rasters communication. // Filled up to depth 0 (from neighbours->second).
-            };
-
-            typedef std::map<int, MPINode> MPINodesMap;
-
-            typedef std::map<Point2D<int>, int> MapOfPositionsAndValues;
-            typedef std::map<int, MapOfPositionsAndValues> MapOfValuesByRaster;
-
-            friend class OpenMPIMultiNodeLogs;
+            friend class MPIMultiNodeLogs;
+            friend class MPIAutoAdjustment;
 
         protected:
 
             /** Base data structures for the space partitioning (master node only) **/
-            LoadBalanceTree* _tree;
+            MPILoadBalanceTree* _loadBalanceTree;                           //! Tree used to divide the space and balance the load of the simulation.
+            MPIAutoAdjustment* _autoAdjustment;                             //! Instance for the autoadjustment in the number of used nodes.
 
-            MPINodesMap _mpiNodesMapToSend;                                 //! Map<nodeId, nodeInformation> containing the leafs of _tree, where the 'value' field is now the 'ownedArea', and the IDs of the 'neighbours' are mapped with their coordinates.
+            MPINodesMap _mpiNodesMapToSend;                                 //! Map<nodeId, nodeInformation> containing the leafs of _loadBalancetree, where the 'value' field is now the 'ownedArea', and the IDs of the 'neighbours' are mapped with their coordinates.
 
             /** Node own data structures (nodes0..n) **/
             MPINode _nodeSpace;                                             //! Areas and neighbours information for this node.
@@ -77,7 +66,7 @@ namespace Engine
             int _masterNodeID;                                              //! ID of the master node. Used for communication.
 
             int _numberOfActiveProcesses;                                   //! Current number of active processes.
-            bool _justAwaken, _justFinished;
+            bool _goToSleep, _justAwaken, _justFinished;                    //! Flags to control active processes flow.
             MPI_Comm _activeProcessesComm;                                  //! Communicator for active MPI processes.
 
             struct Coordinates {
@@ -93,7 +82,7 @@ namespace Engine
             std::list<MPI_Request*> _sendRequests;
 
             /** Other structures **/
-            OpenMPIMultiNodeLogs* _schedulerLogs;
+            MPIMultiNodeLogs* _schedulerLogs;
 
             std::vector<Agent*> _agentsToBeRemoved;                         //! Vector or Agents to be removed at the end of the step.
 
@@ -114,6 +103,18 @@ namespace Engine
              * 
              */
             void initLogFileNames();
+
+            /**
+             * @brief Initializes the _loadBalanceTree instance.
+             * 
+             */
+            void initLoadBalanceTree();
+
+            /**
+             * @brief Initializes the _autoAdjustment instance.
+             * 
+             */
+            void initAutoAdjustment();
 
             /**
              * @brief Used just to initially stablish the _boundaries and the _ownedArea members, needed to let the model to first create the agents.
@@ -145,6 +146,12 @@ namespace Engine
              * @param numberOfProcessesToEnable const int&
              */
             void enableOnlyProcesses(const int& numberOfProcessesToEnable);
+
+            /**
+             * @brief Cleans the node data structures (mainly _nodeSpace, World::agents & World::rasters). Used when node is going to sleep.
+             * 
+             */
+            void cleanNodeDataStructures();
 
             /**
              * @brief Puts the calling process to sleep, waiting for an awake signal from the master node 'masterNodeID'.
@@ -213,7 +220,7 @@ namespace Engine
              * 
              * @param mpiNodeInfo const MPINode&
              */
-            void fillOwnStructures(const MPINode& mpiNodeInfo);
+            void fillOwnStructures(const MPINode& mpiNodeInfo, const bool& fillNeighbours = true);
 
             /**
              * @brief It blocking sends the 'nodeCoordinates' to the corresponding 'nodeID'.
@@ -282,10 +289,11 @@ namespace Engine
             /**
              * @brief Adds into the _mpiNodeMap the partition <nodeId, partitions[neighbourIndex]>.
              * 
+             * @param mpiNodesMapToSend MPINodesMap&
              * @param partitions const std::vector<Rectangle<int>>&
              * @param neighbourIndex const int&
              */
-            void addMPINodeToSendInMapItIsNot(const std::vector<Rectangle<int>>& partitions, const int& neighbourIndex);
+            void addMPINodeToSendInMapIfItsNot(MPINodesMap& mpiNodesMapToSend, const std::vector<Rectangle<int>>& partitions, const int& neighbourIndex) const;
 
             /**
              * @brief Creates a rectangle like 'rectangle' expanded exactly 'expansion' cells in all directions (if possible). A 'expansion' < 0 == contraction. If 'contractInTheLimits' == false means that, if 'rectangle' is already in the limits of the simulation space ([_root->value.top(), _root->value.left()] or [_root->value.bottom(), _root->value.right()], then the resulting rectangle will NOT be modified (neither contracted nor expanded). This is normally used only when 'expansion' < 0.
@@ -316,17 +324,20 @@ namespace Engine
             bool areTheyNeighbours(const Rectangle<int>& rectangleA, const Rectangle<int>& rectangleB) const;
 
             /**
-             * @brief Create all the information needed for the processing MPI nodes to properly be executed and communicate with the rest of the nodes.
+             * @brief From 'loadBalanceTree', it creates all the information needed for the processing MPI nodes to properly be executed and communicate with the rest of the nodes.
              * 
+             * @param loadBalanceTree const MPILoadBalanceTree&
+             * @param mpiNodesMapToSend MPINodesMap&
              */
-            void createNodesInformationToSend();
+            void createNodesInformationToSendFromTree(const MPILoadBalanceTree& loadBalanceTree, MPINodesMap& mpiNodesMapToSend) const;
 
             /**
-             * @brief Check whether each of the created partitions fullfil the first condition of being their widths and heights > 2*_overlapSize.
+             * @brief Checks whether each of the created partitions in 'mpiNodesMapToSend' fullfils the first condition of being their widths and heights > 4*_overlapSize.
              * 
+             * @param mpiNodesMapToSend const MPINodesMap&
              * @return bool
              */
-            bool arePartitionsSuitable();
+            bool arePartitionsSuitable(const MPINodesMap& mpiNodesMapToSend) const;
 
             /** INITIALIZATION DEBUGGING METHODS **/
 
@@ -363,10 +374,10 @@ namespace Engine
             /** RUN PROTECTED METHODS (CALLED BY INHERIT METHODS) **/
 
             /**
-             * @brief Performs everything that is needed to save the state of agents and rasters among sub-overlap processing chunks.
+             * @brief Performs everything that is needed to maintain the state of agents and rasters among sub-overlap processing chunks.
              * 
              */
-            void initializeAgentsAndRastersState();
+            void prepareAgentsAndRastersStateForCurrentStep();
 
             /**
              * @brief Updates the average time that agents have spent executing phase of type 'executingPhaseType'.
@@ -442,8 +453,9 @@ namespace Engine
              * @param mpiDatatype const MPI_Datatype&
              * @param destinationNode const int&
              * @param tag const int&
+             * @param mpiComm const MPI_Comm&
              */
-            void sendDataRequestToNode(void* data, const int& numberOfElements, const MPI_Datatype& mpiDatatype, const int& destinationNode, const int& tag);
+            void sendDataRequestToNode(void* data, const int& numberOfElements, const MPI_Datatype& mpiDatatype, const int& destinationNode, const int& tag, const MPI_Comm& mpiComm);
 
             /**
              * @brief Sends agents in 'agentsByTypeAndNode'. The corresponding node is indicated in the key of the map. 'subOverlapID' is only used for instrumentation purposes.
@@ -452,6 +464,29 @@ namespace Engine
              * @param subOverlapID const int&
              */
             void sendGhostAgentsInMap(const std::map<int, std::map<std::string, AgentsList>>& agentsByTypeAndNode, const int& subOverlapID);
+
+            /**
+             * @brief Receives an agents package by the process 'sendingNodeID' and includes them into the node's set of a agents. The agents are of type 'agentsTypeName'.
+             * 
+             * @param sendingNodeID const int&
+             * @param agentsTypeName const std::string&
+             */
+            void receiveAgentsPackage(const int& sendingNodeID, const std::string& agentsTypeName);
+
+            /**
+             * @brief Extracts the agent ID from the 'package'.
+             * 
+             * @param package void*
+             * @return std::string 
+             */
+            std::string getAgentIDFromPackage(void* package) const;
+
+            /**
+             * @brief Receives an agents-complex-attributes package by the process 'sendingNodeID' and sets them to the corresponding agents.
+             * 
+             * @param sendingNodeID const int&
+             */
+            void receiveAgentsComplexAttributesPackage(const int& sendingNodeID);
 
             /**
              * @brief Non-blockingly receives agents from the neighbouring nodes. 'subOverlapID' is only used for instrumentation purposes.
@@ -564,12 +599,12 @@ namespace Engine
             void addPositionAndValueToMap(MapOfPositionsAndValues& map, const Point2D<int>& position, const int& value);
 
             /**
-             * @brief Sends rasters in 'rasterValuesByNode'. Check 'initializeRasterValuesToSendMap(...)' documentation to know what is exactly the map. 'subOverlapID' is only used for instrumentation purposes.
+             * @brief Sends rasters in 'rasterValuesByNode'. Check 'initializeRasterValuesToSendMap(...)' documentation to know what is exactly the map. 'subOverlapID' is only used for instrumentation purposes. By default it is -1, in which case it means it does not apply.
              * 
              * @param rasterValuesByNode std::map<int, std::map<int, std::list<std::pair<Point2D<int>, int>>>>&
              * @param subOverlapID const int&
              */
-            void sendRasterValuesInMap(const std::map<int, MapOfValuesByRaster>& rasterValuesByNode, const int& subOverlapID);
+            void sendRasterValuesInMap(const std::map<int, MapOfValuesByRaster>& rasterValuesByNode, const int& subOverlapID = -1);
 
             /**
              * @brief Non-blockingly sends rasters to the other nodes. It only takes into account those positions around the sub-overlap area identifed by 'subOverlapAreaID' (i.e. the area expanded _overlapSize).
@@ -577,6 +612,13 @@ namespace Engine
              * @param subOverlapAreaID const int&
              */
             void sendRastersToNeighbours(const int& subOverlapAreaID = -1);
+
+            /**
+             * @brief Non-blockingly receives rasters from the node identified by 'sendingNodeID'.
+             * 
+             * @param sendingNodeID const int&
+             */
+            void receiveRasterForOneNode(const int& sendingNodeID);
 
             /**
              * @brief Non-blockingly receives rasters from the other nodes. 'subOverlapID' is only used for instrumentation purposes.
@@ -597,94 +639,71 @@ namespace Engine
              */
             void finishSleepingProcesses();
 
-            /** REBALANCE PROTECTED METHODS (CALLED BY INHERIT METHODS) **/
+            /**
+             * @brief Gets the total number of overlapping cells for all the nodes in 'tree'.
+             * 
+             * @param tree const MPILoadBalanceTree&
+             * @return int 
+             */
+            int getTotalNumberOfOverlappingCells(const MPILoadBalanceTree& tree) const;
+
+            /** MPIAutoAdjustment CALLED ROUTINES **/
 
             /**
-             * @brief Checks whether the simulation must be rebalanced among all the active nodes beacause of unbalances.
+             * @brief Performs a divide test, letting the number of overlapping cells resulting from the test in 'numberOfOverlappingCells'. If the partitions are not suitable, it returns false. True otherwise. [Called by the AutoAdjustment subsystem]
              * 
-             * @param nodesTime const std::vector<double>&
+             * @param numberOfProcesses const int&
+             * @param numberOfOverlappingCells int&
              * @return bool
              */
-            bool rebalance_needToRebalanceByLoadDifferences(const std::vector<double>& nodesTime) const;
+            bool performDivideTest(const int& numberOfProcesses, int& numberOfOverlappingCells);
 
             /**
-             * @brief Gets the total time for all the agents' execution phases, for all the nodes.
+             * @brief Resets the partitioning variables in order to perform a new partitioning (rebalancing). Called by the AutoAdjustment subsystem.
              * 
-             * @param masterNodeID const int&
-             * @param allNodesAgentPhasesTotalTime double&
-             * @param needToRebalance bool&
+             * @param newNumberOfProcesses const int&
              */
-            void rebalance_getAllNodesAgentPhasesTotalTime(const int& masterNodeID, double& allNodesAgentPhasesTotalTime, bool& needToRebalance) const;
+            void resetPartitioning(const int& newNumberOfProcesses);
 
             /**
-             * @brief Awakes from sleep all the necessary working nodes according the the 'numberOfRequestedProcesses'.
+             * @brief Builds and sends an MPI package for the whole set of 'agentsToSend', to the process 'neighbourNodeID'. The agents are of type 'agentsTypeName'.
              * 
-             * @param numberOfRequestedProcesses 
+             * @param agentsToSend const AgentsList& 
+             * @param neighbourNodeID const int&
+             * @param agentsTypeName const std::string&
              */
-            void rebalance_awakeWorkingNodesToRepartition(int numberOfRequestedProcesses);
+            void sendAgentsPackage(const AgentsList& agentsToSend, const int& neighbourNodeID, const std::string& agentsTypeName);
 
             /**
-             * @brief Receives the agents from the the working nodes in order to apply a new partitioning.
+             * @brief Builds and sends an MPI package for the whole set of complex attributes (lists, maps, etc.) of the 'agentsToSend', to the process 'neighbourNodeID'.
              * 
+             * @param agentsToSend const AgentsList& 
+             * @param neighbourNodeID const int&
              */
-            void rebalance_receiveAllAgentsFromWorkingNodes(const int& workingNodeID);
+            void sendAgentsComplexAttributesPackage(const AgentsList& agentsToSend, const int& neighbourNodeID);
 
             /**
-             * @brief Repartitions all the space from the current state of the agents (which all of them are assumed to already be in this local memory).
+             * @brief Sends the agents in agentsByTypeAndNode to their corresponding nodes.
              * 
+             * @param agentsByTypeAndNode const std::map<int, std::map<std::string, AgentsList>>&
              */
-            void rebalance_repartitionSpace();
-
-            /**
-             * @brief Sends the agents to the working nodes
-             * 
-             */
-            void rebalance_sendAllAgentsToWorkingNodes() const;
-
-            /**
-             * @brief Reajusts the number of active processes if necessary and rebalances the space. If 'mandatoryToRebalance' then the simulation space is just repartitioned.
-             * 
-             * @param totalNodesAgentPhasesTotalTime const double&
-             * @param mandatoryToRebalance const bool& 
-             */
-            void rebalance_readjustProcessesIfNecessary(const int& masterNodeID, const double& totalNodesAgentPhasesTotalTime, const bool& mandatoryToRebalance);
-
-            /**
-             * @brief Gets all the agents in the _nodeSpace.ownedArea classified by its type (key of the map).
-             * 
-             * @param agentsByType std::map<std::string, AgentsList>&
-             */
-            void rebalance_getAllOwnedAreaAgentsByType(std::map<std::string, AgentsList>& agentsByType) const;
-
-            /**
-             * @brief Sends all the agents in the local memory of the process to the master node.
-             * 
-             * @param masterNodeID const int&
-             */
-            void rebalance_sendAllAgentsToMasterNode(const int& masterNodeID);
-
-            /**
-             * @brief Waits for the master ('masterNodeID') to say whether a rebalance among all nodes is needed or not.
-             * 
-             * @param masterNodeID const int&
-             */
-            void rebalance_receiveReadjustmentIfNecessary(const int& masterNodeID);
+            void sendAgentsInMap(const std::map<int, std::map<std::string, AgentsList>>& agentsByTypeAndNode);
 
         public:
 
             /** INITIALIZATION PUBLIC METHODS **/
 
             /**
-             * @brief Construct a new OpenMPIMultiNode object.
+             * @brief Construct a new MPIMultiNode object.
              * 
              */
-            OpenMPIMultiNode();
+            MPIMultiNode();
 
             /**
-             * @brief Destroy the OpenMPIMultiNode object.
+             * @brief Destroy the MPIMultiNode object.
              * 
              */
-            virtual ~OpenMPIMultiNode();
+            virtual ~MPIMultiNode();
 
             /** INITIALIZATION PUBLIC METHODS (INHERIT) **/
 
@@ -705,11 +724,31 @@ namespace Engine
             /** RUN PUBLIC METHODS (INHERIT) **/
 
             /**
+             * @brief Returns whether the process has been tagged as inactive process and it should be go to sleep until being awaken.
+             * 
+             * @return bool
+             */
+            bool hasBeenTaggedAsGoToSleep() const override;
+
+            /**
              * @brief Returns true if a signal has been sent from the master process to this process in order to finalize its flow. Controlled by the member variable _justFinished.
              * 
              * @return bool
              */
-            bool hasBeenTaggedAsFinished() const override;
+            bool hasBeenTaggedAsJustFinished() const override;
+
+            /**
+             * @brief Returns true if a signeal has been sent from the master process to this process in order be added to the computing (active) processes of the simulation. Controlled by the member variable _justAwaken.
+             * 
+             * @return bool 
+             */
+            bool hasBeenTaggedAsJustAwaken() const override;
+
+            /**
+             * @brief Sets the process to sleep.
+             * 
+             */
+            void goToSleep() override;
 
             /**
              * @brief Updates the resources modified in the World::stepEnvironment() method.
@@ -743,7 +782,7 @@ namespace Engine
             Point2D<int> getRandomPosition() const override;
 
             /**
-             * @brief Get the wall time for the MPI scheduler.
+             * @brief Get the wall time in seconds for the MPI scheduler.
              * 
              * @return double 
              */
@@ -904,4 +943,4 @@ namespace Engine
 
 } // namespace Engine
 
-#endif // __OpenMPIMultiNode_hxx__
+#endif // __MPIMultiNode_hxx__

@@ -19,8 +19,9 @@
  *
  */
 
-#include <LoadBalanceTree.hxx>
+#include <MPILoadBalanceTree.hxx>
 #include <Agent.hxx>
+#include <Exception.hxx>
 
 #include <iostream>
 
@@ -30,26 +31,31 @@ namespace Engine {
 
     /** PUBLIC METHODS **/
 
-    LoadBalanceTree::LoadBalanceTree() : _root(NULL), _world(0), _numPartitions(1)
+    MPILoadBalanceTree::MPILoadBalanceTree() : _root(NULL), _world(0), _numPartitions(1)
     {
     }
 
-    LoadBalanceTree::~LoadBalanceTree()
+    MPILoadBalanceTree::~MPILoadBalanceTree()
     {
         destroyTree(_root);
     }
 
-    void LoadBalanceTree::setWorld(World* world)
+    void MPILoadBalanceTree::setWorld(World* world)
     {
         _world = world;
     }
 
-    void LoadBalanceTree::setNumberOfPartitions(const int& numberOfPartitions)
+    int MPILoadBalanceTree::getNumberOfPartitions() const
+    {
+        return _numPartitions;
+    }
+
+    void MPILoadBalanceTree::setNumberOfPartitions(const int& numberOfPartitions)
     {
         _numPartitions = numberOfPartitions;
     }
 
-    void LoadBalanceTree::initializeTree() 
+    void MPILoadBalanceTree::initializeTree() 
     {
         _root = new node<Rectangle<int>>;
         _root->value = Rectangle<int>(_world->getConfig().getSize());
@@ -57,22 +63,47 @@ namespace Engine {
         _root->right = NULL;
     }
 
-    void LoadBalanceTree::divideSpace()
+    void MPILoadBalanceTree::resetTree()
+    {
+        if (_root) 
+        {
+            delete _root;
+            _root = NULL;
+
+            initializeTree();
+        }
+    }
+
+    MPILoadBalanceTree& MPILoadBalanceTree::operator=(const MPILoadBalanceTree& object)
+    {
+        _root = copyTree(object._root);
+        _world = object._world;
+        _numPartitions = object._numPartitions;
+
+        return *this;
+    }
+
+    void MPILoadBalanceTree::divideSpace()
     {
         divideSpaceRecursively(_root, getAllAgentsWeight(), (int) std::ceil(std::log2(_numPartitions)));
     }
 
-    LoadBalanceTree::node<Rectangle<int>>* LoadBalanceTree::getTree()
+    const MPILoadBalanceTree::node<Rectangle<int>>& MPILoadBalanceTree::getTree() const
     {
-        return _root;
+        return *_root;
     }
 
-    void LoadBalanceTree::getPartitionsFromTree(std::vector<Rectangle<int>>& partitions) const
+    const World& MPILoadBalanceTree::getWorld() const
+    {
+        return *_world;
+    }
+
+    void MPILoadBalanceTree::getPartitionsFromTree(std::vector<Rectangle<int>>& partitions) const
     {
         getPartitionsFromTreeRecursively(_root, partitions);
     }
 
-    AgentsVector LoadBalanceTree::getAgentsInPosition(const Point2D<int>& position, const std::string& type) const
+    AgentsVector MPILoadBalanceTree::getAgentsInPosition(const Point2D<int>& position, const std::string& type) const
     {
         AgentsVector result;
 
@@ -87,31 +118,44 @@ namespace Engine {
 
     /** PROTECTED METHODS **/
 
-    int LoadBalanceTree::numberOfNodesAtDepthRecursive(node<Rectangle<int>>* node, const int& desiredDepth, int currentDepth) const
+    MPILoadBalanceTree::node<Rectangle<int>>* MPILoadBalanceTree::copyTree(node<Rectangle<int>>* nodeToBeCopied)
+    {
+        if (nodeToBeCopied == NULL) return NULL;
+
+        node<Rectangle<int>>* copiedNode = new node<Rectangle<int>>;
+        copiedNode->value = nodeToBeCopied->value;
+
+        copiedNode->left = copyTree(nodeToBeCopied->left);
+        copiedNode->right = copyTree(nodeToBeCopied->right);
+
+        return copiedNode;
+    }
+
+    int MPILoadBalanceTree::numberOfNodesAtDepthRecursive(node<Rectangle<int>>* node, const int& desiredDepth, int currentDepth) const
     {
         if (node == NULL) return 0;
         if (desiredDepth == currentDepth) return 1;
         return numberOfNodesAtDepthRecursive(node->left, desiredDepth, currentDepth + 1) + numberOfNodesAtDepthRecursive(node->right, desiredDepth, currentDepth + 1);
     }
 
-    int LoadBalanceTree::numberOfNodesAtDepth(node<Rectangle<int>>* node, const int& desiredDepth) const
+    int MPILoadBalanceTree::numberOfNodesAtDepth(node<Rectangle<int>>* node, const int& desiredDepth) const
     {
         return numberOfNodesAtDepthRecursive(node, desiredDepth, 0);
     }
 
-    bool LoadBalanceTree::isPowerOf2(const int& x) const
+    bool MPILoadBalanceTree::isPowerOf2(const int& x) const
     {
         return x > 0 and not (x & (x - 1));
     }
 
-    int LoadBalanceTree::numberOfLeafs(node<Rectangle<int>>* node) const
+    int MPILoadBalanceTree::numberOfLeafs(node<Rectangle<int>>* node) const
     {
         if (node == NULL) return 0;
         if (node->left == NULL and node->right == NULL) return 1;
         return numberOfLeafs(node->left) + numberOfLeafs(node->right);
     }
 
-    bool LoadBalanceTree::stopProcreating(const int& currentHeight) const
+    bool MPILoadBalanceTree::stopProcreating(const int& currentHeight) const
     {
         bool condition1 = currentHeight == 0;
         bool condition2 = numberOfLeafs(_root) == _numPartitions;
@@ -128,7 +172,7 @@ namespace Engine {
         return condition1 or condition2 or condition3;
     }
 
-    LoadBalanceTree::node<Rectangle<int>>* LoadBalanceTree::insertNode(const Rectangle<int>& rectangle, node<Rectangle<int>>* treeNode)
+    MPILoadBalanceTree::node<Rectangle<int>>* MPILoadBalanceTree::insertNode(const Rectangle<int>& rectangle, node<Rectangle<int>>* treeNode)
     {
         if (treeNode->left == NULL)
         {
@@ -150,9 +194,9 @@ namespace Engine {
         }
     }
 
-    void LoadBalanceTree::destroyTree(node<Rectangle<int>>* leaf)
+    void MPILoadBalanceTree::destroyTree(node<Rectangle<int>>* leaf)
     {
-        if (leaf != NULL) 
+        if (leaf)
         {
             destroyTree(leaf->left);
             destroyTree(leaf->right);
@@ -160,7 +204,7 @@ namespace Engine {
         }
     }
 
-    double LoadBalanceTree::getAllAgentsWeight() const
+    double MPILoadBalanceTree::getAllAgentsWeight() const
     {
         double totalWeight = 0;
         for (AgentsMap::iterator it = _world->beginAgents(); it != _world->endAgents(); ++it)
@@ -171,7 +215,7 @@ namespace Engine {
         return totalWeight;
     }
 
-    double LoadBalanceTree::getAgentsWeight(const AgentsVector& agentsVector) const
+    double MPILoadBalanceTree::getAgentsWeight(const AgentsVector& agentsVector) const
     {
         double totalWeight = 0;
         for (int i = 0; i < agentsVector.size(); ++i) {
@@ -181,20 +225,20 @@ namespace Engine {
         return totalWeight;
     }
 
-    double LoadBalanceTree::getAgentsWeightFromCell(const int& row, const int& column) const
+    double MPILoadBalanceTree::getAgentsWeightFromCell(const int& row, const int& column) const
     {
         Point2D<int> position(column, row);
         AgentsVector agentsVector = getAgentsInPosition(position);
         return getAgentsWeight(agentsVector);
     }
 
-    void LoadBalanceTree::exploreHorizontallyAndKeepDividing(node<Rectangle<int>>* treeNode, const double& totalWeight, const int& currentHeight)
+    void MPILoadBalanceTree::exploreHorizontallyAndKeepDividing(node<Rectangle<int>>* treeNode, const double& totalWeight, const int& currentHeight)
     {
         double leftChildTotalWeight = 0;
 
-        for (int i = treeNode->value.left(); i <= treeNode->value.right(); ++i)
+        for (int i = treeNode->value.left(); i < treeNode->value.right() + 1; ++i)
         {
-            for (int j = treeNode->value.top(); j <= treeNode->value.bottom(); ++j)
+            for (int j = treeNode->value.top(); j < treeNode->value.bottom() + 1; ++j)
                 leftChildTotalWeight += getAgentsWeightFromCell(j, i);
 
             if (leftChildTotalWeight >= totalWeight / 2)
@@ -212,13 +256,13 @@ namespace Engine {
         }
     }
 
-    void LoadBalanceTree::exploreVerticallyAndKeepDividing(node<Rectangle<int>>* treeNode, const double& totalWeight, const int& currentHeight)
+    void MPILoadBalanceTree::exploreVerticallyAndKeepDividing(node<Rectangle<int>>* treeNode, const double& totalWeight, const int& currentHeight)
     {
         double leftChildTotalWeight = 0;
 
-        for (int i = treeNode->value.top(); i < treeNode->value.bottom(); ++i) 
+        for (int i = treeNode->value.top(); i < treeNode->value.bottom() + 1; ++i) 
         {
-            for (int j = treeNode->value.left(); j < treeNode->value.right(); ++j)
+            for (int j = treeNode->value.left(); j < treeNode->value.right() + 1; ++j)
                 leftChildTotalWeight += getAgentsWeightFromCell(i, j);
 
             if (leftChildTotalWeight >= totalWeight / 2)
@@ -236,7 +280,7 @@ namespace Engine {
         }
     }
 
-    void LoadBalanceTree::divideSpaceRecursively(node<Rectangle<int>>* treeNode, const double& totalWeight, const int& currentHeight)
+    void MPILoadBalanceTree::divideSpaceRecursively(node<Rectangle<int>>* treeNode, const double& totalWeight, const int& currentHeight)
     {
         if (stopProcreating(currentHeight)) return;
 
@@ -247,7 +291,7 @@ namespace Engine {
             exploreVerticallyAndKeepDividing(treeNode, totalWeight, currentHeight);
     }
 
-    void LoadBalanceTree::getPartitionsFromTreeRecursively(node<Rectangle<int>>* node, std::vector<Rectangle<int>>& partitions) const
+    void MPILoadBalanceTree::getPartitionsFromTreeRecursively(node<Rectangle<int>>* node, std::vector<Rectangle<int>>& partitions) const
     {
         if (node == NULL) return;
         if (node->left == NULL and node->right == NULL) 

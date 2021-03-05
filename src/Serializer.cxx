@@ -31,7 +31,7 @@
 #include <Logger.hxx>
 #include <GeneralState.hxx>
 
-#include <OpenMPIMultiNode.hxx>
+#include <MPIMultiNode.hxx>
 
 namespace Engine
 {
@@ -40,7 +40,7 @@ namespace Engine
 // {
 // }
 
-Serializer::Serializer(const OpenMPIMultiNode& scheduler) : _scheduler(scheduler), _agentsFileId(-1), _fileId(-1), _currentAgentDatasetId(-1)
+Serializer::Serializer(const MPIMultiNode& scheduler) : _scheduler(scheduler), _agentsFileId(-1), _fileId(-1), _currentAgentDatasetId(-1)
 {
 }
 
