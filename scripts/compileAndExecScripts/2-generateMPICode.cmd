@@ -6,5 +6,4 @@ if [ $# -lt 1 ]; then
   exit 0
 fi
 
-cd ~/PANDORA/examples/"$1"/
-python GenerateMPICodeAndCompileModel.py
+python GenerateMPICodeAndCompileModel.py "$1" 

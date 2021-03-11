@@ -410,9 +410,10 @@ def getMethodsForVector(agentName, variableID, complexAttributesRelated, deltaHe
     elif typeOfElements.find('std::string') != -1:
         typeOfElementsNull = '(' + typeOfElements + ') ""'
 
-    deleteMethodCode =  '\tif (index >= ' + variableName + '.size() or index < 0) throw Engine::Exception("' + agentName + '_mpi.cxx::deleteElementAtIndex_forVector' + variableName + '() - NOT VALID INDEX.");\n' \
+    deleteMethodCode =  '\tif (index >= ' + variableName + '.size() or index < -1) throw Engine::Exception("' + agentName + '_mpi.cxx::deleteElementAtIndex_forVector' + variableName + '() - NOT VALID INDEX.");\n' \
                         '\n' \
-                        '\t' + variableName + '.erase(' + variableName + '.begin() + index);\n' \
+                        '\tif (index == -1) ' + variableName + '.clear();\n' \
+                        '\telse ' + variableName + '.erase(' + variableName + '.begin() + index);\n' \
                         '\n' \
                         '\t' + deltaVariableName + '.push_back(std::make_tuple(Engine::eVectorDelete, index, ' + typeOfElementsNull + '));\n'
 
@@ -905,7 +906,10 @@ def applyChangesToVector(f, variableName, typeOfElements):
     f.write('\t\t\telse if (typeOfModification == Engine::eVectorUpdate)\n')
     f.write('\t\t\t\t' + variableName + '.at(elementIndex) = elementNewValue;\n')
     f.write('\t\t\telse if (typeOfModification == Engine::eVectorDelete)\n')
-    f.write('\t\t\t\t' + variableName + '.erase(_hey1.begin() + elementIndex);\n')
+    f.write('\t\t\t{\n')
+    f.write('\t\t\t\tif (elementIndex == -1) ' + variableName + '.clear();\n')
+    f.write('\t\t\t\telse ' + variableName + '.erase(' + variableName + '.begin() + elementIndex);\n')
+    f.write('\t\t\t}\n')
 
     return None
 
@@ -1052,7 +1056,7 @@ def createMpiCode(agentName, source, headerName, namespace, parent, attributesMa
     f.close()
     return None
 
-# attributes with basic types (int, float, char, bool, std::string and Engine::Point2D<int>)
+# MpiBasicAttribute: attributes with basic types (int, float, char, bool, std::string and Engine::Point2D<int>)
 def addBasicAttribute(line, attributesMap):
     splitLine = line.split()
 
@@ -1075,7 +1079,7 @@ def getNewIDFromOrderMap(variableName, complexAttributesRelated):
 
     return newID
 
-# attributes with complex types (std::vector<T>, std::queue<T>, std::map<T, U> ; T|U = {int, float, char, bool, std::string, Engine::Point2D<int>})
+# MpiComplexAttribute: attributes with complex types (std::vector<T>, std::queue<T>, std::map<T, U> ; T|U = {int, float, char, bool, std::string, Engine::Point2D<int>})
 def addComplexAttribute(line, complexAttributesRelated):
     splitLine = line.split(";")
     firstPart = splitLine[0]
@@ -1326,6 +1330,7 @@ def execute(target, source, env):
         print '\tprocessing agent: ' + listAgents[i - 1]
         # get the list of attributes to send/receive in MPI
         # create header declaring a package with the list of attributes
+        if not os.path.exists('mpiCode/'): os.makedirs('mpiCode/')
         createMpiHeader(listAgents[i - 1], sourceName, headerName, attributesMap)
         # create a source code defining package-class copy
         createMpiCode(listAgents[i - 1], sourceName, headerName, namespaceAgents[i - 1], parentName, attributesMap, complexAttributesRelated)
