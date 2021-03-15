@@ -99,11 +99,13 @@ void Config::loadBaseParams( )
 
     _overlapSize = getParamInt("mpi", "overlapSizeMPI");
     _subpartitioningMode = getParamInt("mpi", "subpartitioningMode");
+    _autoMode = getParamBool("mpiAutoAdjustment", "autoMode");
     _initialPartitioning = getParamBool("mpiAutoAdjustment", "initialPartitioning");
     _rebalancingFreq = getParamInt("mpiAutoAdjustment", "rebalancingFreq");
+    _maximumLoadPerNode = getParamFloat("mpiAutoAdjustment", "maximumLoadPerNode");
     _maximumPercOfUnbalance = getParamFloat("mpiAutoAdjustment", "maximumPercOfUnbalance");
-    _loadLowerThreshold = getParamFloat("mpiAutoAdjustment", "loadLowerThreshold");
-    _loadUpperThreshold = getParamFloat("mpiAutoAdjustment", "loadUpperThreshold");
+    // _loadLowerThreshold = getParamFloat("mpiAutoAdjustment", "loadLowerThreshold");
+    // _loadUpperThreshold = getParamFloat("mpiAutoAdjustment", "loadUpperThreshold");
 }
 
 void Config::loadFile( )
@@ -240,9 +242,19 @@ const int& Config::getSubpartitioningMode() const
     return _subpartitioningMode;
 }
 
+const bool& Config::getAutoMode() const
+{
+    return _autoMode;
+}
+
 const bool& Config::getInitialPartitioning() const
 {
     return _initialPartitioning;
+}
+
+const double& Config::getMaximumLoadPerNode() const
+{
+    return _maximumLoadPerNode;
 }
 
 const int& Config::getRebalancingFrequency() const
@@ -255,15 +267,15 @@ const double& Config::getMaximumPercOfUnbalance() const
     return _maximumPercOfUnbalance;
 }
 
-const double& Config::getLoadLowerThreshold() const
-{
-    return _loadLowerThreshold;
-}
+// const double& Config::getLoadLowerThreshold() const
+// {
+//     return _loadLowerThreshold;
+// }
 
-const double& Config::getLoadUpperThreshold() const
-{
-    return _loadUpperThreshold;
-}
+// const double& Config::getLoadUpperThreshold() const
+// {
+//     return _loadUpperThreshold;
+// }
 
 } // namespace Engine
 

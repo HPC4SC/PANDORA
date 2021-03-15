@@ -16,6 +16,7 @@ namespace Engine
     protected:
         int                     _id;            //! Identifier of the Scheduler.
         int                     _numTasks;      //! Number of MPI tasks executing the simulation
+        int                     _numTasksMax;   //! Maximum number of MPI tasks available to execute the simulation.
         Engine::Rectangle<int>  _boundaries;    //! Limits of the simulation space.
         World                  *_world;         //! Pointer to the World of the simulation
 
@@ -118,13 +119,34 @@ namespace Engine
          * 
          */
         virtual void initData( ) = 0;
-        
+
         /**
-         * @brief Gets whether the MPI process has been tagged as finished.
+         * @brief Gets whether the MPI process has tagged as 'go to sleep'.
          * 
          * @return bool
          */
-        virtual bool hasBeenTaggedAsFinished() const = 0;
+        virtual bool hasBeenTaggedAsGoToSleep() const = 0;
+
+        /**
+         * @brief Gets whether the MPI process has been tagged as 'just finished'.
+         * 
+         * @return bool
+         */
+        virtual bool hasBeenTaggedAsJustFinished() const = 0;
+
+        /**
+         * @brief Gets whether the MPI process has been tagged as 'just awaken'.
+         * 
+         * @return true 
+         * @return false 
+         */
+        virtual bool hasBeenTaggedAsJustAwaken() const = 0;
+
+        /**
+         * @brief Sets the process to sleep.
+         * 
+         */
+        virtual void goToSleep() = 0;
 
         /**
          * @brief Updates the resources modified in the World::stepEnvironment() method. Must be implemented in child.
@@ -171,12 +193,21 @@ namespace Engine
          */
         const int & getId( ) const { return _id; }
 
+
+
         /**
          * @brief Gets _numTasks, will always be 1 unless the execution is distributed in some way.
          * 
          * @return const int& 
          */
         const int & getNumTasks() const { return _numTasks; }
+
+        /**
+         * @brief Gets the _numTasksMax member.
+         * 
+         * @return const int& 
+         */
+        const int& getNumTasksMax() const { return _numTasksMax; }
 
         /**
          * @brief Get the Wall Time of the simulatio. Must be implemented in the children.
@@ -366,8 +397,10 @@ namespace Engine
          */
         void setParallelism(bool updateKnowledgeInParallel, bool executeActionsInParallel) 
         {
+            if (hasBeenTaggedAsJustFinished()) return;
+
             _updateKnowledgeInParallel = updateKnowledgeInParallel;
-            _executeActionsInParallel = executeActionsInParallel; 
+            _executeActionsInParallel = executeActionsInParallel;
         }
 
         /**

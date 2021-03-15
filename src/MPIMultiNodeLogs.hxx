@@ -19,160 +19,148 @@
  *
  */
 
-#ifndef __OpenMPIMultiNodeLogs_hxx__
-#define __OpenMPIMultiNodeLogs_hxx__
+#ifndef __MPIMultiNodeLogs_hxx__
+#define __MPIMultiNodeLogs_hxx__
 
-#include <OpenMPIMultiNode.hxx>
+#include <MPIMultiNode.hxx>
 #include <DynamicRaster.hxx>
 #include <StaticRaster.hxx>
 
 namespace Engine
 {
 
-    class OpenMPIMultiNode;
+    class MPIMultiNode;
 
-    class OpenMPIMultiNodeLogs
+    class MPIMultiNodeLogs
     {
         protected:
+
+            const MPIMultiNode* _schedulerInstance;                     //! Instance of the scheduler containing all the variables needed for logging.
+
+            std::map<int, std::string> _logFileNames;                   //! Names of the log files for each of the MPI processes.
+            std::map<int, std::string> _instrumentationLogFileNames;    //! Names of the instrumentation log files.
 
             /**
              * @brief Get the 'raster' string in matrix format for the node calling this function. 'discrete' indicates whether discrete or continuous values are requested.
              * 
              * @param raster const DynamicRaster&
-             * @param schedulerInstance const OpenMPIMultiNode&
              * @param discrete const bool&
              * @return std::string 
              */
-            std::string getRasterValues(const DynamicRaster& raster, const OpenMPIMultiNode& schedulerInstance, const bool& discrete) const;
-
-            std::map<int, std::string> _logFileNames;                   //! Names of the log files for each of the MPI processes.
-            std::map<int, std::string> _instrumentationLogFileNames;    //! Names of the instrumentation log files.
+            std::string getRasterValues(const DynamicRaster& raster, const bool& discrete) const;
 
         public:
 
             /**
-             * @brief Construct a new OpenMPIMultiNodeLogs object.
+             * @brief Construct a new MPIMultiNodeLogs object.
              * 
              */
-            OpenMPIMultiNodeLogs();
+            MPIMultiNodeLogs();
 
             /**
-             * @brief Destroy the OpenMPIMultiNodeLogs object.
+             * @brief Destroy the MPIMultiNodeLogs object.
              * 
              */
-            virtual ~OpenMPIMultiNodeLogs();
+            virtual ~MPIMultiNodeLogs();
 
             /**
              * @brief Initializes the logs in which the processes are going to write.
              * 
-             * @param schedulerInstance const OpenMPIMultiNode&
+             * @param schedulerInstance const MPIMultiNode&
              */
-            void initLogFileNames(const OpenMPIMultiNode& schedulerInstance);
+            void initLogFileNames(const MPIMultiNode& schedulerInstance);
 
             /**
              * @brief Writes 'message' in the corresponding MPI process log file.
              * 
              * @param message const std::sting&
-             * @param schedulerInstance const OpenMPIMultiNode&
              */
-            void writeInDebugFile(const std::string& message, const OpenMPIMultiNode& schedulerInstance);
+            void writeInDebugFile(const std::string& message);
 
             /**
              * @brief Gets the string representing: the nodes partitioning and neighbours for each one.
              * 
-             * @param schedulerInstance const OpenMPIMultiNode&
              * @return std::string 
              */
-            std::string getString_PartitionsBeforeMPI(const OpenMPIMultiNode& schedulerInstance) const;
+            std::string getString_PartitionsBeforeMPI() const;
 
             /**
              * @brief Gets the string representing: the nodes structure (ID + Coordinates) in _nodesSpace.
              * 
-             * @param schedulerInstance const OpenMPIMultiNode&
              * @return std::string 
              */
-            std::string getString_OwnNodeStructureAfterMPI(const OpenMPIMultiNode& schedulerInstance) const;
+            std::string getString_OwnNodeStructure() const;
 
             /**
              * @brief Gets the string representing: the agents for the current node executing this method.
              * 
-             * @param schedulerInstance const OpenMPIMultiNode&
              * @param fullDescription const bool&
              * @return std::string 
              */
-            std::string getString_NodeAgents(const OpenMPIMultiNode& schedulerInstance, const bool& fullDescription) const;
+            std::string getString_NodeAgents(const bool& fullDescription) const;
 
             /**
              * @brief Gets the string representing: the rasters for the current node executing this method.
              * 
-             * @param schedulerInstance const OpenMPIMultiNode&
              * @param discrete const bool&
              * @return std::string 
              */
-            std::string getString_NodeRasters(const OpenMPIMultiNode& schedulerInstance, const bool& discrete) const;
+            std::string getString_NodeRasters(const bool& discrete) const;
 
             /**
              * @brief Gets the string representing: the matrix of agents (_agentsMatrix member) for the current node executing this method. If 'printAllMatrix' == false (default) then it just prints the agents within the _nodeSpace.ownedAreaWithOuterOverlaps area of the calling process.
              * 
-             * @param schedulerInstance const OpenMPIMultiNode&
              * @param printAllMatrix const bool&
              * @return std::string 
              */
-            std::string getString_AgentsMatrix(const OpenMPIMultiNode& schedulerInstance, const bool& printAllMatrix = false) const;
+            std::string getString_AgentsMatrix(const bool& printAllMatrix = false) const;
 
             /**
              * @brief Prints in the node's debug file: the nodes partitioning and neighbours for each one.
              * 
-             * @param schedulerInstance const OpenMPIMultiNode&
              */
-            void printPartitionsBeforeMPIInDebugFile(const OpenMPIMultiNode& schedulerInstance) const;
+            void printPartitionsBeforeMPIInDebugFile() const;
 
             /**
              * @brief Prints in the node's debug file: the nodes structure (ID + Coordinates) in _nodesSpace.
              * 
-             * @param schedulerInstance const OpenMPIMultiNode&
              */
-            void printOwnNodeStructureAfterMPIInDebugFile(const OpenMPIMultiNode& schedulerInstance) const;
+            void printOwnNodeStructureInDebugFile() const;
             
             /**
              * @brief Prints in the node's debug file: the agents for the current node executing this method.
              * 
-             * @param schedulerInstance const OpenMPIMultiNode&
              */
-            void printNodeAgentsInDebugFile(const OpenMPIMultiNode& schedulerInstance, const bool& fullDescription = false) const;
+            void printNodeAgentsInDebugFile(const bool& fullDescription = false) const;
 
             /**
              * @brief Prints in the node's debug file: the rasters for the current node executing this method.
              * 
-             * @param schedulerInstance const OpenMPIMultiNode&
              */
-            void printNodeRastersInDebugFile(const OpenMPIMultiNode& schedulerInstance) const;
+            void printNodeRastersInDebugFile() const;
 
             /**
              * @brief Prints in the node's debug file: the discrete state of the rasters for the current node executing this method.
              * 
-             * @param schedulerInstance const OpenMPIMultiNode&
              */
-            void printNodeRastersDiscreteInDebugFile(const OpenMPIMultiNode& schedulerInstance) const;
+            void printNodeRastersDiscreteInDebugFile() const;
 
             /**
              * @brief Prints in the node's debug file: the matrix of agents (_agentsMatrix member) for the current node executing this method.
              * 
-             * @param schedulerInstance const OpenMPIMultiNode&
              * @param printAllMatrix const bool&
              */
-            void printAgentsMatrixInDebugFile(const OpenMPIMultiNode& schedulerInstance, const bool& printAllMatrix = false) const;
+            void printAgentsMatrixInDebugFile(const bool& printAllMatrix = false) const;
 
             /**
              * @brief Prints 'message' in the corresponding instrumentation log file of the calling process.
              * 
-             * @param schedulerInstance const OpenMPIMultiNode& schedulerInstance
              * @param message const std::string&
              */
-            void printInstrumentation(const OpenMPIMultiNode& schedulerInstance, const std::string& message);
+            void printInstrumentation(const std::string& message);
 
     };
 
 } // namespace Engine
 
-#endif // __OpenMPIMultiNodeLogs_hxx__
+#endif // __MPIMultiNodeLogs_hxx__

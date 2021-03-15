@@ -122,8 +122,9 @@ void Agent::setPosition( const Point2D<int> & position )
 
         _world->changeAgentInMatrixOfPositions(this);
     }
-    else {
-        throw Exception(CreateStringStream("Agent::setPosition() - agent " << _id << " cannot move from " << _position << " to " << position << ": distance exceeds overlapSize.\n").str());
+    else 
+    {
+        throw Exception("Agent::setPosition() - agent " + _id + " cannot move from (" + std::to_string(_position.getX()) + "," + std::to_string(_position.getY()) + ") to (" + std::to_string(position.getX()) + "," + std::to_string(position.getY()) + "): distance exceeds overlapSize.\n");
     }
 }
 
@@ -198,7 +199,6 @@ bool Agent::hasTheSameAttributes(const Agent& other) const
             _stringAttributes == other._stringAttributes and
             _id == other._id and
             _exists == other._exists and
-            _position == other._position and
             _world->getId() == other._world->getId();
 }
 

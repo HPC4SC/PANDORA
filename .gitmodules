@@ -1,6 +1,0 @@
-[submodule "examples/IoTwins_pandora"]
-	path = examples/IoTwins_pandora
-	url = https://github.com/BSCCNS/IoTwins_pandora.git
-[submodule "examples/IoTwins"]
-	path = examples/IoTwins
-	url = https://github.com/BSCCNS/IoTwins.git

@@ -105,16 +105,22 @@ protected:
     void updateDiscreteStateStructures() const;
 
     /**
-     * @brief Runs all the needed internal modifications at the beginning of each step. Cannot be overriden by the simulation.
-     * 
-     */
-    void engineStep();
-
-    /**
      * @brief Dumps current state of the simulation into the log files. Then applies next simulation step. Can be overriden by the model.
      * 
      */
     virtual void step( );
+
+    /**
+     * @brief Performs the step (virtual method) only if it's necessary.
+     * 
+     */
+    void performStep();
+
+    /**
+     * @brief Runs all the needed internal modifications at the beginning of each step. Cannot be overriden by the simulation.
+     * 
+     */
+    void engineStep();
 
 public:
     
@@ -270,7 +276,14 @@ public:
      * @return current step. 
      */
     int getCurrentStep( ) const;
-   
+
+    /**
+     * @brief Sets the _step member variable.
+     * 
+     * @param currentStep const int&
+     */
+    void setCurrentStep(const int& currentStep);
+
     /**
      * @brief This method can be redefined by the children in order to modify the execution of each step on a given resource field.
      * 
@@ -492,16 +505,6 @@ public:
     const Config & getConfig( ) const 
     {
         return *_config;
-    }
-
-    /**
-     * @brief Get the value of the _step attribute.
-     * 
-     * @return int 
-     */
-    int getCurrentTimeStep( ) const 
-    { 
-        return _step;
     }
 
     /**
