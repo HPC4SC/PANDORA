@@ -6,6 +6,7 @@ To compile Cassandra you just need to run `make` within the Docker image:
 
 ```bash
 $ cd ~/PANDORA/cassandra
+$ qmake
 $ make
 ```
 

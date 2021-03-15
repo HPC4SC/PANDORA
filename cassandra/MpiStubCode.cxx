@@ -43,4 +43,13 @@ void * MpiFactory::createDefaultPackage( const std::string & type )
 	return 0;
 }
 
+int MpiFactory::getSizeOfPackage(const std::string& type) const
+{
+	return 0;
+}
+
+void MpiFactory::freePackage(void* package, const std::string& type) const
+{
+}
+
 } // namespace Engine
