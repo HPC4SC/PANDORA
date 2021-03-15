@@ -20,13 +20,13 @@ def readParameters(agents, namespaceAgents, world, srcFiles):
 				value = keyAndValue[1]
 
 				if key == 'agents':
-					agents += value.replace(' ', '').replace('\n', '').split(',')
+					agents += value.replace(' ', '').replace('\r', '').replace('\n', '').split(',')
 				elif key == 'namespaceAgents':
-					namespaceAgents += value.replace(' ', '').replace('\n', '').split(',')
+					namespaceAgents += value.replace(' ', '').replace('\r', '').replace('\n', '').split(',')
 				elif key == 'world':
-					world += value.replace(' ', '').replace('\n', '').split(',')
+					world += value.replace(' ', '').replace('\r', '').replace('\n', '').split(',')
 				elif key == 'srcFiles':
-					srcFiles += value.replace(' ', '').replace('\n', '').split(',')
+					srcFiles += value.replace(' ', '').replace('\r', '').replace('\n', '').split(',')
 
 			line = file.readline()
 
