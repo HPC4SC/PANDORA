@@ -398,7 +398,7 @@ def getMethodsForVector(agentName, variableID, complexAttributesRelated, deltaHe
                         '\t}\n' \
                         '\n' \
                         '\t' + deltaVariableName + '.push_back(std::make_tuple(Engine::eVectorInsert, index, element));\n'
-    updateMethodCode =  '\tif (index >= ' + variableName + '.size() or index < 0) throw Engine::Exception("' + agentName + '_mpi.cxx::updateElementAtIndex_forVector' + variableName + '() - NOT VALID INDEX.");\n' \
+    updateMethodCode =  '\tif (index >= (int) ' + variableName + '.size() or index < 0) throw Engine::Exception(CreateStringStream("' + agentName + '_mpi.cxx::updateElementAtIndex' + variableName + '() - NOT VALID INDEX: " << index << ".").str());\n' \
                         '\n' \
                         '\t' + variableName + '.at(index) = element;\n' \
                         '\n' \
@@ -410,7 +410,7 @@ def getMethodsForVector(agentName, variableID, complexAttributesRelated, deltaHe
     elif typeOfElements.find('std::string') != -1:
         typeOfElementsNull = '(' + typeOfElements + ') ""'
 
-    deleteMethodCode =  '\tif (index >= ' + variableName + '.size() or index < -1) throw Engine::Exception("' + agentName + '_mpi.cxx::deleteElementAtIndex_forVector' + variableName + '() - NOT VALID INDEX.");\n' \
+    deleteMethodCode =  '\tif (index >= (int) ' + variableName + '.size() or index < -1) throw Engine::Exception(CreateStringStream("' + agentName + '_mpi.cxx::deleteElementAtIndex' + variableName + '() - NOT VALID INDEX: " << index << ".").str());\n' \
                         '\n' \
                         '\tif (index == -1) ' + variableName + '.clear();\n' \
                         '\telse ' + variableName + '.erase(' + variableName + '.begin() + index);\n' \
