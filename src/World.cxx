@@ -247,7 +247,6 @@ namespace Engine
         if (not _scheduler->hasBeenTaggedAsGoToSleep()) 
         {
             std::cout << CreateStringStream("[Process #" << getId() << "] executing step " << _step << "\n").str();
-
             step();
         }
     }

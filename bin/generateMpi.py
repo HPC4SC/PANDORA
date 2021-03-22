@@ -893,39 +893,51 @@ def writePrintMap(f, variableName, typeOfElements, valueType):
     f.write('\n')
     return None
 
-def applyChangesToVector(f, variableName, typeOfElements):
-    f.write('\t\t\tif (typeOfModification == Engine::eVectorInsert)\n')
-    f.write('\t\t\t{\n')
-    f.write('\t\t\t\tif (elementIndex >= ' + variableName + '.size() or elementIndex < 0) ' + variableName + '.push_back(elementNewValue);\n')
-    f.write('\t\t\t\telse\n')
-    f.write('\t\t\t\t{\n')
-    f.write('\t\t\t\t\tstd::vector<' + typeOfElements + '>::const_iterator itPos = ' + variableName + '.begin() + elementIndex;\n')
-    f.write('\t\t\t\t\t' + variableName + '.insert(itPos, elementNewValue);\n')
-    f.write('\t\t\t\t}\n')
-    f.write('\t\t\t}\n')
-    f.write('\t\t\telse if (typeOfModification == Engine::eVectorUpdate)\n')
-    f.write('\t\t\t\t' + variableName + '.at(elementIndex) = elementNewValue;\n')
-    f.write('\t\t\telse if (typeOfModification == Engine::eVectorDelete)\n')
-    f.write('\t\t\t{\n')
-    f.write('\t\t\t\tif (elementIndex == -1) ' + variableName + '.clear();\n')
-    f.write('\t\t\t\telse ' + variableName + '.erase(' + variableName + '.begin() + elementIndex);\n')
-    f.write('\t\t\t}\n')
+def applyChangesToVector(f, variableName, typeOfElements, numberOfIdentations):
+    baseIdentation = ''
+    for i in range(numberOfIdentations):
+        baseIdentation += '\t'
+
+    f.write(baseIdentation + 'if (typeOfModification == Engine::eVectorInsert)\n')
+    f.write(baseIdentation + '{\n')
+    f.write(baseIdentation + '\tif (elementIndex >= ' + variableName + '.size() or elementIndex < 0) ' + variableName + '.push_back(elementNewValue);\n')
+    f.write(baseIdentation + '\telse\n')
+    f.write(baseIdentation + '\t{\n')
+    f.write(baseIdentation + '\t\tstd::vector<' + typeOfElements + '>::const_iterator itPos = ' + variableName + '.begin() + elementIndex;\n')
+    f.write(baseIdentation + '\t\t' + variableName + '.insert(itPos, elementNewValue);\n')
+    f.write(baseIdentation + '\t}\n')
+    f.write(baseIdentation + '}\n')
+    f.write(baseIdentation + 'else if (typeOfModification == Engine::eVectorUpdate)\n')
+    f.write(baseIdentation + '\t' + variableName + '.at(elementIndex) = elementNewValue;\n')
+    f.write(baseIdentation + 'else if (typeOfModification == Engine::eVectorDelete)\n')
+    f.write(baseIdentation + '{\n')
+    f.write(baseIdentation + '\tif (elementIndex == -1) ' + variableName + '.clear();\n')
+    f.write(baseIdentation + '\telse ' + variableName + '.erase(' + variableName + '.begin() + elementIndex);\n')
+    f.write(baseIdentation + '}\n')
 
     return None
 
-def applyChangesToQueue(f, variableName):
-    f.write('\t\t\tif (typeOfModification == Engine::eQueuePush)\n')
-    f.write('\t\t\t\t' + variableName + '.push(elementNewValue);\n')
-    f.write('\t\t\tif (typeOfModification == Engine::eQueuePop)\n')
-    f.write('\t\t\t\t' + variableName + '.pop();\n')
+def applyChangesToQueue(f, variableName, numberOfIdentations):
+    baseIdentation = ''
+    for i in range(numberOfIdentations):
+        baseIdentation += '\t'
+
+    f.write(baseIdentation + 'if (typeOfModification == Engine::eQueuePush)\n')
+    f.write(baseIdentation + '\t' + variableName + '.push(elementNewValue);\n')
+    f.write(baseIdentation + 'if (typeOfModification == Engine::eQueuePop)\n')
+    f.write(baseIdentation + '\t' + variableName + '.pop();\n')
 
     return None
 
-def applyChangesToMap(f, variableName):
-    f.write('\t\t\tif (typeOfModification == Engine::eMapInsertOrUpdate)\n')
-    f.write('\t\t\t\t' + variableName + '[elementKey] = elementNewValue;\n')
-    f.write('\t\t\tif (typeOfModification == Engine::eMapDelete)\n')
-    f.write('\t\t\t\t' + variableName + '.erase(elementKey);\n')
+def applyChangesToMap(f, variableName, numberOfIdentations):
+    baseIdentation = ''
+    for i in range(numberOfIdentations):
+        baseIdentation += '\t'
+
+    f.write(baseIdentation + 'if (typeOfModification == Engine::eMapInsertOrUpdate)\n')
+    f.write(baseIdentation + '\t' + variableName + '[elementKey] = elementNewValue;\n')
+    f.write(baseIdentation + 'if (typeOfModification == Engine::eMapDelete)\n')
+    f.write(baseIdentation + '\t' + variableName + '.erase(elementKey);\n')
 
     return None
 
@@ -972,11 +984,11 @@ def writeApplyComplexAttributesDeltaPackage(f, agentName, complexAttributesRelat
             writePoints2DVariablesDefinitionParametrized_receiver(f, typeOfElements, 'elementNewValue')
 
         if variableShortType == 'std::vector':
-            applyChangesToVector(f, variableName, typeOfElements)
+            applyChangesToVector(f, variableName, typeOfElements, 3)
         elif variableShortType == 'std::queue':
-            applyChangesToQueue(f, variableName)
+            applyChangesToQueue(f, variableName, 3)
         elif variableShortType == 'std::map':
-            applyChangesToMap(f, variableName)
+            applyChangesToMap(f, variableName, 3)
 
         f.write('\t\t}\n')
 
@@ -1008,7 +1020,39 @@ def writeCopyContinuousValuesToDiscreteOnes(f, agentName, attributesMap, complex
     for key in attributesMap:
         f.write('\t_discrete' + key + ' = ' + key + ';\n')
     for variableID, variableName in complexAttributesRelated.complexAttributesOrderMap.items():
-        f.write('\t_discrete' + variableName + ' = ' + variableName + ';\n')
+        variableShortType = complexAttributesRelated.complexAttributesShortType[variableID]
+        typeOfElements = complexAttributesRelated.complexAttributesElementsType[variableID]
+        deltaVariableName = complexAttributesRelated.mapOfDeltaVariablesName[variableID]
+
+        discreteVariableName = '_discrete' + variableName
+
+        f.write('\n')
+        f.write('\t// Applying delta elements for discrete variable ' + discreteVariableName + ':\n')
+        f.write('\tfor (int i = 0; i < ' + deltaVariableName + '.size(); ++i)\n')
+        f.write('\t{\n')
+
+        f.write('\t\tint typeOfModification = std::get<0>(' + deltaVariableName + '[i]);\n')
+        if variableShortType == 'std::vector':
+            f.write('\t\tint elementIndex = std::get<1>(' + deltaVariableName + '[i]);\n')
+            f.write('\t\t' + typeOfElements + ' elementNewValue = std::get<2>(' + deltaVariableName + '[i]);\n')
+        elif variableShortType == 'std::queue':
+            f.write('\t\t' + typeOfElements + ' elementNewValue = std::get<1>(' + deltaVariableName + '[i]);\n')
+        elif variableShortType == 'std::map':
+            valueType = complexAttributesRelated.complexAttributesValueInMapType[variableID]
+
+            f.write('\t\t' + typeOfElements + ' elementKey = std::get<1>(' + deltaVariableName + '[i]);\n')
+            f.write('\t\t' + valueType + ' elementNewValue = std::get<2>(' + deltaVariableName + '[i]);\n')
+
+        f.write('\n')
+        if variableShortType == 'std::vector':
+            applyChangesToVector(f, discreteVariableName, typeOfElements, 2)
+        elif variableShortType == 'std::queue':
+            applyChangesToQueue(f, discreteVariableName, 2)
+        elif variableShortType == 'std::map':
+            applyChangesToMap(f, discreteVariableName, 2)
+
+        f.write('\t}\n')
+
     f.write('}\n')
     f.write('\n')
     return None
