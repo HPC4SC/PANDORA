@@ -48,7 +48,9 @@ To be sure that Pandora directory is at your ~ directory is a must
 
 ## docker2singularity
 
-We hardly recommend a Linux installation to translate a Docker image into a Singularity one. Also, if Docker at first instance have some problems to be installed, try to install the build-essentials, the dkms and the linux-header-$(uname -r) packages previously. Then, try to [install Docker ](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-18-04).
+A singularity image is needed to compile and execute Pandora. It is a simplified container used in some HPC nodes for security reasons, instead of Docker. It might be a Singularity image in your ~/ in MN4 already. If that is not the case or that image is out-of-date, you should follow the steps down below.
+
+We hardly recommend a Linux installation to translate a Docker image into a Singularity one. To do so, there is a repository which uses the very same Docker to create a Singularity image. You should do this locally. If you have some problems at first instance to install it in your computer, try to install the build-essentials, the dkms and the linux-header-$(uname -r) packages previously. Then, try to [install Docker](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-18-04).
 
 Assuming a machine with Docker installed, just one command is needed to translate a Docker image into a Singularity one:
 
@@ -62,7 +64,7 @@ $ docker run    -v /var/run/docker.sock:/var/run/docker.sock \
 
 , where the {DockerHub_image} should be something like genajim/pandora.
 
-The resulting image has been saved in /tmp/test/. Now you can upload it to MN4 by sftp.
+The resulting image has been saved in /tmp/test/. Now you can upload it to MN4 by sftp to your ~/ directory.
 
 ### Working with Singularity - Pandora & models compilation
 
@@ -100,7 +102,7 @@ $ source ~/.bashrc
 
 **IMPORTANT!** Consider that the ~/.bashrc file is shared between the Singularity image and your MN profile.
 
-From here on, the compilation steps are exactly the same ones than those used when compiling in local ([Compile and Install (using CMAKE)](00_installing_cmake.md)). You can use the scripts at PANDORA/scripts/compileAndExecScripts/, which allow you to rapidly clean everything, deploy and run any model at examples/.
+From here on, the compilation steps are exactly the same ones than those used when compiling in local ([Compile and Install (using CMAKE)](00_installing_cmake.md)). You can use the scripts at PANDORA/scripts/compileAndExecScripts/, which allow you to rapidly clean everything, compile and deploy the engine and compile the model. To run a small model you could use that scripts too. If it is too big, though, you should [queue it](https://www.bsc.es/support/MareNostrum4-ug.pdf) by means of a bash script (see next section).
 
 ### Creating scripts
 

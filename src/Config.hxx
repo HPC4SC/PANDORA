@@ -40,6 +40,7 @@ protected:
     TiXmlDocument * _doc; 
     TiXmlElement * _root;
 
+    std::string _resultsBaseDir;    //! Base directory where the simulation results will be stored.
     std::string _resultsFile;       //! File where simulation results will be stored.
     Size<int> _size;                //! Space of simulation.
     int _numSteps;                  //! Number of time steps of the simulation.
@@ -214,21 +215,28 @@ public:
     // const double& getLoadUpperThreshold() const;
 
     /**
-     * @brief Get the _numSteps object.
+     * @brief Get the _numSteps member.
      * 
      * @return const int& 
      */
     const int & getNumSteps( ) const;
 
     /**
-     * @brief Get the _serializeResolution object.
+     * @brief Get the _serializeResolution member.
      * 
      * @return const int& 
      */
     const int & getSerializeResolution( ) const;
 
     /**
-     * @brief Get the _resultsFile object.
+     * @brief Gets the _resultsBaseDir member.
+     * 
+     * @return const std::string& 
+     */
+    const std::string& getResultsBaseDir() const { return _resultsBaseDir; }
+
+    /**
+     * @brief Get the _resultsFile member.
      * 
      * @return const std::string& 
      */

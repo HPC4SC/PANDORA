@@ -82,6 +82,7 @@ void Config::closeTiXml( )
 
 void Config::loadBaseParams( )
 {
+    _resultsBaseDir = getParamStr( "output", "resultsBaseDir" );
     _resultsFile = getParamStr( "output", "resultsFile" );
     std::string logsDir = getParamStr( "output", "logsDir" );
     GeneralState::logger( ).setLogsDir( logsDir );
