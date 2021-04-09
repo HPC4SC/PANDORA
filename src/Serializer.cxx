@@ -56,13 +56,13 @@ void Serializer::init( World & world )
     log_DEBUG( logName.str( ), " init serializer" );
 
     // check if directory exists
-    std::string resultsBaseDir = _config->getResultsBaseDir();
+    std::string resultsDir = _config->getResultsDir();
     std::string resultsFile = _config->getResultsFile();
 
     // create dir where logs will be stored if it is not already created
-    if ( !resultsBaseDir.empty( ) )
+    if ( !resultsDir.empty( ) )
     {
-        boost::filesystem::create_directory( resultsBaseDir );
+        boost::filesystem::create_directory( resultsDir );
     }
 
     // creating base file in a parallel environment
@@ -224,9 +224,9 @@ void Serializer::init( World & world )
 
     // creating a file with the agents of each computer node
     std::ostringstream oss;
-    if ( !resultsBaseDir.empty( ) )
+    if ( !resultsDir.empty( ) )
     {
-        oss << resultsBaseDir << "/";
+        oss << resultsDir << "/";
     }
     oss << "agents-" << _scheduler.getId( ) << ".abm";
 
