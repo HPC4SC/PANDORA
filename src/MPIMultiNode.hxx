@@ -272,13 +272,13 @@ namespace Engine
              * @brief Discards the agents that does not belong to the node calling this method.
              * 
              */
-            void filterOutInitialAgents();
+            void filterOutNonBelongingAgents();
 
             /**
              * @brief Discards the raster cells that does not belong to the node calling this method.
              * 
              */
-            void filterOutInitialRasters();
+            void filterOutNonBelongingRasters();
 
             /**
              * @brief Stablishes boundaries (_boundaries member) for the node calling this method.
@@ -817,6 +817,14 @@ namespace Engine
              * @return AgentsVector 
              */
             AgentsVector getAgent(const Point2D<int>& position, const std::string& type = "all") override;
+
+            /**
+             * @brief Returns true if the 'position' is within this node boundaries (considering outer overlaps). False otherwise.
+             * 
+             * @param position const Engine::Point2D<int>&
+             * @return bool
+             */
+            bool positionBelongsToNode(const Engine::Point2D<int>& position) const override;
 
             /**
              * @brief Counts the total number of neighbours for the given parameters.

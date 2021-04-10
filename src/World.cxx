@@ -124,6 +124,11 @@ namespace Engine
         return _agentsByID;
     }
 
+    bool World::needToCreateAgentAtPosition(const Engine::Point2D<int>& position)
+    {
+        return _scheduler->positionBelongsToNode(position);
+    }
+
     void World::changeAgentInMatrixOfPositions(Agent* agent)
     {
         int oldX = agent->getDiscretePosition().getX();
@@ -188,10 +193,7 @@ namespace Engine
 
         changeAgentInMatrixOfPositions(agent);
 
-        if ( executedAgent )
-        {
-            _scheduler->agentAdded( agentPtr, executedAgent );
-        }
+        if (executedAgent) _scheduler->agentAdded( agentPtr, executedAgent );
 
         std::stringstream logName;
         logName << "simulation_" << getId( );

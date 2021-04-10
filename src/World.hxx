@@ -168,6 +168,13 @@ public:
     const AgentsMap& getAgentsMap();
 
     /**
+     * @brief Returns whether the 'position' belongs within the current process boundaries. Might be not used at all (for the initial agents creation, for instance). But it is a needed in order to be efficient when the model creates agents along the simulation.
+     * 
+     * @return bool 
+     */
+    bool needToCreateAgentAtPosition(const Engine::Point2D<int>& position);
+
+    /**
      * @brief Changes the position of the 'agent' to its current coordinates. 'oldX' and 'oldY' are used to erase it from it previous position. NOTE: It assumes that _agents member already contain 'agent'.
      * 
      * @param agent Agent*

@@ -105,8 +105,8 @@ namespace Engine {
 
         if (not _goToSleep)
         {
-            filterOutInitialAgents();                           printNodeAgents();
-            filterOutInitialRasters();                          printNodeRasters();
+            filterOutNonBelongingAgents();                           printNodeAgents();
+            filterOutNonBelongingRasters();                          printNodeRasters();
 
             stablishBoundaries();
 
@@ -146,6 +146,8 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation("\n");
         _boundaries = Rectangle<int>(_world->getConfig().getSize());
 
         _nodeSpace.ownedArea = _boundaries;
+        _nodeSpace.ownedAreaWithOuterOverlap = _boundaries;
+        _nodeSpace.ownedAreaWithoutInnerOverlap = _boundaries;
     }
 
     void MPIMultiNode::registerMPIStructs()
@@ -340,7 +342,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation("[Process # " + 
 if (_printInstrumentation) _schedulerLogs->printInstrumentation("[Process # " + std::to_string(getId()) + "] MPIMultiNode::receiveInitialSpacesFromNode()\tTOTAL TIME: " + std::to_string(endTime - initialTime));
     }
 
-    void MPIMultiNode::filterOutInitialAgents()
+    void MPIMultiNode::filterOutNonBelongingAgents()
     {
         double initialTime = getWallTime();
 
@@ -358,10 +360,10 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation("[Process # " + 
         removeAgentsInVector(agentsToRemove);
 
         double endTime = getWallTime();
-if (_printInstrumentation) _schedulerLogs->printInstrumentation("[Process # " + std::to_string(getId()) + "] MPIMultiNode::filterOutInitialAgents()\tTOTAL TIME: " + std::to_string(endTime - initialTime));
+if (_printInstrumentation) _schedulerLogs->printInstrumentation("[Process # " + std::to_string(getId()) + "] MPIMultiNode::filterOutNonBelongingAgents()\tTOTAL TIME: " + std::to_string(endTime - initialTime));
     }
 
-    void MPIMultiNode::filterOutInitialRasters()
+    void MPIMultiNode::filterOutNonBelongingRasters()
     {
         double initialTime = getWallTime();
 
@@ -541,7 +543,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation("[Process # " + 
 
     void MPIMultiNode::stablishBoundaries()
     {
-        _boundaries = _nodeSpace.ownedArea;
+        _boundaries = _nodeSpace.ownedAreaWithOuterOverlap;
     }
 
     void MPIMultiNode::addMPINodeToSendInMapIfItsNot(MPINodesMap& mpiNodesMapToSend, const std::vector<Rectangle<int>>& partitions, const int& neighbourIndex) const
@@ -1680,6 +1682,11 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(totalSimulationT
     AgentsVector MPIMultiNode::getAgent(const Point2D<int>& position, const std::string& type)
     {
         return _loadBalanceTree->getAgentsInPosition(position, type);
+    }
+
+    bool MPIMultiNode::positionBelongsToNode(const Engine::Point2D<int>& position) const
+    {
+        return _nodeSpace.ownedAreaWithOuterOverlap.contains(position);
     }
 
     int MPIMultiNode::countNeighbours(Agent* target, const double& radius, const std::string& type)

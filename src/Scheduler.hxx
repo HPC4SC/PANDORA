@@ -257,6 +257,14 @@ namespace Engine
         virtual AgentsVector getAgent( const Point2D<int> & position, const std::string & type="all" ) = 0;
 
         /**
+         * @brief Returns true if the 'position' is within this node boundaries (considering outer overlaps). False otherwise.
+         * 
+         * @param position const Engine::Point2D<int>&
+         * @return bool
+         */
+        virtual bool positionBelongsToNode(const Engine::Point2D<int>& position) const = 0;
+
+        /**
          * @brief Counts the neighbours of an agent of a concrete type  witith the radius. Must be implemented in child.
          * 
          * @param target Agent in the center of the radius.
