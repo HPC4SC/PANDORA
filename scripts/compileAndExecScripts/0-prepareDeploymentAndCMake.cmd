@@ -11,7 +11,7 @@ if [ $1 == "debug=true" ]; then
   debugMode="-D debug=true"
 fi
 
-cd ~/PANDORA/
+cd $DEPLOYMENT_PATH/PANDORA/
 rm -rf build/ install/
 mkdir build/ install/
 

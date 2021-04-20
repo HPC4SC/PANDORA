@@ -11,5 +11,5 @@ fi
 
 numberOfTasks=$3
 
-cd ~/PANDORA/examples/"$1"/
+cd $DEPLOYMENT_PATH/PANDORA/examples/"$1"/
 mpirun -n $numberOfTasks -bootstrap ssh ./"$1" ./configFiles/"$2"

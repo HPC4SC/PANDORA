@@ -79,7 +79,11 @@ namespace Engine
             };                                                              //! Struct used to parse in/out the to-be-send/received raster positions and values.
             MPI_Datatype* _positionAndValueDatatype;                        //! Own MPI Datatype used to send/receive the positions and values of an updated raster.
 
-            std::list<MPI_Request*> _sendRequests;
+            struct SendRequest {
+                MPI_Request mpiRequest;
+                void* data;
+            };
+            std::vector<SendRequest> _sendRequests;
 
             /** Other structures **/
             MPIMultiNodeLogs* _schedulerLogs;
@@ -454,8 +458,9 @@ namespace Engine
              * @param destinationNode const int&
              * @param tag const int&
              * @param mpiComm const MPI_Comm&
+             * @param const bool&
              */
-            void sendDataRequestToNode(void* data, const int& numberOfElements, const MPI_Datatype& mpiDatatype, const int& destinationNode, const int& tag, const MPI_Comm& mpiComm);
+            void sendDataRequestToNode(void* data, const int& numberOfElements, const MPI_Datatype& mpiDatatype, const int& destinationNode, const int& tag, const MPI_Comm& mpiComm, const bool& dataPointerNeedToBeFreed = false);
 
             /**
              * @brief Sends agents in 'agentsByTypeAndNode'. The corresponding node is indicated in the key of the map. 'subOverlapID' is only used for instrumentation purposes.

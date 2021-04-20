@@ -20,10 +20,11 @@ def main():
 
 	numberOfAgents = (re.findall(r'-\d+A-', configFileName)[0])[1:-2]
 
-	homeVariable = os.path.expanduser('~')    # Get $HOME variable
+	deployPath = '/gpfs/scratch/bsc21/bsc21473/'
+	#deployPath = os.path.expanduser('~')    # Get $HOME variable
 
-	configFilePath = homeVariable + '/PANDORA/examples/' + modelName + '/configFiles/config.xml'
-	configFilePathFinal = homeVariable + '/PANDORA/examples/' + modelName + '/configFiles/' + configFileName
+	configFilePath = deployPath + '/PANDORA/examples/' + modelName + '/configFiles/config.xml'
+	configFilePathFinal = deployPath + '/PANDORA/examples/' + modelName + '/configFiles/' + configFileName
 
 	configFile = open(configFilePath, 'r')
 	configFileFinal = open(configFilePathFinal, 'w')

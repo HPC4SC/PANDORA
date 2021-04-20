@@ -828,12 +828,16 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation("\n[Process # " 
         }
     }
 
-    void MPIMultiNode::sendDataRequestToNode(void* data, const int& numberOfElements, const MPI_Datatype& mpiDatatype, const int& destinationNode, const int& tag, const MPI_Comm& mpiComm)
+    void MPIMultiNode::sendDataRequestToNode(void* data, const int& numberOfElements, const MPI_Datatype& mpiDatatype, const int& destinationNode, const int& tag, const MPI_Comm& mpiComm, const bool& dataPointerNeedToBeFreed)
     {
-        MPI_Request* mpiRequest = new MPI_Request;
+        MPI_Request mpiRequest;
+        MPI_Isend(data, numberOfElements, mpiDatatype, destinationNode, tag, mpiComm, &mpiRequest);
 
-        MPI_Isend(data, numberOfElements, mpiDatatype, destinationNode, tag, mpiComm, mpiRequest);
-        _sendRequests.push_back(mpiRequest);
+        SendRequest sendRequest;
+        sendRequest.mpiRequest = mpiRequest;
+        if (dataPointerNeedToBeFreed) sendRequest.data = data;
+        else sendRequest.data = NULL;
+        _sendRequests.push_back(sendRequest);
     }
 
     void MPIMultiNode::sendGhostAgentsInMap(const std::map<int, std::map<std::string, AgentsList>>& agentsByTypeAndNode, const int& subOverlapID)
@@ -906,7 +910,7 @@ if (_printInConsole) std::cout << "[Process # " + std::to_string(getId()) <<  "]
         while (byteIndex < bytesToTransfer)
         {
             int sizeOfCurrentPackage = *((int*) (agentsComplexAttributesArray + byteIndex));
-            
+
             void* currentPackage = malloc(sizeOfCurrentPackage);
             memcpy((char*) currentPackage, agentsComplexAttributesArray + byteIndex, sizeOfCurrentPackage);
             std::string agentID = getAgentIDFromPackage(currentPackage);
@@ -1306,10 +1310,13 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation("[Process # " + 
 
     void MPIMultiNode::clearRequests()
     {
-        for (std::list<MPI_Request*>::const_iterator it = _sendRequests.begin(); it != _sendRequests.end(); ++it)
+        for (std::vector<SendRequest>::const_iterator it = _sendRequests.begin(); it != _sendRequests.end(); ++it)
         {
-            MPI_Request* mpiRequest = *it;
-            MPI_Wait(mpiRequest, MPI_STATUS_IGNORE);
+            MPI_Request mpiRequest = it->mpiRequest;
+            void* data = it->data;
+
+            //MPI_Wait(&mpiRequest, MPI_STATUS_IGNORE);     // This line fails (lost reference¿?).
+            //free(data);       // This line says that the pointer was already freed... :S OK.
         }
     }
 
@@ -1423,9 +1430,9 @@ if (_printInConsole) std::cout << "[Process # " + std::to_string(getId()) + "]\t
             agent->freePackage(agentPackage);
             ++i;
         }
-        sendDataRequestToNode(agentsPackageArray, numberOfAgentsToSend, *agentTypeMPI, neighbourNodeID, eGhostAgents, MPI_COMM_WORLD);
+        sendDataRequestToNode(agentsPackageArray, numberOfAgentsToSend, *agentTypeMPI, neighbourNodeID, eGhostAgents, MPI_COMM_WORLD, true);
         
-        free(agentsPackageArray);
+        //free(agentsPackageArray);
     }
 
     void MPIMultiNode::sendAgentsComplexAttributesPackage(const AgentsList& agentsToSend, const int& neighbourNodeID)
@@ -1454,15 +1461,16 @@ if (_printInConsole) std::cout << "[Process # " + std::to_string(getId()) + "]\t
 
             int sizeOfComplexAttributes;
             void* complexAttributesData = agent->getComplexAttributesDeltaPackage(sizeOfComplexAttributes);
+std::cout << CreateStringStream("[Process # " << getId() << "] MPIMultiNode::sendAgentsComplexAttributesPackage sizeOfComplexAttributes: " << sizeOfComplexAttributes << "\n").str();
             memcpy((char*) agentsComplexAttributesArray + sizeOfAllAgentsComplexAttributes, complexAttributesData, sizeOfComplexAttributes);
             agent->freeComplexAttributesDeltaPackage();
 
             sizeOfAllAgentsComplexAttributes += sizeOfComplexAttributes;
         }
-
+std::cout << CreateStringStream("[Process # " << getId() << "] MPIMultiNode::sendAgentsComplexAttributesPackage sizeOfAllAgentsComplexAttributes: " << sizeOfAllAgentsComplexAttributes << "\n").str();
         sendDataRequestToNode(&sizeOfAllAgentsComplexAttributes, 1, MPI_INT, neighbourNodeID, eGhostAgentsComplexAttributesNumBytes, MPI_COMM_WORLD);
-        sendDataRequestToNode(agentsComplexAttributesArray, sizeOfAllAgentsComplexAttributes, MPI_BYTE, neighbourNodeID, eGhostAgentsComplexAttributes, MPI_COMM_WORLD);
-        free(agentsComplexAttributesArray);
+        sendDataRequestToNode(agentsComplexAttributesArray, sizeOfAllAgentsComplexAttributes, MPI_BYTE, neighbourNodeID, eGhostAgentsComplexAttributes, MPI_COMM_WORLD, true);
+        //free(agentsComplexAttributesArray);
     }
 
     void MPIMultiNode::sendAgentsInMap(const std::map<int, std::map<std::string, AgentsList>>& agentsByTypeAndNode)
@@ -1519,6 +1527,8 @@ if (_printInConsole) std::cout << "[Process # " + std::to_string(getId()) + "]\t
     void MPIMultiNode::updateEnvironmentState()
     {
 if (_printInstrumentation) _schedulerLogs->printInstrumentation("[Process # " + std::to_string(getId()) +  "] MPIMultiNode::updateEnvironmentState() STEP: " + std::to_string(_world->getCurrentStep()) + " ==================================================================================\n");
+
+        MPI_Barrier(_activeProcessesComm);
 
         prepareAgentsAndRastersStateForCurrentStep();
         sendRastersToNeighbours();
@@ -1599,8 +1609,6 @@ if (_printInConsole) std::cout << "[Process # " + std::to_string(getId()) + "]\n
             sendRastersToNeighbours(originalSubOverlapAreaID);
             receiveRasters(originalSubOverlapAreaID);
 
-            //clearRequests(); // Is this really necessary?
-
             initialTime = getWallTime();
             MPI_Barrier(_activeProcessesComm);
             double endTime = getWallTime();
@@ -1615,6 +1623,8 @@ _schedulerLogs->printNodeRastersInDebugFile();
 
 if (_printInConsole) std::cout << "\n";
         }
+
+        //clearRequests();      // HARD METHOD
 
 if (_printInstrumentation) _schedulerLogs->printInstrumentation("\n");
     }
