@@ -1689,9 +1689,9 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(totalSimulationT
         }
     }
 
-    AgentsVector MPIMultiNode::getAgent(const Point2D<int>& position, const std::string& type)
+    AgentsVector MPIMultiNode::getAgent(const Point2D<int>& position, const std::string& type, const int& layer)
     {
-        return _loadBalanceTree->getAgentsInPosition(position, type);
+        return _loadBalanceTree->getAgentsInPosition(position, type, layer);
     }
 
     bool MPIMultiNode::positionBelongsToNode(const Engine::Point2D<int>& position) const

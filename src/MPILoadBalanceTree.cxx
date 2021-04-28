@@ -103,7 +103,7 @@ namespace Engine {
         getPartitionsFromTreeRecursively(_root, partitions);
     }
 
-    AgentsVector MPILoadBalanceTree::getAgentsInPosition(const Point2D<int>& position, const std::string& type) const
+    AgentsVector MPILoadBalanceTree::getAgentsInPosition(const Point2D<int>& position, const std::string& type, const int& layer) const
     {
         AgentsVector result;
 
@@ -111,7 +111,7 @@ namespace Engine {
         for (AgentsMap::const_iterator it = agentsAtPosition.begin(); it != agentsAtPosition.end(); ++it)
         {
             AgentPtr agentPtr = it->second;
-            if (type.compare("all") == 0 or agentPtr->isType(type)) result.push_back(agentPtr);
+            if (agentPtr->getLayer() == layer and (type.compare("all") == 0 or agentPtr->isType(type))) result.push_back(agentPtr);
         }
         return result;
     }

@@ -815,13 +815,14 @@ namespace Engine
             Agent* getAgent(const std::string& id) override;
 
             /**
-             * @brief Get the Agent object
+             * @brief Gets an agents vector fulfilling the specified 'position', 'layer' and 'type'.
              * 
              * @param position const Point2D<int>&
              * @param type const std::string&
+             * @param layer const int&
              * @return AgentsVector 
              */
-            AgentsVector getAgent(const Point2D<int>& position, const std::string& type = "all") override;
+            AgentsVector getAgent(const Point2D<int>& position, const std::string& type = "all", const int& layer = 0) override;
 
             /**
              * @brief Returns true if the 'position' is within this node boundaries (considering outer overlaps). False otherwise.

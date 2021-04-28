@@ -265,7 +265,7 @@ namespace Engine
              * @param type const string&
              * @return AgentsVector 
              */
-            AgentsVector getAgentsInPosition(const Point2D<int>& position, const std::string& type = "all") const;
+            AgentsVector getAgentsInPosition(const Point2D<int>& position, const std::string& type = "all", const int& layer = 0) const;
 
     };
 
