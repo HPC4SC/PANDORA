@@ -16,11 +16,12 @@ if [ $# -lt 1 ]; then
 fi
 
 numberOfAgents="$1"
+numberOfSteps="$2"
 
 modelName="IoTwins"
 experimentID="$SLURM_JOBID"
 numberOfTasks="$SLURM_NTASKS"
-configFileName="config-${numberOfAgents}A-${numberOfTasks}K.xml"
+configFileName="config-${numberOfAgents}A-${numberOfSteps}-${numberOfTasks}K.xml"
 python updateXMLConfigFileOutputPaths.py $modelName $configFileName $experimentID
 
 

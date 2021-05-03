@@ -114,7 +114,7 @@ void Agent::setPosition( const Point2D<int> & position )
 {
     bool firstTime = _position.getX() == -1 and _position.getY() == -1;
 
-    if (firstTime or _position.distanceOctile(position) <= _world->getConfig().getOverlapSize())
+    if (firstTime or _world->getNumTasks() == 1 or _position.distanceOctile(position) <= _world->getConfig().getOverlapSize())
     {
         _position = position;
         if (_discretePosition.getX() == -1 and _discretePosition.getY() == -1)
@@ -122,10 +122,8 @@ void Agent::setPosition( const Point2D<int> & position )
 
         _world->changeAgentInMatrixOfPositions(this);
     }
-    else 
-    {
-        throw Exception("Agent::setPosition() - agent " + _id + " cannot move from (" + std::to_string(_position.getX()) + "," + std::to_string(_position.getY()) + ") to (" + std::to_string(position.getX()) + "," + std::to_string(position.getY()) + "): distance exceeds overlapSize.\n");
-    }
+    else
+        throw Exception("Agent::setPosition() - agent " + _id + " cannot move from (" + std::to_string(_position.getX()) + "," + std::to_string(_position.getY()) + ") to (" + std::to_string(position.getX()) + "," + std::to_string(position.getY()) + "):  overlapSize.\n");
 }
 
 void Agent::setLayer(const int& layer)
