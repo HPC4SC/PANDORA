@@ -49,6 +49,8 @@ protected:
     int _seed;                      //! Seed to be used for the RNG (Statistics class).
     int _overlapSize;               //! [Only for MPI scheduler] Overlap size in number of cells, defined for partition rectangles.
     int _subpartitioningMode;       //! [Only for MPI scheduler] Subpartitioning mode 9 -> 9 subpartitions per node, 4 -> 4 subpartitions per node.
+    bool _unevenPartitioning;       //! [Only for MPI scheduler] States whether the partitioning is performed uneven, i.e. regarding the agents position, or splitting the space evenly into K equal parts of ~1/K area each one. Uneven partitioning mode could be used when a uniform distribution of the agents across the simulation grid is expected. The "autoMode" is expected to be use in these kind of situations.
+
     bool _autoMode;                 //! [Only for MPI scheduler] Says whether the auto rebalancing mode is activated or not.
     bool _initialPartitioning;      //! [Only for MPI scheduler] To perform an initial partitioning or not (used as "false" for models that do not create initial agents and/or having warm-up periods).
     int _rebalancingFreq;           //! [Only for MPI scheduler] Rebalancing frequency check in number of steps. If < 1, then no frequency is stablished.    
@@ -164,6 +166,13 @@ public:
      * @return const int& 
      */
     const int& getSubpartitioningMode() const;
+
+    /**
+     * @brief Returns the _unevenPartitioning member.
+     * 
+     * @return bool
+     */
+    const bool& requiresUnevenPartitioning() const;
 
     /**
      * @brief Gets the _autoMode member.

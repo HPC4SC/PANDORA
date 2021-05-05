@@ -61,6 +61,8 @@ namespace Engine {
         _root->value = Rectangle<int>(_world->getConfig().getSize());
         _root->left = NULL;
         _root->right = NULL;
+
+        _requiresUnevenPartitioning = _world->getConfig().requiresUnevenPartitioning();
     }
 
     void MPILoadBalanceTree::resetTree()
@@ -238,10 +240,16 @@ namespace Engine {
 
         for (int i = treeNode->value.left(); i < treeNode->value.right() + 1; ++i)
         {
-            for (int j = treeNode->value.top(); j < treeNode->value.bottom() + 1; ++j)
-                leftChildTotalWeight += getAgentsWeightFromCell(j, i);
+            if (_requiresUnevenPartitioning)
+            {
+                for (int j = treeNode->value.top(); j < treeNode->value.bottom() + 1; ++j)
+                    leftChildTotalWeight += getAgentsWeightFromCell(j, i);
+            }
 
-            if (leftChildTotalWeight >= totalWeight / 2)
+            bool needToSplit =  (_requiresUnevenPartitioning and leftChildTotalWeight >= totalWeight / 2) or 
+                                (not _requiresUnevenPartitioning and i >= (treeNode->value.left() + (treeNode->value.right() - treeNode->value.left() + 1) / 2));
+
+            if (needToSplit)
             {
                 Rectangle<int> leftRectangle(treeNode->value.left(), treeNode->value.top(), i, treeNode->value.bottom());
                 Rectangle<int> rightRectangle(i + 1, treeNode->value.top(), treeNode->value.right(), treeNode->value.bottom());
@@ -262,10 +270,16 @@ namespace Engine {
 
         for (int i = treeNode->value.top(); i < treeNode->value.bottom() + 1; ++i) 
         {
-            for (int j = treeNode->value.left(); j < treeNode->value.right() + 1; ++j)
-                leftChildTotalWeight += getAgentsWeightFromCell(i, j);
+            if (_requiresUnevenPartitioning)
+            {
+                for (int j = treeNode->value.left(); j < treeNode->value.right() + 1; ++j)
+                    leftChildTotalWeight += getAgentsWeightFromCell(i, j);
+            }
 
-            if (leftChildTotalWeight >= totalWeight / 2)
+            bool needToSplit =  (_requiresUnevenPartitioning and leftChildTotalWeight >= totalWeight / 2) or 
+                                (not _requiresUnevenPartitioning and i >= (treeNode->value.top() + (treeNode->value.bottom() - treeNode->value.top() + 1) / 2));
+
+            if (needToSplit)
             {
                 Rectangle<int> topRectangle(treeNode->value.left(), treeNode->value.top(), treeNode->value.right(), i);
                 Rectangle<int> bottomRectangle(treeNode->value.left(), i + 1, treeNode->value.right(), treeNode->value.bottom());

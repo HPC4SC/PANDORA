@@ -100,6 +100,7 @@ void Config::loadBaseParams( )
 
     _overlapSize = getParamInt("mpi", "overlapSizeMPI");
     _subpartitioningMode = getParamInt("mpi", "subpartitioningMode");
+    _unevenPartitioning = getParamBool("mpi", "unevenPartitioning");
     _autoMode = getParamBool("mpiAutoAdjustment", "autoMode");
     _initialPartitioning = getParamBool("mpiAutoAdjustment", "initialPartitioning");
     _rebalancingFreq = getParamInt("mpiAutoAdjustment", "rebalancingFreq");
@@ -241,6 +242,11 @@ const bool& Config::getPrintInstrumentation() const
 const int& Config::getSubpartitioningMode() const
 {
     return _subpartitioningMode;
+}
+
+const bool& Config::requiresUnevenPartitioning() const
+{
+    return _unevenPartitioning;
 }
 
 const bool& Config::getAutoMode() const
