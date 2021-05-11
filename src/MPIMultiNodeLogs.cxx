@@ -86,7 +86,9 @@ namespace Engine {
         ss << "ownedAreaWithOuterOverlap: " << _schedulerInstance->_nodeSpace.ownedAreaWithOuterOverlap << std::endl;
         for (std::map<int, MPINode*>::const_iterator it = _schedulerInstance->_nodeSpace.neighbours.begin(); it != _schedulerInstance->_nodeSpace.neighbours.end(); ++it)
         {
-            ss << "NeighbourID: " << it->first << "\tCoordinates: " << it->second->ownedArea << std::endl;
+            ss << "NeighbourID: " << it->first << "\townedArea:\t\t\t\t\t\t" << it->second->ownedArea << std::endl;
+            ss << "\t\t\t\townedAreaWithOuterOverlap:\t\t" << it->second->ownedAreaWithOuterOverlap << std::endl;
+            ss << "\t\t\t\townedAreaWithoutInnerOverlap:\t" << it->second->ownedAreaWithoutInnerOverlap << std::endl;
         }
         ss << std::endl;
 

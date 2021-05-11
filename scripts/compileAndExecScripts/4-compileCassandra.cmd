@@ -1,6 +1,6 @@
 #!/bin/bash
 
 
-cd ~/PANDORA/cassandra/
+cd $DEPLOYMENT_PATH/PANDORA/cassandra/
 make
 

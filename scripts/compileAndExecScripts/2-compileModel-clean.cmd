@@ -6,5 +6,5 @@ if [ $# -lt 1 ]; then
   exit 0
 fi
 
-cd ~/PANDORA/examples/"$1"/
+cd $DEPLOYMENT_PATH/PANDORA/examples/"$1"/
 scons -c

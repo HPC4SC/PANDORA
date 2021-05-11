@@ -14,5 +14,5 @@ if [ $3 == "gdbgui=true" ]; then
   gdbguiMode="gdbgui -r"
 fi
 
-cd ~/PANDORA/examples/"$1"/
+cd $DEPLOYMENT_PATH/PANDORA/examples/"$1"/
 $gdbguiMode ./"$1" ./configFiles/"$2"

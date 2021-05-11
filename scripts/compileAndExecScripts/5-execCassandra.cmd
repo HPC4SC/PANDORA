@@ -1,5 +1,5 @@
 #!/bin/bash
 
-cd ~/PANDORA/bin/
+cd $DEPLOYMENT_PATH/PANDORA/bin/
 ./cassandra
 

@@ -396,7 +396,7 @@ public:
      * @return true 
      * @return false 
      */
-    bool checkPosition( const Point2D<int> & newPosition ) const;
+    bool checkPosition(const Point2D<int> & newPosition, const int& layer = 0) const;
 
     /**
      * @brief Gets the name of the raster from its ID (index).

@@ -45,6 +45,8 @@ namespace Engine
             World* _world;                          //! Pointer to the World of the simulation
             int _numPartitions;                     //! Number of tasks in which the simulation should be split.
 
+            bool _requiresUnevenPartitioning;       //! States whether the partitioning depends on the agents position or it splits the simulation grid in equal pieces.
+
             /**
              * @brief Copies deeply the node into a new object which is returned.
              * 
@@ -265,7 +267,7 @@ namespace Engine
              * @param type const string&
              * @return AgentsVector 
              */
-            AgentsVector getAgentsInPosition(const Point2D<int>& position, const std::string& type = "all") const;
+            AgentsVector getAgentsInPosition(const Point2D<int>& position, const std::string& type = "all", const int& layer = 0) const;
 
     };
 

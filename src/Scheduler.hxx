@@ -251,10 +251,11 @@ namespace Engine
          * @brief Get the Agents of the Type "type" in position "position". Must be implemented in child.
          * 
          * @param position Position to check.
+         * @param layer Layer in which agents are retrieved.
          * @param type Type of the selected Agents.
          * @return AgentsVector 
          */
-        virtual AgentsVector getAgent( const Point2D<int> & position, const std::string & type="all" ) = 0;
+        virtual AgentsVector getAgent(const Point2D<int> & position, const std::string & type = "all", const int& layer = 0) = 0;
 
         /**
          * @brief Returns true if the 'position' is within this node boundaries (considering outer overlaps). False otherwise.

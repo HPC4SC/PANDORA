@@ -5,8 +5,8 @@ import re
 def main():
 	if len(sys.argv) < 3:
 		print('ERROR!')
-		print('Usage: python modelName configFileName experimentID')
-		print('Example: python IoTwins config-100A-1K.xml 14926369')
+		print('Usage: python ' + sys.argv[0] + ' modelName configFileName experimentID')
+		print('Example: python ' + sys.argv[0] + ' IoTwins config-100A-500S-1K.xml 14926369')
 		exit()
 
 	modelName = sys.argv[1]
@@ -19,11 +19,13 @@ def main():
 	print(experimentID)
 
 	numberOfAgents = (re.findall(r'-\d+A-', configFileName)[0])[1:-2]
+	numberOfSteps = (re.findall(r'-\d+S-', configFileName)[0])[1:-2]
 
-	homeVariable = os.path.expanduser('~')    # Get $HOME variable
+	deployPath = os.getenv('DEPLOYMENT_PATH')
+	#deployPath = os.path.expanduser('~')    # Get $HOME variable
 
-	configFilePath = homeVariable + '/PANDORA/examples/' + modelName + '/configFiles/config.xml'
-	configFilePathFinal = homeVariable + '/PANDORA/examples/' + modelName + '/configFiles/' + configFileName
+	configFilePath = deployPath + '/PANDORA/examples/' + modelName + '/configFiles/config.xml'
+	configFilePathFinal = deployPath + '/PANDORA/examples/' + modelName + '/configFiles/' + configFileName
 
 	configFile = open(configFilePath, 'r')
 	configFileFinal = open(configFilePathFinal, 'w')
@@ -41,6 +43,9 @@ def main():
 
 			#    <inputData numAgents="100" numCounters="3"/>
 			#    <inputData numAgents="8000" numCounters="3"/>
+
+		elif line.find('numSteps value=') != -1:
+			line = re.sub(r'numSteps value="\d+"', 'numSteps value="' + numberOfSteps + '"', line)
 
 		configFileFinal.write(line)
 

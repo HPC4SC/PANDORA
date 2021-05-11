@@ -248,7 +248,7 @@ namespace Engine
     {
         if (not _scheduler->hasBeenTaggedAsGoToSleep()) 
         {
-            std::cout << CreateStringStream("[Process #" << getId() << "] executing step " << _step << "\n").str();
+            std::cout << CreateStringStream("[Process #" << getId() << "] Executing step " << _step << " (time = " << getWallTime() << ")\n").str();
             step();
         }
     }
@@ -387,7 +387,7 @@ namespace Engine
         _serializeRasters.at( index ) = serialize;
     }
 
-    bool World::checkPosition( const Point2D<int> & newPosition ) const
+    bool World::checkPosition(const Point2D<int> & newPosition, const int& layer) const
     {
         // checking size: if environment is a border of the real world
         int totalWidth = _config->getSize().getWidth();
@@ -403,7 +403,7 @@ namespace Engine
         }
 
         // checking if it is already occupied
-        AgentsVector hosts = _scheduler->getAgent( newPosition );
+        AgentsVector hosts = _scheduler->getAgent(newPosition, "all", layer);
         if ( hosts.size( )==0 )
         {
             return true;

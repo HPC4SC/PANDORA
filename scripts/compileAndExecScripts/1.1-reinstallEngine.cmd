@@ -1,4 +1,4 @@
 #!/bin/bash
 
-cd ~/PANDORA/build/
+cd $DEPLOYMENT_PATH/PANDORA/build/
 make install
