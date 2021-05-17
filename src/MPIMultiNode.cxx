@@ -766,22 +766,29 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
     void MPIMultiNode::randomlyExecuteAgents(AgentsVector& agentsToExecute)
     {
         GeneralState::statistics().shuffleWithinIterators(agentsToExecute.begin(), agentsToExecute.end());
-
+std::cout << CreateStringStream("[Process #" << _world->getId() << "] HEY HOU 1\n").str();    
         #pragma omp parallel for schedule(dynamic) if(_updateKnowledgeInParallel)
         for (int i = 0; i < agentsToExecute.size(); ++i)
         {
             Agent* agent = agentsToExecute[i].get();
+std::cout << CreateStringStream("[Process #" << _world->getId() << "] HEY HOU 2\n").str();    
             agent_updateKnowledge(agent);
+std::cout << CreateStringStream("[Process #" << _world->getId() << "] HEY HOU 3\n").str();    
             agent_selectActions(agent);
+std::cout << CreateStringStream("[Process #" << _world->getId() << "] HEY HOU 4\n").str();    
         }
-
+std::cout << CreateStringStream("[Process #" << _world->getId() << "] HEY HOU 5\n").str();    
         #pragma omp parallel for schedule(dynamic) if(_executeActionsInParallel)
         for (int i = 0; i < agentsToExecute.size(); ++i)
         {
+std::cout << CreateStringStream("[Process #" << _world->getId() << "] HEY HOU 6\n").str();    
             Agent* agent = agentsToExecute[i].get();
             agent_executeActions(agent);
+std::cout << CreateStringStream("[Process #" << _world->getId() << "] HEY HOU 7\n").str();    
             agent_updateState(agent);
+std::cout << CreateStringStream("[Process #" << _world->getId() << "] HEY HOU 8\n").str();    
         }
+std::cout << CreateStringStream("[Process #" << _world->getId() << "] HEY HOU 9\n").str();    
     }
 
     bool MPIMultiNode::hasBeenExecuted(const std::string& agentID) const
@@ -1586,7 +1593,7 @@ _schedulerLogs->printNodeAgentsInDebugFile(true);
 _schedulerLogs->writeInDebugFile(CreateStringStream("RASTERS AT STEP " << _world->getCurrentStep() << "; INNER_MOST EXECUTED:").str());
 _schedulerLogs->printNodeRastersInDebugFile();
 
-if (_printInConsole) std::cout << "\n";
+if (_printInConsole) std::cout << CreateStringStream("\n").str();
         }
 
         for (std::map<int, Rectangle<int>>::const_iterator it = _nodeSpace.innerSubOverlaps.begin(); it != _nodeSpace.innerSubOverlaps.end(); ++it)
@@ -1595,15 +1602,15 @@ if (_printInConsole) std::cout << "\n";
             int originalSubOverlapAreaID = it->first;
 
             executedAgentsInArea.clear();
-if (_printInConsole) std::cout << "[Process # " << getId() << "] " << getWallTime() << " executing agents in suboverlap #" << originalSubOverlapAreaID << "\n";
+if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() << "] " << getWallTime() << " executing agents in suboverlap #" << originalSubOverlapAreaID << "\n").str();
             executeAgentsInSubOverlap(executedAgentsInArea, originalSubOverlapAreaID);
 
-if (_printInConsole) std::cout << "[Process # " << getId() << "] " << getWallTime() << " agents executed -> synchronizing\n";
+if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() << "] " << getWallTime() << " agents executed -> synchronizing\n").str();
             sendGhostAgentsToNeighbours(executedAgentsInArea, originalSubOverlapAreaID, _subpartitioningMode);
             receiveGhostAgentsFromNeighbouringNodes(originalSubOverlapAreaID);
 
-if (_printInConsole) std::cout << "[Process # " << getId() << "] " << getWallTime() << " agents synchronized\n";
-if (_printInConsole) std::cout << "[Process # " << getId() << "]\n";
+if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() << "] " << getWallTime() << " agents synchronized\n").str();
+if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() << "]\n").str();
 
             sendRastersToNeighbours(originalSubOverlapAreaID);
             receiveRasters(originalSubOverlapAreaID);
@@ -1620,7 +1627,7 @@ _schedulerLogs->printNodeAgentsInDebugFile(true);
 _schedulerLogs->writeInDebugFile(CreateStringStream("RASTERS AT STEP " << _world->getCurrentStep() << "; AFTER OVERLAP: " << originalSubOverlapAreaID).str());
 _schedulerLogs->printNodeRastersInDebugFile();
 
-if (_printInConsole) std::cout << "\n";
+if (_printInConsole) std::cout << CreateStringStream("\n").str();
         }
 
         //clearRequests();      // HARD METHOD
