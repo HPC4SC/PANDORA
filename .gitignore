@@ -75,4 +75,5 @@ examples/contact_tracing/contact_tracing
 
 examples/IoTwins
 
+*output.txt
 scripts/mnScripts/MNBatchOutput/
