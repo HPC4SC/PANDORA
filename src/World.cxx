@@ -248,7 +248,7 @@ namespace Engine
     {
         if (not _scheduler->hasBeenTaggedAsGoToSleep()) 
         {
-            std::cout << CreateStringStream("[Process #" << getId() << "] Executing step " << _step << " (time = " << getWallTime() << ")\n").str();
+            std::cout << CreateStringStream("[Process #" << getId() << "] Executing step " << _step << " (time = " << getWallTime() << "). Agents in the simulation (IN THIS NODE): " << _agentsByID.size() << "\n").str();
             step();
         }
     }
@@ -389,33 +389,24 @@ namespace Engine
 
     bool World::checkPosition(const Point2D<int> & newPosition, const int& layer) const
     {
-        // checking size: if environment is a border of the real world
-        int totalWidth = _config->getSize().getWidth();
-        int totalHeight = _config->getSize().getHeight();
-        if (newPosition.getX() < 0 or newPosition.getY() < 0 or newPosition.getX() >= totalWidth or newPosition.getY() >= totalHeight)
-        {
+        if (not _scheduler->getBoundaries().contains(newPosition))
             return false;
-        }
 
-        if ( _allowMultipleAgentsPerCell )
-        {
+        if (_allowMultipleAgentsPerCell)
             return true;
-        }
 
         // checking if it is already occupied
         AgentsVector hosts = _scheduler->getAgent(newPosition, "all", layer);
-        if ( hosts.size( )==0 )
-        {
+        if (hosts.size() == 0)
             return true;
-        }
-        for ( size_t i=0; i<hosts.size( ); i++ )
+
+        for (size_t i = 0; i < hosts.size(); ++i)
         {
-            Agent * agent = hosts.at( i ).get( );
-            if ( agent->exists( ) )
-            {
+            Agent* agent = hosts.at(i).get();
+            if (agent->exists())
                 return false;
-            }
         }
+
         return true;
     }
 
