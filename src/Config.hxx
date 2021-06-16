@@ -56,8 +56,10 @@ protected:
     int _rebalancingFreq;           //! [Only for MPI scheduler] Rebalancing frequency check in number of steps. If < 1, then no frequency is stablished.    
     double _maximumLoadPerNode;     //! [Only for MPI scheduler] Maximum load (in secs.) that a node should support just before partitioning.
     double _maximumPercOfUnbalance; //! [Only for MPI scheduler] Maximum percentage allowed of unbalancing among nodes. From this value on, the space should be rebalanced. If 0, no rebalancing by unbalances are applied at all.
-    // double _loadLowerThreshold;     //! [Only for MPI scheduler] Lower load threshold to determine whether the simulation needs to add MPI processes.
-    // double _loadUpperThreshold;     //! [Only for MPI scheduler] Upper load threshold to determine whether the simulation needs to subtract MPI processes.
+
+    bool _enableCheckpointing;      //! Checkpointing mode saves the state of the simulation (rasters and agents).
+    int _secondsToCP;               //! Second at which the simulation will start to save its current state and finish itself.
+    std::string _fileNameCP;        //! Filename at which the simulation state is saved for checkpointing.
 
     bool _printInConsole;       //! For logging purposes
     bool _printInstrumentation; //! For logging purposes
@@ -209,19 +211,26 @@ public:
      */
     const double& getMaximumPercOfUnbalance() const;
 
-    // /**
-    //  * @brief Gets the _loadLowerThreshold member.
-    //  * 
-    //  * @return const double& 
-    //  */
-    // const double& getLoadLowerThreshold() const;
+    /**
+     * @brief Gets the _enableCheckpointing member.
+     * 
+     * @return bool 
+     */
+    const bool& getEnableCheckpointing() const;
 
-    // /**
-    //  * @brief Gets the _loadUpperThreshold member.
-    //  * 
-    //  * @return const double& 
-    //  */
-    // const double& getLoadUpperThreshold() const;
+    /**
+     * @brief Gets the _secondsToCP member.
+     * 
+     * @return int
+     */
+    const int& getSecondsToCP() const;
+
+    /**
+     * @brief Gets the _fileNameCP member.
+     * 
+     * @return std::string
+     */
+    const std::string& getFileNameCP() const;
 
     /**
      * @brief Get the _numSteps member.

@@ -12,6 +12,7 @@ set( PANDORA_FILES
      MPILoadBalanceTree.cxx
      MPIMultiNodeLogs.cxx
      MPIAutoAdjustment.cxx
+     SaveState.cxx
      RasterLoader.cxx
      RNGNormal.cxx
      RNGUniformInt.cxx

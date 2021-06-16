@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <Agent.hxx>
+#include <SaveState.hxx>
 
 #include <omp.h>
 
@@ -18,7 +19,7 @@ namespace Engine
         int                     _numTasks;      //! Number of MPI tasks executing the simulation
         int                     _numTasksMax;   //! Maximum number of MPI tasks available to execute the simulation.
         Engine::Rectangle<int>  _boundaries;    //! Limits of the simulation space.
-        World                  *_world;         //! Pointer to the World of the simulation
+        World*                  _world;         //! Pointer to the World of the simulation
 
         bool _printInConsole;                   //! For logging purposes
         bool _printInstrumentation;             //! For logging purposes
@@ -28,6 +29,9 @@ namespace Engine
         omp_lock_t _ompLock;                    //! Lock object of OpenMP management
         int _overlapSize;                       //! [Only for MPI scheduler] Overlap size in number of cells, defined for partition rectangles.
         int _subpartitioningMode;               //! [Only for MPI scheduler] Subpartitioning mode 9 = 9 subpartitions per node, 4 = 4 subpartitions per node.
+
+        SaveState* _saveState;                  //! Pointer to instance to the SaveState object.
+        bool _performCheckpoint;                //! Tag to know whether the scheduler has just performed a checkpoint or not. 
 
         /**
          * @brief This method returns a list with the list of agents in euclidean distance radius of position. If include center is false, position is not checked.
@@ -88,7 +92,7 @@ namespace Engine
          * @brief Construct a new Scheduler object created by default.
          * 
          */
-        Scheduler( ) : _id( 0 ), _numTasks(1), _world( 0 ), _updateKnowledgeInParallel(false), _executeActionsInParallel(false) { }
+        Scheduler( ) : _id( 0 ), _numTasks(1), _world( 0 ), _saveState(0), _performCheckpoint(false), _updateKnowledgeInParallel(false), _executeActionsInParallel(false) { }
 
         /**
          * @brief Destroy the Scheduler object
@@ -159,6 +163,26 @@ namespace Engine
          * 
          */
         virtual void checkForRebalancingSpace() = 0;
+
+        /**
+         * @brief Returns true in case the time to perform a checkpoint has arrived.
+         * 
+         * @return bool
+         */
+        virtual bool needToCheckpoint() = 0;
+
+        /**
+         * @brief Performs a checkpoint saving process.
+         * 
+         */
+        virtual void performSaveCheckpointing() = 0;
+
+        /**
+         * @brief Gets whether the MPI process has been tagged as 'finished by checkpointing'.
+         * 
+         * @return bool
+         */
+        virtual bool hasBeenTaggedAsFinishedByCheckpointing() = 0;
 
         /**
          * @brief Responsible for executing the agents and update world. Must be implemented in child.
@@ -264,6 +288,14 @@ namespace Engine
          * @return bool
          */
         virtual bool positionBelongsToNode(const Engine::Point2D<int>& position) const = 0;
+
+        /**
+         * @brief Returns true if the 'position' is within this node boundaries (without considering outer overlaps). False otherwise.
+         * 
+         * @param position const Engine::Point2D<int>&
+         * @return bool
+         */
+        virtual bool positionBelongsToNodeWithoutOverlaps(const Engine::Point2D<int>& position) const = 0;
 
         /**
          * @brief Counts the neighbours of an agent of a concrete type  witith the radius. Must be implemented in child.

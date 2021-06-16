@@ -41,7 +41,7 @@ namespace Engine {
 
     /** INITIALIZATION PUBLIC METHODS **/
 
-    MPIMultiNode::MPIMultiNode() : _initialTime(0.0f), _masterNodeID(0), _goToSleep(false), _justAwaken(false), _justFinished(false), _serializer(*this)
+    MPIMultiNode::MPIMultiNode() : Scheduler(), _initialTime(0.0f), _masterNodeID(0), _goToSleep(false), _justAwaken(false), _justFinished(false), _serializer(*this)
     {
     }
 
@@ -65,6 +65,8 @@ namespace Engine {
         initLogFileNames();
         initLoadBalanceTree();
         initAutoAdjustment();
+
+        initSaveState();
 
         omp_init_lock(&_ompLock);
 
@@ -139,6 +141,12 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation("\n");
     {
         _autoAdjustment = new MPIAutoAdjustment();
         _autoAdjustment->initAutoAdjustment(*this);
+    }
+
+    void MPIMultiNode::initSaveState()
+    {
+        _saveState = new SaveState();
+        _saveState->setWorld(_world);
     }
 
     void MPIMultiNode::stablishInitialBoundaries()
@@ -1545,6 +1553,29 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
         }
     }
 
+    bool MPIMultiNode::needToCheckpoint()
+    {
+std::cout << CreateStringStream("[Process # " << getId() << "] needToCheckpoint(): " << _world->getConfig().getEnableCheckpointing() << "\t" << getWallTime() << "\t" << _world->getConfig().getSecondsToCP() << "\n").str();
+        if (_world->getConfig().getEnableCheckpointing() and getWallTime() >= _world->getConfig().getSecondsToCP())
+        {
+            _performCheckpoint = true;
+            return true;
+        }
+        return false;
+    }
+
+    void MPIMultiNode::performSaveCheckpointing()
+    {
+        _saveState->initCheckpointing();
+        _saveState->saveRastersInCPFile();
+        _saveState->saveAgentsInCPFile();
+    }
+
+    bool MPIMultiNode::hasBeenTaggedAsFinishedByCheckpointing()
+    {
+        return _performCheckpoint;
+    }
+
     std::string toString(int variable)
     {
         std::cout << "variable: " << variable << std::endl;
@@ -1696,6 +1727,11 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(totalSimulationT
     bool MPIMultiNode::positionBelongsToNode(const Engine::Point2D<int>& position) const
     {
         return _nodeSpace.ownedAreaWithOuterOverlap.contains(position);
+    }
+
+    bool MPIMultiNode::positionBelongsToNodeWithoutOverlaps(const Engine::Point2D<int>& position) const
+    {
+        return _nodeSpace.ownedArea.contains(position);
     }
 
     int MPIMultiNode::countNeighbours(Agent* target, const double& radius, const std::string& type)

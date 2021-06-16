@@ -59,10 +59,10 @@ void Serializer::init( World & world )
     std::string resultsDir = _config->getResultsDir();
     std::string resultsFile = _config->getResultsFile();
 
-    // create dir where logs will be stored if it is not already created
+    // create dir where results will be stored if it is not already created
     if ( !resultsDir.empty( ) )
     {
-        boost::filesystem::create_directory( resultsDir );
+        boost::filesystem::create_directories( resultsDir );
     }
 
     // creating base file in a parallel environment

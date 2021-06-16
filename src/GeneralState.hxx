@@ -11,11 +11,12 @@ namespace Engine
     class GeneralState
     {
     private:
-        static GeneralState   * _instance; //! Instance of the GeneralState class.
-        Logger                  _logger; //! Instance of the Logger class.
-        Statistics              _statistics; //! Instance of the Statistics class.
-        RasterLoader            _rasterLoader; //! Instance of the RasterLoader class.
-        ShpLoader               _shpLoader; //! Instance of the ShpLoader class.
+        static GeneralState   * _instance;      //! Instance of the GeneralState class.
+        Logger                  _logger;        //! Instance of the Logger class.
+        Logger                  _loggerCP;      //! Instance of the Logger class for checkpointing.
+        Statistics              _statistics;    //! Instance of the Statistics class.
+        RasterLoader            _rasterLoader;  //! Instance of the RasterLoader class.
+        ShpLoader               _shpLoader;     //! Instance of the ShpLoader class.
 
     protected:
         GeneralState( );
@@ -42,6 +43,16 @@ namespace Engine
         static Logger & logger( )
         {
             return instance( )._logger;
+        }
+
+        /**
+         * @brief Returns the LoggerCP instance.
+         * 
+         * @return Logger& 
+         */
+        static Logger& loggerCP()
+        {
+            return instance()._loggerCP;
         }
 
         /**

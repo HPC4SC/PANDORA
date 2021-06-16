@@ -124,9 +124,19 @@ namespace Engine
         return _agentsByID;
     }
 
-    bool World::needToCreateAgentAtPosition(const Engine::Point2D<int>& position)
+    bool World::needToCreateAgentAtPosition(const Engine::Point2D<int>& position) const
     {
         return _scheduler->positionBelongsToNode(position);
+    }
+
+    bool World::pointBelongsToWorld(const Engine::Point2D<int>& position) const
+    {
+        return _scheduler->positionBelongsToNode(position);
+    }
+
+    bool World::pointStrictlyBelongsToWorld(const Engine::Point2D<int>& position) const
+    {
+        return _scheduler->positionBelongsToNodeWithoutOverlaps(position);
     }
 
     void World::changeAgentInMatrixOfPositions(Agent* agent)
@@ -255,6 +265,12 @@ namespace Engine
 
     void World::engineStep()
     {
+        if (_scheduler->needToCheckpoint())
+        {
+            _scheduler->performSaveCheckpointing();
+            return;
+        }
+
         if (_scheduler->hasBeenTaggedAsGoToSleep()) _scheduler->goToSleep();
         if (_scheduler->hasBeenTaggedAsJustFinished()) return;
         
@@ -279,6 +295,7 @@ namespace Engine
             engineStep();
 
             if (_scheduler->hasBeenTaggedAsJustFinished()) return;
+            if (_scheduler->hasBeenTaggedAsFinishedByCheckpointing()) break;
             
             ++_step;
         }

@@ -3,8 +3,8 @@
 #SBATCH --job-name=IoTwinsTest
 #SBATCH --qos=bsc_case
 #SBATCH --nodes=1
-#SBATCH --ntasks=4
-#SBATCH --cpus-per-task=12
+#SBATCH --ntasks=16
+#SBATCH --cpus-per-task=3
 #SBATCH --time=48:00:00
 #SBATCH --error=./../MNBatchOutput/%j-IoTwins-mpi.err
 #SBATCH --output=./../MNBatchOutput/%j-IoTwins-mpi.out
