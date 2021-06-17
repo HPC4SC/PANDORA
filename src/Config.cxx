@@ -106,12 +106,8 @@ void Config::loadBaseParams( )
     _rebalancingFreq = getParamInt("mpiAutoAdjustment", "rebalancingFreq");
     _maximumLoadPerNode = getParamFloat("mpiAutoAdjustment", "maximumLoadPerNode");
     _maximumPercOfUnbalance = getParamFloat("mpiAutoAdjustment", "maximumPercOfUnbalance");
-    
-    _enableCheckpointing = getParamBool("checkpointing", "enableCheckpointing");
-    _secondsToCP = getParamInt("checkpointing", "secondsToCP");
-    std::string directoryCP = getParamStr("checkpointing", "directoryCP"); 
-    GeneralState::loggerCP( ).setLogsDir( directoryCP );
-    _fileNameCP = getParamStr("checkpointing", "fileNameCP");
+    // _loadLowerThreshold = getParamFloat("mpiAutoAdjustment", "loadLowerThreshold");
+    // _loadUpperThreshold = getParamFloat("mpiAutoAdjustment", "loadUpperThreshold");
 }
 
 void Config::loadFile( )
@@ -278,20 +274,15 @@ const double& Config::getMaximumPercOfUnbalance() const
     return _maximumPercOfUnbalance;
 }
 
-const bool& Config::getEnableCheckpointing() const
-{
-    return _enableCheckpointing;
-}
+// const double& Config::getLoadLowerThreshold() const
+// {
+//     return _loadLowerThreshold;
+// }
 
-const int& Config::getSecondsToCP() const
-{
-    return _secondsToCP;
-}
-
-const std::string& Config::getFileNameCP() const
-{
-    return _fileNameCP;
-}
+// const double& Config::getLoadUpperThreshold() const
+// {
+//     return _loadUpperThreshold;
+// }
 
 } // namespace Engine
 

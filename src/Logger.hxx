@@ -41,7 +41,6 @@
 #endif
 
 #define log_INFO( file, message ) Engine::GeneralState::logger( ).log( file ) << message << std::endl;
-#define log_CP( file, message ) Engine::GeneralState::loggerCP( ).log( file ) << message << std::endl;
 
 #endif // __Logger_hxx__
 

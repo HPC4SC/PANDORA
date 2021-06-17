@@ -72,7 +72,7 @@ void Logger::setLogsDir( const std::string & logsDir )
     _logsDir = logsDir;
     if ( !_logsDir.empty( ) )
     {
-        boost::filesystem::create_directories( _logsDir );
+        boost::filesystem::create_directory( _logsDir );
     }
 }
 

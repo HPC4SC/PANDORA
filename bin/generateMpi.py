@@ -1382,5 +1382,5 @@ def execute(target, source, env):
 
     # fill mpi code registering types and additional methods
     createFactoryMethods(listAgents, str(target[0]), namespaceAgents, listAttributesMaps)
-    print 'MPI code auto-generation DONE!'
+    print 'done!'
     return None

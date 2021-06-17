@@ -172,23 +172,7 @@ public:
      * 
      * @return bool 
      */
-    bool needToCreateAgentAtPosition(const Engine::Point2D<int>& position) const;
-
-    /**
-     * @brief Checks whether 'position' belongs to this whole world.
-     * 
-     * @param position const Engine::Point2D<int>&
-     * @return bool 
-     */
-    bool pointBelongsToWorld(const Engine::Point2D<int>& position) const;
-
-    /**
-     * @brief Checks whether 'position' belongs to this world, excluding the ghost areas (if exists).
-     * 
-     * @param position const Engine::Point2D<int>&
-     * @return bool 
-     */
-    bool pointStrictlyBelongsToWorld(const Engine::Point2D<int>& position) const;
+    bool needToCreateAgentAtPosition(const Engine::Point2D<int>& position);
 
     /**
      * @brief Changes the position of the 'agent' to its current coordinates. 'oldX' and 'oldY' are used to erase it from it previous position. NOTE: It assumes that _agents member already contain 'agent'.

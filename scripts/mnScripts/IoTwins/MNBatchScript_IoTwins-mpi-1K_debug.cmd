@@ -15,10 +15,6 @@ if [ $# -lt 1 ]; then
   exit 0
 fi
 
-if [ ! -d "./../MNBatchOutput/" ]; then
-  mkdir ./../MNBatchOutput/
-fi
-
 numberOfAgents="$1"
 numberOfSteps="$2"
 

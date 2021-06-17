@@ -27,7 +27,6 @@
 #include <MPILoadBalanceTree.hxx>
 #include <MPIMultiNodeLogs.hxx>
 #include <MPIAutoAdjustment.hxx>
-#include <SaveState.hxx>
 #include <Serializer.hxx>
 
 #include <set>
@@ -93,7 +92,6 @@ namespace Engine
 
             double _initialTime;                                            //! Initial running time.
 
-            SaveState* _saveState;                                          //! Instance for the checkpointing process.
             Serializer _serializer;                                         //! Serializer instance.
 
             /** INITIALIZATION PROTECTED METHODS **/
@@ -121,12 +119,6 @@ namespace Engine
              * 
              */
             void initAutoAdjustment();
-
-            /**
-             * @brief Initializes the _saveState instance.
-             * 
-             */
-            void initSaveState();
 
             /**
              * @brief Used just to initially stablish the _boundaries and the _ownedArea members, needed to let the model to first create the agents.
@@ -776,26 +768,6 @@ namespace Engine
             void checkForRebalancingSpace() override;
 
             /**
-             * @brief Returns true in case the time to perform a checkpoint has arrived.
-             * 
-             * @return bool
-             */
-            bool needToCheckpoint() override;
-
-            /**
-             * @brief Performs a checkpointing save process.
-             * 
-             */
-            void performSaveCheckpointing() override;
-
-            /**
-             * @brief Gets whether the MPI process has been tagged as 'finished by checkpointing'.
-             * 
-             * @return bool
-             */
-            bool hasBeenTaggedAsFinishedByCheckpointing() override;
-
-            /**
              * @brief Executes the agents and updates the world.
              * 
              */
@@ -859,14 +831,6 @@ namespace Engine
              * @return bool
              */
             bool positionBelongsToNode(const Engine::Point2D<int>& position) const override;
-
-            /**
-             * @brief Returns true if the 'position' is within this node boundaries (withouth considering outer overlaps). False otherwise.
-             * 
-             * @param position const Engine::Point2D<int>&
-             * @return bool 
-             */
-            bool positionBelongsToNodeWithoutOverlaps(const Engine::Point2D<int>& position) const override;
 
             /**
              * @brief Counts the total number of neighbours for the given parameters.

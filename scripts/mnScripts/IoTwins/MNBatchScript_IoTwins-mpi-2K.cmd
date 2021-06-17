@@ -4,7 +4,7 @@
 #SBATCH --qos=bsc_case
 #SBATCH --nodes=1
 #SBATCH --ntasks=2
-#SBATCH --cpus-per-task=24
+#SBATCH --cpus-per-task=1
 #SBATCH --time=48:00:00
 #SBATCH --error=./../MNBatchOutput/%j-IoTwins-mpi.err
 #SBATCH --output=./../MNBatchOutput/%j-IoTwins-mpi.out
