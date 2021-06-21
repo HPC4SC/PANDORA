@@ -213,5 +213,33 @@ void DynamicRaster::setInitValues( int minValue, int maxValue, int defaultValue 
     }
 }
 
+std::string DynamicRaster::getRasterGeneralInfo() const
+{
+    std::stringstream ss;
+
+    ss << StaticRaster::getRasterGeneralInfo() << "\n";
+    
+    ss << _defaultValue << "|" << _currentMaxValue << "|" << _currentMinValue << "|";
+
+    return ss.str();
+}
+
+std::string DynamicRaster::getRasterMaxValues(const Rectangle<int>& knownBoundaries) const
+{
+    std::stringstream ss;
+    for (int i = 0; i < _maxValues.size(); ++i)
+    {
+        for (int j = 0; j < _maxValues[i].size(); ++j)
+        {
+            Point2D<int> point = Point2D<int>(j, i);
+            if (knownBoundaries.contains(point))
+                ss << _maxValues[i][j] << " ";
+            else ss << "*" << " ";
+        }
+        ss << std::endl;
+    }
+    return ss.str();
+}
+
 } // namespace Engine
 

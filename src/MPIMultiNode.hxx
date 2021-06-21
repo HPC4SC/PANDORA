@@ -989,6 +989,13 @@ namespace Engine
              */
             const int& getOverlap() const;
 
+            /**
+             * @brief Gets the boundaries of this world without considering overlaps (if they exist).
+             * 
+             * @return const Rectangle<int>& 
+             */
+            const Rectangle<int> & getBoundariesWithoutOverlaps( ) const;
+
     };
 
 } // namespace Engine

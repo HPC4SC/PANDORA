@@ -47,50 +47,49 @@ namespace Engine
 
     void SaveState::initCheckpointing()
     {
-        std::string fileNameCP = _world->getConfig().getFileNameCP();
+        _fileNameCP = _world->getConfig().getFileNameCP();
 
-        log_CP(fileNameCP, CreateStringStream("Step finished: " << _world->getCurrentStep() << "\n").str());
-    }
-
-    std::string SaveState::getRasterValues(const DynamicRaster& raster) const
-    {
-        std::stringstream ss;
-        for (int i = 0; i < raster.getSize().getHeight(); ++i)
-        {
-            for (int j = 0; j < raster.getSize().getWidth(); ++j)
-            {
-                Point2D<int> point = Point2D<int>(j, i);
-                if (_world->pointStrictlyBelongsToWorld(point)) 
-                {
-                    if (discrete) ss << raster.getDiscreteValue(point);
-                    else ss << raster.getValue(point);
-                    ss << " ";
-                }
-                else ss << "-" << " ";
-            }
-            ss << std::endl;
-        }
-        return ss.str();
+        log_CP(_fileNameCP, CreateStringStream("Step finished: " << _world->getCurrentStep() << " " << _world->getWallTime()).str());
     }
 
     void SaveState::saveRastersInCPFile()
     {
-        std::string fileNameCP = _world->getConfig().getFileNameCP() + std::to_string(_world->getId());
+        int numberOfRasters = _world->getNumberOfRasters();
+        Rectangle<int> knownBoundaries = _world->getBoundariesWithoutOverlaps();
 
-        for (int i = 0; i < _world->getNumberOfRasters(); ++i)
+        log_CP(_fileNameCP, CreateStringStream(numberOfRasters).str());
+        for (int i = 0; i < numberOfRasters; ++i)
         {
-            DynamicRaster& raster;
-            if (_world->isRasterDynamic(i)) raster = _world->getDynamicRaster(i);
-            else raster = (DynamicRaster&) _world->getStaticRaster(i);
-
-            log_CP(fileNameCP, CreateStringStream("RasterInfo: " << raster.getID() << "," << raster.getName() << "," << raster.getSerialize() << "\n").str());
-            log_CP(fileNameCP, CreateStringStream(getRasterValues << "\n\n").str());
+            if (not _world->isRasterDynamic(i))
+            {
+                StaticRaster& staticRaster = _world->getStaticRaster(i);
+                log_CP(_fileNameCP, CreateStringStream("STATIC").str());
+                log_CP(_fileNameCP, CreateStringStream(staticRaster.getRasterGeneralInfo()).str());
+                log_CP(_fileNameCP, CreateStringStream("\nVALUES:").str());
+                log_CP(_fileNameCP, CreateStringStream(staticRaster.getRasterValues(knownBoundaries)).str());
+            }
+            else
+            {
+                DynamicRaster& dynamicRaster = _world->getDynamicRaster(i);
+                log_CP(_fileNameCP, CreateStringStream("DYNAMIC").str());
+                log_CP(_fileNameCP, CreateStringStream(dynamicRaster.getRasterGeneralInfo()).str());
+                log_CP(_fileNameCP, CreateStringStream("\nVALUES:").str());
+                log_CP(_fileNameCP, CreateStringStream(dynamicRaster.getRasterValues(knownBoundaries)).str());
+                log_CP(_fileNameCP, CreateStringStream("\nMAX VALUES:").str());
+                log_CP(_fileNameCP, CreateStringStream(dynamicRaster.getRasterMaxValues(knownBoundaries)).str());
+            }
+            log_CP(_fileNameCP, CreateStringStream("").str());
         }
     }
 
     void SaveState::saveAgentsInCPFile()
     {
+        for (AgentsMap::const_iterator it = _world->beginAgents(); it != _world->endAgents(); ++it)
+        {
+            AgentPtr agentPtr = it->second;
 
+            log_CP(_fileNameCP, CreateStringStream(agentPtr->encodeAllAttributesInString()).str());
+        }
     }
 
 } // namespace Engine

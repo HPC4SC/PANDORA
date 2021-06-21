@@ -198,12 +198,13 @@ public:
     void changeAgentInMatrixOfPositions(Agent* agent);
 
     /**
-     * @brief Add an agent to the world, and remove it from overlap agents if exist.
+     * @brief Add an agent to the world, and remove it from overlap agents if exist. Returns false if the agent cannot be added to the simulation World for any reason.
      * 
      * @param agent Agent to be added.
      * @param executedAgent True, the Agent has been executed. False otherwise.
+     * @return bool
      */
-    virtual void addAgent( Agent * agent, bool executedAgent = true );
+    virtual bool addAgent( Agent * agent, bool executedAgent = true );
 
     /**
      * @brief Sorts alphabetically the _agents member.
@@ -387,7 +388,7 @@ public:
     StaticRaster & getStaticRaster( const std::string & key );
 
     /**
-     * @brief Create a new static raster map with the stablished size and given key.
+     * @brief Create a new static raster map with the stablished size and given key. It should not contain "|" in its 'key'.
      * 
      * @param key Name of the raster.
      * @param serialize True the raster must be serialized, otherwise the raster must not be serialized.
@@ -550,6 +551,13 @@ public:
      * @return const Rectangle<int>& 
      */
     const Rectangle<int> & getBoundaries( ) const;
+
+    /**
+     * @brief Gets the boundaries of the world, without the overlaps (if they exist).
+     * 
+     * @return const Rectangle<int>& 
+     */
+    const Rectangle<int> & getBoundariesWithoutOverlaps( ) const;
 
     /**
      * @brief Returns the iteratior pointing to the first Agent in the _agents vector.

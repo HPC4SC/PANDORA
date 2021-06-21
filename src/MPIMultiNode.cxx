@@ -1815,4 +1815,9 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(totalSimulationT
         return _overlapSize;
     }
 
+    const Rectangle<int> & MPIMultiNode::getBoundariesWithoutOverlaps( ) const
+    {
+        return _nodeSpace.ownedArea;
+    }
+
 } // namespace Engine

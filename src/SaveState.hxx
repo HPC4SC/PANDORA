@@ -32,6 +32,8 @@ namespace Engine
         
         World* _world;
 
+        std::string _fileNameCP;
+
         public:
 
             /**
@@ -58,14 +60,6 @@ namespace Engine
              * 
              */
             void initCheckpointing();
-
-            /**
-             * @brief Gets the raster values in a std::string format.
-             * 
-             * @param raster 
-             * @return std::string 
-             */
-            std::string getRasterValues(const DynamicRaster& raster) const;
 
             /**
              * @brief Saves dynamic rasters in the checkpoint file stated in _config.

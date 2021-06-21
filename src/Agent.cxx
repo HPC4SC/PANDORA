@@ -269,5 +269,30 @@ void Agent::copyContinuousValuesToDiscreteOnes()
     _discreteHeading = _heading;
 }
 
+std::string Agent::encodeAllAttributesInString() const
+{
+    std::stringstream ss;
+
+    ss <<   _id << "|" << _exists << "|" << _position.getX() << "|" << _position.getY() << "|" << 
+            _layer << "|" << _heading << "|" << _world->getId() << "|";
+
+    for (AttributesList::const_iterator it = _intAttributes.begin(); it != _intAttributes.end(); ++it)
+        ss << *it << " ";
+    ss << "|";
+    for (AttributesList::const_iterator it = _floatAttributes.begin(); it != _floatAttributes.end(); ++it)
+        ss << *it << " ";
+    ss << "|";
+    for (AttributesList::const_iterator it = _stringAttributes.begin(); it != _stringAttributes.end(); ++it)
+        ss << *it << " ";
+    ss << "|";
+
+    return ss.str();
+}
+
+void Agent::decodeAndSetAllAttributesFromString(const std::string& encodedAttributes)
+{
+
+}
+
 } // namespace Engine
 

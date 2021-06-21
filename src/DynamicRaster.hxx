@@ -26,6 +26,7 @@
 #include <Point2D.hxx>
 #include <Size.hxx>
 #include <StaticRaster.hxx>
+#include <Rectangle.hxx>
 
 namespace Engine
 {
@@ -33,6 +34,11 @@ namespace Engine
 //! DynamicRaster adds mechanisms to modify the values of the raster map. It is serialized each time step.
 class DynamicRaster : public StaticRaster
 {
+
+public:
+    
+    friend class RasterLoader;
+
 private:
 
     // Variables for raster creation (MPI mainly)
@@ -169,7 +175,20 @@ public:
      */
     int  getCurrentMaxValue( ) const { return _currentMaxValue; }
 
-    friend class RasterLoader;
+    /**
+     * @brief Gets all the attributes for this raster, excluding the values themselves.
+     * 
+     */
+    std::string getRasterGeneralInfo() const override;
+
+    /**
+     * @brief Gets all the max values inside 'knownBoundaries' for this raster and lets them in std::string format.
+     * 
+     * @param knownBoundaries const Rectangle<int>&
+     * @return std::string 
+     */
+    std::string getRasterMaxValues(const Rectangle<int>& knownBoundaries) const;
+
 };
 
 } // namespace Engine

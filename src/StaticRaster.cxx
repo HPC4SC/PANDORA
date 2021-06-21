@@ -25,6 +25,7 @@
 #include <World.hxx>
 #include <limits>
 #include <iostream>
+#include <string>
 
 namespace Engine
 {
@@ -273,6 +274,36 @@ void StaticRaster::copyContinuousValuesToDiscreteOnes()
             _discreteValues[i][j] = _values[i][j];
         }
     }
+}
+
+std::string StaticRaster::getRasterGeneralInfo() const
+{
+    std::stringstream ss;
+
+    ss <<   _id << "|" << _name << "|" << _serialize << "|" << _fileName << "|" <<
+            _layer << "|" << _minValue << "|" << _maxValue << "|" << _hasColorTable << "|";
+
+    for (int i = 0; i < _colorTable.size(); ++i)
+        ss << _colorTable[i]._r << " " << _colorTable[i]._g << " " << _colorTable[i]._b << " " << _colorTable[i]._alpha << "|";
+
+    return ss.str();
+}
+
+std::string StaticRaster::getRasterValues(const Rectangle<int>& knownBoundaries) const
+{
+    std::stringstream ss;
+    for (int i = 0; i < _values.size(); ++i)
+    {
+        for (int j = 0; j < _values[i].size(); ++j)
+        {
+            Point2D<int> point = Point2D<int>(j, i);
+            if (knownBoundaries.contains(point))
+                ss << _values[i][j] << " ";
+            else ss << "*" << " ";
+        }
+        ss << std::endl;
+    }
+    return ss.str();
 }
 
 } // namespace Engine

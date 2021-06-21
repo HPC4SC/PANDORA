@@ -204,6 +204,13 @@ namespace Engine
         virtual const Rectangle<int> & getBoundaries( ) const { return _boundaries; };
 
         /**
+         * @brief Gets the boundaries of this world without considering overlaps (if they exist).
+         * 
+         * @return const Rectangle<int>& 
+         */
+        virtual const Rectangle<int> & getBoundariesWithoutOverlaps( ) const = 0;
+
+        /**
          * @brief Get a random Point2D within the area owned by this node/scheduler. Must be implemented in child.
          * 
          * @return Point2D<int> 
@@ -216,8 +223,6 @@ namespace Engine
          * @return const int& 
          */
         const int & getId( ) const { return _id; }
-
-
 
         /**
          * @brief Gets _numTasks, will always be 1 unless the execution is distributed in some way.

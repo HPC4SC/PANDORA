@@ -26,6 +26,7 @@
 #include <Point2D.hxx>
 #include <Size.hxx>
 #include <vector>
+#include <Rectangle.hxx>
 
 namespace Engine
 {
@@ -288,6 +289,21 @@ public:
      * 
      */
     void copyContinuousValuesToDiscreteOnes();
+
+    /**
+     * @brief Gets all the attributes for this raster, excluding the values themselves.
+     * 
+     * @return std::string 
+     */
+    virtual std::string getRasterGeneralInfo() const;
+
+    /**
+     * @brief Gets all the values inside 'knownBoundaries' for this raster and lets them in std::string format.
+     * 
+     * @param knownBoundaries const Rectangle<int>&
+     * @return std::string 
+     */
+    std::string getRasterValues(const Rectangle<int>& knownBoundaries) const;
 
 };
 

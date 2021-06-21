@@ -194,8 +194,14 @@ namespace Engine
             _agentsMatrix[newX][newY].erase(agentID);
     }
 
-    void World::addAgent( Agent * agent, bool executedAgent )
+    bool World::addAgent( Agent * agent, bool executedAgent )
     {
+        if (agent->getId().find("|") != std::string::npos) 
+        {
+            std::cout << CreateStringStream("[Process #" << getId() << "] Agent " << agent->getId() << " cannot be added (AgentID contains symbol \"|\"").str();
+            return false;
+        }
+
         agent->setWorld(this);
 
         AgentPtr agentPtr(agent);
@@ -208,6 +214,8 @@ namespace Engine
         std::stringstream logName;
         logName << "simulation_" << getId( );
         log_EDEBUG( logName.str( ), "agent: " << agent << " added at time step: " << getCurrentStep( ) );
+
+        return true;
     }
 
     void World::sortAgentsListAlphabetically()
@@ -374,11 +382,13 @@ namespace Engine
 
     void World::registerStaticRaster( const std::string & key, const bool & serialize, int index )
     {
-        // if no index is provided, add one at the end
-        if ( index==-1 )
+        if (key.find("|") != std::string::npos) 
         {
-            index = _rasters.size( );
+            std::cout << CreateStringStream("World::registerStaticRaster - raster: " << key << " cannot be registered (contains symbol \"|\"").str();
+            return;
         }
+        // if no index is provided, add one at the end
+        if ( index==-1 ) index = _rasters.size( );
 
         if ( _rasters.size( )<=index )
         {
@@ -664,6 +674,11 @@ namespace Engine
     const Rectangle<int> & World::getBoundaries( ) const
     { 
         return _scheduler->getBoundaries( ); 
+    }
+
+    const Rectangle<int> & World::getBoundariesWithoutOverlaps( ) const
+    { 
+        return _scheduler->getBoundariesWithoutOverlaps( ); 
     }
 
     void World::eraseAgent(Agent* agent)

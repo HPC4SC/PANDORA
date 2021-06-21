@@ -436,6 +436,20 @@ namespace Engine
         virtual void copyContinuousValuesToDiscreteOnes() = 0;
 
         /**
+         * @brief Gets all the attributes of the agent in a std::string format. The decodeAndSetAllAttributesFromString() method assumes the same format. Should be overwritten by the subclass at the model.
+         * 
+         * @return std::string 
+         */
+        virtual std::string encodeAllAttributesInString() const;
+
+        /**
+         * @brief Decodes the attributes on 'encodedAttributes', assuming a certain format build in the encodeAllAttributesInString method.
+         * 
+         * @param encodedAttributes const std::string&
+         */
+        void decodeAndSetAllAttributesFromString(const std::string& encodedAttributes);
+
+        /**
          * @brief returns the interator pointing to the begin() position of _stringAttributes.
          * 
          * @return AttributesList::iterator.
