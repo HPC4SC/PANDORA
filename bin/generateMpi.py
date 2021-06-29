@@ -18,7 +18,7 @@ def writeCreateDefaultPackage(f, listAgents):
     f.write('void * MpiFactory::createDefaultPackage( const std::string & type )\n')
     f.write('{\n')
     for i, agent in enumerate(listAgents):
-        f.write('\tif(type.compare("' + agent + '")==0)\n')
+        f.write('\tif (type.compare("' + agent + '") == 0)\n')
         f.write('\t{\n')
         f.write('\t\treturn new ' + agent + 'Package;\n')
         f.write('\t}\n')
@@ -347,8 +347,7 @@ def writeFreeAgentPackage(f, agentName):
     return None
 
 def writeConstructor(f, agentName, parent, attributesMap):
-    f.write(
-        agentName + '::' + agentName + '( void * package ) : ' + parent + '(((' + agentName + 'Package*)package)->_idMpi)\n')
+    f.write(agentName + '::' + agentName + '( void * package ) : ' + parent + '(((' + agentName + 'Package*)package)->_idMpi)\n')
     f.write('{\n')
     f.write('\t' + agentName + 'Package * particularPackage = (' + agentName + 'Package*)package;\n')
     # basic params: _position & _exists
@@ -1061,7 +1060,6 @@ def createMpiCode(agentName, source, headerName, namespace, parent, attributesMa
     print '\t\tcreating mpi file: mpiCode/' + agentName + '_mpi.cxx for agent: ' + agentName + ' in namespace: ' + namespace + ' with parent: ' + parent + ' from source: ' + source + ' and header: ' + headerName
     f = open('mpiCode/' + agentName + '_mpi.cxx', 'w')
     # header
-    f.write('\n')
     f.write('#include "' + agentName + '_mpi.hxx"\n')
     f.write('#include <' + agentName + '.hxx>\n')
     f.write('#include <cstring>\n')

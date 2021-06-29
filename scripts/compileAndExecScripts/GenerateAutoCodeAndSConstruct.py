@@ -5,6 +5,7 @@ pandoraPath = os.getenv('PANDORAPATH')
 sys.path.append(pandoraPath + '/bin')
 
 import generateMpi
+import generateCP
 
 def readParameters(agents, namespaceAgents, world, srcFiles):
 	print 'Reading the parameters file...'
@@ -39,20 +40,23 @@ def readParameters(agents, namespaceAgents, world, srcFiles):
 
 	return None
 
-def generateMpiCode(agents, namespaceAgents):
+def generateMpiAndCheckpointingCode(agents, namespaceAgents):
 	print 'Generating the MPI Code...'
 
 	mpiAgentsSrc = ['mpiCode/FactoryCode.cxx']
+	cpAgentsSrc = ['checkpointingCode/CheckpointingFactoryCode.cxx']
 	agentsSrc = ['main.cxx']
 	for agent in agents:
 		if agent != '':
 			agentsSrc.append(agent + '.cxx')
 			mpiAgentsSrc.append('mpiCode/' + agent + '_mpi.cxx')
+			cpAgentsSrc.append('checkpoingintCode/' + agent + '_checkpointing.cxx')
 
 	env = {}
 	env['namespaces'] = namespaceAgents
 
 	generateMpi.execute(mpiAgentsSrc, agentsSrc, env)
+	generateCP.execute(cpAgentsSrc, agentsSrc, env)
 
 	print 'Done!'
 	print '\n'
@@ -107,7 +111,7 @@ def main(modelName):
 	agents, namespaceAgents, world, srcFiles = [], [], [], []
 
 	readParameters(agents, namespaceAgents, world, srcFiles)
-	generateMpiCode(agents, namespaceAgents)
+	generateMpiAndCheckpointingCode(agents, namespaceAgents)
 	generateSConstruct(agents, namespaceAgents, world[0], srcFiles)
 
 	return None

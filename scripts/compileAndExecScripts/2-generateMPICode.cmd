@@ -6,4 +6,4 @@ if [ $# -lt 1 ]; then
   exit 0
 fi
 
-python GenerateMPICodeAndSConstruct.py "$1" 
+python GenerateAutoCodeAndSConstruct.py "$1" 
