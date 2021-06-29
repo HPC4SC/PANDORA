@@ -39,6 +39,7 @@ namespace Engine
     class MPILoadBalanceTree;
     class MPIMultiNodeLogs;
     class MPIAutoAdjustment;
+    class SaveState;
 
     class MPIMultiNode : public Scheduler
     {
@@ -47,6 +48,7 @@ namespace Engine
 
             friend class MPIMultiNodeLogs;
             friend class MPIAutoAdjustment;
+            friend class SaveState;
 
         protected:
 
@@ -108,7 +110,7 @@ namespace Engine
              * @brief Creates the names of the log files for each of the MPI processes, appending them in the _logFileNames member.
              * 
              */
-            void initLogFileNames();
+            void initLogFilesName();
 
             /**
              * @brief Initializes the _loadBalanceTree instance.
@@ -139,6 +141,13 @@ namespace Engine
              * 
              */
             void registerMPIStructs();
+
+            /**
+             * @brief Loads, if there exist, the checkpoint files at checkpointing/ directory. Returns false if it does not exist or they cannot be loaded.
+             * 
+             * @return bool
+             */
+            bool loadCheckpoint();
 
             /**
              * @brief Calls the creation of the rasters.

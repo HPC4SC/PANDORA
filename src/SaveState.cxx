@@ -32,7 +32,7 @@
 namespace Engine
 {
     
-    SaveState::SaveState() : _world(0)
+    SaveState::SaveState()
     {
     }
 
@@ -40,29 +40,77 @@ namespace Engine
     {
     }
 
-    void SaveState::setWorld(World* world)
+    void SaveState::initCheckpointFileNames(const MPIMultiNode& schedulerInstance)
     {
-        _world = world;
+        _schedulerInstance = &schedulerInstance;
+
+        std::string fileNameCP_base = _schedulerInstance->_world->getConfig().getFileNameCP();
+        _fileNameCP = CreateStringStream(fileNameCP_base << "_" << _schedulerInstance->getId()).str();
     }
 
-    void SaveState::initCheckpointing()
+    void SaveState::saveNodeSpace() const
     {
-        _fileNameCP = _world->getConfig().getFileNameCP();
+        log_CP(_fileNameCP, CreateStringStream(_schedulerInstance->_nodeSpace.ownedAreaWithoutInnerOverlap).str());
+        log_CP(_fileNameCP, CreateStringStream(_schedulerInstance->_nodeSpace.ownedArea).str());
+        log_CP(_fileNameCP, CreateStringStream(_schedulerInstance->_nodeSpace.ownedAreaWithOuterOverlap).str());
+        for (std::map<int, MPINode*>::const_iterator it = _schedulerInstance->_nodeSpace.neighbours.begin(); it != _schedulerInstance->_nodeSpace.neighbours.end(); ++it)
+        {
+            int neighbourID = it->first;
+            MPINode* neighbourNode = it->second;
 
-        log_CP(_fileNameCP, CreateStringStream("Step finished: " << _world->getCurrentStep() << " " << _world->getWallTime()).str());
+            log_CP(_fileNameCP, CreateStringStream(neighbourID).str());
+            log_CP(_fileNameCP, CreateStringStream(neighbourNode->ownedAreaWithoutInnerOverlap).str());
+            log_CP(_fileNameCP, CreateStringStream(neighbourNode->ownedArea).str());
+            log_CP(_fileNameCP, CreateStringStream(neighbourNode->ownedAreaWithOuterOverlap).str());
+        }
+
+        for (std::map<int, Rectangle<int>>::const_iterator it = _schedulerInstance->_nodeSpace.innerSubOverlaps.begin(); it != _schedulerInstance->_nodeSpace.innerSubOverlaps.end(); ++it)
+        {
+            int suboverlapID = it->first;
+            Rectangle<int> suboverlap = it->second;
+
+            log_CP(_fileNameCP, CreateStringStream(suboverlapID << " " << suboverlap).str());
+        }
+
+        for (std::map<int, std::list<int>>::const_iterator it = _schedulerInstance->_nodeSpace.innerSubOverlapsNeighbours.begin(); it != _schedulerInstance->_nodeSpace.innerSubOverlapsNeighbours.end(); ++it)
+        {
+            int suboverlapID = it->first;
+
+            std::stringstream ss;
+            ss << suboverlapID << "|";
+            for (std::list<int>::const_iterator it2 = it->second.begin(); it2 != it->second.end(); ++it2)
+            {
+                int neighbourID = *it2;
+                ss << suboverlapID << " ";
+            }
+            log_CP(_fileNameCP, ss.str());
+        }
+    }
+
+    void SaveState::saveSchedulerAttributes() const
+    {
+        log_CP(_fileNameCP, CreateStringStream( _schedulerInstance->_masterNodeID << " " << _schedulerInstance->_numberOfActiveProcesses << " ").str());
+    }
+
+    void SaveState::startCheckpointing() const
+    {
+        log_CP(_fileNameCP, CreateStringStream("Step finished: " << _schedulerInstance->_world->getCurrentStep() << " (time:" << _schedulerInstance->_world->getWallTime() << ")").str());
+
+        saveNodeSpace();
+        saveSchedulerAttributes();
     }
 
     void SaveState::saveRastersInCPFile()
     {
-        int numberOfRasters = _world->getNumberOfRasters();
-        Rectangle<int> knownBoundaries = _world->getBoundariesWithoutOverlaps();
+        int numberOfRasters = _schedulerInstance->_world->getNumberOfRasters();
+        Rectangle<int> knownBoundaries = _schedulerInstance->_world->getBoundariesWithoutOverlaps();
 
-        log_CP(_fileNameCP, CreateStringStream(numberOfRasters).str());
+        log_CP(_fileNameCP, CreateStringStream("Number_of_rasters:" << numberOfRasters).str());
         for (int i = 0; i < numberOfRasters; ++i)
         {
-            if (not _world->isRasterDynamic(i))
+            if (not _schedulerInstance->_world->isRasterDynamic(i))
             {
-                StaticRaster& staticRaster = _world->getStaticRaster(i);
+                StaticRaster& staticRaster = _schedulerInstance->_world->getStaticRaster(i);
                 log_CP(_fileNameCP, CreateStringStream("STATIC").str());
                 log_CP(_fileNameCP, CreateStringStream(staticRaster.getRasterGeneralInfo()).str());
                 log_CP(_fileNameCP, CreateStringStream("\nVALUES:").str());
@@ -70,7 +118,7 @@ namespace Engine
             }
             else
             {
-                DynamicRaster& dynamicRaster = _world->getDynamicRaster(i);
+                DynamicRaster& dynamicRaster = _schedulerInstance->_world->getDynamicRaster(i);
                 log_CP(_fileNameCP, CreateStringStream("DYNAMIC").str());
                 log_CP(_fileNameCP, CreateStringStream(dynamicRaster.getRasterGeneralInfo()).str());
                 log_CP(_fileNameCP, CreateStringStream("\nVALUES:").str());
@@ -84,7 +132,7 @@ namespace Engine
 
     void SaveState::saveAgentsInCPFile()
     {
-        for (AgentsMap::const_iterator it = _world->beginAgents(); it != _world->endAgents(); ++it)
+        for (AgentsMap::const_iterator it = _schedulerInstance->_world->beginAgents(); it != _schedulerInstance->_world->endAgents(); ++it)
         {
             AgentPtr agentPtr = it->second;
 

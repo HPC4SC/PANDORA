@@ -34,6 +34,8 @@
 
 #include <typedefs_public.hxx>
 
+#include <boost/algorithm/string.hpp>
+
 namespace Engine
 {
 
@@ -291,7 +293,13 @@ std::string Agent::encodeAllAttributesInString() const
 
 void Agent::decodeAndSetAllAttributesFromString(const std::string& encodedAttributes)
 {
+    std::vector<std::string> attributes;
+    boost::split(attributes, encodedAttributes, boost::is_any_of("|"));
 
+    for (int i = 0; i < attributes.size(); ++i)
+    {
+        
+    }
 }
 
 } // namespace Engine

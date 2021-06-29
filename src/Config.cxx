@@ -108,6 +108,7 @@ void Config::loadBaseParams( )
     _maximumPercOfUnbalance = getParamFloat("mpiAutoAdjustment", "maximumPercOfUnbalance");
     
     _enableCheckpointing = getParamBool("checkpointing", "enableCheckpointing");
+    _loadCheckpoint = getParamBool("checkpointing", "loadCheckpoint");
     _secondsToCP = getParamInt("checkpointing", "secondsToCP");
     std::string directoryCP = getParamStr("checkpointing", "directoryCP"); 
     GeneralState::loggerCP( ).setLogsDir( directoryCP );
@@ -281,6 +282,11 @@ const double& Config::getMaximumPercOfUnbalance() const
 const bool& Config::getEnableCheckpointing() const
 {
     return _enableCheckpointing;
+}
+
+const bool& Config::getLoadCheckpoint() const
+{
+    return _loadCheckpoint;
 }
 
 const int& Config::getSecondsToCP() const

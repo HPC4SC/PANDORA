@@ -37,8 +37,8 @@ namespace Engine
 
             const MPIMultiNode* _schedulerInstance;                     //! Instance of the scheduler containing all the variables needed for logging.
 
-            std::map<int, std::string> _logFileNames;                   //! Names of the log files for each of the MPI processes.
-            std::map<int, std::string> _instrumentationLogFileNames;    //! Names of the instrumentation log files.
+            std::string _logFileName;                                   //! Logging file name for this MPI process.
+            std::string _instrumentationLogFileName;                    //! Instrumentation file name for this MPI process.
 
             /**
              * @brief Get the 'raster' string in matrix format for the node calling this function. 'discrete' indicates whether discrete or continuous values are requested.
@@ -68,7 +68,7 @@ namespace Engine
              * 
              * @param schedulerInstance const MPIMultiNode&
              */
-            void initLogFileNames(const MPIMultiNode& schedulerInstance);
+            void initFilesName(const MPIMultiNode& schedulerInstance);
 
             /**
              * @brief Writes 'message' in the corresponding MPI process log file.

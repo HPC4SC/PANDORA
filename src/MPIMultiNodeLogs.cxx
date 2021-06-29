@@ -22,6 +22,7 @@
 #include <MPIMultiNodeLogs.hxx>
 
 #include <Logger.hxx>
+#include <Exception.hxx>
 
 namespace Engine {
 
@@ -35,25 +36,17 @@ namespace Engine {
     {
     }
 
-    void MPIMultiNodeLogs::initLogFileNames(const MPIMultiNode& schedulerInstance)
+    void MPIMultiNodeLogs::initFilesName(const MPIMultiNode& schedulerInstance)
     {
         _schedulerInstance = &schedulerInstance;
 
-        for (int i = 0; i < _schedulerInstance->_numTasks; ++i)
-        {
-            std::stringstream ssMPIProcesses;
-            ssMPIProcesses << "MPIProcess_" << i;
-            _logFileNames[i] = ssMPIProcesses.str();
-
-            std::stringstream ssInstrumentation;
-            ssInstrumentation << "InstrumentationProcess_" << i;
-            _instrumentationLogFileNames[i] = ssInstrumentation.str();
-        }
+        _logFileName = CreateStringStream("MPIProcess_" << _schedulerInstance->getId()).str();
+        _instrumentationLogFileName = CreateStringStream("InstrumentationProcess_" << _schedulerInstance->getId()).str();
     }
 
     void MPIMultiNodeLogs::writeInDebugFile(const std::string& message)
     {
-        log_DEBUG(_logFileNames.at(_schedulerInstance->getId()), message);
+        log_DEBUG(_logFileName, message);
     }
 
     std::string MPIMultiNodeLogs::getString_PartitionsBeforeMPI() const
@@ -204,37 +197,37 @@ namespace Engine {
 
     void MPIMultiNodeLogs::printPartitionsBeforeMPIInDebugFile() const
     {
-        log_DEBUG(_logFileNames.at(_schedulerInstance->getId()), getString_PartitionsBeforeMPI());
+        log_DEBUG(_logFileName, getString_PartitionsBeforeMPI());
     }
 
     void MPIMultiNodeLogs::printOwnNodeStructureInDebugFile() const
     {
-        log_DEBUG(_logFileNames.at(_schedulerInstance->getId()), getString_OwnNodeStructure());
+        log_DEBUG(_logFileName, getString_OwnNodeStructure());
     }
 
     void MPIMultiNodeLogs::printNodeAgentsInDebugFile(const bool& fullDescription) const
     {
-        log_DEBUG(_logFileNames.at(_schedulerInstance->getId()), getString_NodeAgents(fullDescription));
+        log_DEBUG(_logFileName, getString_NodeAgents(fullDescription));
     }
 
     void MPIMultiNodeLogs::printNodeRastersInDebugFile() const
     {
-        log_DEBUG(_logFileNames.at(_schedulerInstance->getId()), getString_NodeRasters(false));
+        log_DEBUG(_logFileName, getString_NodeRasters(false));
     }
 
     void MPIMultiNodeLogs::printNodeRastersDiscreteInDebugFile() const
     {
-        log_DEBUG(_logFileNames.at(_schedulerInstance->getId()), getString_NodeRasters(true));
+        log_DEBUG(_logFileName, getString_NodeRasters(true));
     }
 
     void MPIMultiNodeLogs::printAgentsMatrixInDebugFile(const bool& printAllMatrix) const
     {
-        log_DEBUG(_logFileNames.at(_schedulerInstance->getId()), getString_AgentsMatrix(printAllMatrix));
+        log_DEBUG(_logFileName, getString_AgentsMatrix(printAllMatrix));
     }
 
     void MPIMultiNodeLogs::printInstrumentation(const std::string& message)
     {
-        log_DEBUG(_instrumentationLogFileNames.at(_schedulerInstance->getId()), message);
+        log_DEBUG(_instrumentationLogFileName, message);
     }
 
     /** PROTECTED METHODS **/

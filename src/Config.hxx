@@ -58,6 +58,7 @@ protected:
     double _maximumPercOfUnbalance; //! [Only for MPI scheduler] Maximum percentage allowed of unbalancing among nodes. From this value on, the space should be rebalanced. If 0, no rebalancing by unbalances are applied at all.
 
     bool _enableCheckpointing;      //! Checkpointing mode saves the state of the simulation (rasters and agents).
+    bool _loadCheckpoint;           //! Loads the checkpoint in checkpointing/{_fileNameCP}.
     int _secondsToCP;               //! Second at which the simulation will start to save its current state and finish itself.
     std::string _fileNameCP;        //! Filename at which the simulation state is saved for checkpointing.
 
@@ -217,6 +218,13 @@ public:
      * @return bool 
      */
     const bool& getEnableCheckpointing() const;
+
+    /**
+     * @brief Gets the _loadCheckpoint member.
+     * 
+     * @return bool 
+     */
+    const bool& getLoadCheckpoint() const;
 
     /**
      * @brief Gets the _secondsToCP member.

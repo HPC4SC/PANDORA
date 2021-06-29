@@ -40,15 +40,12 @@ namespace Engine
 {
     World::World( Engine::Config * config, Scheduler * scheduler, const bool & allowMultipleAgentsPerCell ) : _config( config ), _allowMultipleAgentsPerCell( allowMultipleAgentsPerCell ), _step( 0 ), _scheduler( scheduler )
     {
-        if ( config )
-        {
+        if (config)
             config->loadFile( );
-        }
-        // default Scheduler
-        if ( !_scheduler )
-        {
+
+        if (not _scheduler)
             _scheduler = useOpenMPIMultiNode( );
-        }
+
         _scheduler->setWorld( this );
 
         _scheduler->setPrintInConsole(config->getPrintInConsole());
@@ -650,16 +647,6 @@ namespace Engine
     {
         return new MPIMultiNode();
     }
-
-    // Scheduler * World::useSpacePartition( int overlap, bool finalize )
-    // {
-    //     return new SpacePartition( overlap, finalize );
-    // }
-
-    // Scheduler * World::useOpenMPSingleNode( )
-    // {
-    //     return new OpenMPSingleNode( );
-    // }
 
     const int & World::getId( ) const 
     { 

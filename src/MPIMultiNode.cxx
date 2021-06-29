@@ -62,7 +62,7 @@ namespace Engine {
 
         _numTasksMax = _numberOfActiveProcesses = _numTasks;
 
-        initLogFileNames();
+        initLogFilesName();
         initLoadBalanceTree();
         initAutoAdjustment();
 
@@ -80,39 +80,46 @@ namespace Engine {
 
     void MPIMultiNode::initData() 
     {
-        createInitialRasters();
-        createInitialAgents();
+        bool loadAchieved = false;
+        if (_world->getConfig().getLoadCheckpoint())
+            loadAchieved = loadCheckpoint();
 
-        bool distributeFromTheBeginning = _world->getConfig().getInitialPartitioning();
-        if (not distributeFromTheBeginning)
-            _numTasks = 1;
-
-        _loadBalanceTree->setNumberOfPartitions(_numTasks);
-        enableOnlyProcesses(_numTasks);
-
-        MPI_Barrier(MPI_COMM_WORLD);
-
-        if (getId() == _masterNodeID) 
+        if (not loadAchieved)
         {
-            divideSpace();                                  printPartitionsBeforeMPI();
-            sendInitialSpacesToNodes(_masterNodeID);        printOwnNodeStructureAfterMPI();
-        }
-        else 
-        {
+            createInitialRasters();
+            createInitialAgents();
+
+            bool distributeFromTheBeginning = _world->getConfig().getInitialPartitioning();
             if (not distributeFromTheBeginning)
-                _goToSleep = true;
-            else
-                receiveInitialSpacesFromNode(_masterNodeID);    printOwnNodeStructureAfterMPI();
-        }
+                _numTasks = 1;
 
-        if (not _goToSleep)
-        {
-            filterOutNonBelongingAgents();                           printNodeAgents();
-            filterOutNonBelongingRasters();                          printNodeRasters();
+            _loadBalanceTree->setNumberOfPartitions(_numTasks);
+            enableOnlyProcesses(_numTasks);
 
-            stablishBoundaries();
+            MPI_Barrier(MPI_COMM_WORLD);
+
+            if (getId() == _masterNodeID) 
+            {
+                divideSpace();                                  printPartitionsBeforeMPI();
+                sendInitialSpacesToNodes(_masterNodeID);        printOwnNodeStructureAfterMPI();
+            }
+            else 
+            {
+                if (not distributeFromTheBeginning)
+                    _goToSleep = true;
+                else
+                    receiveInitialSpacesFromNode(_masterNodeID);    printOwnNodeStructureAfterMPI();
+            }
+
+            if (not _goToSleep)
+            {
+                filterOutNonBelongingAgents();                           printNodeAgents();
+                filterOutNonBelongingRasters();                          printNodeRasters();
+
+                stablishBoundaries();
 
 if (_printInstrumentation) _schedulerLogs->printInstrumentation("\n");
+            }
         }
     }
 
@@ -124,10 +131,10 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation("\n");
         MPI_Finalize();
     }
 
-    void MPIMultiNode::initLogFileNames()
+    void MPIMultiNode::initLogFilesName()
     {
         _schedulerLogs = new MPIMultiNodeLogs();
-        _schedulerLogs->initLogFileNames(*this);
+        _schedulerLogs->initFilesName(*this);
     }
 
     void MPIMultiNode::initLoadBalanceTree()
@@ -146,7 +153,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation("\n");
     void MPIMultiNode::initSaveState()
     {
         _saveState = new SaveState();
-        _saveState->setWorld(_world);
+        _saveState->initCheckpointFileNames(*this);
     }
 
     void MPIMultiNode::stablishInitialBoundaries()
@@ -167,6 +174,12 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation("\n");
         _positionAndValueDatatype = new MPI_Datatype;
         MPI_Type_contiguous(3, MPI_INT, _positionAndValueDatatype);
         MPI_Type_commit(_positionAndValueDatatype);
+    }
+
+    bool MPIMultiNode::loadCheckpoint()
+    {
+
+        return false;
     }
 
     void MPIMultiNode::createInitialRasters()
@@ -1565,7 +1578,7 @@ std::cout << CreateStringStream("[Process # " << getId() << "] needToCheckpoint(
 
     void MPIMultiNode::performSaveCheckpointing()
     {
-        _saveState->initCheckpointing();
+        _saveState->startCheckpointing();
         _saveState->saveRastersInCPFile();
         _saveState->saveAgentsInCPFile();
     }

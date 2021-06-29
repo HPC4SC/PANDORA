@@ -27,12 +27,14 @@
 namespace Engine
 {
 
+    class MPIMultiNode;
+
     class SaveState
     {
         
-        World* _world;
-
-        std::string _fileNameCP;
+        const MPIMultiNode* _schedulerInstance;     //! Instance of the scheduler containing all the variables needed for checkpointing.
+        
+        std::string _fileNameCP;                    //! Checkpoingint file name for this MPI process.
 
         public:
 
@@ -49,17 +51,29 @@ namespace Engine
             virtual ~SaveState( );
 
             /**
-             * @brief Set the World object
+             * @brief Initializes the checkpointing files in which the processes are going to write.
              * 
-             * @param world 
+             * @param schedulerInstance const MPIMultiNode&
              */
-            void setWorld(World* world);
+            void initCheckpointFileNames(const MPIMultiNode& schedulerInstance);
+
+            /**
+             * @brief Saves the _nodeSpace data structure.
+             * 
+             */
+            void saveNodeSpace() const;
+
+            /**
+             * @brief Saves the scheduler global attributes.
+             * 
+             */
+            void saveSchedulerAttributes() const;
 
             /**
              * @brief Prepares the environement to save the current state of the simulation.
              * 
              */
-            void initCheckpointing();
+            void startCheckpointing() const;
 
             /**
              * @brief Saves dynamic rasters in the checkpoint file stated in _config.

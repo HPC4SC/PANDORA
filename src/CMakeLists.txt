@@ -8,6 +8,7 @@ set( PANDORA_FILES
      IncrementalRaster.cxx
      LoggerBase.cxx
      MpiFactory.cxx
+     CheckpointingFactory.cxx
      MPIMultiNode.cxx
      MPILoadBalanceTree.cxx
      MPIMultiNodeLogs.cxx
