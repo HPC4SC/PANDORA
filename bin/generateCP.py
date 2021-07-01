@@ -192,22 +192,24 @@ def writeEncoder(f, agentName, parent, attributesMap, complexAttributesRelated):
     f.write('\n')
     f.write('\tss << Engine::Agent::encodeAllAttributesInString();\n')
     f.write('\n')
-    f.write('\tss <<\t')
-    i = 1
-    for nameAttribute, typeAttribute in attributesMap.items():
-        if i != 1: f.write('\t\t')
 
-        if typeAttribute == "Engine::Point2D<int>":
-            f.write('\t' + nameAttribute + '.getX() << "," << ' + nameAttribute + '.getY()')
-        else:
-            f.write('\t' + nameAttribute)
-        f.write(' << "|"')
+    if len(attributesMap) > 0:
+        f.write('\tss <<\t')
+        i = 1
+        for nameAttribute, typeAttribute in attributesMap.items():
+            if i != 1: f.write('\t\t')
 
-        if i < len(attributesMap): f.write(' <<\n')
-        i += 1
+            if typeAttribute == "Engine::Point2D<int>":
+                f.write('\t' + nameAttribute + '.getX() << "," << ' + nameAttribute + '.getY()')
+            else:
+                f.write('\t' + nameAttribute)
+            f.write(' << "|"')
 
-    f.write(';\n')
-    f.write('\n')
+            if i < len(attributesMap): f.write(' <<\n')
+            i += 1
+
+        f.write(';\n')
+        f.write('\n')
     
     for variableID, variableName in complexAttributesRelated.complexAttributesOrderMap.items():
         variableShortType = complexAttributesRelated.complexAttributesShortType[variableID]
@@ -219,8 +221,9 @@ def writeEncoder(f, agentName, parent, attributesMap, complexAttributesRelated):
                 f.write('\t\tss << ' + variableName + '[i].getX() << "," << ' + variableName + '[i].getY() << " ";\n')
             else:
                 f.write('\t\tss << ' + variableName + '[i];\n')
-    if (len(complexAttributesRelated.complexAttributesOrderMap) > 0): f.write('\tss << "|";\n')
-    f.write('\n')
+        
+        f.write('\tss << "|";\n')
+        f.write('\n')
 
     f.write('\treturn ss.str();\n')
 
