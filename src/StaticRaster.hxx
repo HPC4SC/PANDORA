@@ -194,6 +194,14 @@ public:
     virtual const int& getDiscreteValue(const Point2D<int>& position) const;
 
     /**
+     * @brief Sets the _values[position.getX()][position.getY()] with the 'value'.
+     * 
+     * @param position const Point2D<int>&
+     * @param value const int&
+     */
+    void setValue(const Point2D<int>& position, const int& value);
+
+    /**
      * @brief Returns size of the raster codifying the horizontal and vertical dimensions in a Size object.
      * 
      * @return Size<int> 
@@ -213,6 +221,20 @@ public:
      * @return const int& 
      */
     const int & getMinValue( ) const;
+
+    /**
+     * @brief Sets the _minValue member.
+     * 
+     * @param minValue const int&
+     */
+    void setMinValue(const int& minValue);
+
+    /**
+     * @brief Sets the _maxValue member.
+     * 
+     * @param maxValue const int&
+     */
+    void setMaxValue(const int& maxValue);
 
     /**
      * @brief Gets the avg value for the 'matrixOfValues' representing a raster.

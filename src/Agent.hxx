@@ -342,6 +342,13 @@ namespace Engine
         virtual std::ostream& print( std::ostream& os ) const;
 
         /**
+         * @brief Gets ALL the attributes of the agent in std::string format.
+         * 
+         * @return std::string
+         */
+        virtual std::string getFullInfo() const;
+
+        /**
          * @brief this function returns true if the type of the agent is the one passed by reference.
          * 
          * @param type type we want to compare with.
@@ -443,12 +450,23 @@ namespace Engine
         virtual std::string encodeAllAttributesInString() const;
 
         /**
-         * @brief Decodes the attributes on 'encodedAttributes', assuming a certain format build in the encodeAllAttributesInString method.
+         * @brief Gets a vector of tokens from 'line' after splitting them according to the 'delimiter'.
          * 
-         * @param encodedAttributes const std::string&
+         * @param line const std::string&
+         * @param delimiter const char&
+         * @return std::vector<std::string> 
          */
-        void decodeAndSetAllAttributesFromString(const std::string& encodedAttributes);
+        std::vector<std::string> getLineTokens(const std::string& line, const char& delimiter) const;
 
+        /**
+         * @brief Fill up this agent attributes based on the 'encodedAgent' stream. Lets the split attributes in 'tokens'. Returns the last used index for 'encodedAgent' when splitting it by '|', i.e. the number of agent base attributes-1 in 'encodedAgent'.
+         * 
+         * @param encodedAgent const std::string&
+         * @param tokens std::vector<std::string>&
+         * @return int
+         */
+        int fillUpBaseAttributesFromEncodedAgent(const std::string& encodedAgent, std::vector<std::string>& tokens);
+        
         /**
          * @brief returns the interator pointing to the begin() position of _stringAttributes.
          * 
@@ -495,7 +513,7 @@ namespace Engine
          * @brief registers the Agent attributes to be serialized.
          * 
          */
-        virtual void registerAttributes( ){ }
+        virtual void registerAttributes( );
 
         /**
          * @brief changes the type of the Agent.

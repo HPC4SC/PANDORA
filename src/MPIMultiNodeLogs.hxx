@@ -97,15 +97,15 @@ namespace Engine
              * @param fullDescription const bool&
              * @return std::string 
              */
-            std::string getString_NodeAgents(const bool& fullDescription) const;
+            std::string getString_NodeAgents(const bool& fullDescription = false) const;
 
             /**
-             * @brief Gets the string representing: the rasters for the current node executing this method.
+             * @brief Gets the string representing: the rasters for the current node executing this method. 'discrete' indicates whether discrete or normal values are requested.
              * 
              * @param discrete const bool&
              * @return std::string 
              */
-            std::string getString_NodeRasters(const bool& discrete) const;
+            std::string getString_NodeRasters(const bool& discrete = false) const;
 
             /**
              * @brief Gets the string representing: the matrix of agents (_agentsMatrix member) for the current node executing this method. If 'printAllMatrix' == false (default) then it just prints the agents within the _nodeSpace.ownedAreaWithOuterOverlaps area of the calling process.

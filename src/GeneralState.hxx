@@ -11,7 +11,7 @@ namespace Engine
     class GeneralState
     {
     private:
-        static GeneralState   * _instance;      //! Instance of the GeneralState class.
+
         Logger                  _logger;        //! Instance of the Logger class.
         Logger                  _loggerCP;      //! Instance of the Logger class for checkpointing.
         Statistics              _statistics;    //! Instance of the Statistics class.
@@ -27,7 +27,7 @@ namespace Engine
          * 
          * @return GeneralState& 
          */
-        static GeneralState & instance( );
+        static GeneralState& instance( );
 
         /**
          * @brief Destroy the GeneralState object.

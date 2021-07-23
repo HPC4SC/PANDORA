@@ -30,12 +30,9 @@ namespace Engine
     class Agent;
 
     class CheckpointingFactory
-    
     {
 
         private:
-            
-            static CheckpointingFactory* _instance;     //! Unique instance of the CheckpointingFactory.
 
             /**
              * @brief Construct a new CheckpointingFactory object.
@@ -48,9 +45,9 @@ namespace Engine
             /**
              * @brief Creates and then returns an instance of CheckpointingFactory if it does not exist yet. Otherwise, the _instance member is returned.
              * 
-             * @return CheckpointingFactory* 
+             * @return CheckpointingFactory&
              */
-            static CheckpointingFactory* instance();
+            static CheckpointingFactory& instance();
 
             /**
              * @brief Destroy the CheckpointingFactory object.

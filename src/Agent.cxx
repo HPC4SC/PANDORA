@@ -203,8 +203,25 @@ bool Agent::hasTheSameAttributes(const Agent& other) const
 }
 
 std::ostream& Agent::print( std::ostream& os ) const {
-    os << "id: " << getId( ) << " pos: " << getPosition( ) << " discrete pos: " << getDiscretePosition() << "\tlayer: " << _layer << " discrete layer: " << _discreteLayer << "\texists: " << exists( );
+    os << "id: " << getId( ) << " pos: " << getPosition( ) << "\tlayer: " << _layer << "\texists: " << exists( );
     return getWorld( ) ? os << " at world: " << getWorld( )->getId( ) : os << " without world";
+}
+
+std::string Agent::getFullInfo() const 
+{
+    std::stringstream ss;
+
+    ss << "id: " << getId( ) << " pos: " << getPosition( ) << " discrete pos: " << getDiscretePosition() << "\tlayer: " << _layer << " discrete layer: " << _discreteLayer << "\theading: " << _heading << " discrete heading: " << _discreteHeading << "\texists: " << exists( );
+    getWorld( ) ? ss << " at world: " << getWorld( )->getId( ) : ss << " without world";
+    ss << "\t\t_intAttributes: ";
+
+    for (AttributesList::const_iterator it = _intAttributes.begin(); it != _intAttributes.end(); ++it) ss << *it << ",";
+    ss << "\t\t_floatAttributes: ";
+    for (AttributesList::const_iterator it = _floatAttributes.begin(); it != _floatAttributes.end(); ++it) ss << *it << ",";
+    ss << "\t\t_stringAttributes: ";
+    for (AttributesList::const_iterator it = _stringAttributes.begin(); it != _stringAttributes.end(); ++it) ss << *it << ",";
+
+    return ss.str();
 }
 
 void Agent::remove( )
@@ -257,6 +274,10 @@ void Agent::setRandomPosition( )
     _world->changeAgentInMatrixOfPositions(this);
 }
 
+void Agent::registerAttributes()
+{
+}
+
 void Agent::changeType( const std::string & type )
 {
     std::string oldType = getType( );
@@ -271,35 +292,44 @@ void Agent::copyContinuousValuesToDiscreteOnes()
     _discreteHeading = _heading;
 }
 
+std::vector<std::string> Agent::getLineTokens(const std::string& line, const char& delimiter) const
+{
+    std::stringstream lineSS(line);
+
+    std::string token;
+    std::vector<std::string> tokens;
+    while (std::getline(lineSS, token, delimiter))
+        tokens.push_back(token);
+
+    return tokens;
+}
+
+int Agent::fillUpBaseAttributesFromEncodedAgent(const std::string& encodedAgent, std::vector<std::string>& tokens)
+{
+    tokens = getLineTokens(encodedAgent, '|');
+
+    int index = 0;
+    _id = tokens[index++];
+    _exists = std::stoi(tokens[index++]);
+
+    int positionX = std::stoi(tokens[index++]);
+    int positionY = std::stoi(tokens[index++]);
+    _position = Point2D<int>(positionX, positionY);
+
+    _layer = std::stoi(tokens[index++]);
+    _heading = std::stoi(tokens[index++]);
+
+    return index - 1;
+}
+
 std::string Agent::encodeAllAttributesInString() const
 {
     std::stringstream ss;
 
     ss <<   _id << "|" << _exists << "|" << _position.getX() << "|" << _position.getY() << "|" << 
-            _layer << "|" << _heading << "|" << _world->getId() << "|";
-
-    for (AttributesList::const_iterator it = _intAttributes.begin(); it != _intAttributes.end(); ++it)
-        ss << *it << " ";
-    ss << "|";
-    for (AttributesList::const_iterator it = _floatAttributes.begin(); it != _floatAttributes.end(); ++it)
-        ss << *it << " ";
-    ss << "|";
-    for (AttributesList::const_iterator it = _stringAttributes.begin(); it != _stringAttributes.end(); ++it)
-        ss << *it << " ";
-    ss << "|";
+            _layer << "|" << _heading << "|";
 
     return ss.str();
-}
-
-void Agent::decodeAndSetAllAttributesFromString(const std::string& encodedAttributes)
-{
-    std::vector<std::string> attributes;
-    boost::split(attributes, encodedAttributes, boost::is_any_of("|"));
-
-    for (int i = 0; i < attributes.size(); ++i)
-    {
-        
-    }
 }
 
 } // namespace Engine

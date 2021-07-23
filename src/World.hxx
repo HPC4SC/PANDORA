@@ -99,12 +99,6 @@ protected:
     void eraseAgentFromMatrixOfPositions(Agent* agent);
 
     /**
-     * @brief Updates the _currentStepOriginalPosition member for all the current agents of *this World.
-     * 
-     */
-    void updateDiscreteStateStructures() const;
-
-    /**
      * @brief Dumps current state of the simulation into the log files. Then applies next simulation step. Can be overriden by the model.
      * 
      */
@@ -817,6 +811,18 @@ public:
      * 
      */
     void worldChanged();
+
+    /**
+     * @brief Updates the _currentStepOriginalPosition member for all the current agents of *this World.
+     * 
+     */
+    void updateDiscreteStateStructures() const;
+
+    /**
+     * @brief Initializes everything that the model needs to run (read input files, fill up data structures, etc).
+     * 
+     */
+    virtual void initializeEspaiBarca(){};
 
 };
 

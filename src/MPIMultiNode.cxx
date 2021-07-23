@@ -76,25 +76,29 @@ namespace Engine {
         _serializer.init(*_world);
 
         MpiFactory::instance()->registerTypes();
+
+        _distributeFromTheBeginning = _world->getConfig().getInitialPartitioning();
+        if (not _distributeFromTheBeginning)
+            _numTasks = 1;
+
+        _loadBalanceTree->setNumberOfPartitions(_numTasks);
+        enableOnlyProcesses(_numTasks);
+        MPI_Barrier(MPI_COMM_WORLD);
     }
 
     void MPIMultiNode::initData() 
     {
-        bool loadAchieved = false;
         if (_world->getConfig().getLoadCheckpoint())
-            loadAchieved = loadCheckpoint();
+        {
+            loadCheckpoint();
+            stablishBoundaries();
+            _world->initializeEspaiBarca();
+        }
 
-        if (not loadAchieved)
+        else
         {
             createInitialRasters();
             createInitialAgents();
-
-            bool distributeFromTheBeginning = _world->getConfig().getInitialPartitioning();
-            if (not distributeFromTheBeginning)
-                _numTasks = 1;
-
-            _loadBalanceTree->setNumberOfPartitions(_numTasks);
-            enableOnlyProcesses(_numTasks);
 
             MPI_Barrier(MPI_COMM_WORLD);
 
@@ -105,7 +109,7 @@ namespace Engine {
             }
             else 
             {
-                if (not distributeFromTheBeginning)
+                if (not _distributeFromTheBeginning)
                     _goToSleep = true;
                 else
                     receiveInitialSpacesFromNode(_masterNodeID);    printOwnNodeStructureAfterMPI();
@@ -176,10 +180,19 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation("\n");
         MPI_Type_commit(_positionAndValueDatatype);
     }
 
-    bool MPIMultiNode::loadCheckpoint()
+    void MPIMultiNode::loadCheckpoint()
     {
+        int numberOfCheckpointingFiles = _saveState->getNumberOfCheckpointingFiles();
+        if (numberOfCheckpointingFiles != _numTasks)
+            throw Engine::Exception(CreateStringStream("[Process #" << getId() << "] NOT ABLE TO LOAD CHECKPOINTING! The number of processes differs from the number of checkpointing files (" << numberOfCheckpointingFiles << ").\n").str());
 
-        return false;
+        else if (_saveState->myFileExists())
+        {
+            _saveState->loadCheckpoint();
+
+// std::cout << CreateStringStream("[Process #" << getId() << "] PRINTING READ NODE INFO...\n" << _schedulerLogs->getString_OwnNodeStructure()).str();
+// std::cout << CreateStringStream("[Process #" << getId() << "] PRINTING READ RASTERS...\n" << _schedulerLogs->getString_NodeAgents(true)).str();
+        }
     }
 
     void MPIMultiNode::createInitialRasters()
@@ -1578,21 +1591,19 @@ std::cout << CreateStringStream("[Process # " << getId() << "] needToCheckpoint(
 
     void MPIMultiNode::performSaveCheckpointing()
     {
+        if (getId() == _masterNodeID)
+            _saveState->cleanCheckpointingDirectory();
+            
         _saveState->startCheckpointing();
         _saveState->saveRastersInCPFile();
         _saveState->saveAgentsInCPFile();
+
+        MPI_Barrier(_activeProcessesComm);
     }
 
     bool MPIMultiNode::hasBeenTaggedAsFinishedByCheckpointing()
     {
         return _performCheckpoint;
-    }
-
-    std::string toString(int variable)
-    {
-        std::cout << "variable: " << variable << std::endl;
-        std::cout << "variable type: " << typeid(variable).name() << std::endl;
-        return std::to_string(variable);
     }
 
     void MPIMultiNode::executeAgents()

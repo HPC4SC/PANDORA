@@ -125,11 +125,62 @@ def includeVirtualMethodsHeaders(agentName, headerName):
     os.rename(headerNameTmp, headerName)
     return None
 
-def writeConstructor(f, agentName, parent, attributesMap):
+def writeConstructor(f, agentName, parent, attributesMap, complexAttributesRelated):
     f.write(agentName + '::' + agentName + '(const std::string& agentID, const std::string& agentEncodedAttributes) : ' + parent + '(agentID)\n')
     f.write('{\n')
+    f.write('\tstd::vector<std::string> tokens;\n')
+    f.write('\tint lastUsedIndex = Engine::Agent::fillUpBaseAttributesFromEncodedAgent(agentEncodedAttributes, tokens);\n')
+    f.write('\n')
+    
+    if len(attributesMap) > 0:
+        for nameAttribute, typeAttribute in attributesMap.items():
+            parserFunction = ''
+            if typeAttribute == "int": parserFunction = "std::stoi"
+            elif typeAttribute == "bool": parserFunction = "std::stoi"
+            elif typeAttribute == "double": parserFunction = "std::stod"
+            elif typeAttribute == "float": parserFunction = "std::stof"
 
+            if typeAttribute == "int" or typeAttribute == "bool" or typeAttribute == "double" or typeAttribute == "float":
+                f.write('\t' + nameAttribute + ' = ' + parserFunction + '(tokens[++lastUsedIndex]);\n')
+            elif typeAttribute == "std::string":
+                f.write('\t' + nameAttribute + ' = tokens[++lastUsedIndex];\n')
+            elif typeAttribute == "Engine::Point2D<int>":
+                f.write('\n')
+                f.write('\tint ' + nameAttribute + 'X = std::stoi(tokens[++lastUsedIndex]);\n')
+                f.write('\tint ' + nameAttribute + 'Y = std::stoi(tokens[++lastUsedIndex]);\n')
+                f.write('\t' + nameAttribute + ' = Engine::Point2D<int>(' + nameAttribute + 'X, ' + nameAttribute + 'Y);\n')
+                f.write('\n')
 
+    f.write('\n')
+
+    for variableID, variableName in complexAttributesRelated.complexAttributesOrderMap.items():
+        variableShortType = complexAttributesRelated.complexAttributesShortType[variableID]
+        typeOfElements = complexAttributesRelated.complexAttributesElementsType[variableID]
+
+        if variableShortType == 'std::vector':
+            f.write('\tstd::vector<std::string> tokens' + variableName + ' = getLineTokens(tokens[++lastUsedIndex], \' \');\n')
+            f.write('\tfor (int i = 0; i < tokens' + variableName + '.size(); ++i)\n')
+            f.write('\t{\n')
+            
+            if typeOfElements == "int": parserFunction = "std::stoi"
+            elif typeOfElements == "bool": parserFunction = "std::stoi"
+            elif typeOfElements == "double": parserFunction = "std::stod"
+            elif typeOfElements == "float": parserFunction = "std::stof"
+
+            if typeOfElements == "int" or typeOfElements == "bool" or typeOfElements == "double" or typeOfElements == "float":
+                f.write('\t\t' + variableName + '.push_back(' + parserFunction + '(tokens' + variableName + '[i]));\n')
+            elif typeOfElements == "std::string":
+                f.write('\t\t' + variableName + '.push_back(tokens' + variableName + '[i]);\n')
+            elif typeOfElements == "Engine::Point2D<int>":
+                f.write('\t\tunsigned int commaPosition = tokens' + variableName + '[i].find_first_of(",");\n')
+                f.write('\t\tint positionSplitX = std::stoi(tokens' + variableName + '[i].substr(0, commaPosition));\n')
+                f.write('\t\tint positionSplitY = std::stoi(tokens' + variableName + '[i].substr(commaPosition + 1, tokens' + variableName + '[i].size() - commaPosition - 1));\n')
+                f.write('\n')
+                f.write('\t\t' + variableName + '.push_back(Engine::Point2D<int>(positionSplitX, positionSplitY));\n')
+                
+            f.write('\t}\n')
+        
+        f.write('\n')
 
     f.write('}\n')
     f.write('\n')
@@ -200,7 +251,7 @@ def writeEncoder(f, agentName, parent, attributesMap, complexAttributesRelated):
             if i != 1: f.write('\t\t')
 
             if typeAttribute == "Engine::Point2D<int>":
-                f.write('\t' + nameAttribute + '.getX() << "," << ' + nameAttribute + '.getY()')
+                f.write('\t' + nameAttribute + '.getX() << "|" << ' + nameAttribute + '.getY()')
             else:
                 f.write('\t' + nameAttribute)
             f.write(' << "|"')
@@ -244,10 +295,9 @@ def createCheckpointingCode(agentName, source, headerName, namespace, parent, at
         f.write('{\n')
         f.write('\n')
 
-    writeConstructor(f, agentName, parent, attributesMap)
-
     if len(complexAttributesRelated.complexAttributesOrderMap) > 0:
         getListOfSetterHeaders(agentName, complexAttributesRelated)
+    writeConstructor(f, agentName, parent, attributesMap, complexAttributesRelated)
     writeEncoder(f, agentName, parent, attributesMap, complexAttributesRelated)
 
     if namespace != "":

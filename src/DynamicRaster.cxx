@@ -213,13 +213,28 @@ void DynamicRaster::setInitValues( int minValue, int maxValue, int defaultValue 
     }
 }
 
+void DynamicRaster::setDefaultValue(const int& defaultValue)
+{
+    _defaultValue = defaultValue;
+}
+
+void DynamicRaster::setCurrentMinValue(const int& currentMinValue)
+{
+    _currentMinValue = currentMinValue;
+}
+
+void DynamicRaster::setCurrentMaxValue(const int& currentMaxValue)
+{
+    _currentMinValue = currentMaxValue;
+}
+
 std::string DynamicRaster::getRasterGeneralInfo() const
 {
     std::stringstream ss;
 
     ss << StaticRaster::getRasterGeneralInfo() << "\n";
     
-    ss << _defaultValue << "|" << _currentMaxValue << "|" << _currentMinValue << "|";
+    ss << _defaultValue << "|" << _currentMinValue << "|" << _currentMaxValue << "|";
 
     return ss.str();
 }

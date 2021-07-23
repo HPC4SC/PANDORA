@@ -23,13 +23,11 @@
 
 namespace Engine
 {
-    CheckpointingFactory* CheckpointingFactory::_instance = 0;
 
-    CheckpointingFactory* CheckpointingFactory::instance( )
+    CheckpointingFactory& CheckpointingFactory::instance( )
     {
-        if (not _instance)
-            _instance = new CheckpointingFactory();
-        return _instance;
+        static CheckpointingFactory instance;
+        return instance;
     }
 
     CheckpointingFactory::CheckpointingFactory( )
@@ -39,7 +37,5 @@ namespace Engine
     CheckpointingFactory::~CheckpointingFactory( )
     {
     }
-
-    
 
 } // namespace Engine

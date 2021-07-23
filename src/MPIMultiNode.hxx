@@ -94,6 +94,7 @@ namespace Engine
             std::vector<Agent*> _agentsToBeRemoved;                         //! Vector or Agents to be removed at the end of the step.
 
             double _initialTime;                                            //! Initial running time.
+            bool _distributeFromTheBeginning;                               //! Flag to indicate whether the agents should be distributed from the beginning or not. In other words, whether only one process should be active at the beginning.
 
             SaveState* _saveState;                                          //! Instance for the checkpointing process.
             Serializer _serializer;                                         //! Serializer instance.
@@ -143,11 +144,11 @@ namespace Engine
             void registerMPIStructs();
 
             /**
-             * @brief Loads, if there exist, the checkpoint files at checkpointing/ directory. Returns false if it does not exist or they cannot be loaded.
+             * @brief Loads, if there exist, the checkpoint files at checkpointing/ directory.
              * 
-             * @return bool
+             * @return void
              */
-            bool loadCheckpoint();
+            void loadCheckpoint();
 
             /**
              * @brief Calls the creation of the rasters.

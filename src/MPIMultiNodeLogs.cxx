@@ -116,7 +116,7 @@ namespace Engine {
             if (agentPtr.get()->exists())
             {
                 if (fullDescription)
-                    ss << agentPtr.get() << std::endl;
+                    ss << agentPtr.get()->getFullInfo() << std::endl;
                 else
                     ss << agentPtr.get()->getId() << ", ";
             }

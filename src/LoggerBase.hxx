@@ -31,9 +31,19 @@ class Logger
 {
 private:
     typedef std::map <std::string, std::ofstream *> FilesMap;
+    typedef std::map <std::string, std::string> FilesNames;
 
-    FilesMap _files; //! Map of different log files.
-    std::string _logsDir; //! Route to the logs directories.
+    FilesMap _files;        //! Map of different log files.
+    std::string _logsDir;   //! Route to the logs directories.
+
+    /**
+     * @brief Gets the relative path for the specified 'key'.
+     * 
+     * @param key const std::string&
+     * @return std::string 
+     */
+    std::string getKeyRelativePath(const std::string& key) const;
+
 public:
     /**
      * @brief Construct a new Logger object.
@@ -50,7 +60,7 @@ public:
     /**
      * @brief Message to file.
      * 
-     * @param fileName Name o fthe log file.
+     * @param fileName Name of the log file.
      * @return std::ofstream& 
      */
     std::ofstream & log( const std::string & fileName );
@@ -61,6 +71,23 @@ public:
      * @param logsDir New logs directory.
      */
     void setLogsDir( const std::string & logsDir );
+
+    /**
+     * @brief Checks whether the file with ID 'key' for exist or not.
+     * 
+     * @param key const std::string&
+     * @return bool 
+     */
+    bool checkFileExistance(const std::string & key) const;
+    
+    /**
+     * @brief Builds the full relative path for the file with ID 'key'.
+     * 
+     * @param key const std::string&
+     * @return std::string
+     */
+    std::string buildFileRelativePath(const std::string& key) const;
+
 };
 
 } // namespace Engine

@@ -60,6 +60,7 @@ protected:
     bool _enableCheckpointing;      //! Checkpointing mode saves the state of the simulation (rasters and agents).
     bool _loadCheckpoint;           //! Loads the checkpoint in checkpointing/{_fileNameCP}.
     int _secondsToCP;               //! Second at which the simulation will start to save its current state and finish itself.
+    std::string _directoryCP;       //! Relative directory in which the file for checkpointing is located.
     std::string _fileNameCP;        //! Filename at which the simulation state is saved for checkpointing.
 
     bool _printInConsole;       //! For logging purposes
@@ -232,6 +233,13 @@ public:
      * @return int
      */
     const int& getSecondsToCP() const;
+
+    /**
+     * @brief Gets the _directoryCP member.
+     * 
+     * @return std::string
+     */
+    const std::string& getDirectoyCP() const;
 
     /**
      * @brief Gets the _fileNameCP member.

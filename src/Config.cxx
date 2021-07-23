@@ -110,8 +110,8 @@ void Config::loadBaseParams( )
     _enableCheckpointing = getParamBool("checkpointing", "enableCheckpointing");
     _loadCheckpoint = getParamBool("checkpointing", "loadCheckpoint");
     _secondsToCP = getParamInt("checkpointing", "secondsToCP");
-    std::string directoryCP = getParamStr("checkpointing", "directoryCP"); 
-    GeneralState::loggerCP( ).setLogsDir( directoryCP );
+    _directoryCP = getParamStr("checkpointing", "directoryCP"); 
+    GeneralState::loggerCP( ).setLogsDir( _directoryCP );
     _fileNameCP = getParamStr("checkpointing", "fileNameCP");
 }
 
@@ -292,6 +292,11 @@ const bool& Config::getLoadCheckpoint() const
 const int& Config::getSecondsToCP() const
 {
     return _secondsToCP;
+}
+
+const std::string& Config::getDirectoyCP() const
+{
+    return _directoryCP;
 }
 
 const std::string& Config::getFileNameCP() const

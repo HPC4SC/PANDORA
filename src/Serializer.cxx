@@ -635,9 +635,7 @@ void Serializer::serializeAgent( Agent * agent, const int & step, int index )
     // addIntAttribute(type, "layer_discrete", agent->getDiscreteLayer());
     // addIntAttribute(type, "heading", agent->getHeading());
     // addIntAttribute(type, "heading_discrete", agent->getDiscreteHeading());
-
     agent->serialize( );
-
     if ( getDataSize( type )>=20000 )
     {
         executeAgentSerialization( type, step );

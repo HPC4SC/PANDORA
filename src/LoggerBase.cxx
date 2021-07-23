@@ -23,7 +23,9 @@
 #include <LoggerBase.hxx>
 
 #include <boost/filesystem.hpp>
+#include <iostream>
 #include <sstream>
+#include <fstream>
 
 namespace Engine
 {
@@ -37,9 +39,19 @@ Logger::~Logger( )
     for ( FilesMap::iterator it=_files.begin( ); it!=_files.end( ); ++it )
     {
          std::ofstream * file = it->second;
-         file->close( );
+         file->close();
          delete file;
     }
+}
+
+std::string Logger::getKeyRelativePath(const std::string& key) const
+{
+    std::stringstream fileName;
+    if (not _logsDir.empty())
+        fileName << _logsDir << "/";
+    fileName << key << ".log";
+
+    return fileName.str();
 }
 
 std::ofstream & Logger::log( const std::string & key )
@@ -49,18 +61,10 @@ std::ofstream & Logger::log( const std::string & key )
     // create a new file if it is closed
     if ( it==_files.end( ) )
     {
-        if ( !_logsDir.empty( ) )
-        {
-            boost::filesystem::create_directory( _logsDir );
-        }
-        std::stringstream fileName;
-        if ( !_logsDir.empty( ) )
-        {
-            fileName<< _logsDir << "/";
-        }
-        fileName << key<< ".log";
-
-        _files.insert( make_pair( key, new std::ofstream( fileName.str( ).c_str( ) ) ));
+        if (not _logsDir.empty())
+            boost::filesystem::create_directory(_logsDir);
+        
+        _files.insert( make_pair( key, new std::ofstream( getKeyRelativePath(key).c_str( ) ) ));
         it = _files.find( key );
     }
     file = it->second;
@@ -74,6 +78,17 @@ void Logger::setLogsDir( const std::string & logsDir )
     {
         boost::filesystem::create_directories( _logsDir );
     }
+}
+
+bool Logger::checkFileExistance(const std::string& key) const
+{
+    std::ifstream file(getKeyRelativePath(key));
+    return file.good();
+}
+
+std::string Logger::buildFileRelativePath(const std::string& key) const
+{
+    return getKeyRelativePath(key);
 }
 
 } // namespace Engine

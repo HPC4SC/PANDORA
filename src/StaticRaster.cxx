@@ -141,6 +141,11 @@ const int& StaticRaster::getDiscreteValue(const Point2D<int>& position) const
     return _discreteValues[position._x][position._y];
 }
 
+void StaticRaster::setValue(const Point2D<int>& position, const int& value)
+{
+    _values[position.getX()][position.getY()] = value;
+}
+
 Size<int> StaticRaster::getSize( ) const
 {
     if ( _values.size( )==0 )
@@ -158,6 +163,16 @@ const int & StaticRaster::getMinValue( ) const
 const int & StaticRaster::getMaxValue( ) const
 {
     return _maxValue;
+}
+
+void StaticRaster::setMinValue(const int& minValue)
+{
+    _minValue = minValue;
+}
+
+void StaticRaster::setMaxValue(const int& maxValue)
+{
+    _maxValue = maxValue;
 }
 
 float StaticRaster::getAvgValueBase(const std::vector<std::vector<int>>& matrixOfValues) const
@@ -281,7 +296,7 @@ std::string StaticRaster::getRasterGeneralInfo() const
     std::stringstream ss;
 
     ss <<   _id << "|" << _name << "|" << _serialize << "|" << _fileName << "|" <<
-            _layer << "|" << _minValue << "|" << _maxValue << "|" << _hasColorTable << "|";
+            _layer << "|" << _minValue << "|" << _maxValue << "|" << _hasColorTable << "|" << _colorTable.size() << "|";
 
     for (int i = 0; i < _colorTable.size(); ++i)
         ss << _colorTable[i]._r << " " << _colorTable[i]._g << " " << _colorTable[i]._b << " " << _colorTable[i]._alpha << "|";

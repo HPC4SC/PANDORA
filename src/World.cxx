@@ -234,7 +234,7 @@ namespace Engine
         for (int i = 0; i < _rasters.size(); ++i)
         {
             StaticRaster* raster = _rasters[i];
-            raster->resizeDiscrete(raster->getSize()); 
+            raster->resizeDiscrete(raster->getSize());
             raster->copyContinuousValuesToDiscreteOnes();
         }
     }
@@ -244,7 +244,6 @@ namespace Engine
         std::stringstream logName;
         logName << "simulation_" << getId( );
         log_INFO( logName.str( ), getWallTime( ) << " executing step: " << _step );
-
         if ( _step%_config->getSerializeResolution( )==0 )
         {
             _scheduler->serializeRasters( _step );

@@ -45,9 +45,9 @@ private:
     int _defaultValue;
 
     // Class variables
-    std::vector< std::vector<int> > _maxValues; //! Matrix of the maximun values of the raster.
-    int    _currentMaxValue; //! Current maximum value of the raster.
-    int    _currentMinValue; //! Current minimum value of the raster.
+    std::vector< std::vector<int> > _maxValues;     //! Matrix of the maximun values of the raster.
+    int _currentMinValue;                           //! Current minimum value of the raster.
+    int _currentMaxValue;                           //! Current maximum value of the raster.
 
 public:
     /**
@@ -133,7 +133,28 @@ public:
      * @param defaultValue Default value of the raster.
      */
     void setInitValues( int minValue, int maxValue, int defaultValue );
-    //! 
+    
+    /**
+     * @brief Sets the _defaultValue member.
+     * 
+     * @param value const int&
+     */
+    void setDefaultValue(const int& defaultValue);
+
+    /**
+     * @brief Sets the _currentMinValue member.
+     * 
+     * @param value const int&
+     */
+    void setCurrentMinValue(const int& currentMinValue);
+
+    /**
+     * @brief Sets the _currentMaxValue member.
+     * 
+     * @param value const int&
+     */
+    void setCurrentMaxValue(const int& currentMaxValue);
+
     /**
      * @brief Sets new value for attribute _maxValue of the raster.
      * 
