@@ -67,6 +67,9 @@ install/
 /.vscode/
 
 
+scripts/compileAndExecScripts/output.txt
+scripts/compileAndExecScripts/output2.txt
+
 examples/sugarScape_escalable/output.txt
 examples/IoTwins/out.txt
 examples/IoTwins/IoTwins

@@ -22,6 +22,8 @@
 #ifndef __CheckpointingFactory_hxx__
 #define __CheckpointingFactory_hxx__
 
+#include <World.hxx>
+
 #include <string>
 #include <map>
 
@@ -63,6 +65,14 @@ namespace Engine
              * @return Agent* 
              */
             Agent* decodeAndFillAgent(const std::string& type, const std::string& encodedAgent);
+
+            /**
+             * @brief Sets the 'world' data whcn loading a checkpoint.
+             * 
+             * @param world World*
+             * @param encodedWorldData const std::string&
+             */
+            void setWorldData(World* world, const std::string& encodedWorldData);
 
     };
 

@@ -40,7 +40,7 @@ def readParameters(agents, namespaceAgents, world, srcFiles):
 
 	return None
 
-def generateMpiAndCheckpointingCode(agents, namespaceAgents):
+def generateMpiAndCheckpointingCode(agents, world, namespaceAgents):
 	print 'Generating the MPI Code...'
 
 	mpiAgentsSrc = ['mpiCode/FactoryCode.cxx']
@@ -56,7 +56,7 @@ def generateMpiAndCheckpointingCode(agents, namespaceAgents):
 	env['namespaces'] = namespaceAgents
 
 	generateMpi.execute(mpiAgentsSrc, agentsSrc, env)
-	generateCP.execute(cpAgentsSrc, agentsSrc, env)
+	generateCP.execute(cpAgentsSrc, agentsSrc, world, env)
 
 	print 'Done!'
 	print '\n'
@@ -111,7 +111,7 @@ def main(modelName):
 	agents, namespaceAgents, world, srcFiles = [], [], [], []
 
 	readParameters(agents, namespaceAgents, world, srcFiles)
-	generateMpiAndCheckpointingCode(agents, namespaceAgents)
+	generateMpiAndCheckpointingCode(agents, world[0], namespaceAgents)
 	generateSConstruct(agents, namespaceAgents, world[0], srcFiles)
 
 	return None

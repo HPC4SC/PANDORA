@@ -92,7 +92,7 @@ namespace Engine {
         {
             loadCheckpoint();
             stablishBoundaries();
-            _world->initializeEspaiBarca();
+            _world->initializeModel();
         }
 
         else
@@ -185,9 +185,9 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation("\n");
         int numberOfCheckpointingFiles = _saveState->getNumberOfCheckpointingFiles();
         if (numberOfCheckpointingFiles != _numTasks)
             throw Engine::Exception(CreateStringStream("[Process #" << getId() << "] NOT ABLE TO LOAD CHECKPOINTING! The number of processes differs from the number of checkpointing files (" << numberOfCheckpointingFiles << ").\n").str());
-
         else if (_saveState->myFileExists())
         {
+std::cout << CreateStringStream("[Process #" << getId() << "] LOADING CHECKPOINT...\n").str();    
             _saveState->loadCheckpoint();
 
 // std::cout << CreateStringStream("[Process #" << getId() << "] PRINTING READ NODE INFO...\n" << _schedulerLogs->getString_OwnNodeStructure()).str();
@@ -813,7 +813,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
         {  
             Agent* agent = agentsToExecute[i].get();
             agent_executeActions(agent);
-            agent_updateState(agent); 
+            agent_updateState(agent);
         }    
     }
 
@@ -956,14 +956,11 @@ if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<
     void MPIMultiNode::receiveGhostAgentsFromNeighbouringNodes(const int& subOverlapID)
     {
         double initialTime = getWallTime();
-
         for (std::map<int, MPINode*>::const_iterator it = _nodeSpace.neighbours.begin(); it != _nodeSpace.neighbours.end(); ++it)
         {
             int sendingNodeID = it->first;
-
             int numberOfAgentTypesToReceive;
             MPI_Recv(&numberOfAgentTypesToReceive, 1, MPI_INT, sendingNodeID, eNumGhostAgentsType, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
             for (int i = 0; i < numberOfAgentTypesToReceive; ++i)
             {
                 int agentTypeID;
@@ -1116,16 +1113,14 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
 
         std::map<int, std::map<std::string, AgentsList>> agentsByTypeAndNode;
         initializeAgentsToSendMap(agentsByTypeAndNode);
-
         for (AgentsVector::const_iterator itAgent = agentsVector.begin(); itAgent != agentsVector.end(); ++itAgent)
         {
             AgentPtr agentPtr = *itAgent;
             Agent* agent = agentPtr.get();
             std::string agentType = agent->getType();
+            std::list<int> neighbouringNodeIDs;
 
-            std::list<int> neighbouringNodeIDs; 
             getNeighboursForAgentAccordingToSubpartitioningMode(neighbouringNodeIDs, originalSubOverlapAreaID, *agent, subpartitioningMode);
-
             for (std::list<int>::const_iterator itNeighbourNodeID = neighbouringNodeIDs.begin(); itNeighbourNodeID != neighbouringNodeIDs.end(); ++itNeighbourNodeID)
             {
                 int neighbourNodeID = *itNeighbourNodeID;
@@ -1139,7 +1134,6 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
 
         double endTime = getWallTime();
 if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStream("[Process # " << getId() << "] MPIMultiNode::sendGhostAgentsToNeighbours() (PREPARATION OF THE DATA) OVERLAP: " << originalSubOverlapAreaID << "\tTOTAL TIME: " << endTime - initialTime).str());
-
         sendGhostAgentsInMap(agentsByTypeAndNode, originalSubOverlapAreaID);
     }
 
@@ -1502,7 +1496,7 @@ if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<
 if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() << "] MPIMultiNode::sendAgentsComplexAttributesPackage sizeOfAllAgentsComplexAttributes: " << sizeOfAllAgentsComplexAttributes << "\n").str();
         sendDataRequestToNode(&sizeOfAllAgentsComplexAttributes, 1, MPI_INT, neighbourNodeID, eGhostAgentsComplexAttributesNumBytes, MPI_COMM_WORLD);
         sendDataRequestToNode(agentsComplexAttributesArray, sizeOfAllAgentsComplexAttributes, MPI_BYTE, neighbourNodeID, eGhostAgentsComplexAttributes, MPI_COMM_WORLD, true);
-        //free(agentsComplexAttributesArray);
+        //free(agentsComplexAttributesArray); ??
     }
 
     void MPIMultiNode::sendAgentsInMap(const std::map<int, std::map<std::string, AgentsList>>& agentsByTypeAndNode)
@@ -1524,7 +1518,6 @@ if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<
                 sendDataRequestToNode(&agentsTypeID, 1, MPI_INT, neighbourNodeID, eGhostAgentsType, MPI_COMM_WORLD);
 
                 sendAgentsPackage(agentsToSend, neighbourNodeID, agentsTypeName);
-
                 sendAgentsComplexAttributesPackage(agentsToSend, neighbourNodeID);
             }
         }
@@ -1657,7 +1650,6 @@ if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<
             receiveGhostAgentsFromNeighbouringNodes(originalSubOverlapAreaID);
 
 if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() << "] " << getWallTime() << " agents synchronized\n").str();
-if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() << "]\n").str();
 
             sendRastersToNeighbours(originalSubOverlapAreaID);
             receiveRasters(originalSubOverlapAreaID);

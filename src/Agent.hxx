@@ -532,6 +532,12 @@ namespace Engine
             return 1;
         }
 
+        /**
+         * @brief Initializes everything that the agent needs to run when it is loaded from a checkpoint.
+         * 
+         */
+        virtual void initializeLoadedAgent(){};
+
     };
 } // namespace Engine
 #endif //__Agent_hxx__

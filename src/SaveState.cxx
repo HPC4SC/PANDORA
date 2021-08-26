@@ -74,6 +74,12 @@ namespace Engine
         return numberOfFiles;
     }
 
+    void SaveState::saveWorldData() const
+    {
+        log_CP(_fileNameCP, CreateStringStream(_schedulerInstance->_world->getCurrentStep() << " (time:" << _schedulerInstance->_world->getWallTime() << ")\n").str());
+        log_CP(_fileNameCP, CreateStringStream(_schedulerInstance->_world->getWorldData() << "\n").str());
+    }
+
     void SaveState::saveNodeSpace() const
     {
         Rectangle<int> ownedAreaWithoutInnerOverlap = _schedulerInstance->_nodeSpace.ownedAreaWithoutInnerOverlap;
@@ -130,7 +136,9 @@ namespace Engine
 
     void SaveState::startCheckpointing() const
     {
-        log_CP(_fileNameCP, CreateStringStream("Step_finished: " << _schedulerInstance->_world->getCurrentStep() << " (time:" << _schedulerInstance->_world->getWallTime() << ")\n").str());
+        log_CP(_fileNameCP, CreateStringStream("Step_finished:\n").str());
+        saveWorldData();
+        log_CP(_fileNameCP, CreateStringStream("END_DATA\n").str());
 
         log_CP(_fileNameCP, CreateStringStream("Node_data:\n").str());
         saveNodeSpace();
@@ -186,19 +194,6 @@ namespace Engine
         return Engine::GeneralState::loggerCP().checkFileExistance(_fileNameCP);
     }
 
-    void SaveState::loadWorldInfo(std::string line)
-    {
-        std::stringstream lineSS(line);
-
-        std::string token;
-        std::vector<std::string> tokens;
-        while (std::getline(lineSS, token, ' '))
-            tokens.push_back(token);
-
-        int currentStep = std::stoi(tokens[1]);
-        _schedulerInstance->_world->setCurrentStep(currentStep + 1);
-    }
-
     std::vector<std::string> SaveState::getLineTokens(const std::string& line, const char& delimiter) const
     {
         std::stringstream lineSS(line);
@@ -209,6 +204,30 @@ namespace Engine
             tokens.push_back(token);
 
         return tokens;
+    }
+
+    void SaveState::loadWorldInfo(std::ifstream& cpFileStream)
+    {
+        int lineCounter = 1;
+
+        std::string line;
+        while (std::getline(cpFileStream, line))
+        {
+//std::cout << CreateStringStream("[Process #" << _schedulerInstance->getId() << "] SaveState::loadWorldInfo " << line << "\n").str();
+            if (line.find("END_DATA") != std::string::npos) break;
+
+            if (lineCounter == 1)
+            {
+                std::vector<std::string> tokens = getLineTokens(line, ' ');
+
+                int currentStep = std::stoi(tokens[0]);
+                _schedulerInstance->_world->setCurrentStep(currentStep + 1);
+            }
+            else if (lineCounter == 2)
+                CheckpointingFactory::instance().setWorldData(_schedulerInstance->_world, line);
+
+            ++lineCounter;
+        }
     }
 
     void SaveState::registerOwnedAreas(MPINode& node, const int& lineCounter, const std::vector<std::string>& tokens)
@@ -494,6 +513,7 @@ namespace Engine
 
             std::string agentType = getAgentType(line);
             Agent* agent = CheckpointingFactory::instance().decodeAndFillAgent(agentType, line);
+            agent->initializeLoadedAgent();            
 
             _schedulerInstance->_world->addAgent(agent);
         }
@@ -510,7 +530,7 @@ namespace Engine
         {
 //std::cout << CreateStringStream("[Process #" << _schedulerInstance->getId() << "] loadCheckpoint::line " << line << "\n").str();
             if (line.find("Step_finished") != std::string::npos)
-                loadWorldInfo(line);
+                loadWorldInfo(cpFileStream);
             else if (line.find("Node_data") != std::string::npos)
                 loadNodeInfo(cpFileStream);
             else if (line.find("Rasters_data") != std::string::npos)

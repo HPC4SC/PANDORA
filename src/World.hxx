@@ -822,7 +822,29 @@ public:
      * @brief Initializes everything that the model needs to run (read input files, fill up data structures, etc).
      * 
      */
-    virtual void initializeEspaiBarca(){};
+    virtual void initializeModel() {};
+
+    /**
+     * @brief Saves the world data. It could be overwritten by the model to save more data.
+     * 
+     */
+    virtual std::string getWorldData() const;
+
+    /**
+     * @brief Sets the loaded checkpoint data of the model's World.
+     * 
+     * @param encodedWorldData const std::string&
+     */
+    virtual void setCheckpointData(const std::string& encodedWorldData) {};
+
+    /**
+     * @brief Gets a vector of tokens from 'line' after splitting them according to the 'delimiter'.
+     * 
+     * @param line const std::string&
+     * @param delimiter const char&
+     * @return std::vector<std::string> 
+     */
+    std::vector<std::string> getLineTokens(const std::string& line, const char& delimiter) const;
 
 };
 

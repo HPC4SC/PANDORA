@@ -60,13 +60,6 @@ namespace Engine
             };
 
             /**
-             * @brief Loads all the world related data.
-             * 
-             * @param line std::string
-             */
-            void loadWorldInfo(std::string line);
-
-            /**
              * @brief Gets a vector of tokens from 'line' after splitting them according to the 'delimiter'.
              * 
              * @param line const std::string&
@@ -74,6 +67,13 @@ namespace Engine
              * @return std::vector<std::string> 
              */
             std::vector<std::string> getLineTokens(const std::string& line, const char& delimiter) const;
+
+            /**
+             * @brief Loads all the world related data.
+             * 
+             * @param cpFileStream std::ifstream&
+             */
+            void loadWorldInfo(std::ifstream& cpFileStream);
 
             /**
              * @brief Registers the owned areas of 'node', considering the 'tokens'. 'lineCounter' is used to know what of the 3 owned areas is in particular.
@@ -202,6 +202,12 @@ namespace Engine
              * @param schedulerInstance MPIMultiNode&
              */
             void initCheckpointFileNames(MPIMultiNode& schedulerInstance);
+
+            /**
+             * @brief Saves the _world (and model subclass) data.
+             * 
+             */
+            void saveWorldData() const;
 
             /**
              * @brief Saves the _nodeSpace data structure.

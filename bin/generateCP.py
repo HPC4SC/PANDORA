@@ -86,10 +86,10 @@ def getAttributesFromClass(className, attributesMap, complexAttributesRelated):
 def includeVirtualMethodsHeaders(agentName, headerName):
     print '\tchecking if header: ' + headerName + ' for agent: ' + agentName + ' defines needed virtual methods...'
     # if this is not defined, we will add the four needed methods
-    fillPackageName = 'encodeAllAttributesInString'
+    encodeAllAttributesName = 'encodeAllAttributesInString'
     f = open(headerName, 'r')
     for line in f:
-        if line.find(fillPackageName) != -1:
+        if line.find(encodeAllAttributesName) != -1:
             print '\tVirtual methods headers at "' + headerName + '" already correct.'
             return
     f.close()
@@ -306,6 +306,126 @@ def createCheckpointingCode(agentName, source, headerName, namespace, parent, at
     f.close()
     return None
 
+def getAttributesFromWorldClass(worldName, worldAttributesMap):
+    headerName = worldName + '.hxx'
+    print '\t\tlooking for attributes of World class: ' + worldName + ' in header: ' + headerName + '...'
+    f = open(headerName, 'r')
+    keyBasic = 'CPBasicAttribute'
+    for line in f:
+        splitLineDoubleSlash = line.split("//")
+        splitLineSlashAsterisk = line.split("/*")
+        if  splitLineDoubleSlash[0].replace(" ", "").replace("\t", "") == "" or \
+            splitLineSlashAsterisk[0].replace(" ", "").replace("\t", "") == "": 
+                continue
+
+        if line.find(keyBasic) != -1:
+            addBasicAttribute(line, worldAttributesMap)
+
+    return None
+
+def writeSetterForModelWorldAttribute(f, nameAttribute, world, typeAttribute):
+    f.write('void ' + world + '::set' + nameAttribute + '(const ' + typeAttribute + '& local' + nameAttribute + ')\n')
+    f.write('{\n')
+    f.write('\t' + nameAttribute + ' = local' + nameAttribute + ';\n')
+    f.write('}\n')
+    f.write('\n')
+    return None
+
+def writeSetCheckpointData(f, world, namespace, worldAttributesMap):
+    f.write('void ' + world + '::setCheckpointData(const std::string& encodedWorldData)\n')
+    f.write('{\n')
+    f.write('\tstd::vector<std::string> tokens = getLineTokens(encodedWorldData, \'|\');\n')
+    f.write('\n')
+    f.write('\tint index = 0;\n')
+    if len(worldAttributesMap) > 0:
+        for nameAttribute, typeAttribute in worldAttributesMap.items():
+            parserFunction = ''
+            if typeAttribute == "int": parserFunction = "std::stoi"
+            elif typeAttribute == "bool": parserFunction = "std::stoi"
+            elif typeAttribute == "double": parserFunction = "std::stod"
+            elif typeAttribute == "float": parserFunction = "std::stof"
+
+            if typeAttribute == "int" or typeAttribute == "bool" or typeAttribute == "double" or typeAttribute == "float":
+                f.write('\t' + nameAttribute + ' = ' + parserFunction + '(tokens[index++]);\n')
+            elif typeAttribute == "std::string":
+                f.write('\t' + nameAttribute + ' = tokens[index++];\n')
+            elif typeAttribute == "Engine::Point2D<int>":
+                f.write('\n')
+                f.write('\tint ' + nameAttribute + 'X = std::stoi(tokens[index++]);\n')
+                f.write('\tint ' + nameAttribute + 'Y = std::stoi(tokens[index++]);\n')
+                f.write('\t' + nameAttribute + ' = Engine::Point2D<int>(' + nameAttribute + 'X, ' + nameAttribute + 'Y);\n')
+                f.write('\n')
+
+    f.write('}\n')
+    f.write('\n')
+    return None
+
+def createWorldCheckpointingCode(world, namespaces, worldAttributesMap):
+    namespace = namespaces[0]
+
+    print '\t\tcreating checkpointing file: checkpointingCode/' + world + '_checkpointing.cxx for World: ' + world + ' in namespace: ' + namespace
+    f = open('checkpointingCode/' + world + '_checkpointing.cxx', 'w')
+    # header
+    f.write('#include <' + world + '.hxx>\n')
+    f.write('#include <Exception.hxx>\n')
+    f.write('#include <iostream>\n')
+    f.write('\n')
+    if namespace != "":
+        f.write('namespace ' + namespace + '\n')
+        f.write('{\n')
+        f.write('\n')
+
+    writeSetCheckpointData(f, world, namespace, worldAttributesMap)
+
+    if namespace != "":
+        f.write('} // namespace ' + namespace + '\n')
+    f.write('\n')
+    f.close()
+    return None
+
+def includeWorldVirtualMethodsHeaders(worldName):
+    headerName = worldName + '.hxx'
+
+    print '\tchecking if header: ' + headerName + ' defines needed virtual methods...'
+    # if this is not defined, we will add the four needed methods
+    setCheckpointDataName = 'setCheckpointData'
+    f = open(headerName, 'r')
+    for line in f:
+        if line.find(setCheckpointDataName) != -1:
+            print '\tVirtual methods headers at "' + headerName + ' already correct.'
+            return
+    f.close()
+
+    print '\t"' + headerName + '" does not contain virtual methods headers, adding them...'
+
+    headerNameTmp = headerName + '_tmp'
+    f = open(headerName, 'r')
+    fTmp = open(headerNameTmp, 'w')
+    
+    insideClass = 0
+    for line in f:
+        if insideClass == 0:
+            if line.find('class') != -1 and line.find(worldName) != -1:
+                print 'accessing agent declaration: ' + worldName
+                insideClass = 1
+            fTmp.write(line)
+        elif line.find('};') != -1:
+            print 'end of World declaration: ' + worldName
+            insideClass = 0
+            fTmp.write('\n')
+            fTmp.write('\t///// Autogenerated code (do not modify): /////\n')
+            fTmp.write('public:\n')
+            fTmp.write('\tvoid setCheckpointData(const std::string& encodedWorldData) override;\n')
+            fTmp.write('\t///////// End of autogenerated code ///////////\n')
+            fTmp.write('\n')
+            fTmp.write(line)
+        else:
+            fTmp.write(line)
+    f.close()
+    fTmp.close()
+    os.rename(headerNameTmp, headerName)
+    return None
+
 def writeCreateDecodePackage(f, listAgents, namespaces):
     f.write('Agent* CheckpointingFactory::decodeAndFillAgent(const std::string& type, const std::string& encodedAgent)\n')
     f.write('{\n')
@@ -322,7 +442,19 @@ def writeCreateDecodePackage(f, listAgents, namespaces):
     f.write('\n')
     return None
 
-def createFactoryMethods(listAgents, factoryFile, namespaces):
+def writeSetWorldData(f, world, namespaces):
+    f.write('void CheckpointingFactory::setWorldData(World* world, const std::string& encodedWorldData)\n')
+    f.write('{\n')
+    
+    worldPointerStr = namespaces[0] + '::' + world + '*'  
+    f.write('\t' + worldPointerStr + ' modelWorld = (' + worldPointerStr + ') world;\n')
+    f.write('\tmodelWorld->setCheckpointData(encodedWorldData);\n')
+
+    f.write('}\n')
+    f.write('\n')
+    return None
+
+def createFactoryMethods(listAgents, world, factoryFile, namespaces):
     f = open(factoryFile, 'w')
     print '\tcreating checkpoiting factory: ' + factoryFile
     # headers
@@ -339,6 +471,7 @@ def createFactoryMethods(listAgents, factoryFile, namespaces):
     f.write('\n')
 
     writeCreateDecodePackage(f, listAgents, namespaces)
+    writeSetWorldData(f, world, namespaces)
 
     # close header & namespace
     f.write('} // namespace Engine\n')
@@ -355,14 +488,14 @@ class ComplexAttributesRelated:
         self.complexAttributesElementsType = {}                  # <int: variableID, str: variableElementsType>
         self.complexAttributesValueInMapType = {}                # <int: variableID, str: valuesInMapType>
 
-def execute(target, source, env):
+def execute(target, agentsSource, world, env):
 
     print 'generating code for checkpointing...'
     listAgents = []
     listAttributesMaps = []
     namespaceAgents = env['namespaces']
-    for i in range(1, len(source)):
-        sourceName = str(source[i])
+    for i in range(1, len(agentsSource)):
+        sourceName = str(agentsSource[i])
         headerName = sourceName.replace(".cxx", ".hxx")
         agentName = sourceName.replace(".cxx", "")
 
@@ -377,7 +510,12 @@ def execute(target, source, env):
         createCheckpointingCode(listAgents[i - 1], sourceName, headerName, namespaceAgents[i - 1], parentName, attributesMap, complexAttributesRelated)
         listAttributesMaps.append(attributesMap)
 
-    createFactoryMethods(listAgents, str(target[0]), namespaceAgents)
+    worldAttributesMap = {}
+    getAttributesFromWorldClass(world, worldAttributesMap)
+    includeWorldVirtualMethodsHeaders(world)
+    createWorldCheckpointingCode(world, namespaceAgents, worldAttributesMap)
+
+    createFactoryMethods(listAgents, world, str(target[0]), namespaceAgents)
 
     print 'Checkpointing code auto-generation DONE!'
     return None

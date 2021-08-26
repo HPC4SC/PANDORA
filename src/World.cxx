@@ -723,5 +723,22 @@ namespace Engine
         _scheduler->resumeParallelization();
     }
 
+    std::string World::getWorldData() const
+    {
+        return "";
+    }
+
+    std::vector<std::string> World::getLineTokens(const std::string& line, const char& delimiter) const
+    {
+        std::stringstream lineSS(line);
+
+        std::string token;
+        std::vector<std::string> tokens;
+        while (std::getline(lineSS, token, delimiter))
+            tokens.push_back(token);
+
+        return tokens;
+    }
+
 } // namespace Engine
 
