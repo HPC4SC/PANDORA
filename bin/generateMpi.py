@@ -1056,7 +1056,16 @@ def writeCopyContinuousValuesToDiscreteOnes(f, agentName, attributesMap, complex
     f.write('\n')
     return None
 
-def createMpiCode(agentName, source, headerName, namespace, parent, attributesMap, complexAttributesRelated):
+def writeInitializeCPOrMPIAgent(f, agentName, ownClassAttributesMap):
+    f.write('void ' + agentName + '::initializeCPOrMPIAgent()\n')
+    f.write('{\n')
+    for key in ownClassAttributesMap:
+        f.write('\t' + key + ' = 0;\n')
+    f.write('}\n')
+    f.write('\n')
+    return None
+
+def createMpiCode(agentName, source, headerName, namespace, parent, attributesMap, complexAttributesRelated, ownClassAttributesMap):
     print '\t\tcreating mpi file: mpiCode/' + agentName + '_mpi.cxx for agent: ' + agentName + ' in namespace: ' + namespace + ' with parent: ' + parent + ' from source: ' + source + ' and header: ' + headerName
     f = open('mpiCode/' + agentName + '_mpi.cxx', 'w')
     # header
@@ -1091,6 +1100,7 @@ def createMpiCode(agentName, source, headerName, namespace, parent, attributesMa
     writeApplyComplexAttributesDeltaPackage(f, agentName, complexAttributesRelated)
     writeFreeComplexAttributeDeltaPackage(f, agentName, complexAttributesRelated)
     writeCopyContinuousValuesToDiscreteOnes(f, agentName, attributesMap, complexAttributesRelated)
+    writeInitializeCPOrMPIAgent(f, agentName, ownClassAttributesMap)
 
     if namespace != "":
         f.write('} // namespace ' + namespace + '\n')
@@ -1147,12 +1157,33 @@ def addComplexAttribute(line, complexAttributesRelated):
 
     return None
 
-def getAttributesFromClass(className, attributesMap, complexAttributesRelated):
+def addOwnClassAttribute(line, ownClassAttributesMap):
+    pointer = False
+    if line.find('*'):
+        pointer = True
+        line = line.replace("*", "")
+
+    splitLine = line.split()
+
+    # 1st word will be the type of the attribute
+    typeAttribute = splitLine[0]
+    if pointer: typeAttribute = typeAttribute + '*'
+
+    # 2nd word will be the name, removing final ';'
+    variableName = splitLine[1]
+    variableName = variableName.strip(';')
+
+    ownClassAttributesMap[variableName] = typeAttribute
+    print '\t\t\tattribute detected: ' + variableName + ' with type: ' + typeAttribute
+    return None
+
+def getAttributesFromClass(className, attributesMap, complexAttributesRelated, ownClassAttributesMap):
     headerName = className + '.hxx'
     print '\t\tlooking for attributes of class: ' + className + ' in header: ' + headerName + '...'
     f = open(headerName, 'r')
     keyBasic = 'MpiBasicAttribute'
     keyComplex = 'MpiComplexAttribute'
+    keyOwnClass = 'MpiOwnClassAttribute'
     for line in f:
         splitLineDoubleSlash = line.split("//")
         splitLineSlashAsterisk = line.split("/*")
@@ -1164,6 +1195,8 @@ def getAttributesFromClass(className, attributesMap, complexAttributesRelated):
             addBasicAttribute(line, attributesMap)
         elif line.find(keyComplex) != -1:
             addComplexAttribute(line, complexAttributesRelated)
+        elif line.find(keyOwnClass) != -1:
+            addOwnClassAttribute(line, ownClassAttributesMap)
         # parse base class, it must inherit from Agent
         elif line.find('class') != -1 and line.find(className) != -1 and line.find('public') != -1:
             splittedLine = line.rsplit()
@@ -1217,6 +1250,7 @@ def includeVirtualMethodsHeaders(agentName, headerName, parentName):
             fTmp.write('\tvoid applyComplexAttributesDeltaPackage(void* package) override;\n')
             fTmp.write('\tvoid freeComplexAttributesDeltaPackage() override;\n')
             fTmp.write('\tvoid copyContinuousValuesToDiscreteOnes() override;\n')
+            fTmp.write('\tvoid initializeCPOrMPIAgent() override;\n')
             fTmp.write('\n')
             fTmp.write('\t' + agentName + '(const std::string& agentID, const std::string& agentEncodedAttributes);\n')
             fTmp.write('\tstd::string encodeAllAttributesInString() const override;\n')
@@ -1365,10 +1399,10 @@ def execute(target, source, env):
 
         listAgents += [agentName]
 
-        attributesMap = {}
+        attributesMap, ownClassAttributesMap = {}, {}
         complexAttributesRelated = ComplexAttributesRelated()
 
-        parentName = getAttributesFromClass(listAgents[i - 1], attributesMap, complexAttributesRelated)
+        parentName = getAttributesFromClass(listAgents[i - 1], attributesMap, complexAttributesRelated, ownClassAttributesMap)
         checkIfAttributesHasChanged(agentName, headerName, attributesMap, complexAttributesRelated)
         includeVirtualMethodsHeaders(agentName, headerName, parentName)
         includeDiscreteVariables(agentName, headerName, attributesMap, complexAttributesRelated)
@@ -1378,7 +1412,7 @@ def execute(target, source, env):
         if not os.path.exists('mpiCode/'): os.makedirs('mpiCode/')
         createMpiHeader(listAgents[i - 1], sourceName, headerName, attributesMap)
         # create a source code defining package-class copy
-        createMpiCode(listAgents[i - 1], sourceName, headerName, namespaceAgents[i - 1], parentName, attributesMap, complexAttributesRelated)
+        createMpiCode(listAgents[i - 1], sourceName, headerName, namespaceAgents[i - 1], parentName, attributesMap, complexAttributesRelated, ownClassAttributesMap)
         listAttributesMaps.append(attributesMap)
 
     # fill mpi code registering types and additional methods

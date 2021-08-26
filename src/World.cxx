@@ -199,6 +199,7 @@ namespace Engine
             return false;
         }
 
+        agent->initializeCPOrMPIAgent();
         agent->setWorld(this);
 
         AgentPtr agentPtr(agent);

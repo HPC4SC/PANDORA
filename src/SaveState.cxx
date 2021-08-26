@@ -513,7 +513,6 @@ namespace Engine
 
             std::string agentType = getAgentType(line);
             Agent* agent = CheckpointingFactory::instance().decodeAndFillAgent(agentType, line);
-            agent->initializeLoadedAgent();            
 
             _schedulerInstance->_world->addAgent(agent);
         }

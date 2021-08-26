@@ -536,7 +536,7 @@ namespace Engine
          * @brief Initializes everything that the agent needs to run when it is loaded from a checkpoint.
          * 
          */
-        virtual void initializeLoadedAgent(){};
+        virtual void initializeCPOrMPIAgent(){};
 
     };
 } // namespace Engine
