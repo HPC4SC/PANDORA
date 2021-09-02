@@ -149,7 +149,6 @@ namespace Engine
     void SaveState::saveRastersInCPFile()
     {
         int numberOfRasters = _schedulerInstance->_world->getNumberOfRasters();
-        Rectangle<int> knownBoundaries = _schedulerInstance->_world->getBoundaries();
 
         log_CP(_fileNameCP, CreateStringStream("Rasters_data:\n").str());
         log_CP(_fileNameCP, CreateStringStream("Number_of_rasters: " << numberOfRasters << "\n").str());
@@ -157,14 +156,18 @@ namespace Engine
         {
             if (not _schedulerInstance->_world->isRasterDynamic(i))
             {
+                Rectangle<int> wholeBoundaries = Rectangle<int>(_schedulerInstance->_world->getConfig().getSize());
+
                 StaticRaster& staticRaster = _schedulerInstance->_world->getStaticRaster(i);
                 log_CP(_fileNameCP, CreateStringStream("STATIC\n").str());
                 log_CP(_fileNameCP, CreateStringStream(staticRaster.getRasterGeneralInfo() << "\n").str());
                 log_CP(_fileNameCP, CreateStringStream("VALUES: " << staticRaster.getSize().getWidth() << " " << staticRaster.getSize().getHeight() << "\n").str());
-                log_CP(_fileNameCP, CreateStringStream(staticRaster.getRasterValues(knownBoundaries)).str());
+                log_CP(_fileNameCP, CreateStringStream(staticRaster.getRasterValues(wholeBoundaries)).str());
             }
             else
             {
+                Rectangle<int> knownBoundaries = _schedulerInstance->_world->getBoundaries();
+
                 DynamicRaster& dynamicRaster = _schedulerInstance->_world->getDynamicRaster(i);
                 log_CP(_fileNameCP, CreateStringStream("DYNAMIC\n").str());
                 log_CP(_fileNameCP, CreateStringStream(dynamicRaster.getRasterGeneralInfo() << "\n").str());

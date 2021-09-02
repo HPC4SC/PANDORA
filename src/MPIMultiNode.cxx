@@ -799,6 +799,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
 
     void MPIMultiNode::randomlyExecuteAgents(AgentsVector& agentsToExecute)
     {
+//std::cout << CreateStringStream("[Process #" << _world->getId() << "] MPIMultiNode::randomlyExecuteAgents 1 \t; PID: " << getpid() << "\n").str();
         GeneralState::statistics().shuffleWithinIterators(agentsToExecute.begin(), agentsToExecute.end());
         #pragma omp parallel for schedule(dynamic) if(_updateKnowledgeInParallel)
         for (int i = 0; i < agentsToExecute.size(); ++i)
@@ -809,7 +810,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
         }
         #pragma omp parallel for schedule(dynamic) if(_executeActionsInParallel)
         for (int i = 0; i < agentsToExecute.size(); ++i)
-        {  
+        {
             Agent* agent = agentsToExecute[i].get();
             agent_executeActions(agent);
             agent_updateState(agent);
