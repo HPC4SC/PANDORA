@@ -1573,7 +1573,7 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
 
     bool MPIMultiNode::needToCheckpoint()
     {
-std::cout << CreateStringStream("[Process # " << getId() << "] needToCheckpoint(): " << _world->getConfig().getEnableCheckpointing() << "\t" << getWallTime() << "\t" << _world->getConfig().getSecondsToCP() << "\n").str();
+std::cout << CreateStringStream("[Process # " << getId() << "] MPIMultiNode::needToCheckpoint(): " << _world->getConfig().getEnableCheckpointing() << "\t" << getWallTime() << "\t" << _world->getConfig().getSecondsToCP() << "\n").str();
         if (_world->getConfig().getEnableCheckpointing() and getWallTime() >= _world->getConfig().getSecondsToCP())
         {
             _performCheckpoint = true;
@@ -1586,7 +1586,11 @@ std::cout << CreateStringStream("[Process # " << getId() << "] needToCheckpoint(
     {
         if (getId() == _masterNodeID)
             _saveState->cleanCheckpointingDirectory();
-            
+        
+        _saveState->resetCPFile();
+
+        MPI_Barrier(_activeProcessesComm);
+
         _saveState->startCheckpointing();
         _saveState->saveRastersInCPFile();
         _saveState->saveAgentsInCPFile();
@@ -1597,6 +1601,18 @@ std::cout << CreateStringStream("[Process # " << getId() << "] needToCheckpoint(
     bool MPIMultiNode::hasBeenTaggedAsFinishedByCheckpointing()
     {
         return _performCheckpoint;
+    }
+
+    void MPIMultiNode::performPeriodicCPIfNecessary()
+    {
+std::cout << CreateStringStream("[Process # " << getId() << "] MPIMultiNode::performPeriodicCPIfNecessary(): " << _world->getConfig().getPeriodicCP() << "\t" << getWallTime() << "\t" << _saveState->getPeriodicCPCounter() << "\t" << _world->getConfig().getSecondsForPeriodicCP() << "\n").str();
+        if (_world->getConfig().getPeriodicCP() and getWallTime() >= (_saveState->getPeriodicCPCounter() * _world->getConfig().getSecondsForPeriodicCP()))
+        {
+            //_saveState->cleanCPFiles ¿?
+            performSaveCheckpointing();
+
+            _saveState->increasePeriodicCPCounter();
+        }
     }
 
     void MPIMultiNode::executeAgents()

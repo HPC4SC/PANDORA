@@ -58,6 +58,13 @@ public:
     virtual ~Logger( );
     
     /**
+     * @brief Closes the file identified by 'fileName'.
+     * 
+     * @param fileName Name of the log file.
+     */
+    void closeFile(const std::string& fileName);
+
+    /**
      * @brief Message to file.
      * 
      * @param fileName Name of the log file.

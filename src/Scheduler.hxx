@@ -185,6 +185,12 @@ namespace Engine
         virtual bool hasBeenTaggedAsFinishedByCheckpointing() = 0;
 
         /**
+         * @brief Performs a periodic checkpointing (erasing the previous one) if it has been enabled.
+         * 
+         */
+        virtual void performPeriodicCPIfNecessary() = 0;
+
+        /**
          * @brief Responsible for executing the agents and update world. Must be implemented in child.
          * 
          */

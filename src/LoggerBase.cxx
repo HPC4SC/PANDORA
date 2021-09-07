@@ -54,9 +54,22 @@ std::string Logger::getKeyRelativePath(const std::string& key) const
     return fileName.str();
 }
 
-std::ofstream & Logger::log( const std::string & key )
+void Logger::closeFile(const std::string& fileName)
 {
-    FilesMap::iterator it = _files.find( key );
+    FilesMap::iterator it = _files.find(fileName);
+    if (it != _files.end())
+    {
+        std::ofstream* file = it->second;
+        file->close();
+        delete file;
+
+        _files.erase(it);
+    }
+}
+
+std::ofstream & Logger::log( const std::string & fileName )
+{
+    FilesMap::iterator it = _files.find( fileName );
     std::ofstream * file = 0;
     // create a new file if it is closed
     if ( it==_files.end( ) )
@@ -64,8 +77,8 @@ std::ofstream & Logger::log( const std::string & key )
         if (not _logsDir.empty())
             boost::filesystem::create_directory(_logsDir);
         
-        _files.insert( make_pair( key, new std::ofstream( getKeyRelativePath(key).c_str( ) ) ));
-        it = _files.find( key );
+        _files.insert( make_pair( fileName, new std::ofstream( getKeyRelativePath(fileName).c_str( ) ) ));
+        it = _files.find( fileName );
     }
     file = it->second;
     return *file;

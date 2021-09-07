@@ -40,28 +40,31 @@ protected:
     TiXmlDocument * _doc; 
     TiXmlElement * _root;
 
-    std::string _resultsDir;         //! Base directory where the simulation results will be stored.
-    std::string _resultsFile;       //! File where simulation results will be stored.
-    Size<int> _size;                //! Space of simulation.
-    int _numSteps;                  //! Number of time steps of the simulation.
-    int _serializeResolution;       //! Number of steps to execute before serializing the state of the simulation.
-    std::string _configFile;        //! XML config file ( if it exists ).
-    int _seed;                      //! Seed to be used for the RNG (Statistics class).
-    int _overlapSize;               //! [Only for MPI scheduler] Overlap size in number of cells, defined for partition rectangles.
-    int _subpartitioningMode;       //! [Only for MPI scheduler] Subpartitioning mode 9 -> 9 subpartitions per node, 4 -> 4 subpartitions per node.
-    bool _unevenPartitioning;       //! [Only for MPI scheduler] States whether the partitioning is performed uneven, i.e. regarding the agents position, or splitting the space evenly into K equal parts of ~1/K area each one. Uneven partitioning mode could be used when a uniform distribution of the agents across the simulation grid is expected. The "autoMode" is expected to be use in these kind of situations.
+    std::string _resultsDir;            //! Base directory where the simulation results will be stored.
+    std::string _resultsFile;           //! File where simulation results will be stored.
+    Size<int> _size;                    //! Space of simulation.
+    int _numSteps;                      //! Number of time steps of the simulation.
+    int _serializeResolution;           //! Number of steps to execute before serializing the state of the simulation.
+    std::string _configFile;            //! XML config file ( if it exists ).
+    int _seed;                          //! Seed to be used for the RNG (Statistics class).
+    int _overlapSize;                   //! [Only for MPI scheduler] Overlap size in number of cells, defined for partition rectangles.
+    int _subpartitioningMode;           //! [Only for MPI scheduler] Subpartitioning mode 9 -> 9 subpartitions per node, 4 -> 4 subpartitions per node.
+    bool _unevenPartitioning;           //! [Only for MPI scheduler] States whether the partitioning is performed uneven, i.e. regarding the agents position, or splitting the space evenly into K equal parts of ~1/K area each one. Uneven partitioning mode could be used when a uniform distribution of the agents across the simulation grid is expected. The "autoMode" is expected to be use in these kind of situations.
 
-    bool _autoMode;                 //! [Only for MPI scheduler] Says whether the auto rebalancing mode is activated or not.
-    bool _initialPartitioning;      //! [Only for MPI scheduler] To perform an initial partitioning or not (used as "false" for models that do not create initial agents and/or having warm-up periods).
-    int _rebalancingFreq;           //! [Only for MPI scheduler] Rebalancing frequency check in number of steps. If < 1, then no frequency is stablished.    
-    double _maximumLoadPerNode;     //! [Only for MPI scheduler] Maximum load (in secs.) that a node should support just before partitioning.
-    double _maximumPercOfUnbalance; //! [Only for MPI scheduler] Maximum percentage allowed of unbalancing among nodes. From this value on, the space should be rebalanced. If 0, no rebalancing by unbalances are applied at all.
+    bool _autoMode;                     //! [Only for MPI scheduler] Says whether the auto rebalancing mode is activated or not.
+    bool _initialPartitioning;          //! [Only for MPI scheduler] To perform an initial partitioning or not (used as "false" for models that do not create initial agents and/or having warm-up periods).
+    int _rebalancingFreq;               //! [Only for MPI scheduler] Rebalancing frequency check in number of steps. If < 1, then no frequency is stablished.    
+    double _maximumLoadPerNode;         //! [Only for MPI scheduler] Maximum load (in secs.) that a node should support just before partitioning.
+    double _maximumPercOfUnbalance;     //! [Only for MPI scheduler] Maximum percentage allowed of unbalancing among nodes. From this value on, the space should be rebalanced. If 0, no rebalancing by unbalances are applied at all.
 
-    bool _enableCheckpointing;      //! Checkpointing mode saves the state of the simulation (rasters and agents).
-    bool _loadCheckpoint;           //! Loads the checkpoint in checkpointing/{_fileNameCP}.
-    int _secondsToCP;               //! Second at which the simulation will start to save its current state and finish itself.
-    std::string _directoryCP;       //! Relative directory in which the file for checkpointing is located.
-    std::string _fileNameCP;        //! Filename at which the simulation state is saved for checkpointing.
+    bool _enableCheckpointing;          //! Checkpointing mode saves the state of the simulation (rasters and agents).
+    bool _loadCheckpoint;               //! Loads the checkpoint in checkpointing/{_fileNameCP}.
+    int _secondsToCP;                   //! Second at which the simulation will start to save its current state and finish itself.
+    std::string _directoryCP;           //! Relative directory in which the file for checkpointing is located.
+    std::string _fileNameCP;            //! Filename at which the simulation state is saved for checkpointing.
+    bool _periodicCP;                   //! When enabled, periodic checkpointing saves the state each 'secondsForPeriodicCP' seconds along the simulation.
+    int _secondsForPeriodicCP;          //! Seconds considered to save the state periodically.
+    std::string _fileNamePeriodicCP;    //! Filename at which the simulation state is saved for a periodic checkpointing.
 
     bool _printInConsole;       //! For logging purposes
     bool _printInstrumentation; //! For logging purposes
@@ -239,7 +242,7 @@ public:
      * 
      * @return std::string
      */
-    const std::string& getDirectoyCP() const;
+    const std::string& getDirectoryCP() const;
 
     /**
      * @brief Gets the _fileNameCP member.
@@ -247,6 +250,20 @@ public:
      * @return std::string
      */
     const std::string& getFileNameCP() const;
+
+    /**
+     * @brief Gets the _periodicCP member.
+     * 
+     * @return const bool& 
+     */
+    const bool& getPeriodicCP() const;
+
+    /**
+     * @brief Gets the _secondsForPeriodicCP member.
+     * 
+     * @return const int& 
+     */
+    const int& getSecondsForPeriodicCP() const;
 
     /**
      * @brief Get the _numSteps member.

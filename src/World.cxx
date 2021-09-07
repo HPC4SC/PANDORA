@@ -276,6 +276,8 @@ namespace Engine
             return;
         }
 
+        _scheduler->performPeriodicCPIfNecessary();
+
         if (_scheduler->hasBeenTaggedAsGoToSleep()) _scheduler->goToSleep();
         if (_scheduler->hasBeenTaggedAsJustFinished()) return;
         

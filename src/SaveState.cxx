@@ -33,12 +33,22 @@
 namespace Engine
 {
     
-    SaveState::SaveState()
+    SaveState::SaveState() : _periodicCPCounter(1)
     {
     }
 
     SaveState::~SaveState()
     {
+    }
+
+    int SaveState::getPeriodicCPCounter() const
+    {
+        return _periodicCPCounter;
+    }
+
+    void SaveState::increasePeriodicCPCounter()
+    {
+        _periodicCPCounter += 1;
     }
 
     void SaveState::initCheckpointFileNames(MPIMultiNode& schedulerInstance)
@@ -49,9 +59,14 @@ namespace Engine
         _fileNameCP = CreateStringStream(fileNameCP_base << "_" << _schedulerInstance->getId()).str();
     }
 
+    void SaveState::resetCPFile()
+    {
+        Engine::GeneralState::loggerCP().closeFile(_fileNameCP);
+    }
+
     void SaveState::cleanCheckpointingDirectory()
     {
-        for (boost::filesystem::directory_iterator it(_schedulerInstance->_world->getConfig().getDirectoyCP()); it != boost::filesystem::directory_iterator(); ++it)
+        for (boost::filesystem::directory_iterator it(_schedulerInstance->_world->getConfig().getDirectoryCP()); it != boost::filesystem::directory_iterator(); ++it)
         {
             bool needToBeDeleted = true;
             for (int i = 0; i < _schedulerInstance->_numTasks; ++i)
@@ -67,7 +82,7 @@ namespace Engine
     int SaveState::getNumberOfCheckpointingFiles()
     {
         int numberOfFiles = 0;
-        for (boost::filesystem::directory_iterator it(_schedulerInstance->_world->getConfig().getDirectoyCP()); it != boost::filesystem::directory_iterator(); ++it)
+        for (boost::filesystem::directory_iterator it(_schedulerInstance->_world->getConfig().getDirectoryCP()); it != boost::filesystem::directory_iterator(); ++it)
         {
             if (it->path().extension().string() == ".log") ++numberOfFiles;
         }
@@ -182,7 +197,7 @@ namespace Engine
 
     void SaveState::saveAgentsInCPFile()
     {
-        log_CP(_fileNameCP, CreateStringStream("Agents_data:\n").str());
+        log_CP(_fileNameCP, CreateStringStream("Agents_data (" << _schedulerInstance->_world->getNumberOfAgents() << "):\n").str());
         for (AgentsMap::const_iterator it = _schedulerInstance->_world->beginAgents(); it != _schedulerInstance->_world->endAgents(); ++it)
         {
             AgentPtr agentPtr = it->second;

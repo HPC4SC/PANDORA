@@ -806,6 +806,12 @@ namespace Engine
             bool hasBeenTaggedAsFinishedByCheckpointing() override;
 
             /**
+             * @brief Performs a periodic checkpointing (erasing the previous one) if it has been enabled.
+             * 
+             */
+            void performPeriodicCPIfNecessary() override;
+
+            /**
              * @brief Executes the agents and updates the world.
              * 
              */

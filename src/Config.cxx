@@ -110,9 +110,12 @@ void Config::loadBaseParams( )
     _enableCheckpointing = getParamBool("checkpointing", "enableCheckpointing");
     _loadCheckpoint = getParamBool("checkpointing", "loadCheckpoint");
     _secondsToCP = getParamInt("checkpointing", "secondsToCP");
-    _directoryCP = getParamStr("checkpointing", "directoryCP"); 
+    _directoryCP = getParamStr("checkpointing", "directoryCP");
     GeneralState::loggerCP( ).setLogsDir( _directoryCP );
     _fileNameCP = getParamStr("checkpointing", "fileNameCP");
+
+    _periodicCP = getParamBool("checkpointing", "periodicCP");
+    _secondsForPeriodicCP = getParamInt("checkpointing", "secondsForPeriodicCP");
 }
 
 void Config::loadFile( )
@@ -294,7 +297,7 @@ const int& Config::getSecondsToCP() const
     return _secondsToCP;
 }
 
-const std::string& Config::getDirectoyCP() const
+const std::string& Config::getDirectoryCP() const
 {
     return _directoryCP;
 }
@@ -302,6 +305,16 @@ const std::string& Config::getDirectoyCP() const
 const std::string& Config::getFileNameCP() const
 {
     return _fileNameCP;
+}
+
+const bool& Config::getPeriodicCP() const
+{
+    return _periodicCP;
+}
+
+const int& Config::getSecondsForPeriodicCP() const
+{
+    return _secondsForPeriodicCP;
 }
 
 } // namespace Engine

@@ -36,9 +36,10 @@ namespace Engine
         
         protected:
 
-            MPIMultiNode* _schedulerInstance;     //! Instance of the scheduler containing all the variables needed for checkpointing.
+            MPIMultiNode* _schedulerInstance;       //! Instance of the scheduler containing all the variables needed for checkpointing.
             
-            std::string _fileNameCP;              //! Checkpoingint file name for this MPI process.
+            std::string _fileNameCP;                //! Checkpoingint file name for this MPI process.
+            int _periodicCPCounter;                 //! Counter for the periodic checkpointing.
 
             struct RasterAttributes {
                 int id;
@@ -182,6 +183,25 @@ namespace Engine
              * 
              */
             virtual ~SaveState( );
+
+            /**
+             * @brief Get the _periodicCPCounter member.
+             * 
+             * @return int 
+             */
+            int getPeriodicCPCounter() const;
+
+            /**
+             * @brief Increases by 1 the _periodicCPCounter member.
+             * 
+             */
+            void increasePeriodicCPCounter();
+
+            /**
+             * @brief Resets the current checkpointing file, in case it was opened. From this point on, anything written in the file will overwrite it.
+             * 
+             */
+            void resetCPFile();
 
             /**
              * @brief Cleans the checkpointing directory, i.e. deletes all the files in it.
