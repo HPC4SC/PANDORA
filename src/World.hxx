@@ -45,18 +45,20 @@ class World
 public:
     typedef std::map< std::string, int> RasterNameMap;
 protected:
-    std::shared_ptr<Config> _config; //! Pointer to the configuration of the world.
+    std::shared_ptr<Config> _config;    //! Pointer to the configuration of the world.
 
-    AgentsMap _agentsByID;          //! Global map of agents by ID.
-    AgentsMatrix _agentsMatrix;     //! Global matrix of agents (used to find agents by position).
+    AgentsMap _agentsByID;              //! Global map of agents by ID.
+    AgentsMatrix _agentsMatrix;         //! Global matrix of agents (used to find agents by position).
+
+    int _totalAgentsInTheSimulation;    //! Total number of agents in the simulation (in and out this node).
 
     double _updateKnowledgeTotalTime, _selectActionsTotalTime, _executeActionsTotalTime, _updateStateTotalTime;
 
-    bool _allowMultipleAgentsPerCell; //! False if each cell can have just one agent.
+    bool _allowMultipleAgentsPerCell;   //! False if each cell can have just one agent.
 
-    int _step; //! Current simulation step.
+    int _step;                          //! Current simulation step.
 
-    Scheduler * _scheduler; //! Pointer to the scheduler of the world.
+    Scheduler * _scheduler;             //! Pointer to the scheduler of the world.
 
     std::map<std::string, int> _rasterNames; //! <rasterName, rasterIndex in _rasters>.
     std::map<int, std::string> _rasterIDsToNames; //! <rasterIndex, rasterName>
@@ -301,6 +303,20 @@ public:
      * @param currentStep const int&
      */
     void setCurrentStep(const int& currentStep);
+
+    /**
+     * @brief Gets the _totalAgentsInTheSimulation member.
+     * 
+     * @return int 
+     */
+    int getTotalAgentsInTheSimulation();
+
+    /**
+     * @brief Sets the _totalAgentsInTheSimulation member.
+     * 
+     * @param totalAgentsInTheSimulation const int&
+     */
+    void setTotalAgentsInTheSimulation(const int& totalAgentsInTheSimulation);
 
     /**
      * @brief This method can be redefined by the children in order to modify the execution of each step on a given resource field.
@@ -836,6 +852,15 @@ public:
      * @param encodedWorldData const std::string&
      */
     virtual void setCheckpointData(const std::string& encodedWorldData) {};
+
+    /**
+     * @brief Fills up this World attributes based on the 'encodedWorldData' stream. Lets the split attributes in 'tokens'. Returns the last used index for 'encodedWorldData' when splitting it by '|', i.e. the number of agent base attributes-1 in 'encodedWorldData'.
+     * 
+     * @param encodedWorldData const std::string&
+     * @param tokens std::vector<std::string>& 
+     * @return int 
+     */
+    int fillUpBaseAttributesFromEncodedWorld(const std::string& encodedWorldData, std::vector<std::string>& tokens);
 
     /**
      * @brief Gets a vector of tokens from 'line' after splitting them according to the 'delimiter'.

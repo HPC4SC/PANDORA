@@ -106,7 +106,10 @@ namespace Engine
         eTypeOfEventAfterWakeUp = 77,
         eNumberOfProcessesAndStep = 78,
 
-        eAgentPhasesTotalTime = 80
+        eAgentPhasesTotalTime = 80,
+
+        eAmountOfTotalAgentsNotSentYet = 90,
+        eTotalAgentsInTheSimulation = 91
     };
 
     enum TypeOfEventAfterWakeUpMPI

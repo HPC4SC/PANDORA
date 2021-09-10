@@ -651,6 +651,44 @@ namespace Engine
             void receiveRasters(const int& subOverlapID = -1);
 
             /**
+             * @brief Sends to the 'masterNode' the total amount of agents that this node contains, excluding those which belongs to nodes with ID < this.getId().
+             * 
+             * @param masterNode const int&
+             */
+            void sendTotalNumerOfAgentsInThisNode(const int& masterNode);
+
+            /**
+             * @brief Receives the _world->getTotalAgentsInTheSimulation() from the master.
+             * 
+             * @param _masterNodeID const int&
+             */
+            void receiveTotalAgentsInTheSimulationFromMaster(const int& _masterNodeID);
+
+            /**
+             * @brief Receives the total number of agents from all the workers.
+             * 
+             */
+            void receiveTotalNumerOfAgentsFromWorkerNodes();
+
+            /**
+             * @brief Sends the _world->getTotalAgentsInTheSimulation() variable to all the worker nodes.
+             * 
+             */
+            void sendTotalAgentsInTheSimulationToWorkers();
+
+            /**
+             * @brief Non-blockingly sends the World variables to the masterNode.
+             * 
+             */
+            void sendWorldVariablesToMasterNode();
+    
+            /**
+             * @brief Non-blockingly receives the World variables from the worker nodes.
+             * 
+             */
+            void receiveWorldVariablesFromWorkers();
+
+            /**
              * @brief Waits for the send/receive messages to complete and free the communication buffers (in _sendRequests).
              * 
              */

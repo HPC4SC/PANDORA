@@ -38,7 +38,7 @@
 
 namespace Engine
 {
-    World::World( Engine::Config * config, Scheduler * scheduler, const bool & allowMultipleAgentsPerCell ) : _config( config ), _allowMultipleAgentsPerCell( allowMultipleAgentsPerCell ), _step( 0 ), _scheduler( scheduler )
+    World::World( Engine::Config * config, Scheduler * scheduler, const bool & allowMultipleAgentsPerCell ) : _config( config ), _allowMultipleAgentsPerCell( allowMultipleAgentsPerCell ), _step( 0 ), _totalAgentsInTheSimulation(0), _scheduler( scheduler )
     {
         if (config)
             config->loadFile( );
@@ -327,6 +327,16 @@ namespace Engine
     void World::setCurrentStep(const int& currentStep)
     {
         _step = currentStep;
+    }
+
+    int World::getTotalAgentsInTheSimulation()
+    {
+        return _totalAgentsInTheSimulation;
+    }
+
+    void World::setTotalAgentsInTheSimulation(const int& totalAgentsInTheSimulation)
+    {
+        _totalAgentsInTheSimulation = totalAgentsInTheSimulation;
     }
 
     void World::stepEnvironment( )
@@ -728,7 +738,21 @@ namespace Engine
 
     std::string World::getWorldData() const
     {
-        return "";
+        std::stringstream ss;
+
+        ss << getNumberOfAgents() << "|";
+
+        return ss.str();
+    }
+
+    int World::fillUpBaseAttributesFromEncodedWorld(const std::string& encodedWorldData, std::vector<std::string>& tokens)
+    {
+        tokens = getLineTokens(encodedWorldData, '|');
+
+        int index = 0;
+        index++;        //_agentsByID.size() = tokens[index++];
+
+        return index - 1;
     }
 
     std::vector<std::string> World::getLineTokens(const std::string& line, const char& delimiter) const

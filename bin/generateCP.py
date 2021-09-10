@@ -334,9 +334,10 @@ def writeSetterForModelWorldAttribute(f, nameAttribute, world, typeAttribute):
 def writeSetCheckpointData(f, world, namespace, worldAttributesMap):
     f.write('void ' + world + '::setCheckpointData(const std::string& encodedWorldData)\n')
     f.write('{\n')
-    f.write('\tstd::vector<std::string> tokens = getLineTokens(encodedWorldData, \'|\');\n')
+    f.write('\tstd::vector<std::string> tokens;\n')
+    f.write('\tint lastUsedIndex = Engine::World::fillUpBaseAttributesFromEncodedWorld(encodedWorldData, tokens);\n')
     f.write('\n')
-    f.write('\tint index = 0;\n')
+    
     if len(worldAttributesMap) > 0:
         for nameAttribute, typeAttribute in worldAttributesMap.items():
             parserFunction = ''
@@ -346,13 +347,13 @@ def writeSetCheckpointData(f, world, namespace, worldAttributesMap):
             elif typeAttribute == "float": parserFunction = "std::stof"
 
             if typeAttribute == "int" or typeAttribute == "bool" or typeAttribute == "double" or typeAttribute == "float":
-                f.write('\t' + nameAttribute + ' = ' + parserFunction + '(tokens[index++]);\n')
+                f.write('\t' + nameAttribute + ' = ' + parserFunction + '(tokens[++lastUsedIndex]);\n')
             elif typeAttribute == "std::string":
                 f.write('\t' + nameAttribute + ' = tokens[index++];\n')
             elif typeAttribute == "Engine::Point2D<int>":
                 f.write('\n')
-                f.write('\tint ' + nameAttribute + 'X = std::stoi(tokens[index++]);\n')
-                f.write('\tint ' + nameAttribute + 'Y = std::stoi(tokens[index++]);\n')
+                f.write('\tint ' + nameAttribute + 'X = std::stoi(tokens[++lastUsedIndex]);\n')
+                f.write('\tint ' + nameAttribute + 'Y = std::stoi(tokens[++lastUsedIndex]);\n')
                 f.write('\t' + nameAttribute + ' = Engine::Point2D<int>(' + nameAttribute + 'X, ' + nameAttribute + 'Y);\n')
                 f.write('\n')
 

@@ -459,7 +459,7 @@ namespace Engine
         std::vector<std::string> getLineTokens(const std::string& line, const char& delimiter) const;
 
         /**
-         * @brief Fill up this agent attributes based on the 'encodedAgent' stream. Lets the split attributes in 'tokens'. Returns the last used index for 'encodedAgent' when splitting it by '|', i.e. the number of agent base attributes-1 in 'encodedAgent'.
+         * @brief Fills up this agent attributes based on the 'encodedAgent' stream. Lets the split attributes in 'tokens'. Returns the last used index for 'encodedAgent' when splitting it by '|', i.e. the number of agent base attributes-1 in 'encodedAgent'.
          * 
          * @param encodedAgent const std::string&
          * @param tokens std::vector<std::string>&

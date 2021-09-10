@@ -1333,6 +1333,85 @@ if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<
 if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStream("[Process # " << getId() << "] MPIMultiNode::receiveRasters() OVERLAP: " << subOverlapID << "\tTOTAL TIME: " << endTime - initialTime).str());
     }
 
+    void MPIMultiNode::sendTotalNumerOfAgentsInThisNode(const int& masterNode)
+    {
+        int agentsInOwnedArea = 0;
+        int agentsInOverlapsNotSentByOtherNodes = 0;
+
+        for (AgentsMap::const_iterator it = _world->beginAgents(); it != _world->endAgents(); ++it)
+        {
+            AgentPtr agentPtr = it->second;
+
+            if (_nodeSpace.ownedArea.contains(agentPtr->getPosition())) ++agentsInOwnedArea;
+            else {
+                bool isInSomePreviousNeighbour = false;
+                for (std::map<int, MPINode*>::const_iterator itNeighbours = _nodeSpace.neighbours.begin(); itNeighbours != _nodeSpace.neighbours.end(); ++itNeighbours)
+                {
+                    int neighbourID = itNeighbours->first;
+                    MPINode* neighbourNode = itNeighbours->second;
+
+                    if (neighbourID < getId() and neighbourNode->ownedAreaWithOuterOverlap.contains(agentPtr->getPosition()))
+                    {
+                        isInSomePreviousNeighbour = true;
+                        break;
+                    }
+                }
+                if (not isInSomePreviousNeighbour) ++agentsInOverlapsNotSentByOtherNodes;
+            }
+        }
+
+        int totalAgentsForThisNode = agentsInOwnedArea + agentsInOverlapsNotSentByOtherNodes;
+        sendDataRequestToNode(&totalAgentsForThisNode, 1, MPI_INT, masterNode, eAmountOfTotalAgentsNotSentYet, MPI_COMM_WORLD);
+    }
+
+    void MPIMultiNode::receiveTotalAgentsInTheSimulationFromMaster(const int& _masterNodeID)
+    {
+        int totalAgentsInTheSimulation;
+        MPI_Recv(&totalAgentsInTheSimulation, 1, MPI_INT, _masterNodeID, eTotalAgentsInTheSimulation, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+
+        _world->setTotalAgentsInTheSimulation(totalAgentsInTheSimulation);
+    }
+
+    void MPIMultiNode::receiveTotalNumerOfAgentsFromWorkerNodes()
+    {
+        int totalAgentsInTheSimulation = 0;
+        for (int workerNodeID = 0; workerNodeID < _numberOfActiveProcesses; ++workerNodeID)
+        {
+            if (workerNodeID != _masterNodeID) 
+            {
+                int totalAgentsForWorkerNode;
+                MPI_Recv(&totalAgentsForWorkerNode, 1, MPI_INT, workerNodeID, eAmountOfTotalAgentsNotSentYet, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+std::cout << CreateStringStream("[Process # " << getId() << "] MPIMultiNode::receiveTotalNumerOfAgentsFromWorkerNodes() workerNodeID: " << workerNodeID << "\ttotalAgentsForWorkerNode: " << totalAgentsForWorkerNode << "\n").str();
+                totalAgentsInTheSimulation += totalAgentsForWorkerNode;
+            }
+        }
+        _world->setTotalAgentsInTheSimulation(totalAgentsInTheSimulation);
+    }
+
+    void MPIMultiNode::sendTotalAgentsInTheSimulationToWorkers()
+    {
+        for (int workerNodeID = 0; workerNodeID < _numberOfActiveProcesses; ++workerNodeID)
+        {
+            if (workerNodeID != _masterNodeID) 
+            {
+                int totalAgentsInTheSimulation = _world->getTotalAgentsInTheSimulation();
+                sendDataRequestToNode(&totalAgentsInTheSimulation, 1, MPI_INT, workerNodeID, eTotalAgentsInTheSimulation, MPI_COMM_WORLD);
+            }
+        }
+    }
+
+    void MPIMultiNode::sendWorldVariablesToMasterNode()
+    {
+        sendTotalNumerOfAgentsInThisNode(_masterNodeID);
+        receiveTotalAgentsInTheSimulationFromMaster(_masterNodeID);
+    }
+    
+    void MPIMultiNode::receiveWorldVariablesFromWorkers()
+    {
+        receiveTotalNumerOfAgentsFromWorkerNodes();
+        sendTotalAgentsInTheSimulationToWorkers();
+    }
+
     void MPIMultiNode::clearRequests()
     {
         for (std::vector<SendRequest>::const_iterator it = _sendRequests.begin(); it != _sendRequests.end(); ++it)
@@ -1558,6 +1637,11 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
         prepareAgentsAndRastersStateForCurrentStep();
         sendRastersToNeighbours();
         receiveRasters();
+
+        if (getId() != _masterNodeID) sendWorldVariablesToMasterNode();
+        else receiveWorldVariablesFromWorkers();
+
+std::cout << CreateStringStream("[Process # " << getId() << "] MPIMultiNode::updateEnvironmentState() _world->getTotalAgentsInTheSimulation(): " << _world->getTotalAgentsInTheSimulation() << "\n").str();
 
         MPI_Barrier(_activeProcessesComm);
     }
