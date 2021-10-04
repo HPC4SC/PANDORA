@@ -57,6 +57,7 @@ protected:
     bool _allowMultipleAgentsPerCell;   //! False if each cell can have just one agent.
 
     int _step;                          //! Current simulation step.
+    double _previousStepWallTime;       //! Simulation wall time at the previous step.
 
     Scheduler * _scheduler;             //! Pointer to the scheduler of the world.
 

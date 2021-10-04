@@ -38,7 +38,7 @@
 
 namespace Engine
 {
-    World::World( Engine::Config * config, Scheduler * scheduler, const bool & allowMultipleAgentsPerCell ) : _config( config ), _allowMultipleAgentsPerCell( allowMultipleAgentsPerCell ), _step( 0 ), _totalAgentsInTheSimulation(0), _scheduler( scheduler )
+    World::World( Engine::Config * config, Scheduler * scheduler, const bool & allowMultipleAgentsPerCell ) : _config( config ), _allowMultipleAgentsPerCell( allowMultipleAgentsPerCell ), _step( 0 ), _totalAgentsInTheSimulation(0), _previousStepWallTime(0), _scheduler( scheduler )
     {
         if (config)
             config->loadFile( );
@@ -263,7 +263,10 @@ namespace Engine
     {
         if (not _scheduler->hasBeenTaggedAsGoToSleep()) 
         {
-            std::cout << CreateStringStream("[Process #" << getId() << "] Executing step " << _step << " (time = " << getWallTime() << "). Agents in the simulation (IN THIS NODE): " << _agentsByID.size() << "\n").str();
+            std::string totalAgentsInTheSimulationStr = (_step > 0) ? " (out of " + std::to_string(getTotalAgentsInTheSimulation()) + " in the whole simulation)." : "";
+std::cout << CreateStringStream("[Process #" << getId() << "] Executing step " << _step << " (time = " << getWallTime() << ", timeSpendInStep = " << getWallTime() - _previousStepWallTime << "). Agents in this node: " << _agentsByID.size() << totalAgentsInTheSimulationStr << "\n").str();
+
+            _previousStepWallTime = getWallTime();
             step();
         }
     }

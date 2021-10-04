@@ -665,10 +665,17 @@ namespace Engine
             void receiveTotalAgentsInTheSimulationFromMaster(const int& _masterNodeID);
 
             /**
+             * @brief Gets the total amount of agents in the _nodeSpace.ownedArea of this node.
+             * 
+             * @return int 
+             */
+            int getNumberOfAgentsInOwnedArea();
+
+            /**
              * @brief Receives the total number of agents from all the workers.
              * 
              */
-            void receiveTotalNumerOfAgentsFromWorkerNodes();
+            void receiveTotalNumberOfAgentsFromWorkerNodes();
 
             /**
              * @brief Sends the _world->getTotalAgentsInTheSimulation() variable to all the worker nodes.

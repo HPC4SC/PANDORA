@@ -1372,16 +1372,29 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
         _world->setTotalAgentsInTheSimulation(totalAgentsInTheSimulation);
     }
 
-    void MPIMultiNode::receiveTotalNumerOfAgentsFromWorkerNodes()
+    int MPIMultiNode::getNumberOfAgentsInOwnedArea()
     {
-        int totalAgentsInTheSimulation = 0;
+        int result = 0;
+        for (AgentsMap::const_iterator it = _world->beginAgents(); it != _world->endAgents(); ++it)
+        {
+            AgentPtr agentPtr = it->second;
+            if (_nodeSpace.ownedArea.contains(agentPtr->getPosition())) ++result;
+        }
+
+        return result;
+    }
+
+    void MPIMultiNode::receiveTotalNumberOfAgentsFromWorkerNodes()
+    {
+        int totalAgentsInTheSimulation = getNumberOfAgentsInOwnedArea();
+
         for (int workerNodeID = 0; workerNodeID < _numberOfActiveProcesses; ++workerNodeID)
         {
             if (workerNodeID != _masterNodeID) 
             {
                 int totalAgentsForWorkerNode;
                 MPI_Recv(&totalAgentsForWorkerNode, 1, MPI_INT, workerNodeID, eAmountOfTotalAgentsNotSentYet, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-std::cout << CreateStringStream("[Process # " << getId() << "] MPIMultiNode::receiveTotalNumerOfAgentsFromWorkerNodes() workerNodeID: " << workerNodeID << "\ttotalAgentsForWorkerNode: " << totalAgentsForWorkerNode << "\n").str();
+
                 totalAgentsInTheSimulation += totalAgentsForWorkerNode;
             }
         }
@@ -1408,7 +1421,7 @@ std::cout << CreateStringStream("[Process # " << getId() << "] MPIMultiNode::rec
     
     void MPIMultiNode::receiveWorldVariablesFromWorkers()
     {
-        receiveTotalNumerOfAgentsFromWorkerNodes();
+        receiveTotalNumberOfAgentsFromWorkerNodes();
         sendTotalAgentsInTheSimulationToWorkers();
     }
 
@@ -1640,8 +1653,6 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
 
         if (getId() != _masterNodeID) sendWorldVariablesToMasterNode();
         else receiveWorldVariablesFromWorkers();
-
-std::cout << CreateStringStream("[Process # " << getId() << "] MPIMultiNode::updateEnvironmentState() _world->getTotalAgentsInTheSimulation(): " << _world->getTotalAgentsInTheSimulation() << "\n").str();
 
         MPI_Barrier(_activeProcessesComm);
     }
