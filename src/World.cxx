@@ -38,7 +38,7 @@
 
 namespace Engine
 {
-    World::World( Engine::Config * config, Scheduler * scheduler, const bool & allowMultipleAgentsPerCell ) : _config( config ), _allowMultipleAgentsPerCell( allowMultipleAgentsPerCell ), _step( 0 ), _totalAgentsInTheSimulation(0), _previousStepWallTime(0), _scheduler( scheduler )
+    World::World( Engine::Config * config, Scheduler * scheduler, const bool & allowMultipleAgentsPerCell ) : _config( config ), _allowMultipleAgentsPerCell( allowMultipleAgentsPerCell ), _step( 0 ), _totalAgentsInTheSimulation(0), _totalAgentsEvenDead(0), _previousStepWallTime(0), _scheduler( scheduler )
     {
         if (config)
             config->loadFile( );
@@ -449,7 +449,7 @@ std::cout << CreateStringStream("[Process #" << getId() << "] Executing step " <
         return true;
     }
 
-    StaticRaster & World::getStaticRaster( const size_t & index )
+    const StaticRaster & World::getStaticRaster( const size_t & index ) const
     {
         if ( index>=_rasters.size( ) )
         {
@@ -460,7 +460,12 @@ std::cout << CreateStringStream("[Process #" << getId() << "] Executing step " <
         return *( _rasters.at( index ));
     }
 
-    StaticRaster & World::getStaticRaster( const std::string & key )
+    StaticRaster & World::getStaticRaster( const size_t & index )
+    {
+        return const_cast<StaticRaster &>( static_cast<const World&>( *this ).getStaticRaster( index ) );
+    }
+
+    const StaticRaster & World::getStaticRaster( const std::string & key ) const
     {
         RasterNameMap::const_iterator it = _rasterNames.find( key );
         if ( it==_rasterNames.end( ) )
@@ -470,6 +475,11 @@ std::cout << CreateStringStream("[Process #" << getId() << "] Executing step " <
             throw Exception( oss.str( ) );
         }
         return getStaticRaster( it->second );
+    }
+
+    StaticRaster & World::getStaticRaster( const std::string & key )
+    {
+        return const_cast<StaticRaster &>( static_cast<const World&>( *this ).getStaticRaster( key ) );
     }
 
     const DynamicRaster & World::getDynamicRaster( const size_t & index ) const

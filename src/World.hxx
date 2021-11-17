@@ -388,7 +388,23 @@ public:
      * @param index Position of the static raster.
      * @return StaticRaster&
      */
+    const StaticRaster & getStaticRaster( const size_t & index ) const;
+
+    /**
+     * @brief Return the static raster in position 'index'.
+     * 
+     * @param index Position of the static raster.
+     * @return StaticRaster&
+     */
     StaticRaster & getStaticRaster( const size_t & index );
+
+    /**
+     * @brief Return the static raster with name 'key'.
+     * 
+     * @param key Name of the raster.
+     * @return StaticRaster& 
+     */
+    const StaticRaster & getStaticRaster( const std::string & key ) const;
 
     /**
      * @brief Return the static raster with name 'key'.
