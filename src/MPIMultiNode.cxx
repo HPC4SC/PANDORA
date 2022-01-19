@@ -77,9 +77,12 @@ namespace Engine {
 
         MpiFactory::instance()->registerTypes();
 
-        _distributeFromTheBeginning = _world->getConfig().getInitialPartitioning();
-        if (not _distributeFromTheBeginning)
-            _numTasks = 1;
+        _numTasks = _world->getConfig().getInitialPartitioning();
+        if (_numTasks > _numTasksMax)
+        {
+            std::cout << CreateStringStream("[Process # " << getId() << "] MPIMultiNode::init() _numTasks > _numTasksMax. Check the configuration XML file.\n").str();
+            terminateAllMPIProcesses();
+        }
 
         _loadBalanceTree->setNumberOfPartitions(_numTasks);
         enableOnlyProcesses(_numTasks);
@@ -109,7 +112,7 @@ namespace Engine {
             }
             else 
             {
-                if (not _distributeFromTheBeginning)
+                if (getId() >= _numTasks)
                     _goToSleep = true;
                 else
                     receiveInitialSpacesFromNode(_masterNodeID);    printOwnNodeStructureAfterMPI();
@@ -337,10 +340,12 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
 
 if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStream("[Process # " << getId() << "] MPIMultiNode::createNodesInformationToSendFromTree()\tTOTAL TIME: " << endTime - initialTime).str());
 
-        if (not arePartitionsSuitable(_mpiNodesMapToSend)) {
+        if (not arePartitionsSuitable(_mpiNodesMapToSend)) 
+        {
             std::cout << CreateStringStream("[Process # " << getId() << "] MPIMultiNode::divideSpace() TRIED TO PERFORM PARTITIONING IN " << _numTasks << " MPI TASKS - Partitions not suitable. Maybe there are too many unnecessary MPI nodes for such a small space, or the overlap size is too wide.\n").str();
             terminateAllMPIProcesses();
         }
+std::cout << CreateStringStream("[Process # " << getId() << "] AFTER divideSpace() - getString_PartitionsBeforeMPI():\n" << _schedulerLogs->getString_PartitionsBeforeMPI() << "\n").str();
     }
 
     void MPIMultiNode::sendInitialSpacesToNodes(const int& masterNodeID)
@@ -1593,24 +1598,29 @@ if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<
 
     void MPIMultiNode::sendAgentsInMap(const std::map<int, std::map<std::string, AgentsList>>& agentsByTypeAndNode)
     {
+std::cout << CreateStringStream("Process #" << getId() << " HEY 7 4 1\n").str();
         for (std::map<int, std::map<std::string, AgentsList>>::const_iterator itNeighbourNode = agentsByTypeAndNode.begin(); itNeighbourNode != agentsByTypeAndNode.end(); ++itNeighbourNode)
         {
+std::cout << CreateStringStream("Process #" << getId() << " HEY 7 4 2\n").str();
             int neighbourNodeID = itNeighbourNode->first;
             std::map<std::string, AgentsList> agentsByType = itNeighbourNode->second;
-
+std::cout << CreateStringStream("Process #" << getId() << " HEY 7 4 3\n").str();
             int numberOfAgentTypesToSend = agentsByType.size();
             sendDataRequestToNode(&numberOfAgentTypesToSend, 1, MPI_INT, neighbourNodeID, eNumGhostAgentsType, MPI_COMM_WORLD);
-
+std::cout << CreateStringStream("Process #" << getId() << " HEY 7 4 4\n").str();
             for (std::map<std::string, AgentsList>::const_iterator itType = agentsByType.begin(); itType != agentsByType.end(); ++itType)
             {
+std::cout << CreateStringStream("Process #" << getId() << " HEY 7 4 5\n").str();
                 std::string agentsTypeName = itType->first;
                 AgentsList agentsToSend = itType->second;
-
+std::cout << CreateStringStream("Process #" << getId() << " HEY 7 4 6\n").str();
                 int agentsTypeID = MpiFactory::instance()->getIDFromTypeName(agentsTypeName);
                 sendDataRequestToNode(&agentsTypeID, 1, MPI_INT, neighbourNodeID, eGhostAgentsType, MPI_COMM_WORLD);
-
+std::cout << CreateStringStream("Process #" << getId() << " HEY 7 4 7\n").str();
                 sendAgentsPackage(agentsToSend, neighbourNodeID, agentsTypeName);
+std::cout << CreateStringStream("Process #" << getId() << " HEY 7 4 8\n").str();
                 sendAgentsComplexAttributesPackage(agentsToSend, neighbourNodeID);
+std::cout << CreateStringStream("Process #" << getId() << " HEY 7 4 9\n").str();
             }
         }
     }
@@ -1840,8 +1850,9 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(totalSimulationT
             return agentsByID.at(id).get();
         else
         {
-            std::cout << CreateStringStream("[Process # " << getId() << "] MPIMultiNode::getAgent(id) - agent: " << id << " not found.\n").str();
-            terminateAllMPIProcesses();
+            // std::cout << CreateStringStream("[Process # " << getId() << "] MPIMultiNode::getAgent(id) - agent: " << id << " not found.\n").str();
+            // terminateAllMPIProcesses();
+            return NULL;
         }
     }
 

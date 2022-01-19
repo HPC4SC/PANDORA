@@ -42,10 +42,15 @@ namespace Engine
 
             node<Rectangle<int>>* _root;            //! Tree used for the uneven partitioning of the space in _numPartitions nodes.
 
-            World* _world;                          //! Pointer to the World of the simulation
+            World* _world;                          //! Pointer to the World of the simulation.
+            int _minimumLayerUsed;                  //! The bottommost layer used by the agents in the current simulation.
+            int _maximumLayerUsed;                  //! The uppermost layer used by the agents in the current simulation.
+            
             int _numPartitions;                     //! Number of tasks in which the simulation should be split.
 
             bool _requiresUnevenPartitioning;       //! States whether the partitioning depends on the agents position or it splits the simulation grid in equal pieces.
+
+            std::map<std::string, bool> _tempAgentsToCheck;
 
             /**
              * @brief Copies deeply the node into a new object which is returned.
@@ -115,11 +120,19 @@ namespace Engine
             void destroyTree(node<Rectangle<int>>* leaf);
 
             /**
+             * @brief Sets the bottomost and uppermost layers used in the simulation.
+             * 
+             * @param minimumLayerUsed int&
+             * @param maximumLayerUsed int&
+             */
+            void setMinAndMaxLayers(int& minimumLayerUsed, int& maximumLayerUsed) const;
+
+            /**
              * @brief Get the weight of all the agents in the simulation.
              * 
              * @return double 
              */
-            double getAllAgentsWeight() const;
+            double getAllAgentsWeight();
 
             /**
              * @brief Gets the total weight of the agents in 'agentsVector'.
@@ -136,7 +149,7 @@ namespace Engine
              * @param column const int&
              * @return double 
              */
-            double getAgentsWeightFromCell(const int& row, const int& column) const;
+            double getAgentsWeightFromCell(const int& row, const int& column);
 
             /**
              * @brief Explore the space in 'treeNode' from left to right (vertical partitioning). j = rows, i = columns.
@@ -267,7 +280,7 @@ namespace Engine
              * @param type const string&
              * @return AgentsVector 
              */
-            AgentsVector getAgentsInPosition(const Point2D<int>& position, const std::string& type = "all", const int& layer = 0) const;
+            AgentsVector getAgentsInPosition(const Point2D<int>& position, const std::string& type = "all", const int& layer = 0);
 
     };
 

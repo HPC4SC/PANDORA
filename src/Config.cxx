@@ -102,7 +102,7 @@ void Config::loadBaseParams( )
     _subpartitioningMode = getParamInt("mpi", "subpartitioningMode");
     _unevenPartitioning = getParamBool("mpi", "unevenPartitioning");
     _autoMode = getParamBool("mpiAutoAdjustment", "autoMode");
-    _initialPartitioning = getParamBool("mpiAutoAdjustment", "initialPartitioning");
+    _initialPartitioning = getParamInt("mpiAutoAdjustment", "initialPartitioning");
     _rebalancingFreq = getParamInt("mpiAutoAdjustment", "rebalancingFreq");
     _maximumLoadPerNode = getParamFloat("mpiAutoAdjustment", "maximumLoadPerNode");
     _maximumPercOfUnbalance = getParamFloat("mpiAutoAdjustment", "maximumPercOfUnbalance");
@@ -262,7 +262,7 @@ const bool& Config::getAutoMode() const
     return _autoMode;
 }
 
-const bool& Config::getInitialPartitioning() const
+const int& Config::getInitialPartitioning() const
 {
     return _initialPartitioning;
 }

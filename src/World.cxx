@@ -38,7 +38,7 @@
 
 namespace Engine
 {
-    World::World( Engine::Config * config, Scheduler * scheduler, const bool & allowMultipleAgentsPerCell ) : _config( config ), _allowMultipleAgentsPerCell( allowMultipleAgentsPerCell ), _step( 0 ), _totalAgentsInTheSimulation(0), _totalAgentsEvenDead(0), _previousStepWallTime(0), _scheduler( scheduler )
+    World::World( Engine::Config * config, Scheduler * scheduler, const bool & allowMultipleAgentsPerCell ) : _config( config ), _allowMultipleAgentsPerCell( allowMultipleAgentsPerCell ), _step( 0 ), _totalAgentsInTheSimulation(0), _previousStepWallTime(0), _scheduler( scheduler )
     {
         if (config)
             config->loadFile( );
@@ -154,8 +154,10 @@ namespace Engine
             AgentsMap::const_iterator agentIt = _agentsMatrix[oldX][oldY].find(agentID);
             if (agentIt != _agentsMatrix[oldX][oldY].end())
             {
-                _agentsMatrix[newX][newY][agentID] = agentIt->second;
+                AgentPtr agentPtr = agentIt->second;
+                
                 _agentsMatrix[oldX][oldY].erase(agentID);
+                _agentsMatrix[newX][newY][agentID] = agentPtr;
                 return;
             }
         }
@@ -183,6 +185,8 @@ namespace Engine
 
         if (_agentsMatrix[oldX][oldY].find(agentID) != _agentsMatrix[oldX][oldY].end())
             _agentsMatrix[oldX][oldY].erase(agentID);
+
+        if (agent->getDiscretePosition() == agent->getPosition()) return;
 
         int newX = agent->getPosition().getX();
         int newY = agent->getPosition().getY();

@@ -52,7 +52,7 @@ protected:
     bool _unevenPartitioning;           //! [Only for MPI scheduler] States whether the partitioning is performed uneven, i.e. regarding the agents position, or splitting the space evenly into K equal parts of ~1/K area each one. Uneven partitioning mode could be used when a uniform distribution of the agents across the simulation grid is expected. The "autoMode" is expected to be use in these kind of situations.
 
     bool _autoMode;                     //! [Only for MPI scheduler] Says whether the auto rebalancing mode is activated or not.
-    bool _initialPartitioning;          //! [Only for MPI scheduler] To perform an initial partitioning or not (used as "false" for models that do not create initial agents and/or having warm-up periods).
+    int _initialPartitioning;           //! [Only for MPI scheduler] To perform an initial partitioning or not (< numTasksMax for models that do not create initial agents, just a bunch of them, have warm-up periods, etc.).
     int _rebalancingFreq;               //! [Only for MPI scheduler] Rebalancing frequency check in number of steps. If < 1, then no frequency is stablished.    
     double _maximumLoadPerNode;         //! [Only for MPI scheduler] Maximum load (in secs.) that a node should support just before partitioning.
     double _maximumPercOfUnbalance;     //! [Only for MPI scheduler] Maximum percentage allowed of unbalancing among nodes. From this value on, the space should be rebalanced. If 0, no rebalancing by unbalances are applied at all.
@@ -193,7 +193,7 @@ public:
      * 
      * @return const int& 
      */
-    const bool& getInitialPartitioning() const;
+    const int& getInitialPartitioning() const;
 
     /**
      * @brief Gets the _maximumLoadPerNode member.

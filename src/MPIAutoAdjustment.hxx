@@ -151,6 +151,8 @@ namespace Engine
              */
             bool exploreMinimumCost(const double& agentPhasesAVGTime, int& numberOfProcessesAtMinimumCost);
 
+            bool exploreMinimumCost_mock(const double& agentPhasesAVGTime, int& numberOfProcessesAtMinimumCost);
+
             /**
              * @brief Sends the new number of processes 'numberOfProcesses' to all the working nodes.
              * 

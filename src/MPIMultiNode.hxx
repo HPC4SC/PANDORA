@@ -94,7 +94,7 @@ namespace Engine
             std::vector<Agent*> _agentsToBeRemoved;                         //! Vector or Agents to be removed at the end of the step.
 
             double _initialTime;                                            //! Initial running time.
-            bool _distributeFromTheBeginning;                               //! Flag to indicate whether the agents should be distributed from the beginning or not. In other words, whether only one process should be active at the beginning.
+            int _distributeFromTheBeginning;                                //! Flag to indicate whether the agents should be distributed from the beginning or not. If == numTasksMax: a normal distribution is performed.
 
             SaveState* _saveState;                                          //! Instance for the checkpointing process.
             Serializer _serializer;                                         //! Serializer instance.
