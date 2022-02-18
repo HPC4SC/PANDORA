@@ -95,6 +95,36 @@ namespace Engine
         log_CP(_fileNameCP, CreateStringStream(_schedulerInstance->_world->getWorldData() << "\n").str());
     }
 
+    void SaveState::saveAllNodesSpace() const
+    {
+        for (MPINodesMap::const_iterator it = _schedulerInstance->_mpiNodesMapToSend.begin(); it != _schedulerInstance->_mpiNodesMapToSend.end(); ++it)
+        {
+            int nodeId = it->first;
+            MPINode node = it->second;
+
+            Rectangle<int> ownedAreaWithoutInnerOverlap = node.ownedAreaWithoutInnerOverlap;
+            Rectangle<int> ownedArea = node.ownedArea;
+            Rectangle<int> ownedAreaWithOuterOverlap = node.ownedAreaWithOuterOverlap;
+
+            log_CP(_fileNameCP, CreateStringStream("NodeID: " << nodeId << " numNeighbours: " << node.neighbours.size() << "\n").str());
+            log_CP(_fileNameCP, CreateStringStream(ownedAreaWithoutInnerOverlap.left() << " " << ownedAreaWithoutInnerOverlap.top() << " " << ownedAreaWithoutInnerOverlap.right() << " " << ownedAreaWithoutInnerOverlap.bottom() << "\n").str());
+            log_CP(_fileNameCP, CreateStringStream(ownedArea.left() << " " << ownedArea.top() << " " << ownedArea.right() << " " << ownedArea.bottom() << "\n").str());
+            log_CP(_fileNameCP, CreateStringStream(ownedAreaWithOuterOverlap.left() << " " << ownedAreaWithOuterOverlap.top() << " " << ownedAreaWithOuterOverlap.right() << " " << ownedAreaWithOuterOverlap.bottom() << "\n").str());
+
+            for (std::map<int, MPINode*>::const_iterator itNeighbour = node.neighbours.begin(); itNeighbour != node.neighbours.end(); ++itNeighbour)
+            {
+                int neighbourID = itNeighbour->first;
+                MPINode* neighbourNode = itNeighbour->second;
+
+                Rectangle<int> ownedAreaWithoutInnerOverlap_neighbour = neighbourNode->ownedAreaWithoutInnerOverlap;
+                Rectangle<int> ownedArea_neighbour = neighbourNode->ownedArea;
+                Rectangle<int> ownedAreaWithOuterOverlap_neighbour = neighbourNode->ownedAreaWithOuterOverlap;
+
+                log_CP(_fileNameCP, CreateStringStream("neighbourID: " << neighbourID << " " << ownedArea_neighbour.left() << " " << ownedArea_neighbour.top() << " " << ownedArea_neighbour.right() << " " << ownedArea_neighbour.bottom() << "\n").str());
+            }
+        }
+    }
+
     void SaveState::saveNodeSpace() const
     {
         Rectangle<int> ownedAreaWithoutInnerOverlap = _schedulerInstance->_nodeSpace.ownedAreaWithoutInnerOverlap;
@@ -154,6 +184,13 @@ namespace Engine
         log_CP(_fileNameCP, CreateStringStream("Step_finished:\n").str());
         saveWorldData();
         log_CP(_fileNameCP, CreateStringStream("END_DATA\n").str());
+
+        if (_schedulerInstance->getId() == _schedulerInstance->_masterNodeID)
+        {
+            log_CP(_fileNameCP, CreateStringStream("All_nodes_data:\n").str());
+            saveAllNodesSpace();
+            log_CP(_fileNameCP, CreateStringStream("END_DATA\n").str());
+        }
 
         log_CP(_fileNameCP, CreateStringStream("Node_data:\n").str());
         saveNodeSpace();
@@ -257,6 +294,64 @@ namespace Engine
         else if (lineCounter == 3)  node.ownedAreaWithOuterOverlap = rectangle;
     }
 
+    void SaveState::loadAllNodesInfo(std::ifstream& cpFileStream) 
+    {
+        std::string line;
+        while (std::getline(cpFileStream, line))
+        {
+std::cout << CreateStringStream("[Process #" << _schedulerInstance->getId() << "] SaveState::loadAllNodesInfo " << line << "\n").str();
+            if (line.find("END_DATA") != std::string::npos) break;
+
+            std::vector<std::string> tokens = getLineTokens(line, ' ');
+
+            if (tokens[0].compare("NodeID:") == 0)
+            {
+                int nodeID = std::stoi(tokens[1]);
+                int numberOfNeighbours = std::stoi(tokens[3]);
+
+                if (_schedulerInstance->_mpiNodesMapToSend.find(nodeID) == _schedulerInstance->_mpiNodesMapToSend.end())
+                {
+                    MPINode mpiNode;
+
+                    int lineCounter = 1;
+                    while (lineCounter <= 3)
+                    {
+                        std::getline(cpFileStream, line);
+                        tokens = getLineTokens(line, ' ');
+std::cout << CreateStringStream("[Process #" << _schedulerInstance->getId() << "] SaveState::loadAllNodesInfo (2) " << line << "\n").str();
+
+                        registerOwnedAreas(mpiNode, lineCounter, tokens);
+                        _schedulerInstance->generateOverlapAreas(mpiNode);
+
+                        ++lineCounter;
+                    }
+
+                    lineCounter = 1;
+                    while (lineCounter <= numberOfNeighbours)
+                    {
+                        std::getline(cpFileStream, line);
+                        tokens = getLineTokens(line, ' ');
+std::cout << CreateStringStream("[Process #" << _schedulerInstance->getId() << "] SaveState::loadAllNodesInfo (3) " << line << "\n").str();
+
+                        if (tokens[0].compare("neighbourID:") == 0)
+                        {
+                            int neighbourID = std::stoi(tokens[1]);
+                            Rectangle<int> rectangle = Rectangle<int>(std::stoi(tokens[2]), std::stoi(tokens[3]), std::stoi(tokens[4]), std::stoi(tokens[5]));
+
+                            mpiNode.neighbours[neighbourID] = new MPINode;
+                            mpiNode.neighbours[neighbourID]->ownedArea = rectangle;
+                        }
+
+                        ++lineCounter;
+                    }
+
+                    _schedulerInstance->_mpiNodesMapToSend[nodeID] = mpiNode;
+                }
+            }
+        }
+std::cout << CreateStringStream("[Process #" << _schedulerInstance->getId() << "] SaveState::loadAllNodesInfo GETTING OUT FUNCTION...\n").str();
+    }
+
     void SaveState::loadNodeInfo(std::ifstream& cpFileStream)
     {
         int lineCounter = 1;
@@ -269,9 +364,9 @@ namespace Engine
             
             std::vector<std::string> tokens = getLineTokens(line, ' ');
 
-            if (lineCounter == 1 or lineCounter == 2 or lineCounter == 3)
+            if (lineCounter <= 3)
                 registerOwnedAreas(_schedulerInstance->_nodeSpace, lineCounter, tokens);
-            else if (lineCounter >= 4)
+            else
             {
                 if (tokens[0].compare("neighbourID:") == 0)
                 {
@@ -548,6 +643,8 @@ namespace Engine
 //std::cout << CreateStringStream("[Process #" << _schedulerInstance->getId() << "] loadCheckpoint::line " << line << "\n").str();
             if (line.find("Step_finished") != std::string::npos)
                 loadWorldInfo(cpFileStream);
+            else if (line.find("All_nodes_data") != std::string::npos)
+                loadAllNodesInfo(cpFileStream);
             else if (line.find("Node_data") != std::string::npos)
                 loadNodeInfo(cpFileStream);
             else if (line.find("Rasters_data") != std::string::npos)

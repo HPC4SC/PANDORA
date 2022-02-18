@@ -278,6 +278,8 @@ std::cout << "DIVIDE TEST COMPLETED. executingAgentsEstimatedTime_normalized: " 
 
     bool MPIAutoAdjustment::exploreMinimumCost(const double& agentPhasesAVGTime, int& numberOfProcessesAtMinimumCost)
     {
+        // NOT WORKING, NOT USED METHOD.
+
         int currentNumberOfProcesses = _schedulerInstance->_numberOfActiveProcesses;
         int doubleNumberOfProcesses = currentNumberOfProcesses * 2;
         int halfNumberOfProcesses = currentNumberOfProcesses / 2;
@@ -321,13 +323,17 @@ std::cout << "¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?
 
     bool MPIAutoAdjustment::exploreMinimumCost_mock(const double& agentPhasesAVGTime, int& numberOfProcessesAtMinimumCost)
     {
-        bool isRebalanceSuitable = true;
-        
-        int minAgentsTo8Processes = 1200;
-        //int minAgentsTo8Processes = 8000;
+        int minAgentsTo8Processes = INT_MAX;
+        if (_schedulerInstance->_world->getConfig().getSize().getHeight() > 313)
+            int minAgentsTo8Processes = 1200;
+            //int minAgentsTo8Processes = 8000;
 
         if (_schedulerInstance->_world->getTotalAgentsInTheSimulation() > minAgentsTo8Processes) numberOfProcessesAtMinimumCost = 8;
         else numberOfProcessesAtMinimumCost = 4;
+
+        int numberOfProcessesToEstimate, numberOfOverlappingCells;
+        bool isRebalanceSuitable = _schedulerInstance->performDivideTest(numberOfProcessesAtMinimumCost, numberOfOverlappingCells);
+        
 std::cout << "¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿? exploreMinimumCost_mock() - isRebalanceSuitable: " << isRebalanceSuitable << "\tnumberOfProcessesAtMinimumCost: " << numberOfProcessesAtMinimumCost << "\n";
         return isRebalanceSuitable;
     }
@@ -489,6 +495,11 @@ std::cout << "¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?
                 eventType = receiveSignalFromMasterWithTag(ePrepareToRepartition);
                 if (eventType == eMessage_PrepareToRepartition_true)
                     receiveNumberOfProcessesFromMasterNode(newNumberOfProcesses);
+                else
+                {
+                    neededToRebalance = false;
+                    newNumberOfProcesses = _schedulerInstance->_numberOfActiveProcesses;
+                }
             }
         }
     }
@@ -614,7 +625,10 @@ std::cout << "¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?
 
         for (MPINodesMap::const_iterator it = spaces.begin(); it != spaces.end(); ++it)
         {
-            ss << "node id: " << it->first << ":\n";
+            ss << "node id: " << it->first << " (neighbours: ";
+            for (std::map<int, MPINode*>::const_iterator it2 = it->second.neighbours.begin(); it2 != it->second.neighbours.end(); ++it2) ss << it2->first << ",";
+            ss << "):\n";
+
             ss << "\townedArea: " << it->second.ownedArea << "\n";
             ss << "\townedAreaWithOuterOverlap: " << it->second.ownedAreaWithOuterOverlap << "\n";
             ss << "\townedAreaWithoutInnerOverlap: " << it->second.ownedAreaWithoutInnerOverlap << "\n";
@@ -625,28 +639,44 @@ std::cout << "¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?¿?
 
     void MPIAutoAdjustment::removeNonBelongingAgentsToMPINode(const MPINodesMap& spaces)
     {
+std::cout << CreateStringStream("Process #" << _schedulerInstance->getId() << " HEY 5 2 1\n").str();
         if (_schedulerInstance->getId() < _schedulerInstance->_numberOfActiveProcesses)
         {
+std::cout << CreateStringStream("Process #" << _schedulerInstance->getId() << " HEY 5 2 2 _schedulerInstance->getId(): " << _schedulerInstance->getId() << " --\n").str();
             std::vector<Agent*> agentsToRemove;
             MPINode mpiNode = spaces.at(_schedulerInstance->getId());
-
+std::cout << CreateStringStream("Process #" << _schedulerInstance->getId() << " HEY 5 2 3\n").str();
             for (AgentsMap::const_iterator itAgent = _schedulerInstance->_world->beginAgents(); itAgent != _schedulerInstance->_world->endAgents(); ++itAgent)
             {
+std::cout << CreateStringStream("Process #" << _schedulerInstance->getId() << " HEY 5 2 4\n").str();
                 AgentPtr agentPtr = itAgent->second;
                 Agent* agent = agentPtr.get();
-
+std::cout << CreateStringStream("Process #" << _schedulerInstance->getId() << " HEY 5 2 5\n").str();
                 if (not mpiNode.ownedAreaWithOuterOverlap.contains(agent->getPosition()))
+                {
+std::cout << CreateStringStream("Process #" << _schedulerInstance->getId() << " HEY 5 2 6\n").str();
                     agentsToRemove.push_back(agent);
+std::cout << CreateStringStream("Process #" << _schedulerInstance->getId() << " HEY 5 2 7\n").str();
+                }
+std::cout << CreateStringStream("Process #" << _schedulerInstance->getId() << " HEY 5 2 8\n").str();
             }
-
+std::cout << CreateStringStream("Process #" << _schedulerInstance->getId() << " HEY 5 2 9\n").str();
             _schedulerInstance->removeAgentsInVector(agentsToRemove);
+std::cout << CreateStringStream("Process #" << _schedulerInstance->getId() << " HEY 5 2 10\n").str();
         }
+std::cout << CreateStringStream("Process #" << _schedulerInstance->getId() << " HEY 5 2 11\n").str();
     }
 
     void MPIAutoAdjustment::removeMasterNodeNoNNeededAgents(const MPINodesMap& oldSpaces)
     {
+std::cout << CreateStringStream("Process #" << _schedulerInstance->getId() << " HEY 5 1\n").str();
         if (_schedulerInstance->getId() == _schedulerInstance->_masterNodeID)
+        {
+            std::cout << CreateStringStream("Process #" << _schedulerInstance->getId() << " HEY 5 2\n").str();
             removeNonBelongingAgentsToMPINode(oldSpaces);
+            std::cout << CreateStringStream("Process #" << _schedulerInstance->getId() << " HEY 5 3\n").str();
+        }
+        std::cout << CreateStringStream("Process #" << _schedulerInstance->getId() << " HEY 5 4\n").str();
     }
 
     void MPIAutoAdjustment::updateOwnStructures(const MPINodesMap& newSpaces)
@@ -745,41 +775,53 @@ std::cout << CreateStringStream("Process #" << _schedulerInstance->getId() << " 
 std::cout << CreateStringStream("Process #" << _schedulerInstance->getId() << " HEY 7 3\n").str();
 // if (_schedulerInstance->_printInConsole) 
 printAgentsByTypeAndNodeToSend(agentsByTypeAndNode);
-std::cout << CreateStringStream("Process #" << _schedulerInstance->getId() << " HEY 7 4\n").str();
+std::cout << CreateStringStream("Process #" << _schedulerInstance->getId() << " HEY 7 4 0\n").str();
         sendAgentsInMap(agentsByTypeAndNode);
 std::cout << CreateStringStream("Process #" << _schedulerInstance->getId() << " HEY 7 5\n").str();
     }
 
     void MPIAutoAdjustment::receiveAgentsFromOtherNodesIfNecessary(const int& numberOfNodesToReceiveFrom)
     {
+std::cout << CreateStringStream("Process #" << _schedulerInstance->getId() << " HEY 8 1\n").str();
         for (int sendingNodeID = 0; sendingNodeID < numberOfNodesToReceiveFrom; ++sendingNodeID)
         {
             if (sendingNodeID != _schedulerInstance->getId())
             {
+std::cout << CreateStringStream("Process #" << _schedulerInstance->getId() << " HEY 8 2\n").str();
                 int numberOfAgentTypesToReceive;
                 MPI_Recv(&numberOfAgentTypesToReceive, 1, MPI_INT, sendingNodeID, eNumGhostAgentsType, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
+std::cout << CreateStringStream("Process #" << _schedulerInstance->getId() << " HEY 8 3\n").str();
                 for (int i = 0; i < numberOfAgentTypesToReceive; ++i)
                 {
                     int agentTypeID;
                     MPI_Recv(&agentTypeID, 1, MPI_INT, sendingNodeID, eGhostAgentsType, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+std::cout << CreateStringStream("Process #" << _schedulerInstance->getId() << " HEY 8 4\n").str();
                     std::string agentsTypeName = MpiFactory::instance()->getNameFromTypeID(agentTypeID);
+std::cout << CreateStringStream("Process #" << _schedulerInstance->getId() << " HEY 8 5\n").str();
                     MPI_Datatype* agentTypeMPI = MpiFactory::instance()->getMPIType(agentsTypeName);
+std::cout << CreateStringStream("Process #" << _schedulerInstance->getId() << " HEY 8 6\n").str();
 
                     int numberOfAgentsToReceive;
                     MPI_Recv(&numberOfAgentsToReceive, 1, MPI_INT, sendingNodeID, eNumGhostAgents, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
+std::cout << CreateStringStream("Process #" << _schedulerInstance->getId() << " HEY 8 7\n").str();
                     int sizeOfAgentPackage = MpiFactory::instance()->getSizeOfPackage(agentsTypeName);
-
+std::cout << CreateStringStream("Process #" << _schedulerInstance->getId() << " HEY 8 8\n").str();
                     void* agentsPackageArray = malloc(numberOfAgentsToReceive * sizeOfAgentPackage);
+std::cout << CreateStringStream("Process #" << _schedulerInstance->getId() << " HEY 8 9\n").str();
                     MPI_Recv(agentsPackageArray, numberOfAgentsToReceive, *agentTypeMPI, sendingNodeID, eGhostAgents, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
+std::cout << CreateStringStream("Process #" << _schedulerInstance->getId() << " HEY 8 10\n").str();
                     for (int j = 0; j < numberOfAgentsToReceive; ++j)
                     {
                         void* package = (char*) agentsPackageArray + j * sizeOfAgentPackage;
+std::cout << CreateStringStream("Process #" << _schedulerInstance->getId() << " HEY 8 11\n").str();
                         Agent* agent = MpiFactory::instance()->createAndFillAgent(agentsTypeName, package);
+std::cout << CreateStringStream("Process #" << _schedulerInstance->getId() << " HEY 8 12\n").str();
                         if (_schedulerInstance->_world->getAgentsMap().find(agent->getId()) == _schedulerInstance->_world->getAgentsMap().end())
+                        {
+                            std::cout << CreateStringStream("Process #" << _schedulerInstance->getId() << " HEY 8 13\n").str();
                             _schedulerInstance->_world->addAgent(agent);
+                            std::cout << CreateStringStream("Process #" << _schedulerInstance->getId() << " HEY 8 14\n").str();
+                        }
                     }
 
                     _schedulerInstance->receiveAgentsComplexAttributesPackage(sendingNodeID);
@@ -895,6 +937,8 @@ std::cout << CreateStringStream("Process #" << _schedulerInstance->getId() << " 
 std::cout << CreateStringStream("Process #" << _schedulerInstance->getId() << " HEY 5\n").str();
 if (_schedulerInstance->_printInConsole) { printSpaces(oldSpaces, true);    printSpaces(newSpaces, false); }
 
+printSpaces(oldSpaces, true);    printSpaces(newSpaces, false); 
+
         removeMasterNodeNoNNeededAgents(oldSpaces);
 std::cout << CreateStringStream("Process #" << _schedulerInstance->getId() << " HEY 6\n").str();
         updateOwnStructures(newSpaces);
@@ -958,15 +1002,17 @@ std::cout << CreateStringStream("Process #" << _schedulerInstance->getId() << " 
             doMasterForRebalance(neededToRebalance, newNumberOfProcesses);
         else
             doWorkersForRebalance(neededToRebalance, newNumberOfProcesses);
-
+std::cout << CreateStringStream("Process #" << _schedulerInstance->getId() << " HALLO 1 neededToRebalance: " << neededToRebalance << "\tnewNumberOfProcesses: " << newNumberOfProcesses << "\n").str();
         _schedulerInstance->enableOnlyProcesses(newNumberOfProcesses);
-        
+std::cout << CreateStringStream("Process #" << _schedulerInstance->getId() << " HALLO 2 neededToRebalance: " << neededToRebalance << "\tnewNumberOfProcesses: " << newNumberOfProcesses << "\n").str();        
         if (neededToRebalance) {
             rebalanceAgentsAndRastersAmongNodes(newNumberOfProcesses);
             setNonNeededWorkersToSleep(newNumberOfProcesses);
             writeStateAfterRebalanceInLog();
         }
+std::cout << CreateStringStream("Process #" << _schedulerInstance->getId() << " HALLO 3\n").str();        
         synchronizeProcesses();
+std::cout << CreateStringStream("Process #" << _schedulerInstance->getId() << " HALLO 4\n").str();        
     }
 
 } // namespace Engine

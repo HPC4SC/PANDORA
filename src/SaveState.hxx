@@ -86,6 +86,13 @@ namespace Engine
             void registerOwnedAreas(MPINode& node, const int& lineCounter, const std::vector<std::string>& tokens);
 
             /**
+             * @brief Loads the data for all the nodes (neighbour or not). [Only used for the master node]
+             * 
+             * @param cpFileStream 
+             */
+            void loadAllNodesInfo(std::ifstream& cpFileStream);
+
+            /**
              * @brief Loads all the node related data.
              * 
              * @param cpFileStream std::ifstream&
@@ -228,6 +235,12 @@ namespace Engine
              * 
              */
             void saveWorldData() const;
+
+            /**
+             * @brief Saves the _mpiNodesMapToSend data structure.
+             * 
+             */
+            void saveAllNodesSpace() const;
 
             /**
              * @brief Saves the _nodeSpace data structure.

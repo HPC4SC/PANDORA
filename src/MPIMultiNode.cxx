@@ -485,6 +485,8 @@ if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStre
 
     void MPIMultiNode::fillOwnStructures(const MPINode& mpiNodeInfo, const bool& fillNeighbours)
     {
+        _nodeSpace.reset();
+
         _nodeSpace.ownedArea = mpiNodeInfo.ownedArea;
 
         generateOverlapAreas(_nodeSpace);
@@ -1622,7 +1624,9 @@ std::cout << CreateStringStream("Process #" << getId() << " HEY 7 4 8\n").str();
                 sendAgentsComplexAttributesPackage(agentsToSend, neighbourNodeID);
 std::cout << CreateStringStream("Process #" << getId() << " HEY 7 4 9\n").str();
             }
+std::cout << CreateStringStream("Process #" << getId() << " HEY 7 4 10\n").str();
         }
+std::cout << CreateStringStream("Process #" << getId() << " HEY 7 4 11\n").str();
     }
 
     /** RUN PUBLIC METHODS (INHERIT) **/
@@ -1654,17 +1658,20 @@ std::cout << CreateStringStream("Process #" << getId() << " HEY 7 4 9\n").str();
     void MPIMultiNode::updateEnvironmentState()
     {
 if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStream("[Process # " << getId() << "] MPIMultiNode::updateEnvironmentState() STEP: " << _world->getCurrentStep() << " ==================================================================================\n").str());
-
+std::cout << CreateStringStream("[Process # " << getId() << "] MPIMultiNode::updateEnvironmentState() 1\n").str();
         MPI_Barrier(_activeProcessesComm);
-
+std::cout << CreateStringStream("[Process # " << getId() << "] MPIMultiNode::updateEnvironmentState() 2\n").str();
         prepareAgentsAndRastersStateForCurrentStep();
+std::cout << CreateStringStream("[Process # " << getId() << "] MPIMultiNode::updateEnvironmentState() 3\n").str();
         sendRastersToNeighbours();
+std::cout << CreateStringStream("[Process # " << getId() << "] MPIMultiNode::updateEnvironmentState() 4\n").str();
         receiveRasters();
-
+std::cout << CreateStringStream("[Process # " << getId() << "] MPIMultiNode::updateEnvironmentState() 5\n").str();
         if (getId() != _masterNodeID) sendWorldVariablesToMasterNode();
         else receiveWorldVariablesFromWorkers();
-
+std::cout << CreateStringStream("[Process # " << getId() << "] MPIMultiNode::updateEnvironmentState() 6\n").str();
         MPI_Barrier(_activeProcessesComm);
+std::cout << CreateStringStream("[Process # " << getId() << "] MPIMultiNode::updateEnvironmentState() 7\n").str();
     }
 
     void MPIMultiNode::checkForRebalancingSpace()
