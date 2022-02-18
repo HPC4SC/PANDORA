@@ -1600,29 +1600,20 @@ if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<
 
     void MPIMultiNode::sendAgentsInMap(const std::map<int, std::map<std::string, AgentsList>>& agentsByTypeAndNode)
     {
-std::cout << CreateStringStream("Process #" << getId() << " HEY 7 4 1\n").str();
         for (std::map<int, std::map<std::string, AgentsList>>::const_iterator itNeighbourNode = agentsByTypeAndNode.begin(); itNeighbourNode != agentsByTypeAndNode.end(); ++itNeighbourNode)
         {
-std::cout << CreateStringStream("Process #" << getId() << " HEY 7 4 2\n").str();
             int neighbourNodeID = itNeighbourNode->first;
             std::map<std::string, AgentsList> agentsByType = itNeighbourNode->second;
-std::cout << CreateStringStream("Process #" << getId() << " HEY 7 4 3\n").str();
             int numberOfAgentTypesToSend = agentsByType.size();
             sendDataRequestToNode(&numberOfAgentTypesToSend, 1, MPI_INT, neighbourNodeID, eNumGhostAgentsType, MPI_COMM_WORLD);
-std::cout << CreateStringStream("Process #" << getId() << " HEY 7 4 4\n").str();
             for (std::map<std::string, AgentsList>::const_iterator itType = agentsByType.begin(); itType != agentsByType.end(); ++itType)
             {
-std::cout << CreateStringStream("Process #" << getId() << " HEY 7 4 5\n").str();
                 std::string agentsTypeName = itType->first;
                 AgentsList agentsToSend = itType->second;
-std::cout << CreateStringStream("Process #" << getId() << " HEY 7 4 6\n").str();
                 int agentsTypeID = MpiFactory::instance()->getIDFromTypeName(agentsTypeName);
                 sendDataRequestToNode(&agentsTypeID, 1, MPI_INT, neighbourNodeID, eGhostAgentsType, MPI_COMM_WORLD);
-std::cout << CreateStringStream("Process #" << getId() << " HEY 7 4 7\n").str();
                 sendAgentsPackage(agentsToSend, neighbourNodeID, agentsTypeName);
-std::cout << CreateStringStream("Process #" << getId() << " HEY 7 4 8\n").str();
                 sendAgentsComplexAttributesPackage(agentsToSend, neighbourNodeID);
-std::cout << CreateStringStream("Process #" << getId() << " HEY 7 4 9\n").str();
             }
 std::cout << CreateStringStream("Process #" << getId() << " HEY 7 4 10\n").str();
         }
@@ -1685,9 +1676,10 @@ std::cout << CreateStringStream("[Process # " << getId() << "] MPIMultiNode::upd
 
     bool MPIMultiNode::needToCheckpoint()
     {
-std::cout << CreateStringStream("[Process # " << getId() << "] MPIMultiNode::needToCheckpoint(): " << _world->getConfig().getEnableCheckpointing() << "\t" << getWallTime() << "\t" << _world->getConfig().getSecondsToCP() << "\n").str();
         if (_world->getConfig().getEnableCheckpointing() and getWallTime() >= _world->getConfig().getSecondsToCP())
         {
+std::cout << CreateStringStream("[Process # " << getId() << "] MPIMultiNode::needToCheckpoint() - _enableCheckpointing: " << _world->getConfig().getEnableCheckpointing() << "\tWallTime: " << getWallTime() << "\t_secondsToCP: " << _world->getConfig().getSecondsToCP() << "\n").str();
+
             _performCheckpoint = true;
             return true;
         }
@@ -1717,9 +1709,10 @@ std::cout << CreateStringStream("[Process # " << getId() << "] MPIMultiNode::nee
 
     void MPIMultiNode::performPeriodicCPIfNecessary()
     {
-std::cout << CreateStringStream("[Process # " << getId() << "] MPIMultiNode::performPeriodicCPIfNecessary(): " << _world->getConfig().getPeriodicCP() << "\t" << getWallTime() << "\t" << _saveState->getPeriodicCPCounter() << "\t" << _world->getConfig().getSecondsForPeriodicCP() << "\n").str();
         if (_world->getConfig().getPeriodicCP() and getWallTime() >= (_saveState->getPeriodicCPCounter() * _world->getConfig().getSecondsForPeriodicCP()))
         {
+std::cout << CreateStringStream("[Process # " << getId() << "] MPIMultiNode::performPeriodicCPIfNecessary() - _periodicCP: " << _world->getConfig().getPeriodicCP() << "\tWallTime: " << getWallTime() << "\t_periodicCPCounter: " << _saveState->getPeriodicCPCounter() << "\t_secondsForPeriodicCP: " << _world->getConfig().getSecondsForPeriodicCP() << "\n").str();
+
             //_saveState->cleanCPFiles ¿?
             performSaveCheckpointing();
 

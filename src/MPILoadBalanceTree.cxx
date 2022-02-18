@@ -117,13 +117,8 @@ namespace Engine {
             AgentPtr agentPtr = it->second;
 
             if (agentPtr->getLayer() == layer and (type.compare("all") == 0 or agentPtr->isType(type)))
-            {
                 result.push_back(agentPtr);
-
-                if (_tempAgentsToCheck.find(agentPtr->getId()) != _tempAgentsToCheck.end())
-                    _tempAgentsToCheck.at(agentPtr->getId()) = true;
                 
-            }
         }
         return result;
     }
@@ -233,15 +228,11 @@ namespace Engine {
 
     double MPILoadBalanceTree::getAllAgentsWeight()
     {
-        _tempAgentsToCheck.clear();
-
         double totalWeight = 0;
         for (AgentsMap::iterator it = _world->beginAgents(); it != _world->endAgents(); ++it)
         {
             Agent* agent = it->second.get();
             totalWeight += agent->getWeight();
-
-            _tempAgentsToCheck[agent->getId()] = false;
         }
         return totalWeight;
     }
@@ -271,26 +262,6 @@ namespace Engine {
 
     void MPILoadBalanceTree::exploreHorizontallyAndKeepDividing(node<Rectangle<int>>* treeNode, const double& totalWeight, const int& currentHeight)
     {
-std::cout << CreateStringStream("divideSpaceRecursively() 2 - exploreHorizontallyAndKeepDividing\n").str();
-
-        double topBottom_leftRight_agentsWeight = 0;
-        for (int i = treeNode->value.top(); i < treeNode->value.bottom() + 1; ++i)
-        {
-            for (int j = treeNode->value.left(); j < treeNode->value.right() + 1; ++j)
-            {
-                topBottom_leftRight_agentsWeight += getAgentsWeightFromCell(i, j);
-            }
-        }
-
-std::stringstream ss;
-ss << "divideSpaceRecursively() 2 1 - exploreHorizontallyAndKeepDividing topBottom_leftRight_agentsWeight: " << topBottom_leftRight_agentsWeight << " (totalWeight: " << totalWeight << ") AGENTS NOT FOUND: ";
-for (auto it = _tempAgentsToCheck.begin(); it != _tempAgentsToCheck.end(); ++it)
-{
-    if (not it->second) ss << _world->getAgent(it->first) << ", ";
-}
-ss << "\n";
-std::cout << ss.str();
-
         double leftChildTotalWeight = 0;
 
         for (int i = treeNode->value.left(); i < treeNode->value.right() + 1; ++i)
@@ -300,7 +271,7 @@ std::cout << ss.str();
                 for (int j = treeNode->value.top(); j < treeNode->value.bottom() + 1; ++j)
                     leftChildTotalWeight += getAgentsWeightFromCell(j, i);
             }
-//std::cout << CreateStringStream("divideSpaceRecursively() 3 - exploreHorizontallyAndKeepDividing - leftChildTotalWeight: " << leftChildTotalWeight << " i: " << i << "\n").str();
+
             bool needToSplit =  (_requiresUnevenPartitioning and leftChildTotalWeight >= totalWeight / 2) or 
                                 (not _requiresUnevenPartitioning and i >= (treeNode->value.left() + (treeNode->value.right() - treeNode->value.left() + 1) / 2));
 
@@ -321,18 +292,6 @@ std::cout << ss.str();
 
     void MPILoadBalanceTree::exploreVerticallyAndKeepDividing(node<Rectangle<int>>* treeNode, const double& totalWeight, const int& currentHeight)
     {
-std::cout << CreateStringStream("divideSpaceRecursively() 2 - exploreVerticallyAndKeepDividing\n").str();
-
-double topBottom_leftRight_agentsWeight = 0;
-        for (int i = treeNode->value.top(); i < treeNode->value.bottom() + 1; ++i)
-        {
-            for (int j = treeNode->value.left(); j < treeNode->value.right() + 1; ++j)
-            {
-                topBottom_leftRight_agentsWeight += getAgentsWeightFromCell(i, j);
-            }
-        }
-std::cout << CreateStringStream("divideSpaceRecursively() 2 1 - exploreVerticallyAndKeepDividing topBottom_leftRight_agentsWeight: " << topBottom_leftRight_agentsWeight << " (totalWeight: " << totalWeight << ")\n").str();
-
         double leftChildTotalWeight = 0;
 
         for (int i = treeNode->value.top(); i < treeNode->value.bottom() + 1; ++i) 
@@ -342,7 +301,7 @@ std::cout << CreateStringStream("divideSpaceRecursively() 2 1 - exploreVerticall
                 for (int j = treeNode->value.left(); j < treeNode->value.right() + 1; ++j)
                     leftChildTotalWeight += getAgentsWeightFromCell(i, j);
             }
-//std::cout << CreateStringStream("divideSpaceRecursively() 3 - exploreVerticallyAndKeepDividing - leftChildTotalWeight: " << leftChildTotalWeight << " i: " << i << "\n").str();
+            
             bool needToSplit =  (_requiresUnevenPartitioning and leftChildTotalWeight >= totalWeight / 2) or 
                                 (not _requiresUnevenPartitioning and i >= (treeNode->value.top() + (treeNode->value.bottom() - treeNode->value.top() + 1) / 2));
 
@@ -363,7 +322,6 @@ std::cout << CreateStringStream("divideSpaceRecursively() 2 1 - exploreVerticall
 
     void MPILoadBalanceTree::divideSpaceRecursively(node<Rectangle<int>>* treeNode, const double& totalWeight, const int& currentHeight)
     {
-std::cout << CreateStringStream("divideSpaceRecursively() 1 - treeNode->value: " << treeNode->value << ", totalWeight: " << totalWeight << ", currentHeight: " << currentHeight << "\n").str();
         if (stopProcreating(currentHeight)) 
         {
             std::cout << CreateStringStream("divideSpaceRecursively - returning...\n").str();

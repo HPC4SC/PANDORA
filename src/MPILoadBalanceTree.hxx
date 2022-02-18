@@ -50,8 +50,6 @@ namespace Engine
 
             bool _requiresUnevenPartitioning;       //! States whether the partitioning depends on the agents position or it splits the simulation grid in equal pieces.
 
-            std::map<std::string, bool> _tempAgentsToCheck;
-
             /**
              * @brief Copies deeply the node into a new object which is returned.
              * 
