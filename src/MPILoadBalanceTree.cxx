@@ -118,7 +118,6 @@ namespace Engine {
 
             if (agentPtr->getLayer() == layer and (type.compare("all") == 0 or agentPtr->isType(type)))
                 result.push_back(agentPtr);
-                
         }
         return result;
     }
@@ -271,7 +270,7 @@ namespace Engine {
                 for (int j = treeNode->value.top(); j < treeNode->value.bottom() + 1; ++j)
                     leftChildTotalWeight += getAgentsWeightFromCell(j, i);
             }
-
+//std::cout << CreateStringStream("divideSpaceRecursively() 3 - exploreHorizontallyAndKeepDividing - leftChildTotalWeight: " << leftChildTotalWeight << " i: " << i << "\n").str();
             bool needToSplit =  (_requiresUnevenPartitioning and leftChildTotalWeight >= totalWeight / 2) or 
                                 (not _requiresUnevenPartitioning and i >= (treeNode->value.left() + (treeNode->value.right() - treeNode->value.left() + 1) / 2));
 
@@ -301,7 +300,7 @@ namespace Engine {
                 for (int j = treeNode->value.left(); j < treeNode->value.right() + 1; ++j)
                     leftChildTotalWeight += getAgentsWeightFromCell(i, j);
             }
-            
+
             bool needToSplit =  (_requiresUnevenPartitioning and leftChildTotalWeight >= totalWeight / 2) or 
                                 (not _requiresUnevenPartitioning and i >= (treeNode->value.top() + (treeNode->value.bottom() - treeNode->value.top() + 1) / 2));
 

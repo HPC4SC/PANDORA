@@ -1604,20 +1604,22 @@ if (_printInConsole) std::cout << CreateStringStream("[Process # " << getId() <<
         {
             int neighbourNodeID = itNeighbourNode->first;
             std::map<std::string, AgentsList> agentsByType = itNeighbourNode->second;
+            
             int numberOfAgentTypesToSend = agentsByType.size();
             sendDataRequestToNode(&numberOfAgentTypesToSend, 1, MPI_INT, neighbourNodeID, eNumGhostAgentsType, MPI_COMM_WORLD);
+
             for (std::map<std::string, AgentsList>::const_iterator itType = agentsByType.begin(); itType != agentsByType.end(); ++itType)
             {
                 std::string agentsTypeName = itType->first;
                 AgentsList agentsToSend = itType->second;
+
                 int agentsTypeID = MpiFactory::instance()->getIDFromTypeName(agentsTypeName);
                 sendDataRequestToNode(&agentsTypeID, 1, MPI_INT, neighbourNodeID, eGhostAgentsType, MPI_COMM_WORLD);
+
                 sendAgentsPackage(agentsToSend, neighbourNodeID, agentsTypeName);
                 sendAgentsComplexAttributesPackage(agentsToSend, neighbourNodeID);
             }
-std::cout << CreateStringStream("Process #" << getId() << " HEY 7 4 10\n").str();
         }
-std::cout << CreateStringStream("Process #" << getId() << " HEY 7 4 11\n").str();
     }
 
     /** RUN PUBLIC METHODS (INHERIT) **/
@@ -1649,20 +1651,16 @@ std::cout << CreateStringStream("Process #" << getId() << " HEY 7 4 11\n").str()
     void MPIMultiNode::updateEnvironmentState()
     {
 if (_printInstrumentation) _schedulerLogs->printInstrumentation(CreateStringStream("[Process # " << getId() << "] MPIMultiNode::updateEnvironmentState() STEP: " << _world->getCurrentStep() << " ==================================================================================\n").str());
-std::cout << CreateStringStream("[Process # " << getId() << "] MPIMultiNode::updateEnvironmentState() 1\n").str();
         MPI_Barrier(_activeProcessesComm);
-std::cout << CreateStringStream("[Process # " << getId() << "] MPIMultiNode::updateEnvironmentState() 2\n").str();
+
         prepareAgentsAndRastersStateForCurrentStep();
-std::cout << CreateStringStream("[Process # " << getId() << "] MPIMultiNode::updateEnvironmentState() 3\n").str();
         sendRastersToNeighbours();
-std::cout << CreateStringStream("[Process # " << getId() << "] MPIMultiNode::updateEnvironmentState() 4\n").str();
         receiveRasters();
-std::cout << CreateStringStream("[Process # " << getId() << "] MPIMultiNode::updateEnvironmentState() 5\n").str();
+
         if (getId() != _masterNodeID) sendWorldVariablesToMasterNode();
         else receiveWorldVariablesFromWorkers();
-std::cout << CreateStringStream("[Process # " << getId() << "] MPIMultiNode::updateEnvironmentState() 6\n").str();
+
         MPI_Barrier(_activeProcessesComm);
-std::cout << CreateStringStream("[Process # " << getId() << "] MPIMultiNode::updateEnvironmentState() 7\n").str();
     }
 
     void MPIMultiNode::checkForRebalancingSpace()
@@ -1676,10 +1674,9 @@ std::cout << CreateStringStream("[Process # " << getId() << "] MPIMultiNode::upd
 
     bool MPIMultiNode::needToCheckpoint()
     {
+std::cout << CreateStringStream("[Process # " << getId() << "] MPIMultiNode::needToCheckpoint(): " << _world->getConfig().getEnableCheckpointing() << "\t" << getWallTime() << "\t" << _world->getConfig().getSecondsToCP() << "\n").str();
         if (_world->getConfig().getEnableCheckpointing() and getWallTime() >= _world->getConfig().getSecondsToCP())
         {
-std::cout << CreateStringStream("[Process # " << getId() << "] MPIMultiNode::needToCheckpoint() - _enableCheckpointing: " << _world->getConfig().getEnableCheckpointing() << "\tWallTime: " << getWallTime() << "\t_secondsToCP: " << _world->getConfig().getSecondsToCP() << "\n").str();
-
             _performCheckpoint = true;
             return true;
         }
@@ -1709,10 +1706,9 @@ std::cout << CreateStringStream("[Process # " << getId() << "] MPIMultiNode::nee
 
     void MPIMultiNode::performPeriodicCPIfNecessary()
     {
+std::cout << CreateStringStream("[Process # " << getId() << "] MPIMultiNode::performPeriodicCPIfNecessary(): " << _world->getConfig().getPeriodicCP() << "\t" << getWallTime() << "\t" << _saveState->getPeriodicCPCounter() << "\t" << _world->getConfig().getSecondsForPeriodicCP() << "\n").str();
         if (_world->getConfig().getPeriodicCP() and getWallTime() >= (_saveState->getPeriodicCPCounter() * _world->getConfig().getSecondsForPeriodicCP()))
         {
-std::cout << CreateStringStream("[Process # " << getId() << "] MPIMultiNode::performPeriodicCPIfNecessary() - _periodicCP: " << _world->getConfig().getPeriodicCP() << "\tWallTime: " << getWallTime() << "\t_periodicCPCounter: " << _saveState->getPeriodicCPCounter() << "\t_secondsForPeriodicCP: " << _world->getConfig().getSecondsForPeriodicCP() << "\n").str();
-
             //_saveState->cleanCPFiles ¿?
             performSaveCheckpointing();
 

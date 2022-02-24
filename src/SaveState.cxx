@@ -299,7 +299,7 @@ namespace Engine
         std::string line;
         while (std::getline(cpFileStream, line))
         {
-std::cout << CreateStringStream("[Process #" << _schedulerInstance->getId() << "] SaveState::loadAllNodesInfo " << line << "\n").str();
+//std::cout << CreateStringStream("[Process #" << _schedulerInstance->getId() << "] SaveState::loadAllNodesInfo " << line << "\n").str();
             if (line.find("END_DATA") != std::string::npos) break;
 
             std::vector<std::string> tokens = getLineTokens(line, ' ');
@@ -318,7 +318,7 @@ std::cout << CreateStringStream("[Process #" << _schedulerInstance->getId() << "
                     {
                         std::getline(cpFileStream, line);
                         tokens = getLineTokens(line, ' ');
-std::cout << CreateStringStream("[Process #" << _schedulerInstance->getId() << "] SaveState::loadAllNodesInfo (2) " << line << "\n").str();
+//std::cout << CreateStringStream("[Process #" << _schedulerInstance->getId() << "] SaveState::loadAllNodesInfo (2) " << line << "\n").str();
 
                         registerOwnedAreas(mpiNode, lineCounter, tokens);
                         _schedulerInstance->generateOverlapAreas(mpiNode);
@@ -331,7 +331,7 @@ std::cout << CreateStringStream("[Process #" << _schedulerInstance->getId() << "
                     {
                         std::getline(cpFileStream, line);
                         tokens = getLineTokens(line, ' ');
-std::cout << CreateStringStream("[Process #" << _schedulerInstance->getId() << "] SaveState::loadAllNodesInfo (3) " << line << "\n").str();
+//std::cout << CreateStringStream("[Process #" << _schedulerInstance->getId() << "] SaveState::loadAllNodesInfo (3) " << line << "\n").str();
 
                         if (tokens[0].compare("neighbourID:") == 0)
                         {
@@ -349,7 +349,7 @@ std::cout << CreateStringStream("[Process #" << _schedulerInstance->getId() << "
                 }
             }
         }
-std::cout << CreateStringStream("[Process #" << _schedulerInstance->getId() << "] SaveState::loadAllNodesInfo GETTING OUT FUNCTION...\n").str();
+//std::cout << CreateStringStream("[Process #" << _schedulerInstance->getId() << "] SaveState::loadAllNodesInfo GETTING OUT FUNCTION...\n").str();
     }
 
     void SaveState::loadNodeInfo(std::ifstream& cpFileStream)
