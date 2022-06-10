@@ -112,7 +112,16 @@ const int& Agent::getDiscreteHeading() const
     return _discreteHeading;
 }
 
-void Agent::setPosition( const Point2D<int> & position )
+bool Agent::ableToMoveToPosition(const Point2D<int>& position) const
+{
+    int distanceToNewPosition = _position.distanceOctile(position);
+    int overlapSize = _world->getConfig().getOverlapSize();
+
+    if (_world->getNumTasksMax() > 1 and distanceToNewPosition > overlapSize) return false;
+    return true;
+}
+
+void Agent::setPosition(const Point2D<int>& position)
 {
     if (this->_position == position) return;
 
@@ -131,7 +140,7 @@ void Agent::setPosition( const Point2D<int> & position )
         _world->changeAgentInMatrixOfPositions(this);
     }
     else
-        throw Exception(CreateStringStream("Agent::setPosition() - agent " << _id << " cannot move from (" << _position.getX() << "," << _position.getY() << ") to (" << position.getX() << "," << position.getY() << ") - distanceToNewPosition > overlapSize : " << distanceToNewPosition << " > " << overlapSize << "\n").str());
+        throw Exception(CreateStringStream("Agent::setPosition() - agent " << _id << " cannot move from (" << _position.getX() << "," << _position.getY() << ") to (" << position.getX() << "," << position.getY() << ") in layer " << _layer << " - distanceToNewPosition > overlapSize : " << distanceToNewPosition << " > " << overlapSize << "\n").str());
 }
 
 void Agent::setLayer(const int& layer)

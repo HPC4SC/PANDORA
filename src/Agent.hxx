@@ -206,6 +206,14 @@ namespace Engine
         const int& getDiscreteHeading() const;
 
         /**
+         * @brief Checks whether this agent is able to move to 'position'. Should be used before calling the setPosition('position') method.
+         * 
+         * @param position const Point2D<int>&
+         * @return bool
+         */
+        bool ableToMoveToPosition(const Point2D<int>& position) const;
+
+        /**
          * @brief Sets the _position member attribute.
          * 
          * @param position new value of the position attribute.

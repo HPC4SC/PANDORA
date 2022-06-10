@@ -55,22 +55,13 @@ namespace Engine
             RNGUniformInt();
 
             /**
-             * @brief Constructs a new RNGUniform object.
+             * @brief Constructs a new RNGUniformInt object.
              * 
              * @param seed const uint64_t&
              * @param a const int&
              * @param b const int&
              */
             RNGUniformInt(const uint64_t& seed, const int& a, const int& b);
-
-            /**
-             * @brief Constructs a new RNGUniform object for doubles.
-             * 
-             * @param seed const uint64_t&
-             * @param a const double&
-             * @param b const double&
-             */
-            //RNGUniform(const uint64_t& seed, const double& a, const double& b);
 
             /**
              * @brief Destroy the RNGUniform object.

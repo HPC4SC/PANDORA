@@ -26,14 +26,16 @@
 #include <map>
 #include <vector>
 #include <list>
+#include <algorithm>
+#include <memory>
+
 #include <typedefs.hxx>
 #include <DynamicRaster.hxx>
 #include <StaticRaster.hxx>
 #include <Rectangle.hxx>
 #include <Point2D.hxx>
-#include <algorithm>
 #include <Config.hxx>
-#include <memory>
+#include <RNGUniformDouble.hxx>
 
 namespace Engine
 {
@@ -45,27 +47,30 @@ class World
 public:
     typedef std::map< std::string, int> RasterNameMap;
 protected:
-    std::shared_ptr<Config> _config;    //! Pointer to the configuration of the world.
+    std::shared_ptr<Config> _config;                //! Pointer to the configuration of the world.
 
-    AgentsMap _agentsByID;              //! Global map of agents by ID.
-    AgentsMatrix _agentsMatrix;         //! Global matrix of agents (used to find agents by position).
+    AgentsMap _agentsByID;                          //! Global map of agents by ID.
+    AgentsMatrix _agentsMatrix;                     //! Global matrix of agents (used to find agents by position).
 
-    int _totalAgentsInTheSimulation;    //! Total number of agents in the simulation (in and out this node).
+    int _totalAgentsInTheSimulation;                //! Total number of agents in the simulation (in and out this node).
 
     double _updateKnowledgeTotalTime, _selectActionsTotalTime, _executeActionsTotalTime, _updateStateTotalTime;
 
-    bool _allowMultipleAgentsPerCell;   //! False if each cell can have just one agent.
+    bool _allowMultipleAgentsPerCell;               //! False if each cell can have just one agent.
 
-    int _step;                          //! Current simulation step.
-    double _previousStepWallTime;       //! Simulation wall time at the previous step.
+    int _seedRun;                                   //! Seed fot the simulation RNGs.
+    int _step;                                      //! Current simulation step.
+    double _previousStepWallTime;                   //! Simulation wall time at the previous step.
 
-    Scheduler * _scheduler;             //! Pointer to the scheduler of the world.
+    Scheduler * _scheduler;                         //! Pointer to the scheduler of the world.
 
-    std::map<std::string, int> _rasterNames; //! <rasterName, rasterIndex in _rasters>.
-    std::map<int, std::string> _rasterIDsToNames; //! <rasterIndex, rasterName>
-    std::vector<StaticRaster*> _rasters; //! Rasters of the simulations.
-    std::vector<bool> _dynamicRasters; //! True if the raster is dynamic, false the raster is static.
-    std::vector<bool> _serializeRasters; //! True if the raster must be serialized, false otherwise.
+    std::map<std::string, int> _rasterNames;        //! <rasterName, rasterIndex in _rasters>.
+    std::map<int, std::string> _rasterIDsToNames;   //! <rasterIndex, rasterName>
+    std::vector<StaticRaster*> _rasters;            //! Rasters of the simulations.
+    std::vector<bool> _dynamicRasters;              //! True if the raster is dynamic, false the raster is static.
+    std::vector<bool> _serializeRasters;            //! True if the raster must be serialized, false otherwise.
+
+    RNGUniformDouble _uniformDouble0_1;             //! Generic RNG for any purpose.
 
     /**
      * @brief Initializes the _agentsMatrix for the first time.
@@ -149,6 +154,20 @@ public:
      * 
      */
     void run( );
+
+    /**
+     * @brief Get the _seedRun attribute.
+     * 
+     * @return int 
+     */
+    int getSeedRun();
+
+    /**
+     * @brief Gets a draw for the _uniformDouble0_1 member.
+     * 
+     * @return double
+     */
+    double getDraw_uniformDouble0_1();
 
     /**
      * @brief Gets a const reference of the internal _agentsMatrix member.
@@ -795,6 +814,13 @@ public:
      */
     const int & getNumTasks( ) const;
     
+    /**
+     * @brief Gets the maximum number of tasks available for the simulation.
+     * 
+     * @return const int& 
+     */
+    const int& getNumTasksMax() const;
+
     /**
      * @brief Returns if a raster in index 'index' must be serialized.
      * 

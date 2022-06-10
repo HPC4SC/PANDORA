@@ -46,7 +46,8 @@ namespace Engine
         return _stdDev;
     }
 
-    double RNGNormal::draw() {
+    double RNGNormal::draw() 
+    {
         return _nextRandomNumber();
     }
 

@@ -316,6 +316,12 @@ namespace Engine
                 return std::max(diffX, diffY);
             }
 
+            bool isNextTo(const Point2D<Type>& point) const
+            {
+                return  not this->isEqual(point) and
+                        std::abs(point._x - _x) <= 1 and std::abs(point._y - _y) <= 1;
+            }
+
     };
 
 } // namespace Engine

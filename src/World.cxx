@@ -46,6 +46,9 @@ namespace Engine
         if (not _scheduler)
             _scheduler = useOpenMPIMultiNode( );
 
+        _seedRun = config->getSeed();
+        _uniformDouble0_1 = Engine::RNGUniformDouble(_seedRun, 0, 1);
+
         _scheduler->setWorld( this );
 
         _scheduler->setPrintInConsole(config->getPrintInConsole());
@@ -88,15 +91,12 @@ namespace Engine
 
     void World::initialize( int argc, char *argv[] )
     {
-        int seed = _config->getSeed();
-        if (_config->getSeed() == -1) seed = Statistics::getNewSeed();
-
-        Engine::GeneralState::statistics().setSeed(seed);
+        if (_seedRun == -1) _seedRun = Statistics::getNewSeed();
+        Engine::GeneralState::statistics().setSeed(_seedRun);
 
         initializeAgentsMatrix();
 
         _scheduler->init( argc, argv );
-
         _scheduler->initData( );
     }
 
@@ -324,6 +324,16 @@ std::cout << CreateStringStream("[Process #" << getId() << "] Executing step " <
 
         log_INFO( logName.str( ), getWallTime( ) << " closing files" );
         _scheduler->finish( );
+    }
+
+    int World::getSeedRun()
+    {
+        return _seedRun;
+    }
+
+    double World::getDraw_uniformDouble0_1()
+    {
+        _uniformDouble0_1.draw();
     }
 
     int World::getCurrentStep( ) const
@@ -685,6 +695,11 @@ std::cout << CreateStringStream("[Process #" << getId() << "] Executing step " <
     const int & World::getNumTasks( ) const
     {
         return _scheduler->getNumTasks( );
+    }
+
+    const int& World::getNumTasksMax() const
+    {
+        return _scheduler->getNumTasksMax();
     }
 
     const Rectangle<int> & World::getBoundaries( ) const
