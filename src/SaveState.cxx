@@ -559,7 +559,7 @@ namespace Engine
                     if (tokens[j].compare("*") != 0)
                     {
                         int value = std::stoi(tokens[j]);
-                        Point2D<int> position = Point2D<int>(j, i);
+                        Point2D<int> position = Point2D<int>(i, j);
 
                         if (not isDynamicRaster) 
                             _schedulerInstance->_world->getStaticRaster(name).setValue(position, value);
